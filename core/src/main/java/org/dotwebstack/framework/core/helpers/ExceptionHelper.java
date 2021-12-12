@@ -53,7 +53,11 @@ public class ExceptionHelper {
     return new InvalidConfigurationException(formatMessage(message, arguments), findCause(arguments));
   }
 
-  public static InternalServerErrorException internalServerErrorException(Throwable throwable) {
-    return new InternalServerErrorException("An internal server error has occurred!", throwable);
+  public static InternalServerErrorException internalServerErrorException() {
+    return new InternalServerErrorException("An internal server error has occurred!");
+  }
+
+  public static InternalServerErrorException internalServerErrorException(String message, Object... arguments) {
+    return new InternalServerErrorException(formatMessage(message, arguments), findCause(arguments));
   }
 }

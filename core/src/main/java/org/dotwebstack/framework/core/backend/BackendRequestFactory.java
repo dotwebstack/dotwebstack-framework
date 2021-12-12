@@ -25,6 +25,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,7 +96,7 @@ public class BackendRequestFactory {
     return ObjectRequest.builder()
         .objectType(objectType)
         .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
-            .getArguments(), executionStepInfo.getArguments()))
+            .getArguments(), executionStepInfo.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -107,10 +108,13 @@ public class BackendRequestFactory {
   private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
     ObjectType<?> objectType = getObjectType(TypeHelper.unwrapConnectionType(selectedField.getType()));
 
+    var arguments = selectedField.getFieldDefinitions()
+        .get(0)
+        .getArguments();
+
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
-            .getArguments(), selectedField.getArguments()))
+        .keyCriteria(createKeyCriteria(arguments, selectedField.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -178,6 +182,7 @@ public class BackendRequestFactory {
     return FieldRequest.builder()
         .name(selectedField.getName())
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
+        .arguments(selectedField.getArguments())
         .build();
   }
 
@@ -208,7 +213,7 @@ public class BackendRequestFactory {
           var objectField = objectType.getFields()
               .get(selectedField.getName());
 
-          var aggregationObjectType = objectField.getAggregationOfType();
+          var aggregationObjectType = objectField.getTargetType();
 
           return AggregateObjectRequest.builder()
               .objectField(objectField)
@@ -254,17 +259,20 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
-    return arguments.stream()
+  private Optional<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+    var keys = arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
         .filter(argument -> argumentMap.containsKey(argument.getName()))
-        .map(argument -> Map.of(argument.getName(), argumentMap.get(argument.getName())))
-        .map(values -> KeyCriteria.builder()
-            .values(values)
-            .build())
-        .collect(Collectors.toList());
+        .map(argument -> Map.entry(argument.getName(), argumentMap.get(argument.getName())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
+
+    return Optional.of(keys)
+        .filter(k -> k.size() > 0)
+        .map(k -> KeyCriteria.builder()
+            .values(k)
+            .build());
   }
 
   private List<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map<String, Object> filterArgument) {
@@ -281,9 +289,12 @@ public class BackendRequestFactory {
 
           var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
 
+          var filterValue = createFilterValue(filterArgument, filterName);
+
           return FilterCriteria.builder()
+              .filterType(filterConfiguration.getType())
               .fieldPath(fieldPath)
-              .value(createFilterValue(filterArgument, filterName))
+              .value(filterValue)
               .build();
 
         })
@@ -336,7 +347,7 @@ public class BackendRequestFactory {
           .map(o -> o.getField(segment))
           .orElseThrow();
 
-      current = schema.getObjectType(field.getType())
+      current = Optional.ofNullable(field.getTargetType())
           .orElse(null);
 
       fieldPath.add(field);

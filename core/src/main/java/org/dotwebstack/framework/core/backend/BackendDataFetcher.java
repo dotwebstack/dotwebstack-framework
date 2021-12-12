@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.backend;
 
+import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
@@ -8,9 +9,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.dataloader.DataLoader;
-import org.dataloader.DataLoaderFactory;
 import org.dataloader.MappedBatchLoader;
+import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -26,15 +28,20 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final BackendExecutionStepInfo backendExecutionStepInfo;
 
+  private final List<GraphQlValidator> graphQlValidators;
+
   public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory,
-      BackendExecutionStepInfo backendExecutionStepInfo) {
+      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators) {
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
+    this.graphQlValidators = graphQlValidators;
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
+    graphQlValidators.forEach(validator -> validator.validate(environment));
+
     Map<String, Object> source = environment.getSource();
 
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo((environment));
@@ -57,7 +64,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
-        return getOrCreateBatchLoader(environment, requestContext).load(joinCondition.getKey());
+        return getOrCreateBatchLoader(environment, () -> createManyBatchLoader(environment, requestContext))
+            .load(joinCondition.getKey());
       }
 
       var result = backendLoader.loadMany(collectionRequest, requestContext)
@@ -77,8 +85,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .toFuture();
   }
 
-  private DataLoader<Object, Object> getOrCreateBatchLoader(DataFetchingEnvironment environment,
-      RequestContext requestContext) {
+  private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
+      Supplier<DataLoader<K, V>> supplier) {
     // Create separate data loader for every unique path, since every path can have different arguments
     // or selection
     var dataLoaderKey = String.join("/", environment.getExecutionStepInfo()
@@ -86,10 +94,10 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .getKeysOnly());
 
     return environment.getDataLoaderRegistry()
-        .computeIfAbsent(dataLoaderKey, key -> createBatchLoader(environment, requestContext));
+        .computeIfAbsent(dataLoaderKey, key -> supplier.get());
   }
 
-  private DataLoader<Map<String, Object>, List<Map<String, Object>>> createBatchLoader(
+  private DataLoader<Map<String, Object>, List<Map<String, Object>>> createManyBatchLoader(
       DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
@@ -110,6 +118,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     };
 
-    return DataLoaderFactory.newMappedDataLoader(batchLoader);
+    return newMappedDataLoader(batchLoader);
   }
 }

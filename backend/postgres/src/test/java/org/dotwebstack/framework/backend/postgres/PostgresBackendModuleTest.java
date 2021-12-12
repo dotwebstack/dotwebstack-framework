@@ -2,10 +2,12 @@ package org.dotwebstack.framework.backend.postgres;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Map;
+import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -48,7 +50,56 @@ class PostgresBackendModuleTest {
 
   @Test
   void init_shouldInitFields() throws MalformedURLException {
-    String path = "src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml";
+    Map<String, ObjectType<?>> objectTypes = init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml");
+
+    assertThat(objectTypes, notNullValue());
+
+    var brewery = (PostgresObjectType) objectTypes.get("Brewery");
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getFields()
+        .get("beerAgg"), notNullValue());
+  }
+
+  @Test
+  void init_shouldPropagateNestedColumnPrefix() throws MalformedURLException {
+    Map<String, ObjectType<?>> objectTypes =
+        init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-column-prefix.yaml");
+
+    assertThat(objectTypes, notNullValue());
+
+    var beer = (PostgresObjectType) objectTypes.get("Beer");
+    assertThat(beer, notNullValue());
+
+    assertColumnPrefixFields(beer, "location", "loc_");
+    assertColumnPrefixFields(beer, "altLocation", "altloc_");
+    assertColumnPrefixFields(beer, "anotherLocation", "");
+  }
+
+  private void assertColumnPrefixFields(PostgresObjectType beer, String fieldName, String columnPrefix) {
+    PostgresObjectField location = beer.getField(fieldName);
+    assertThat(location, notNullValue());
+    assertThat(location.getTargetType(), notNullValue());
+    assertThat(beer.getField(fieldName)
+        .getTargetType()
+        .getField("street"), notNullValue());
+    assertThat(((PostgresObjectField) beer.getField(fieldName)
+        .getTargetType()
+        .getField("street")).getColumn(), is(columnPrefix.concat("street")));
+    assertThat(beer.getField(fieldName)
+        .getTargetType()
+        .getField("housenumber"), notNullValue());
+    assertThat(((PostgresObjectField) beer.getField(fieldName)
+        .getTargetType()
+        .getField("housenumber")).getColumn(), is(columnPrefix.concat("housenumber")));
+    assertThat(beer.getField(fieldName)
+        .getTargetType()
+        .getField("city"), notNullValue());
+    assertThat(((PostgresObjectField) beer.getField(fieldName)
+        .getTargetType()
+        .getField("city")).getColumn(), is("ownprefix_city"));
+  }
+
+  private Map<String, ObjectType<?>> init(String path) throws MalformedURLException {
     File file = new File(path);
     String localUrl = file.toURI()
         .toURL()
@@ -58,12 +109,6 @@ class PostgresBackendModuleTest {
     Map<String, ObjectType<?>> objectTypes = schema.getObjectTypes();
 
     postgresBackendModule.init(objectTypes);
-
-    assertThat(objectTypes, notNullValue());
-
-    var brewery = (PostgresObjectType) objectTypes.get("Brewery");
-    assertThat(brewery, notNullValue());
-    assertThat(brewery.getFields()
-        .get("beerAgg"), notNullValue());
+    return objectTypes;
   }
 }

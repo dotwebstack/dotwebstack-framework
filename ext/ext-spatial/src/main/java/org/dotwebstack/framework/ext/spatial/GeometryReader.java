@@ -4,8 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RD;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID_RDNAP;
 
 import java.util.Base64;
 import java.util.List;
@@ -23,19 +21,19 @@ public class GeometryReader {
 
   private GeometryReader() {}
 
-  public static Geometry readGeometry(Map<String, String> data) {
+  public static Geometry readGeometry(Map<String, Object> data) {
     validateGeometryFilters(data);
 
     if (data.containsKey(FROM_WKT)) {
-      return getGeometryFromWkt(data.get(FROM_WKT));
+      return getGeometryFromWkt((String) data.get(FROM_WKT));
     } else if (data.containsKey(FROM_WKB)) {
-      return getGeometryFromWkb(data.get(FROM_WKB));
+      return getGeometryFromWkb((String) data.get(FROM_WKB));
     } else {
-      return getGeometryFromGeoJson(data.get(FROM_GEOJSON));
+      return getGeometryFromGeoJson((String) data.get(FROM_GEOJSON));
     }
   }
 
-  private static void validateGeometryFilters(Map<String, String> data) {
+  private static void validateGeometryFilters(Map<String, Object> data) {
     var filters = List.of(FROM_WKT, FROM_WKB, FROM_GEOJSON);
 
     var foundFilters = data.keySet()
@@ -57,21 +55,10 @@ public class GeometryReader {
   private static Geometry getGeometryFromWkt(String wkt) {
     var wktReader = new WKTReader();
     try {
-      var geometry = wktReader.read(wkt);
-      if (getDimensionsFromGeometry(geometry) == 2) {
-        geometry.setSRID(SRID_RD);
-      } else {
-        geometry.setSRID(SRID_RDNAP);
-      }
-      return geometry;
+      return wktReader.read(wkt);
     } catch (ParseException e) {
       throw illegalArgumentException("The filter input WKT is invalid!", e);
     }
-  }
-
-  private static int getDimensionsFromGeometry(Geometry geometry) {
-    return Double.isNaN(geometry.getCoordinate()
-        .getZ()) ? 2 : 3;
   }
 
   private static Geometry getGeometryFromWkb(String wkb) {

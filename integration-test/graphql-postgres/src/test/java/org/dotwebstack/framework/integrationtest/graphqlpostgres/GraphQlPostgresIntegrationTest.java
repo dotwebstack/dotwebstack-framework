@@ -2,6 +2,7 @@ package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static graphql.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.equalToObject;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -9,6 +10,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -113,11 +115,12 @@ class GraphQlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
     registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
     registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test
-  void getRequest_ReturnsBeers_Default() {
+  void getRequest_returnsBeers_Default() {
     var query = "{beers{identifier_beer name since}}";
     JsonNode json = executeGetRequestDefault(query);
 
@@ -143,7 +146,7 @@ class GraphQlPostgresIntegrationTest {
   // graphQl.execute() method.
   @Test
   @SuppressWarnings("unchecked")
-  void getRequest_ReturnsPublisher_forBeerSubscription() {
+  void getRequest_returnsPublisher_forBeerSubscription() {
     String query = "subscription {beersSubscription{identifier_beer name}}";
 
     ExecutionResult result = graphQL.execute(query);
@@ -176,7 +179,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeer_forIdentifier() {
+  void getRequest_returnsBeer_forIdentifier() {
     var query = "{beer(identifier_beer: \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\" ){name}}";
     JsonNode json = executeGetRequestDefault(query);
 
@@ -192,7 +195,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeer_forIdentifier_NullIfNotExist() {
+  void getRequest_returnsBeer_forIdentifier_NullIfNotExist() {
     var query = "{beer(identifier_beer: \"1111\" ){name}}";
     JsonNode json = executeGetRequestDefault(query);
 
@@ -209,7 +212,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeerWithNestedObject_forIdentifier() {
+  void getRequest_returnsBeerWithNestedObject_forIdentifier() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
 
     JsonNode json = executeGetRequestDefault(query);
@@ -230,7 +233,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweries_Default() {
+  void getRequest_returnsBreweries_Default() {
     var query = "{breweries {name status}}";
     JsonNode json = executeGetRequestDefault(query);
 
@@ -251,9 +254,8 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBrewery_withNestedObject() {
-    String query =
-        "{brewery(identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status history{age history}}}";
+  void getRequest_returnsBrewery_withNestedObject() {
+    String query = "{breweries{name status history{age history}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -262,14 +264,28 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> data = getDataFromJsonNode(json);
 
     assertThat(data.size(), is(1));
-    assertThat(data.containsKey(BREWERY), is(true));
+    assertThat(data.containsKey(BREWERIES), is(true));
 
-    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(4));
+
+    assertThat(breweries.get(1)
+        .get(NAME), is("Brewery X"));
+
+    assertThat(breweries.get(3)
+        .get(NAME), is("Brewery Z"));
+
+    Map<String, Object> brewery = breweries.get(1);
     assertThat(brewery.containsKey(HISTORY), is(true));
     Map<String, Object> history = getNestedObject(brewery, HISTORY);
     assertThat(history.size(), is(2));
     assertThat(history.get("age"), is(1988));
     assertThat(history.get(HISTORY), is("hip and new"));
+
+    brewery = breweries.get(3);
+    assertThat(brewery.containsKey(HISTORY), is(true));
+    history = getNestedObject(brewery, HISTORY);
+    assertThat(history, is(nullValue()));
   }
 
   @Test
@@ -448,9 +464,9 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithNestedGeometry_forIdentifier() {
+  void getRequest_returnsBreweryWithNestedGeometry_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
-        + "{name geometry{type asWKT asWKB asGeoJSON}}}";
+        + "{name geometry{type srid asWKT asWKB asGeoJSON}}}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -465,23 +481,185 @@ class GraphQlPostgresIntegrationTest {
     assertThat(brewery.containsKey(GEOMETRY), is(true));
 
     Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
-    assertThat(geometry.size(), is(4));
+    assertThat(geometry.size(), is(5));
     assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7415));
     assertThat(geometry.get("asWKT"),
-        is("POLYGON ((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
-            + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
-            + "194914.7190916618 470984.86365462304))"));
+        is("POLYGON Z((206410.1605 447480.1649 3, 206412.3799 447474.7692 3, 206418.7599 447476.6259 3,"
+            + " 206417.4787 447480.3322 3, 206423.1208 447482.3191 3, 206423.0706 447482.7319 3,"
+            + " 206416.4167 447480.6427 3, 206415.9896 447481.8782 3, 206410.1605 447480.1649 3))"));
     assertThat(geometry.get("asWKB"),
-        is("ACAAAAMAAHFAAAAAAQAAAAVBB8sVwLMhEkEcvyN0YeCkQQfMgs8s9hpBHL8k7R6DJkEHzIRXybhDQRy+"
-            + "xd7Z/F1BB8sXSN0ktkEcvsRmHQc2QQfLFcCzIRJBHL8jdGHgpA=="));
+        is("AKAAAAMAABz3AAAAAQAAAAlBCTJRSLQ5WEEbT+Co24usQAgAAAAAAABBCTJjCgkC3kEbT8sTqSowQAg"
+            + "AAAAAAABBCTKWFEZzgkEbT9KA6+36QAgAAAAAAABBCTKL1GCqZUEbT+FULDyfQAgAAAAAAABBCTK492X9i0EbT"
+            + "+lGwiaBQAgAAAAAAABBCTK4kJa7mUEbT+rtdzGQQAgAAAAAAABBCTKDVWbPQkEbT+KSH/LlQAgAAAAAAABBCTJ/"
+            + "6rNnoUEbT+eDRtxdQAgAAAAAAABBCTJRSLQ5WEEbT+Co24usQAgAAAAAAAA="));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"Polygon\",\"coordinates\":[[[194914.71909166,470984.86365462],"
-            + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
-            + "[194914.71909166,470984.86365462]]]}"));
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[206410.1605,447480.1649,3],[206412.3799,447474.7692,3],"
+            + "[206418.7599,447476.6259,3],[206417.4787,447480.3322,3],[206423.1208,447482.3191,3],"
+            + "[206423.0706,447482.7319,3],[206416.4167,447480.6427,3],[206415.9896,447481.8782,3],"
+            + "[206410.1605,447480.1649,3]]]}"));
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithGeometryType_forGeometryType() {
+  void getRequest_returnsBreweryWithNestedGeometry_forReprojection() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7931){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7931));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON Z((6.136068105697632 52.01329602598457 1.123, 6.136099621653557 52.01324732611223 1.123,"
+            + " 6.136192828416824 52.013263421838616 1.123, 6.136174723505974 52.013296851405684 1.123,"
+            + " 6.136257201433181 52.01331418524545 1.123, 6.136256530880928 52.01331789963881 1.123,"
+            + " 6.136159300804138 52.01329974037945 1.123, 6.136153265833855 52.01331088356219 1.123,"
+            + " 6.136068105697632 52.01329602598457 1.123))"));
+    assertThat(geometry.get("asWKB"),
+        is("AKAAAAMAAB77AAAAAQAAAAlAGItVcAAAAEBKAbOvJmKgP/H3ztkWhytAGItdswAAAEBKAbIWoDSrP/"
+            + "H3ztkWhytAGIt2IgAAAEBKAbKdpYPUP/H3ztkWhytAGItxYwAAAEBKAbO2EvauP/H3ztkWhytAGIuHAf///"
+            + "0BKAbRHexneP/H3ztkWhytAGIuG1QAAAEBKAbRmo7M2P/H3ztkWhytAGIttWAAAAEBKAbPOTvzOP/"
+            + "H3ztkWhytAGItrwwAAAEBKAbQryMpNP/H3ztkWhytAGItVcAAAAEBKAbOvJmKgP/H3ztkWhys="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013296026,1.123],"
+            + "[6.136099622,52.013247326,1.123],[6.136192828,52.013263422,1.123],[6.136174724,52.013296851,1.123],"
+            + "[6.136257201,52.013314185,1.123],[6.136256531,52.0133179,1.123],[6.136159301,52.01329974,1.123],"
+            + "[6.136153266,52.013310884,1.123],[6.136068106,52.013296026,1.123]]]}"));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometryAsBbox_forPersistedBbox() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7415));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((206410.1605 447474.7692, 206410.1605 447482.7319, 206423.1208 447482.7319, "
+            + "206423.1208 447474.7692, 206410.1605 447474.7692))"));
+    assertThat(geometry.get("asWKB"),
+        is("ACAAAAMAABz3AAAAAQAAAAVBCTJRSLQ5WEEbT8sTqSowQQkyUUi0OVhBG0/q7XcxkEEJMrj3Zf2LQRtP6u13"
+            + "MZBBCTK492X9i0EbT8sTqSowQQkyUUi0OVhBG0/LE6kqMA=="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[206410.1605,447474.7692],[206410.1605,447482.7319],"
+            + "[206423.1208,447482.7319],[206423.1208,447474.7692],[206410.1605,447474.7692]]]}"));
+  }
+
+  @Test
+  void getRequest_returnsProblemJson_whenCombinationTypeAndBboxInGeometryArguments() {
+    var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(type: POLYGON, srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(true));
+
+    assertThat(json.get(ERRORS)
+        .get(0)
+        .get("message")
+        .textValue(),
+        is("Exception while fetching data (/brewery) : Type argument is not allowed "
+            + "when argument bbox is true (geometry)."));
+  }
+
+  @Test
+  void getRequest_ReturnsBreweryWithNestedGeometryAsBbox_forNonPersistedBbox() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 7931, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(7931));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((6.136068105697632 52.01324732611223, 6.136068105697632 52.01331789963881, "
+            + "6.136257201433181 52.01331789963881, 6.136257201433181 52.01324732611223, "
+            + "6.136068105697632 52.01324732611223))"));
+    assertThat(geometry.get("asWKB"), is("ACAAAAMAAB77AAAAAQAAAAVAGItVcAAAAEBKAbIWoDSrQBiLVXAAAABASgG0ZqOzNkAYi4cB////"
+        + "QEoBtGajszZAGIuHAf///0BKAbIWoDSrQBiLVXAAAABASgGyFqA0qw=="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013247326],[6.136068106,52.0133179],"
+            + "[6.136257201,52.0133179],[6.136257201,52.013247326],[6.136068106,52.013247326]]]}"));
+  }
+
+  @Test
+  void getRequest_returnsBreweryWithNestedGeometry_forReprojectionTo2d() {
+    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+        + "{name geometry(srid: 9067){type srid asWKT asWKB asGeoJSON}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.containsKey(GEOMETRY), is(true));
+
+    Map<String, Object> geometry = getNestedObject(brewery, GEOMETRY);
+    assertThat(geometry.size(), is(5));
+    assertThat(geometry.get("type"), is("POLYGON"));
+    assertThat(geometry.get("srid"), is(9067));
+    assertThat(geometry.get("asWKT"),
+        is("POLYGON ((6.136068105697632 52.01329602598457, 6.136099621653557 52.01324732611223,"
+            + " 6.136192828416824 52.013263421838616, 6.136174723505974 52.013296851405684,"
+            + " 6.136257201433181 52.01331418524545, 6.136256530880928 52.01331789963881,"
+            + " 6.136159300804138 52.01329974037945, 6.136153265833855 52.01331088356219,"
+            + " 6.136068105697632 52.01329602598457))"));
+    assertThat(geometry.get("asWKB"),
+        is("ACAAAAMAACNrAAAAAQAAAAlAGItVcAAAAEBKAbOvJmKgQBiLXbMAAABASgGyFqA0q0AYi3Yi"
+            + "AAAAQEoBsp2lg9RAGItxYwAAAEBKAbO2EvauQBiLhwH///9ASgG0R3sZ3kAYi4bVAAAAQEoBtGajszZ"
+            + "AGIttWAAAAEBKAbPOTvzOQBiLa8MAAABASgG0K8jKTUAYi1VwAAAAQEoBs68mYqA="));
+    assertThat(geometry.get("asGeoJSON"),
+        is("{\"type\":\"Polygon\",\"coordinates\":[[[6.136068106,52.013296026],[6.136099622,52.013247326],"
+            + "[6.136192828,52.013263422],[6.136174724,52.013296851],[6.136257201,52.013314185],"
+            + "[6.136256531,52.0133179],[6.136159301,52.01329974],[6.136153266,52.013310884],"
+            + "[6.136068106,52.013296026]]]}"));
+  }
+
+  @Test
+  void getRequest_returnsBreweryWithGeometryType_forGeometryType() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB asGeoJSON}}}";
 
@@ -501,19 +679,23 @@ class GraphQlPostgresIntegrationTest {
     assertThat(geometry.size(), is(4));
     assertThat(geometry.get("type"), is("MULTIPOLYGON"));
     assertThat(geometry.get("asWKT"),
-        is("MULTIPOLYGON (((194914.7190916618 470984.86365462304, 194960.3511599757 470985.2315617077, "
-            + "194960.54286521868 470961.4676284248, 194914.91057804757 470961.0997201087, "
-            + "194914.7190916618 470984.86365462304)))"));
-    assertThat(geometry.get("asWKB"), is("ACAAAAYAAHFAAAAAAQAgAAADAABxQAAAAAEAAAAFQQfLFcCzIRJBHL8jdGHgpEEHzILPLPYaQRy"
-        + "/JO0egyZBB8yEV8m4Q0EcvsXe2fxdQQfLF0jdJLZBHL7EZh0HNkEHyxXAsyESQRy/I3Rh4KQ="));
+        is("MULTIPOLYGON Z(((206410.1605 447480.1649 3, 206412.3799 447474.7692 3, 206418.7599 447476.6259 3,"
+            + " 206417.4787 447480.3322 3, 206423.1208 447482.3191 3, 206423.0706 447482.7319 3,"
+            + " 206416.4167 447480.6427 3, 206415.9896 447481.8782 3, 206410.1605 447480.1649 3)))"));
+    assertThat(geometry.get("asWKB"),
+        is("AKAAAAYAABz3AAAAAQCgAAADAAAc9wAAAAEAAAAJQQkyUUi0OVhBG0/gqNuLrEAIAAAAAAAAQQkyYwoJAt5BG0/"
+            + "LE6kqMEAIAAAAAAAAQQkylhRGc4JBG0/SgOvt+kAIAAAAAAAAQQkyi9RgqmVBG0/hVCw8n0AIAAAAAAAAQQkyuPdl/"
+            + "YtBG0/pRsImgUAIAAAAAAAAQQkyuJCWu5lBG0/q7XcxkEAIAAAAAAAAQQkyg1Vmz0JBG0/ikh/"
+            + "y5UAIAAAAAAAAQQkyf+qzZ6FBG0/ng0bcXUAIAAAAAAAAQQkyUUi0OVhBG0/gqNuLrEAIAAAAAAAA"));
     assertThat(geometry.get("asGeoJSON"),
-        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[194914.71909166,470984.86365462],"
-            + "[194960.35115998,470985.23156171],[194960.54286522,470961.46762842],[194914.91057805,470961.09972011],"
-            + "[194914.71909166,470984.86365462]]]]}"));
+        is("{\"type\":\"MultiPolygon\",\"coordinates\":[[[[206410.1605,447480.1649,3],"
+            + "[206412.3799,447474.7692,3],[206418.7599,447476.6259,3],[206417.4787,447480.3322,3],"
+            + "[206423.1208,447482.3191,3],[206423.0706,447482.7319,3],[206416.4167,447480.6427,3],"
+            + "[206415.9896,447481.8782,3],[206410.1605,447480.1649,3]]]]}"));
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithAggregateType_forMultipleBeers() {
+  void getRequest_returnsBreweryWithAggregateType_forMultipleBeers() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
@@ -536,7 +718,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithAggregateType_forSingleBeer() {
+  void getRequest_returnsBreweryWithAggregateType_forSingleBeer() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
@@ -559,7 +741,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithAggregateType_forNoBeer() {
+  void getRequest_returnsBreweryWithAggregateType_forNoBeer() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "totalCount : count( field : \"soldPerYear\" )"
@@ -585,7 +767,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeerWithAggregateType_forIngredients() {
+  void getRequest_returnsBeerWithAggregateType_forIngredients() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
         + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
@@ -610,7 +792,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeerWithAggregateType_forDuplicateAvg() {
+  void getRequest_returnsBeerWithAggregateType_forDuplicateAvg() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
         + "avgC : floatAvg( field : \"weight\" )  } } }";
@@ -633,7 +815,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
+  void getRequest_returnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
     String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
 
     JsonNode json = executeGetRequestDefault(query);
@@ -655,8 +837,20 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsTheIngredientAndTheBeersItIsPartOf_withMappedByJoinTable() {
+    String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") "
+        + "{name partOfWithMappedBy{name }}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("ingredient"), equalToObject(
+        Map.of("name", "Caramel", "partOfWithMappedBy", List.of(Map.of("name", "Beer 1"), Map.of("name", "Beer 3"))))));
+  }
+
+  @Test
   @Disabled("see story DHUB-288")
-  void getRequest_ReturnsBeerWithAggregateType_forCountDistinct() {
+  void getRequest_returnsBeerWithAggregateType_forCountDistinct() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
         + "countWeightDef : count( field : \"weight\" ) "
@@ -680,7 +874,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeerWithStringJoinAggregateType_forString() {
+  void getRequest_returnsBeerWithStringJoinAggregateType_forString() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalCount : count( field : \"weight\" )"
         + "names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
@@ -702,7 +896,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeerWithStringJoinAggregateType_forStringArray() {
+  void getRequest_returnsBeerWithStringJoinAggregateType_forStringArray() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true ) } } }";
@@ -801,6 +995,20 @@ class GraphQlPostgresIntegrationTest {
     assertThat(breweries.size(), is(4));
     assertThat(breweries.get(0),
         is(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S")));
+  }
+
+  @Test
+  void getRequest_returnsBreweries_withEnumFilter() {
+    String query = "{breweries(filter: {status: {eq: \"inactive\"}}){ identifier_brewery name status }}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data, equalTo(Map.of("breweries", List.of(Map.of("identifier_brewery",
+        "28649f76-ddcf-417a-8c1d-8e5012c31959", "name", "Brewery Z", "status", "inactive")))));
   }
 
   @Test
@@ -1364,10 +1572,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
-    String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKT: \"POLYGON((194450.17898426164 471514.04309242184,"
-            + "195716.74476882417 471524.29347733577,195724.91952857617 470529.87463413755,194458.099519217 "
-            + "470519.6228124658,194450.17898426164 471514.04309242184))\"}}}) { identifier_brewery name }}";
+    String query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
+        + "\"POLYGON((206387.0439 447771.0547, 206384.4262 447765.9768, 206389.6081 447763.4587, "
+        + "206392.4175 447767.804, 206391.3745 447770.732, 206387.0439 447771.0547))\"}}})"
+        + " { identifier_brewery name geometry { srid asWKT} }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1381,15 +1589,15 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
   }
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkb() {
     String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKB: \"ACAAAAMAAHFAAAAAAQAAAAVBB7yRbo9M8kEcx2gsIGt6QQfk"
-            + "JfVJW3dBHMeRLIVSnUEH5GdbMcxTQRy4B3+gF2NBB7zQy9C7M0Ect959wo0RQQe8kW6PTPJBHMdoLCBreg==\"}}}) "
-            + "{ identifier_brewery name }}";
+        "{breweries(filter: {geometry: {intersects: {fromWKB: \"AQMAAAABAAAABgAAAEI+6FmYMQlB3EYDOGxUG0Gsi9togzE"
+            + "JQVtCPuhXVBtBZohj3awxCUHrc7XVTVQbQXE9ClfDMQlBqMZLN19UG0Ej2/n+ujEJQXNoke1qVBtBQj7oWZgxCUHcRgM4bFQbQQ"
+            + "==\"}}}) { identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
 
@@ -1403,15 +1611,15 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
   }
 
   @Test
   void graphQlQuery_returnsBreweries_forGeometryFilterQueryGeoJson() {
     String query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
-        + "\\\"coordinates\\\": [[[194450.17898426164,471514.04309242184],[195716.74476882417,471524.29347733577],"
-        + "[195724.91952857617,470529.87463413755],[194458.099519217,470519.6228124658],"
-        + "[194450.17898426164,471514.04309242184]]],\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
+        + "\\\"coordinates\\\": [[[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"
+        + "[206392.4175,447767.804],[206391.3745,447770.732],[206387.0439,447771.0547]]],"
+        + "\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
         + "{\\\"name\\\":\\\"EPSG:28992\\\"}}}\"}}}) { identifier_brewery name }}";
 
     JsonNode json = executePostRequest(query, "application/graphql");
@@ -1426,7 +1634,17 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
+  }
+
+  @Test
+  void graphQlQuery_returnsBreweries_forTermFilter() {
+    String query = "{breweries(filter: {postalAddressStreet: {eq: \"Ch\"}}) { name }}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data, equalTo(Map.of("breweries", List.of(Map.of("name", "Brewery X")))));
   }
 
   @Test

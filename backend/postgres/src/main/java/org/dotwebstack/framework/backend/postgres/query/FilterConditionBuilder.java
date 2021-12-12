@@ -1,22 +1,42 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
+import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
+import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinConfiguration.toJoinConfiguration;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
+import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
+import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.dotwebstack.framework.ext.spatial.GeometryReader;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -42,10 +62,9 @@ class FilterConditionBuilder {
   private AliasManager aliasManager;
 
   @NotNull
-  private List<FilterCriteria> filterCriterias;
+  private FilterCriteria filterCriteria;
 
-  @NotNull
-  private ObjectRequest objectRequest;
+  private ContextCriteria contextCriteria;
 
   @NotNull
   private Table<Record> table;
@@ -56,125 +75,271 @@ class FilterConditionBuilder {
     return new FilterConditionBuilder();
   }
 
-  List<Condition> build() {
+  Condition build() {
     validateFields(this);
 
-    return filterCriterias.stream()
-        .map(filterCriteria -> createFilterCondition(objectRequest, filterCriteria.getFieldPath()
-            .stream()
-            .map(PostgresObjectField.class::cast)
-            .collect(Collectors.toList()), filterCriteria.getValue(), table))
-        .collect(Collectors.toList());
+    return walkFieldPath(filterCriteria);
   }
 
-  private Condition createFilterCondition(ObjectRequest objectRequest, List<PostgresObjectField> fieldPath,
-      Map<String, Object> value, Table<Record> table) {
-    var current = fieldPath.get(0);
+  private Condition walkFieldPath(FilterCriteria filterCriteria) {
+    var fieldPath = filterCriteria.getFieldPath();
+    var current = (PostgresObjectField) fieldPath.get(0);
 
     if (fieldPath.size() > 1) {
-      var rest = fieldPath.subList(1, fieldPath.size());
+      var childCriteria = createChildCriteria(filterCriteria.getFilterType(), fieldPath, filterCriteria.getValue());
 
       if (current.getTargetType()
           .isNested()) {
-        return createFilterCondition(objectRequest, rest, value, table);
+        if (JoinHelper.hasNestedReference(current)) {
+          return createConditionsForMatchingNestedReference(current, fieldPath);
+        }
+
+        return walkFieldPath(childCriteria);
       }
 
-      var filterTable =
-          findTable(((PostgresObjectType) current.getTargetType()).getTable(), objectRequest.getContextCriteria())
-              .as(aliasManager.newAlias());
+      var filterTable = findTable(((PostgresObjectType) current.getTargetType()).getTable(), contextCriteria)
+          .as(aliasManager.newAlias());
 
       var filterQuery = dslContext.selectQuery(filterTable);
 
       filterQuery.addSelect(DSL.val(1));
 
-      JoinBuilder.newJoin()
-          .table(table)
-          .current(current)
+      newJoin().table(table)
+          .joinConfiguration(toJoinConfiguration(current))
+          .tableCreator(createTableCreator(filterQuery, contextCriteria, aliasManager))
           .relatedTable(filterTable)
           .build()
           .forEach(filterQuery::addConditions);
 
-      var nestedCondition = createFilterCondition(objectRequest, rest, value, filterTable);
+      var nestedCondition = newFiltering().aliasManager(aliasManager)
+          .contextCriteria(contextCriteria)
+          .table(filterTable)
+          .filterCriteria(childCriteria)
+          .build();
 
       filterQuery.addConditions(nestedCondition);
 
       return DSL.exists(filterQuery);
     }
 
-    var conditions = value.entrySet()
+    return createCondition(current, filterCriteria.getFilterType(), filterCriteria.getValue());
+  }
+
+  private Condition createConditionsForMatchingNestedReference(PostgresObjectField objectField,
+      List<ObjectField> fieldPath) {
+    String referencedField = toFieldPathString(fieldPath.subList(1, fieldPath.size()));
+
+    if (!objectField.getJoinColumns()
+        .isEmpty()) {
+      return andCondition(
+          createConditionsForMatchingNestedReference(objectField.getJoinColumns(), referencedField, table.getName()));
+    }
+
+    if (objectField.getJoinTable() != null) {
+      return createConditionsForMatchingNestedReference(objectField, referencedField);
+    }
+
+    throw illegalArgumentException("ObjectField '{}' in ObjectType '{}' has no join configuration",
+        objectField.getName(), objectField.getObjectType()
+            .getName());
+  }
+
+  private List<Condition> createConditionsForMatchingNestedReference(List<JoinColumn> joinColumns,
+      String referencedField, String tableName) {
+    return joinColumns.stream()
+        .filter(joinColumn -> referencedField.equals(joinColumn.getReferencedField()))
+        .map(joinColumn -> {
+          var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
+
+          return createExactConditions(field, filterCriteria.getValue());
+        })
+        .collect(Collectors.toList());
+  }
+
+  private Condition createConditionsForMatchingNestedReference(PostgresObjectField current, String referencedField) {
+    var joinTable = findTable(current.getJoinTable()
+        .getName(), contextCriteria);
+
+    var leftSide = createJoinConditions(joinTable, table, current.getJoinTable()
+        .getJoinColumns(), (PostgresObjectType) current.getObjectType());
+
+    var filterQuery = dslContext.selectQuery(joinTable);
+
+    filterQuery.addConditions(leftSide);
+
+    filterQuery.addSelect(DSL.val(1));
+
+    createConditionsForMatchingNestedReference(current.getJoinTable()
+        .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
+
+    return DSL.exists(filterQuery);
+  }
+
+  private String toFieldPathString(List<ObjectField> fieldPath) {
+    return fieldPath.stream()
+        .map(ObjectField::getName)
+        .collect(Collectors.joining("."));
+  }
+
+  private FilterCriteria createChildCriteria(FilterType filterType, List<ObjectField> fieldPath,
+      Map<String, Object> value) {
+    return FilterCriteria.builder()
+        .filterType(filterType)
+        .fieldPath(fieldPath.subList(1, fieldPath.size()))
+        .value(value)
+        .build();
+  }
+
+  private Condition createCondition(PostgresObjectField objectField, FilterType filterType,
+      Map<String, Object> values) {
+    if (FilterType.EXACT.equals(filterType)) {
+      var conditions = values.entrySet()
+          .stream()
+          .flatMap(entry -> {
+            if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+              return createExactGeometryCondition(objectField, entry.getKey(), entry.getValue()).stream();
+            }
+            return Stream.of(createExactCondition(objectField, entry.getKey(), entry.getValue()));
+          })
+          .collect(Collectors.toList());
+
+      return andCondition(conditions);
+    }
+
+    if (FilterType.TERM.equals(filterType)) {
+      var conditions = values.entrySet()
+          .stream()
+          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
+          .collect(Collectors.toList());
+
+      return andCondition(conditions);
+    }
+
+    throw unsupportedOperationException("Unknown filtertype '{}'", filterType);
+  }
+
+  private Condition createTermCondition(PostgresObjectField objectField, String operator, Object value) {
+    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
+    if (FilterConstants.EQ_FIELD.equals(operator)) {
+      var queryString = DSL.val(Objects.toString(value));
+      var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
+      return DSL.condition("{0} @@ {1}", field, query);
+    }
+
+    if (FilterConstants.NOT_FIELD.equals(operator)) {
+      var conditions = castToMap(value).entrySet()
+          .stream()
+          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
+          .collect(Collectors.toList());
+
+      return DSL.not(andCondition(conditions));
+    }
+
+    throw illegalArgumentException("Unknown filter field '%s'", operator);
+  }
+
+  private Condition createExactConditions(Field<Object> field, Map<String, Object> values) {
+    var conditions = values.entrySet()
         .stream()
-        .map(entry -> createFilterCondition(entry.getKey(), current, entry.getValue()))
+        .map(entry -> createExactCondition(null, field, entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
 
-    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+    return andCondition(conditions);
   }
 
-  @SuppressWarnings("unchecked")
-  private Condition createFilterCondition(String filterField, PostgresObjectField objectField, Object value) {
-    Field<Object> field = DSL.field(objectField.getColumn());
+  private Condition createExactCondition(PostgresObjectField objectField, String operator, Object value) {
+    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
 
-    if (FilterConstants.EQ_FIELD.equals(filterField)) {
-      return field.eq(DSL.val(value));
-    }
-
-    if (FilterConstants.LT_FIELD.equals(filterField)) {
-      return field.lt(DSL.val(value));
-    }
-
-    if (FilterConstants.LTE_FIELD.equals(filterField)) {
-      return field.le(DSL.val(value));
-    }
-
-    if (FilterConstants.GT_FIELD.equals(filterField)) {
-      return field.gt(DSL.val(value));
-    }
-
-    if (FilterConstants.GTE_FIELD.equals(filterField)) {
-      return field.ge(DSL.val(value));
-    }
-
-    if (FilterConstants.IN_FIELD.equals(filterField)) {
-      List<Object> list = (List<Object>) value;
-      return field.in(list);
-    }
-
-    if (FilterConstants.NOT_FIELD.equals(filterField)) {
-      return createNotCondition(objectField, (Map<String, Object>) value);
-    }
-
-    if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-      return createGeometryCondition(filterField, (Map<String, String>) value, field);
-    }
-
-    throw illegalArgumentException("Unknown filter filterField '%s'", filterField);
+    return createExactCondition(objectField, field, operator, value);
   }
 
-  private Condition createNotCondition(PostgresObjectField objectField, Map<String, Object> value) {
-    var conditions = value.entrySet()
-        .stream()
-        .map(entry -> createFilterCondition(entry.getKey(), objectField, entry.getValue()))
+  private Condition createExactCondition(PostgresObjectField objectField, Field<Object> field, String operator,
+      Object value) {
+    if (FilterConstants.EQ_FIELD.equals(operator)) {
+      return field.eq(getValue(objectField, value));
+    }
+
+    if (FilterConstants.LT_FIELD.equals(operator)) {
+      return field.lt(getValue(objectField, value));
+    }
+
+    if (FilterConstants.LTE_FIELD.equals(operator)) {
+      return field.le(getValue(objectField, value));
+    }
+
+    if (FilterConstants.GT_FIELD.equals(operator)) {
+      return field.gt(getValue(objectField, value));
+    }
+
+    if (FilterConstants.GTE_FIELD.equals(operator)) {
+      return field.ge(getValue(objectField, value));
+    }
+
+    if (FilterConstants.IN_FIELD.equals(operator)) {
+      return field.in(getListValue(objectField, value));
+    }
+
+    if (FilterConstants.NOT_FIELD.equals(operator)) {
+      var conditions = castToMap(value).entrySet()
+          .stream()
+          .map(entry -> createExactCondition(objectField, field, entry.getKey(), entry.getValue()))
+          .collect(Collectors.toList());
+
+      return DSL.not(andCondition(conditions));
+    }
+
+    throw illegalArgumentException("Unknown filter field '%s'", operator);
+  }
+
+  private List<Field<?>> getListValue(PostgresObjectField objectField, Object listValue) {
+    return castToList(listValue).stream()
+        .map(value -> getValue(objectField, value))
         .collect(Collectors.toList());
-
-    var condition = conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
-
-    return DSL.not(condition);
   }
 
-  private Condition createGeometryCondition(String filterField, Map<String, String> value, Field<Object> field) {
-    Geometry geometry = GeometryReader.readGeometry(value);
+  private Field<?> getValue(PostgresObjectField objectField, Object value) {
+    Field<?> field = DSL.val(value);
+
+    return Optional.ofNullable(objectField)
+        .map(ObjectField::getEnumeration)
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> field.cast(getDefaultDataType(type)))
+        .orElse(DSL.val(value));
+  }
+
+  private Optional<Condition> createExactGeometryCondition(PostgresObjectField objectField, String operator,
+      Object value) {
+    if (ARGUMENT_SRID.equals(operator)) {
+      return Optional.empty();
+    }
+
+    var mapValue = ObjectHelper.castToMap(value);
+
+    var requestedSrid = getRequestedSrid(mapValue);
+
+    var columnName = getColumnName(objectField.getSpatial(), requestedSrid);
+    var field = DSL.field(DSL.name(table.getName(), columnName));
+
+    var geometry = readGeometry(mapValue);
+    var columnSrid = getSridOfColumnName(objectField.getSpatial(), columnName);
+    geometry.setSRID(columnSrid);
 
     Field<Geometry> geoField = DSL.val(geometry)
         .cast(GEOMETRY_DATATYPE);
 
-    switch (filterField) {
+    switch (operator) {
       case SpatialConstants.CONTAINS:
-        return DSL.condition("ST_Contains({0}, {1})", field, geoField);
+        return Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoField));
       case SpatialConstants.WITHIN:
-        return DSL.condition("ST_Within({0}, {1})", geoField, field);
+        return Optional.of(DSL.condition("ST_Within({0}, {1})", geoField, field));
       case SpatialConstants.INTERSECTS:
-        return DSL.condition("ST_Intersects({0}, {1})", field, geoField);
+        return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoField));
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");
     }
+  }
+
+  private Condition andCondition(List<Condition> conditions) {
+    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
   }
 }

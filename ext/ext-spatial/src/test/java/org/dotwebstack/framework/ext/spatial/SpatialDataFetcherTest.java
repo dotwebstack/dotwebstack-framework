@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.ext.spatial.GeometryType.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -21,6 +22,9 @@ import static org.mockito.Mockito.when;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
+import java.util.Map;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
+import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialReferenceSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,11 +57,22 @@ class SpatialDataFetcherTest {
 
   @BeforeEach
   void beforeAll() throws ParseException {
-    spatialDataFetcher = new SpatialDataFetcher(typeEnforcer);
+    var spatial = getSpatial();
+    spatialDataFetcher = new SpatialDataFetcher(spatial, typeEnforcer);
 
     WKTReader reader = new WKTReader();
     geometry = reader.read(geometryString);
-    geometry.setSRID(28992);
+    geometry.setSRID(7931);
+  }
+
+  private Spatial getSpatial() {
+    Spatial spatial = new Spatial();
+
+    TestSpatialReferenceSystem srs = new TestSpatialReferenceSystem();
+    srs.setScale(15);
+
+    spatial.setReferenceSystems(Map.of(7931, srs));
+    return spatial;
   }
 
   @Test
@@ -90,6 +105,22 @@ class SpatialDataFetcherTest {
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
     assertThat(stringValue, is("POINT"));
+  }
+
+  @Test
+  void get_returnsValue_forSrid() {
+    when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn(SRID);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
+
+    Object value = spatialDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(value, is(notNullValue()));
+    assertThat(value, instanceOf(int.class));
+    int intValue = (int) value;
+    assertThat(intValue, is(7931));
   }
 
   @Test
@@ -141,7 +172,7 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("ACAAAAEAAHFAQBfqxuQjKTNAShvL0rQDxA=="));
+    assertThat(stringValue, is("ACAAAAEAAB77QBfqxuQjKTNAShvL0rQDxA=="));
   }
 
   @Test
@@ -157,7 +188,7 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.97927433,52.21715769]}"));
+    assertThat(stringValue, is("{\"type\":\"Point\",\"coordinates\":[5.979274334569982,52.21715768613606]}"));
   }
 
   @Test

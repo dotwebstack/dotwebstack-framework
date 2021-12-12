@@ -8,19 +8,21 @@ import com.taxonic.carml.util.Models;
 import com.taxonic.carml.util.RmlMappingLoader;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.ResourceProperties;
 import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
-import org.dotwebstack.framework.service.openapi.OpenApiConfiguration;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -28,6 +30,7 @@ import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.eclipse.rdf4j.rio.Rio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 public class RmlOpenApiConfiguration {
@@ -43,7 +46,7 @@ public class RmlOpenApiConfiguration {
     return openApi.getPaths()
         .entrySet()
         .stream()
-        .map(entry -> OpenApiConfiguration.getHttpMethodOperations(entry.getValue(), entry.getKey()))
+        .map(entry -> getHttpMethodOperations(entry.getValue(), entry.getKey()))
         .flatMap(List::stream)
         .map(this::mappingPerOperation)
         .flatMap(map -> map.entrySet()
@@ -115,5 +118,32 @@ public class RmlOpenApiConfiguration {
                 .collect(Collectors.toList())));
 
     return Models.parse(mappingInputStream, rdfFormat);
+  }
+
+  private static List<HttpMethodOperation> getHttpMethodOperations(PathItem pathItem, String name) {
+    HttpMethodOperation.HttpMethodOperationBuilder builder = HttpMethodOperation.builder()
+        .name(name);
+
+    List<HttpMethodOperation> httpMethodOperations = new ArrayList<>();
+
+    if (Objects.nonNull(pathItem.getGet())) {
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.GET)
+          .operation(pathItem.getGet())
+          .build());
+    }
+    if (Objects.nonNull(pathItem.getPost())) {
+      httpMethodOperations.add(builder.httpMethod(HttpMethod.POST)
+          .operation(pathItem.getPost())
+          .build());
+    }
+
+    return httpMethodOperations.stream()
+        .filter(httpMethodOperation -> isDwsOperation(httpMethodOperation.getOperation()))
+        .collect(Collectors.toList());
+  }
+
+  private static boolean isDwsOperation(Operation operation) {
+    return operation.getExtensions() != null && operation.getExtensions()
+        .containsKey(X_DWS_RML_MAPPING);
   }
 }

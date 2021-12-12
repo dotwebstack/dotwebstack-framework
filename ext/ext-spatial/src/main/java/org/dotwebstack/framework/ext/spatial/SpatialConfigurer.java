@@ -17,6 +17,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSO
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_FILTER;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_INPUT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_TYPE;
@@ -27,6 +28,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.WITHIN;
 
@@ -60,11 +62,15 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   private ObjectTypeDefinition createGeometryObjectDefinition() {
     var stringType = newNonNullType(newTypeName(Scalars.GraphQLString.getName()).build()).build();
+    var intType = newNonNullType(newTypeName(Scalars.GraphQLInt.getName()).build()).build();
 
     return newObjectTypeDefinition().name(GEOMETRY)
         .additionalData(GraphQlConstants.IS_SCALAR, Boolean.TRUE.toString())
         .fieldDefinition(newFieldDefinition().name(TYPE)
             .type(newNonNullType(newTypeName(GEOMETRY_TYPE).build()).build())
+            .build())
+        .fieldDefinition(newFieldDefinition().name(SRID)
+            .type(intType)
             .build())
         .fieldDefinition(newFieldDefinition().name(AS_WKB)
             .type(stringType)
@@ -96,6 +102,9 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
 
   private InputObjectTypeDefinition createGeometryFilterType() {
     return newInputObjectDefinition().name(GEOMETRY_FILTER)
+        .inputValueDefinition(newInputValueDefinition().name(SRID)
+            .type(newTypeName(Scalars.GraphQLInt.getName()).build())
+            .build())
         .inputValueDefinition(newInputValueDefinition().name(WITHIN)
             .type(newTypeName(GEOMETRY_INPUT).build())
             .build())
@@ -124,6 +133,8 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
         .enumValueDefinition(newEnumValueDefinition().name(MULTILINESTRING)
             .build())
         .enumValueDefinition(newEnumValueDefinition().name(MULTIPOLYGON)
+            .build())
+        .enumValueDefinition(newEnumValueDefinition().name(GEOMETRYCOLLECTION)
             .build())
         .build();
   }

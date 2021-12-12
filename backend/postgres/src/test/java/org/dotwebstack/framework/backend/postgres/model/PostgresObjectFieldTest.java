@@ -1,51 +1,47 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.mock;
 
-import java.util.List;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class PostgresObjectFieldTest {
 
-  private final PostgresObjectField objectField = new PostgresObjectField();
-
   @Test
-  void getColumn_returnsColumn() {
-    objectField.setColumn("bbb");
+  void getColumn_returnsColumn_whenColumnSet() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setColumn("foo_bar");
 
     var result = objectField.getColumn();
 
-    assertThat(result, CoreMatchers.is("bbb"));
+    assertThat(result, is("foo_bar"));
   }
 
-  @Test
-  void getColumn_returnsColumn_forName() {
-    objectField.setName("aaa");
+  @ParameterizedTest
+  @CsvSource({"foo, foo", "fooBar, foo_bar", "fooBarBaz, foo_bar_baz", "fooBAR, foo_bar", "fooBarBAZ, foo_bar_baz",
+      "fooBARBaz, foo_bar_baz", "fooBBaz, foo_b_baz", "FOOBarBaz, foo_bar_baz", "foo3D, foo_3d", "foo33D, foo_33d",
+      "foo3DBarBaz, foo_3d_bar_baz"})
+  void getColumn_returnsGeneratedColumn_whenColumnUnset(String name, String column) {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName(name);
+    objectField.initColumns();
 
     var result = objectField.getColumn();
-    assertThat(result, CoreMatchers.is("aaa"));
+
+    assertThat(result, is(column));
   }
 
   @Test
-  void setProperties() {
-    PostgresObjectField mappedByObjectField = mock(PostgresObjectField.class);
-    objectField.setMappedByObjectField(mappedByObjectField);
-    JoinColumn joinColumn = mock(JoinColumn.class);
-    List<JoinColumn> list = List.of(joinColumn, joinColumn);
-    objectField.setJoinColumns(list);
-    JoinTable joinTable = mock(JoinTable.class);
-    objectField.setJoinTable(joinTable);
-    objectField.setMappedBy("fff");
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
-    objectField.setTargetType(objectType);
+  void getColumn_returnsGeneratedColumn_whenColumnColumnSuffixSet() {
+    PostgresObjectField objectField = new PostgresObjectField();
+    objectField.setName("bar");
+    objectField.setColumnPrefix("foo_");
+    objectField.initColumns();
 
-    assertThat(objectField.getMappedByObjectField(), CoreMatchers.is(mappedByObjectField));
-    assertThat(objectField.getJoinColumns(), CoreMatchers.is(list));
-    assertThat(objectField.getJoinTable(), CoreMatchers.is(joinTable));
-    assertThat(objectField.getMappedBy(), CoreMatchers.is("fff"));
-    assertThat(objectField.getTargetType(), CoreMatchers.is(objectType));
+    var result = objectField.getColumn();
+
+    assertThat(result, is("foo_bar"));
   }
-
 }

@@ -1,5 +1,41 @@
 {
+  "postalAddress": {
+    "city": "Dublin",
+    "street": "Church Street",
+    "identifier_address": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f"
+  },
   "name": "Brewery X",
-  "link": "/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          5.971385958,
+          52.225493476
+        ],
+        [
+          5.972053828,
+          52.225493476
+        ],
+        [
+          5.972053828,
+          52.225279886
+        ],
+        [
+          5.971385958,
+          52.225279886
+        ],
+        [
+          5.971385958,
+          52.225493476
+        ]
+      ]
+    ]
+  },
+  "visitAddress": {
+    "city": "Dublin",
+    "street": "Church Street",
+    "identifier_address": "fcb73181-a1b0-4748-8ae0-b7b51dd6497f"
+  },
   "identifier_brewery": "d3654375-95fa-46b4-8529-08b0f777bd6b"
 }

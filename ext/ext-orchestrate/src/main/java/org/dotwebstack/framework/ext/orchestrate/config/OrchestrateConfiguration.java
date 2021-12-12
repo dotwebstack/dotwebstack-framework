@@ -5,8 +5,11 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import org.dotwebstack.framework.core.scalars.CoreScalars;
 import org.dotwebstack.framework.ext.orchestrate.SubschemaModifier;
@@ -20,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -40,11 +44,16 @@ class OrchestrateConfiguration {
 
   @Bean
   @Primary
-  public GraphQLSchema graphQlSchema() {
-    var rootSubschemaProperties = configurationProperties.getSubschemas()
-        .get(configurationProperties.getRoot());
+  public GraphQLSchema graphQlSchema(Map<String, Subschema> subschemas) {
+    return SchemaWrapper.wrap(subschemas.get(configurationProperties.getRoot()));
+  }
 
-    return SchemaWrapper.wrap(createSubschema(configurationProperties.getRoot(), rootSubschemaProperties));
+  @Bean
+  public Map<String, Subschema> subschemas() {
+    return configurationProperties.getSubschemas()
+        .entrySet()
+        .stream()
+        .collect(Collectors.toMap(Entry::getKey, entry -> createSubschema(entry.getKey(), entry.getValue())));
   }
 
   private Subschema createSubschema(String key, SubschemaProperties subschemaProperties) {
@@ -67,6 +76,10 @@ class OrchestrateConfiguration {
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
     var webClient = webClientBuilder.defaultHeaders(headerBuilder)
+        .exchangeStrategies(ExchangeStrategies.builder()
+            .codecs(configurer -> configurer.defaultCodecs()
+                .maxInMemorySize(5 * 1024 * 1024))
+            .build())
         .build();
 
     return RemoteExecutor.newExecutor()

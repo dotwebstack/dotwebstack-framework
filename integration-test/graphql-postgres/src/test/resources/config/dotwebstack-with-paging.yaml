@@ -1,10 +1,29 @@
-features:
-  - paging
+spatial:
+  srid:
+    28992:
+      dimensions: 2
+      scale: 4
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      scale: 4
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      scale: 9
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      scale: 9
+      columnSuffix: _etrs89
+      equivalent: 9067
 
 queries:
   beers:
     type: Beer
     list: true
+    pageable: true
   beer:
     type: Beer
     keys:
@@ -12,6 +31,7 @@ queries:
   breweries:
     type: Brewery
     list: true
+    pageable: true
   brewery:
     type: Brewery
     keys:
@@ -41,6 +61,7 @@ objectTypes:
       ingredients:
         type: Ingredient
         list: true
+        pageable: true
         joinTable:
           name: db.beer_ingredient
           joinColumns:
@@ -146,6 +167,7 @@ objectTypes:
       beers:
         type: Beer
         list: true
+        pageable: true
         nullable: true
         mappedBy: brewery
       beerAgg:

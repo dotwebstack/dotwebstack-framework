@@ -1,5 +1,23 @@
 spatial:
-  sourceCrs: EPSG:28992
+  srid:
+    28992:
+      dimensions: 2
+      scale: 4
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      scale: 4
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      scale: 9
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      scale: 9
+      columnSuffix: _etrs89
+      equivalent: 9067
 
 queries:
   beers:
@@ -127,6 +145,11 @@ objectTypes:
           inverseJoinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
+      partOfWithMappedBy:
+        type: Beer
+        list: true
+        nullable: true
+        mappedBy: ingredients
 
   Brewery:
     table: db.brewery
@@ -137,6 +160,9 @@ objectTypes:
         type: String
       status:
         type: String
+        enum:
+          type: db.brewery_status
+          values: [ "active", "inactive"]
       geometry:
         type: Geometry
       postalAddress:
@@ -164,11 +190,16 @@ objectTypes:
         aggregationOf: Beer
         mappedBy: brewery
       history:
+        columnPrefix: his_
         type: History
+        nullable: true
+        presenceColumn: his_age
       multinational:
         type: Boolean
     filters:
       name: {}
+      status:
+        field: status
       multinational:
         field: multinational
       geometry: {}
@@ -176,6 +207,9 @@ objectTypes:
         field: history.age
       beerBreweryName:
         field: beers.brewery.name
+      postalAddressStreet:
+        type: Term
+        field: postalAddress.street
     sortableBy:
       name:
         - field: name
@@ -195,10 +229,8 @@ objectTypes:
     fields:
       age:
         type: Int
-        column: his_age
       history:
         type: String
-        column: his_history
 
 enumerations:
   Taste:

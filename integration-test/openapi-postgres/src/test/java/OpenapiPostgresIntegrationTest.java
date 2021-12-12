@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.test.TestApplication;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,11 +46,11 @@ class OpenapiPostgresIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test
@@ -65,9 +66,22 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
+  void breweries_returnsExpectedResult_withExpanded() throws IOException {
+    String result = client.get()
+        .uri("/breweries?expand=postalAddress")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    assertResult(result, "breweries_postalAddress.json");
+  }
+
+  @Test
+  @Disabled
   void breweries_returnsExpectedResult_withFilter() throws IOException {
     String result = client.get()
-        .uri("/breweries?name=Brewery Z")
+        .uri("/breweries?name=Brewery X")
         .exchange()
         .expectBody(String.class)
         .returnResult()

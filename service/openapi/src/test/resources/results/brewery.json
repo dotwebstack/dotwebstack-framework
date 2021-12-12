@@ -1,0 +1,24 @@
+{
+  "brewery": {
+    "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+    "name": "Brewery X",
+    "postalAddress": {
+      "street": "Church Street",
+      "postalCode": "12345",
+      "location": {
+        "asGeoJSON": "{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}"
+      }
+    },
+    "visitAddresses": [
+      {
+        "street": "5th Avenue",
+        "postalCode": "54321",
+        "location": null
+      }
+    ],
+    "numberOfEmployees": 12,
+    "salesAreas": {
+      "asGeoJSON": "{\"type\": \"GeometryCollection\", \"geometries\": [{\"type\": \"Point\", \"coordinates\": [5.38720071, 52.15516755]}]}"
+    }
+  }
+}

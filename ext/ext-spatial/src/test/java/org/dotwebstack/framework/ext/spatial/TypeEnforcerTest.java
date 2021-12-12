@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.ext.spatial;
 
 
+import static org.dotwebstack.framework.ext.spatial.GeometryType.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.LINESTRING;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.MULTILINESTRING;
 import static org.dotwebstack.framework.ext.spatial.GeometryType.MULTIPOINT;
@@ -11,11 +12,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Map;
+import org.dotwebstack.framework.ext.spatial.model.Spatial;
+import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
+import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialReferenceSystem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -24,7 +29,7 @@ class TypeEnforcerTest {
   private final String geometryLineString = "LINESTRING(14.593449442863683 49.77692837399132,18.218937724113683 "
       + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
 
-  private final String geometryPointString = "POINT (15.892 48.483)";
+  private final String geometryPointString = "POINT (15.891968943 48.482691551)";
 
   private final String geometryPolygonString = "POLYGON((14.769230692863683 48.7843473869024,17.032414286613683 "
       + "48.84945463293702,17.010441630363683 48.19457338438695,14.791203349113683 "
@@ -34,11 +39,13 @@ class TypeEnforcerTest {
       + "18.218937724113683 50.11627285262387, 17.977238505363683 49.34938190026593, "
       + "14.593449442863683 49.77692837399132))";
 
-  private final String geometryMultipointString = "MULTIPOINT ((15.892 48.483))";
+  private final String geometryMultipointString = "MULTIPOINT ((15.891968943 48.482691551))";
 
   private final String geometryMultipolygonString = "MULTIPOLYGON (((14.769230692863683 48.7843473869024, "
       + "17.032414286613683 48.84945463293702, 17.010441630363683 48.19457338438695, "
       + "14.791203349113683 48.09927916119722, 14.769230692863683 48.7843473869024)))";
+
+  private final String geometryGeometryCollectionString = "GEOMETRYCOLLECTION(POINT (15.892 48.483))";
 
   private Geometry line;
 
@@ -52,11 +59,18 @@ class TypeEnforcerTest {
 
   private Geometry multipolygon;
 
+  private Geometry geometryCollection;
+
   private TypeEnforcer typeEnforcer;
+
+  private Spatial spatial;
 
   @BeforeEach
   void setup() throws ParseException {
-    typeEnforcer = new TypeEnforcer();
+    Spatial spatial = new Spatial();
+    spatial.setReferenceSystems(Map.of(28992, createSrs(4), 9067, createSrs(9)));
+
+    typeEnforcer = new TypeEnforcer(spatial);
 
     WKTReader reader = new WKTReader();
     line = reader.read(geometryLineString);
@@ -65,32 +79,22 @@ class TypeEnforcerTest {
     multiline = reader.read(geometryMultilineString);
     multipoint = reader.read(geometryMultipointString);
     multipolygon = reader.read(geometryMultipolygonString);
+    geometryCollection = reader.read(geometryGeometryCollectionString);
   }
 
-  @Test
-  void enforce_returnsCorrectScale_forFloatPrecision() throws ParseException {
-    String geometryString = "LINESTRING(14.593449442863683 49.77692837399132,18.218937724113683 "
-        + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
-    String expectedResult = "POINT (16.527 49.758)";
+  private SpatialReferenceSystem createSrs(int scale) {
+    TestSpatialReferenceSystem srs = new TestSpatialReferenceSystem();
+    srs.setScale(scale);
+    return srs;
+  }
 
+  @ParameterizedTest
+  @CsvSource({"28992, POINT (16.5269 49.7582)", "9067, POINT (16.526893736 49.758249656)",
+      "0, POINT (16.526893736 49.758249656)"})
+  void enforce_returnsPoint_forLineString(Integer srid, String expectedResult) throws ParseException {
     WKTReader reader = new WKTReader();
-    Geometry value = reader.read(geometryString);
-
-    Geometry result = typeEnforcer.enforce(POINT, value);
-
-    assertThat(result.toString(), is(expectedResult));
-  }
-
-  @Test
-  void enforce_returnsCorrectScale_forFixedPrecision() throws ParseException {
-    String geometryString = "LINESTRING(14.593449442863683 49.77692837399132,18.218937724113683 "
-        + "50.11627285262387,17.977238505363683 49.34938190026593,14.593449442863683 49.77692837399132)";
-    String expectedResult = "POINT (16.527 49.758)";
-
-    PrecisionModel precisionModel = new PrecisionModel(10000);
-    GeometryFactory factory = new GeometryFactory(precisionModel);
-    WKTReader reader = new WKTReader(factory);
-    Geometry value = reader.read(geometryString);
+    Geometry value = reader.read(geometryLineString);
+    value.setSRID(srid);
 
     Geometry result = typeEnforcer.enforce(POINT, value);
 
@@ -133,6 +137,7 @@ class TypeEnforcerTest {
     assertThat(multiline, is(typeEnforcer.enforce(MULTILINESTRING, multiline)));
     assertThat(multipoint, is(typeEnforcer.enforce(MULTIPOINT, multipoint)));
     assertThat(multipolygon, is(typeEnforcer.enforce(MULTIPOLYGON, multipolygon)));
+    assertThat(geometryCollection, is(typeEnforcer.enforce(GEOMETRYCOLLECTION, geometryCollection)));
   }
 
   @Test
@@ -158,8 +163,9 @@ class TypeEnforcerTest {
   }
 
   @Test
-  void enforce_throwsException_forNull() {
+  void enforce_throwsException_forUnsupportedTypes() {
     assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(LINESTRING, point));
     assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(POLYGON, point));
+    assertThrows(UnsupportedOperationException.class, () -> typeEnforcer.enforce(GEOMETRYCOLLECTION, point));
   }
 }

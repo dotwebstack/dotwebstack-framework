@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
+import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -39,7 +39,7 @@ class CoreRequestHelperTest {
     givenParams.add("cat");
     givenParams.add("dog");
 
-    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
+    ParameterValidationException thrown = assertThrows(ParameterValidationException.class,
         () -> validateParameterExistence("path", schemaParams, givenParams));
     assertEquals("The following request path parameters are not allowed on this endpoint: [cat, dog]",
         thrown.getMessage());
@@ -50,7 +50,7 @@ class CoreRequestHelperTest {
     Set<String> schemaParams = Set.of("cat");
     Set<String> givenParams = Set.of("cat", "dog");
 
-    InvalidConfigurationException thrown = assertThrows(InvalidConfigurationException.class,
+    ParameterValidationException thrown = assertThrows(ParameterValidationException.class,
         () -> validateParameterExistence("path", schemaParams, givenParams), "");
     assertEquals("The following request path parameters are not allowed on this endpoint: [dog]", thrown.getMessage());
   }
@@ -70,7 +70,7 @@ class CoreRequestHelperTest {
         .header(HttpHeaders.CONTENT_LENGTH, "2")
         .body(Mono.just("{}"));
 
-    assertThrows(InvalidConfigurationException.class, () -> validateRequestBodyNonexistent(request));
+    assertThrows(ParameterValidationException.class, () -> validateRequestBodyNonexistent(request));
   }
 
   @Test

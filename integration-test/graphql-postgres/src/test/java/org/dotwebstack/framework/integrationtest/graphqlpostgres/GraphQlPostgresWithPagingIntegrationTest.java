@@ -4,16 +4,12 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
-import org.jooq.tools.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +20,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -38,8 +33,6 @@ import org.testcontainers.utility.DockerImageName;
 @AutoConfigureWebTestClient
 @Testcontainers
 class GraphQlPostgresWithPagingIntegrationTest {
-
-  private static final String ERRORS = "errors";
 
   @Autowired
   private WebTestClient client;
@@ -63,23 +56,19 @@ class GraphQlPostgresWithPagingIntegrationTest {
 
   @DynamicPropertySource
   static void registerDynamicProperties(DynamicPropertyRegistry registry) {
-    registry.add("dotwebstack.postgres.host", () -> postgreSqlContainer.getHost());
-    registry.add("dotwebstack.postgres.port", () -> postgreSqlContainer.getFirstMappedPort());
-    registry.add("dotwebstack.postgres.username", () -> postgreSqlContainer.getUsername());
-    registry.add("dotwebstack.postgres.password", () -> postgreSqlContainer.getPassword());
-    registry.add("dotwebstack.postgres.database", () -> postgreSqlContainer.getDatabaseName());
+    registry.add("dotwebstack.postgres.host", postgreSqlContainer::getHost);
+    registry.add("dotwebstack.postgres.port", postgreSqlContainer::getFirstMappedPort);
+    registry.add("dotwebstack.postgres.username", postgreSqlContainer::getUsername);
+    registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
+    registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
   @Test
-  void getRequest_ReturnsBreweries_withPagingArguments() {
+  void getRequest_returnsBreweries_withPagingArguments() {
     var query = "{\n" + "    breweries(first: 2, offset: 1) {\n" + "      nodes {\n" + "        identifier_brewery\n"
         + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -91,16 +80,12 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweries_withPagingAndFilterArguments() {
+  void getRequest_returnsBreweries_withPagingAndFilterArguments() {
     var query =
         "{\n" + "    breweries(first: 2, offset: 1, filter: {name: {not: {eq: \"Brewery Y\"}}}) {\n" + "      nodes {\n"
             + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    ,offset\n" + "    }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -112,16 +97,12 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBreweriesWithBeers_withPagingArguments() {
+  void getRequest_returnsBreweriesWithBeers_withPagingArguments() {
     var query = "{\n" + "  breweries(first: 2, offset: 0) {\n" + "    nodes {\n" + "      identifier_brewery\n"
         + "      name\n" + "      beers {\n" + "        nodes {\n" + "          identifier_beer\n" + "          name\n"
         + "        }\n" + "      }\n" + "    }\n" + "    , offset\n" + "  }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -144,16 +125,12 @@ class GraphQlPostgresWithPagingIntegrationTest {
   }
 
   @Test
-  void getRequest_ReturnsBeersWithBrewery_withoutPagingArguments() {
+  void getRequest_returnsBeersWithBrewery_withoutPagingArguments() {
     var query = "{\n" + "  beers {\n" + "    nodes {\n" + "      identifier_beer\n" + "      name\n"
         + "      brewery {\n" + "        identifier_brewery\n" + "        name\n" + "      }\n" + "    }\n"
         + "    , offset\n" + "  }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -181,11 +158,7 @@ class GraphQlPostgresWithPagingIntegrationTest {
         + "      name\n" + "      ingredients{\n" + "        nodes {\n" + "          identifier_ingredient\n"
         + "          name\n" + "        }\n" + "      }\n" + "    }\n" + "  }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -232,53 +205,5 @@ class GraphQlPostgresWithPagingIntegrationTest {
                     Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6", "ingredients",
                         Map.of("nodes", List.of(Map.of("identifier_ingredient", "cd795192-5fbb-11eb-ae93-0242ac130002",
                             "name", "Water")))))))));
-  }
-
-  private JsonNode executeGetRequestDefault(String query) {
-    return executeGetRequest(query, "", "");
-  }
-
-  private JsonNode executeGetRequest(String query, String operationName, String variables) {
-    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/");
-
-    if (!StringUtils.isBlank(query)) {
-      uriBuilder.queryParam("query", query);
-    }
-
-    if (!StringUtils.isBlank(operationName)) {
-      uriBuilder.queryParam("operationName", operationName);
-    }
-
-    if (!StringUtils.isBlank(variables)) {
-      uriBuilder.queryParam("variables", variables);
-    }
-
-    var result = client.get()
-        .uri(uriBuilder.build()
-            .toUri())
-        .exchange()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    return getJson(result);
-  }
-
-  private JsonNode getJson(String result) {
-    try {
-      return mapper.readTree(result);
-    } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse string to json: %s", result));
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> getDataFromJsonNode(JsonNode json) {
-    try {
-      return mapper.readValue(json.get("data")
-          .toString(), Map.class);
-    } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse Json to Map: %s", json));
-    }
   }
 }

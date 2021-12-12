@@ -1,0 +1,18 @@
+openapi: 3.0.2
+
+info:
+  title: DBeerpedia
+  version: 3.0.0
+
+paths:
+  /breweries:
+    get:
+      x-dws-query: breweryCollection
+      responses:
+        200:
+          description: OK
+  /dws-operation-false:
+    get:
+      responses:
+        200:
+          description: OK

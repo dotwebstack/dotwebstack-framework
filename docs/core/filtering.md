@@ -3,12 +3,26 @@
 It is possible to make use of filters while quering a list of (nested) objects. 
 
 The following types are currently supported:
-- A `String` field can be filtered with the operators: `eq`, `in` and `not`.
+- A `String` field can be filtered in two ways; exact, with operators `eq`, `in` and `not` or term based, with operators `eq` and `not`.
 - An `Int` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Float` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `DateTime` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Boolean` field can be filtered with `true` or `false`.
+
+The filter type can be configured on each filter with the `type` property. The default filter type is `exact`, the `term` filter type can be used by `String` field types for partial matching.
+
+## Enumeration
+
+For enum it is possible to add extra enum configuration for validation and typing:
+
+```yaml
+enum:
+  type: <type>
+  values: <array of valid values>
+```
+
+Both type and values are optional. `Type` can be used by the backends and `values` will be used to validate the given argument in the filter of the GraphQL query.
 
 ## Setup
 
@@ -40,6 +54,11 @@ objectTypes:
         type: ID
       name:
         type: String
+      status:
+        type: String
+        enum:
+          type: BreweryStatus
+          values: ["active", "inactive"]
       multinational:
         type: Boolean
       beers:
@@ -48,6 +67,9 @@ objectTypes:
         nullable: true
         mappedBy: brewery
     filters:
+      name:
+        type: Term
+      status: {}
       multinational:
         default: true
 ```
@@ -78,7 +100,7 @@ query {
 }
 ```
 
-### LowerThen filter
+### LowerThan filter
 
 The `lt` filter operator can be applied with the following query:
 
@@ -91,7 +113,7 @@ query {
 }
 ```
 
-### LowerThenEquals filter
+### LowerThanEquals filter
 
 The `lte` filter operator can be applied with the following query:
 
@@ -104,7 +126,7 @@ query {
 }
 ```
 
-### GreaterThen filter
+### GreaterThan filter
 
 The `gt` filter operator can be applied with the following query:
 
@@ -117,7 +139,7 @@ query {
 }
 ```
 
-### GreaterThenEquals filter
+### GreaterThanEquals filter
 
 The `gte` filter operator can be applied with the following query:
 

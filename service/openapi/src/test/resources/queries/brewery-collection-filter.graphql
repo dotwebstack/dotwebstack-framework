@@ -1,0 +1,25 @@
+query Query {
+  breweryCollection(filter: {name : {like : "id1%"}, identifier : {in : ["breweryname"]}, employees : {not : {gt : 10}}}) {
+    identifier
+    name
+    aliases
+    postalAddress {
+      street
+      postalCode
+      location {
+        asGeoJSON
+      }
+    }
+    visitAddresses {
+      street
+      postalCode
+      location {
+        asGeoJSON
+      }
+    }
+    numberOfEmployees
+    salesAreas {
+      asGeoJSON
+    }
+  }
+}

@@ -1,5 +1,3 @@
-features:
-  - paging
 queries:
   brewery:
     type: Brewery
@@ -7,6 +5,7 @@ queries:
       - identifier
   breweryCollection:
     type: Brewery
+    pageable: true
     list: true
 
 objectTypes:

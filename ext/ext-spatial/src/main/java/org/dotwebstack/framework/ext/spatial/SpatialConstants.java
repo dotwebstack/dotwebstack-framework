@@ -2,9 +2,7 @@ package org.dotwebstack.framework.ext.spatial;
 
 public class SpatialConstants {
 
-  static final int SRID_RD = 28992;
-
-  static final int SRID_RDNAP = 7415;
+  static final int DEFAULT_SCALE = 9;
 
   private SpatialConstants() {}
 
@@ -20,11 +18,17 @@ public class SpatialConstants {
 
   // ArgumentNames
 
-  static final String ARGUMENT_TYPE = "type";
+  public static final String ARGUMENT_TYPE = "type";
+
+  public static final String ARGUMENT_BBOX = "bbox";
+
+  public static final String ARGUMENT_SRID = "srid";
 
   // FieldNames
 
   static final String TYPE = "type";
+
+  static final String SRID = "srid";
 
   static final String AS_WKT = "asWKT";
 
@@ -57,4 +61,6 @@ public class SpatialConstants {
   static final String MULTILINESTRING = "MULTILINESTRING";
 
   static final String MULTIPOLYGON = "MULTIPOLYGON";
+
+  static final String GEOMETRYCOLLECTION = "GEOMETRYCOLLECTION";
 }

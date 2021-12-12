@@ -19,6 +19,7 @@ import java.util.function.Function;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.jooq.Record;
@@ -79,15 +80,19 @@ class QueryHelperTest {
   void createTableCreator_returnValueFromFunction_forSelect() {
     SelectQuery<?> query = mock(SelectQuery.class);
 
-    Function<String, Table<Record>> function = createTableCreator(query, null);
+    AliasManager aliasManager = mock(AliasManager.class);
+
+    var aliasName = "x1";
+
+    when(aliasManager.newAlias()).thenReturn(aliasName);
+
+    Function<String, Table<Record>> function = createTableCreator(query, null, aliasManager);
 
     assertThat(function, notNullValue());
 
-    var tableName = "foo";
-
-    var result = function.apply(tableName);
+    var result = function.apply(aliasName);
     assertThat(result, notNullValue());
-    assertThat(result.getName(), equalTo(tableName));
+    assertThat(result.getName(), equalTo(aliasName));
 
     verify(query, times(1)).addFrom(ArgumentMatchers.any(Table.class));
   }

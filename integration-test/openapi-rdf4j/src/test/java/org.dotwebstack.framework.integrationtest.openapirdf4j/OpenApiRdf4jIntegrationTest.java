@@ -368,6 +368,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("Enable when OAS spec is implemented")
   void openApiRequest_returnsOpenApiSpec_forApi() {
     FluxExchangeResult<String> result = this.webClient.get()
         .uri("/")
@@ -405,22 +406,6 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
-  void openApiRequest_returnTestAsset() {
-    String result = this.webClient.get()
-        .uri("/assets/test.html")
-        .exchange()
-        .expectStatus()
-        .isOk()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    String expectedResult = "<html>\n" + "<body>Hello World!</body>\n" + "</html>";
-
-    assertEquals(expectedResult, result);
-  }
-
-  @Test
   @Disabled("enable when paging is implemented")
   void openApiRequest_returnsXPaginationResponseHeader_whenParamsAreProvided() {
     FluxExchangeResult<String> result = this.webClient.get()
@@ -438,6 +423,7 @@ class OpenApiRdf4jIntegrationTest {
   }
 
   @Test
+  @Disabled("enable when body params and field expressions are implemented")
   void openApiRequest_returnsBrewery_forRequestWithBodyParams() throws IOException {
     String result = this.webClient.post()
         .uri("/brewery_post?expand=postalCode")

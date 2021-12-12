@@ -1,8 +1,23 @@
-features:
-  - paging
-
 spatial:
-  sourceCrs: EPSG:28992
+  srid:
+    28992:
+      dimensions: 2
+      scale: 4
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      scale: 4
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      scale: 9
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      scale: 9
+      columnSuffix: _etrs89
+      equivalent: 9067
 
 subscriptions:
   beerSubscription:
@@ -25,7 +40,9 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-
+  ingredientCollection:
+    type: Ingredient
+    list: true
 
 objectTypes:
   Beer:
@@ -59,7 +76,7 @@ objectTypes:
         type: Brewery
         joinColumns:
           - name: brewery
-            referencedField: record_id
+            referencedColumn: record_id
       ingredient:
         type: Ingredient
         nullable: true
@@ -131,14 +148,15 @@ objectTypes:
       relatedToStatus:
         field: relatedTo.status
     fields:
-      record_id:
-        type: ID
       identifier:
         type: String
       name:
         type: String
       status:
         type: String
+        enum:
+          type: dbeerpedia.brewery_status
+          values: [ "active", "inactive"]
       geometry:
         type: Geometry
         nullable: true
@@ -158,16 +176,21 @@ objectTypes:
         type: Beer
         nullable: true
         mappedBy: brewery
+        keys:
+          - identifier
       beers:
         type: Beer
         list: true
         nullable: true
         mappedBy: brewery
+        pageable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
       history:
         type: History
+        nullable: true
+        presenceColumn: his_age
       relatedTo:
         type: Brewery
         list: true
@@ -189,6 +212,10 @@ objectTypes:
         type: String
       weight:
         type: Float
+      partOf:
+        type: Beer
+        mappedBy: ingredients
+        list: true
 
   Address:
     table: dbeerpedia.addresses

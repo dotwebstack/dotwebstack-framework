@@ -9,6 +9,7 @@ CREATE TYPE db.taste AS ENUM ('MEATY', 'SMOKY', 'WATERY', 'FRUITY', 'SPICY');
 CREATE TABLE db.address (
   identifier_address character varying NOT NULL PRIMARY KEY,
   street character varying NOT NULL,
+  street_tsv TSVECTOR NOT NULL,
   city character varying NOT NULL
 );
 
@@ -18,9 +19,11 @@ CREATE TABLE db.brewery (
   status db.brewery_status NOT NULL,
   postal_address character varying REFERENCES db.address (identifier_address),
   visit_address character varying REFERENCES db.address (identifier_address),
-  geometry geometry NOT NULL,
-  his_age INT NOT NULL,
-  his_history character varying NOT NULL,
+  geometry geometry(GeometryZ, 7415) NOT NULL,
+  geometry_bbox geometry(Geometry, 7415) NOT NULL,
+  geometry_etrs89 geometry(GeometryZ, 7931) NOT NULL,
+  his_age INT,
+  his_history character varying,
   multinational boolean NOT NULL
 );
 
@@ -32,7 +35,8 @@ CREATE TABLE db.beer (
   sold_per_year INT NOT NULL,
   taste db.taste[] NULL,
   since date NOT NULL,
-  last_brewed timestamp NOT NULL
+  last_brewed timestamp NOT NULL,
+  predecessor character varying REFERENCES db.beer (identifier_beer)
 );
 
 CREATE TABLE db.ingredient (

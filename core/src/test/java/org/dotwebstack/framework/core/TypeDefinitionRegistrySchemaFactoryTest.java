@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import graphql.language.BooleanValue;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
@@ -41,7 +42,6 @@ import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -94,7 +94,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  void typeDefinitionRegistry_registerQueries_whenConfiguredWithPagingFeature() {
+  void typeDefinitionRegistry_registerQueries_whenConfiguredWithPaging() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
 
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
@@ -391,7 +391,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   @Test
-  @Disabled("Dient bekeken te worden")
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
@@ -406,15 +405,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryTypeDefinition.getName(), is("Brewery"));
     assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(6));
+    assertThat(fieldDefinitions.size(), is(7));
 
-    var geometryFieldDefinition = fieldDefinitions.get(1);
-    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 1);
-
-    var geometryInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
-        .get(0);
-    assertThat(geometryInputValueDefinition.getName(), is("type"));
-    assertType(geometryInputValueDefinition.getType(), "GeometryType");
+    assertGeometryFieldDefinition(fieldDefinitions.get(1));
 
     var addressesFieldDefinition = fieldDefinitions.get(2);
     assertThat(addressesFieldDefinition.getName(), is("addresses"));
@@ -432,17 +425,43 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertType(visitAddressFieldDefinition.getType(), "Address");
     assertThat(visitAddressFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beersFieldDefinition = fieldDefinitions.get(4);
+    var beerFieldDefinition = fieldDefinitions.get(4);
+    assertThat(beerFieldDefinition.getName(), is("beer"));
+    assertType(beerFieldDefinition.getType(), "Beer");
+    assertThat(beerFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var beersFieldDefinition = fieldDefinitions.get(5);
     assertThat(beersFieldDefinition.getName(), is("beers"));
     assertListType(beersFieldDefinition.getType(), "Beer");
     assertThat(beersFieldDefinition.getInputValueDefinitions(), empty());
 
-    var beerAggFieldDefinition = fieldDefinitions.get(5);
+    var beerAggFieldDefinition = fieldDefinitions.get(6);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
   }
 
+  private void assertGeometryFieldDefinition(FieldDefinition geometryFieldDefinition) {
+    assertFieldDefinition(geometryFieldDefinition, "geometry", "Geometry", 3);
+
+    var geometrySridInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(geometrySridInputValueDefinition.getName(), is("srid"));
+    assertType(geometrySridInputValueDefinition.getType(), "Int");
+
+    var geometryTypeInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(geometryTypeInputValueDefinition.getName(), is("type"));
+    assertType(geometryTypeInputValueDefinition.getType(), "GeometryType");
+
+    var geometryBboxInputValueDefinition = geometryFieldDefinition.getInputValueDefinitions()
+        .get(2);
+    assertThat(geometryBboxInputValueDefinition.getName(), is("bbox"));
+    assertType(geometryBboxInputValueDefinition.getType(), "Boolean");
+    assertThat(geometryBboxInputValueDefinition.getDefaultValue(), instanceOf(BooleanValue.class));
+    assertThat(((BooleanValue) geometryBboxInputValueDefinition.getDefaultValue()).isValue(), is(false));
+  }
+
   @Test
-  @Disabled("Context is veranderd, test dient aangepast te worden")
   void typeDefinitionRegistry_registerContext_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-context.yaml");
 
@@ -450,10 +469,10 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Context")
+    assertThat(registry.getType("HistoryContext")
         .map(Object::toString)
         .orElseThrow(),
-        equalTo(newInputObjectDefinition().name("Context")
+        equalTo(newInputObjectDefinition().name("HistoryContext")
             .inputValueDefinition(newInputValueDefinition().name("validOn")
                 .type(newNonNullableType("Date"))
                 .defaultValue(newStringValue("NOW").build())
@@ -479,7 +498,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         equalTo(newFieldDefinition().name("breweryCollection")
             .type(newNonNullableListType("Brewery"))
             .inputValueDefinition(newInputValueDefinition().name("context")
-                .type(newType("Context"))
+                .type(newType("HistoryContext"))
                 .defaultValue(ObjectValue.newObjectValue()
                     .build())
                 .build())

@@ -221,10 +221,60 @@ Simplified configuration example
         type: History
 ```
 
+#### Column prefix
+
+Column prefix can be used to prefix each field within the nested object. Fields with a `column` property will be ignored. 
+The outcome for the nested history object of the example below will be `his_age` and `history`. 
+
+```yaml
+  Brewery:
+    table: db.brewery
+    fields:
+      name:
+        type: String
+      history:
+        type: History
+        columnPrefix: his_
+
+  History:
+    fields:
+      age:
+        type: Int
+      history:
+        type: String
+        column: history
+```
+
+#### Presence column
+
+The presence column can be used for nested objects which are nullable. In the example below the `his_age` column will be used 
+to check if the nested object has a value. If `his_age` has a null value the backend will return null for the history field within brewery.
+
+```yaml
+  Brewery:
+    table: db.brewery
+    fields:
+      name:
+        type: String
+      history:
+        type: History
+        nullable: true
+        columnPresence: his_age
+
+  History:
+    fields:
+      age:
+        type: Int
+        column: his_age
+      history:
+        type: String
+        column: his_history
+```
+
 ### Context fields
 
 It is optional to define context fields. Context fields are common to all objects within the query.
-A practical application for context fields is time traveling within a bi-temportal datamodel.
+A practical application for context fields is time traveling within a bi-temporal datamodel.
 
 If there are context fields defined in the configuration, data for each object will be retrieved
 with an context table function named `<table>_ctx` with the context parameters in natural order.
@@ -270,6 +320,56 @@ function:
 CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_v AS $$
    SELECT * FROM db.beer_v WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
 $$ language SQL immutable;
+```
+
+### Spatial
+When the Extension module: `ext-spatial` is enabled it is possible to add next to the default `ext-spatial` configuration
+extra postgres config for Geometry column mapping.
+
+The property `columnSuffix` can be used to accomplish this. Every Geometry field will have a suffix concatenated for the
+corresponding srid.
+
+The same is possible for bounding boxes. Default behaviour is runtime calculation, but it is also possible to store the 
+bounding box in a column. The property `bboxColumnSuffix` can be used to accomplish this. Every Geometry field will have 
+a suffix concatenated for the corresponding srid.
+
+Example configuration:
+
+```yaml
+spatial:
+  srid:
+    28992:
+      dimensions: 2
+      scale: 4
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      scale: 4
+      equivalent: 28992
+      bboxColumnSuffix: _bbox
+    9067:
+      dimensions: 2
+      scale: 9
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      scale: 9
+      columnSuffix: _etrs89
+      equivalent: 9067
+```
+
+### Text search (TSVECTOR)
+
+When a filter for a `String` field is configured with a `term` type DotWebStack will create an SQL condition for this filter against a TSVECTOR column. The TSVECTOR column can be configured with the optional `tsvColumn` property. Default value: `{$fieldname}_tsv`
+
+```yaml
+objectTypes:
+  Beer:
+    table: db.beer_v
+    fields:
+      name:
+        type: String
+        tsvColumn: name_TSVECTOR
 ```
 
 ## PostGIS

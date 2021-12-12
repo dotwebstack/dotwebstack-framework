@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Condition;
@@ -20,6 +21,7 @@ import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+
 
 class QueryHelper {
 
@@ -76,6 +78,7 @@ class QueryHelper {
       return createTable(name, contextCriteria);
     }
 
+
     return DSL.table(DSL.name(name.split("\\.")));
   }
 
@@ -95,13 +98,13 @@ class QueryHelper {
   }
 
   public static Function<String, Table<Record>> createTableCreator(SelectQuery<?> query,
-      ContextCriteria contextCriteria) {
+      ContextCriteria contextCriteria, AliasManager aliasManager) {
     return tableName -> {
-      var requestedTable = QueryHelper.findTable(tableName, contextCriteria);
+      var requestedTable = QueryHelper.findTable(tableName, contextCriteria)
+          .as(aliasManager.newAlias());
 
       query.addFrom(requestedTable);
       return requestedTable;
     };
   }
-
 }

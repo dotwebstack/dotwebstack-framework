@@ -34,7 +34,7 @@ class JoinBuilderTest {
     objectField.setMappedByObjectField(mappedByObjectField);
 
     var result = JoinBuilder.newJoin()
-        .current(objectField)
+        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x1"))
         .relatedTable(createTable("x2"))
         .build();
@@ -54,7 +54,7 @@ class JoinBuilderTest {
     objectField.setTargetType(objectType);
 
     var result = JoinBuilder.newJoin()
-        .current(objectField)
+        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"))
         .build();
@@ -74,7 +74,7 @@ class JoinBuilderTest {
     objectField.setTargetType(objectType);
 
     var builder = JoinBuilder.newJoin()
-        .current(objectField)
+        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"));
 
@@ -115,7 +115,7 @@ class JoinBuilderTest {
     objectField.setJoinTable(joinTable);
 
     var result = JoinBuilder.newJoin()
-        .current(objectField)
+        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"))
         .tableCreator(junctionTable -> DSL.table(junctionTable)

@@ -17,16 +17,16 @@ components:
         name:
           type: string
           nullable: true
-        ingredients:
-          type: array
-          items:
-            $ref: '#/components/schemas/Ingredient'
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
-        class:
-          type: string
-          x-dws-default: 'Beer'
+#        ingredients:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Ingredient'
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/beers/${fields.identifier}`'
+#        class:
+#          type: string
+#          x-dws-default: 'Beer'
     BreweryCollection:
       type: object
       x-dws-envelope: true
@@ -44,21 +44,21 @@ components:
               type: array
               items:
                $ref: '#/components/schemas/Brewery'
-        _links:
-          x-dws-envelope: true
-          type: object
-          required:
-            - self
-          properties:
-            self:
-              x-dws-envelope: true
-              type: object
-              required:
-                - href
-              properties:
-                href:
-                  type: string
-                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
+#        _links:
+#          x-dws-envelope: true
+#          type: object
+#          required:
+#            - self
+#          properties:
+#            self:
+#              x-dws-envelope: true
+#              type: object
+#              required:
+#                - href
+#              properties:
+#                href:
+#                  type: string
+#                  x-dws-expr: '`${env.dotwebstack.base_url}/breweries`'
     Brewery:
       type: object
       required:
@@ -70,30 +70,34 @@ components:
         name:
           type: string
           nullable: true
-        address:
+        postalAddress:
           $ref: '#/components/schemas/Address'
-        beers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Beer'
-        hasBeers:
-          type: boolean
-        postalCode:
-          type: string
-          nullable: true
-        founded:
-          type: string
-        link:
-          type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier_brewery}`'
-        countries:
-          type: array
-          x-dws-default: ['Netherlands','Belgium']
-          items:
-            type: string
-        class:
-          type: string
-          x-dws-default: 'Brewery'
+        visitAddress:
+          $ref: '#/components/schemas/Address'
+        geometry:
+          type: object
+#        beers:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/Beer'
+#        hasBeers:
+#          type: boolean
+#        postalCode:
+#          type: string
+#          nullable: true
+#        founded:
+#          type: string
+#        link:
+#          type: string
+#          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier_brewery}`'
+#        countries:
+#          type: array
+#          x-dws-default: ['Netherlands','Belgium']
+#          items:
+#            type: string
+#        class:
+#          type: string
+#          x-dws-default: 'Brewery'
     Ingredient:
       type: object
       required:
@@ -108,14 +112,15 @@ components:
       type: object
       nullable: true
       required:
-        - subject
-        - streetAddress
+        - identifier_address
+        - street
+        - city
       properties:
-        subject:
+        identifier_address:
           type: string
-        postalCode:
+        street:
           type: string
-        streetAddress:
+        city:
           type: string
 
 paths:
@@ -137,7 +142,7 @@ paths:
             type: array
             items:
               type: string
-              enum: ['address', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class']
+              enum: ['postalAddress', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class']
         - name: name
           in: query
           explode: false
@@ -210,12 +215,12 @@ paths:
 #              schema:
 #                type: integer
 #                x-dws-expr: args.page
-  /brewery/{identifier}:
+  /brewery/{identifier_brewery}:
     get:
       x-dws-query:
         field: brewery
-        keys:
-          identifier_brewery: $path.identifier
+#        keys:
+#          identifier_brewery: $path.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -225,7 +230,7 @@ paths:
             items:
               type: string
               enum: ['postalCode', 'beers', 'beers.ingredients']
-        - name: identifier
+        - name: identifier_brewery
           in: path
           required: true
           schema:

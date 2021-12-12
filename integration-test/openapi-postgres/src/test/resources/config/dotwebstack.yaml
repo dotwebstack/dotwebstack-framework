@@ -1,3 +1,9 @@
+spatial:
+  srid:
+    4326:
+      dimensions: 2
+      scale: 9
+
 queries:
   beers:
     type: Beer

@@ -17,6 +17,12 @@ objectTypes:
       visitAddress:
         type: Address
         nullable: true
+      beer:
+        type: Beer
+        mappedBy: brewery
+        nullable: true
+        keys:
+          - identifier
       beers:
         type: Beer
         mappedBy: brewery

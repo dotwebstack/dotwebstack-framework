@@ -1,8 +1,23 @@
-features:
-  - paging
-
 spatial:
-  sourceCrs: EPSG:28992
+  srid:
+    28992:
+      dimensions: 2
+      scale: 4
+      bboxColumnSuffix: _bbox
+    7415:
+      dimensions: 3
+      scale: 4
+      bboxColumnSuffix: _bbox
+      equivalent: 28992
+    9067:
+      dimensions: 2
+      scale: 9
+      columnSuffix: _etrs89
+    7931:
+      dimensions: 3
+      scale: 9
+      columnSuffix: _etrs89
+      equivalent: 9067
 
 subscriptions:
   beerSubscription:
@@ -33,16 +48,13 @@ objectTypes:
     filters:
       name:
         field: name
-      breweryCity:
-        field: brewery.visitAddress.city
-      ingredientName:
-        field: ingredients.name
+      brewery:
+        field: brewery.ref.record_id
+      ingredient:
+        field: ingredients.refs.identifier
     sortableBy:
       name:
         - field: name
-          direction: ASC
-      breweryCity:
-        - field: brewery.visitAddress.city
           direction: ASC
     fields:
       identifier:
@@ -56,18 +68,12 @@ objectTypes:
       retired:
         type: Boolean
       brewery:
-        type: Brewery
-        joinColumns:
-          - name: brewery
-            referencedField: record_id
-      breweryRelation:
-        type: BreweryRelation
+        type: BeerBrewery
         joinColumns:
           - name: brewery
             referencedField: ref.record_id
       ingredients:
-        type: Ingredient
-        list: true
+        type: BeerIngredient
         joinTable:
           name: dbeerpedia.beers_ingredients
           joinColumns:
@@ -75,36 +81,18 @@ objectTypes:
               referencedField: identifier
           inverseJoinColumns:
             - name: ingredients_identifier
-              referencedField: identifier
-      ingredientAgg:
-        aggregationOf: Ingredient
-        joinTable:
-          name: dbeerpedia.beers_ingredients
-          joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: identifier
-      ingredientRelations:
-        type: IngredientRelation
-        list: true
-        joinTable:
-          name: dbeerpedia.beers_ingredients
-          joinColumns:
-            - name: beers_identifier
-              referencedField: identifier
-          inverseJoinColumns:
-            - name: ingredients_identifier
-              referencedField: ref.identifier
+              referencedField: refs.identifier
       taste:
         type: Taste
         list: true
 
-  BreweryRelation:
+  BeerBrewery:
     fields:
       ref:
         type: BreweryRef
+      node:
+        type: Brewery
+        nullable: true
 
   BreweryRef:
     fields:
@@ -130,6 +118,7 @@ objectTypes:
       status: { }
       geometry: { }
       postalStreet:
+        type: Term
         field: postalAddress.street
       postalCity:
         field: postalAddress.city
@@ -147,7 +136,7 @@ objectTypes:
         field: relatedTo.status
     fields:
       record_id:
-        type: ID
+        type: Int
       identifier:
         type: String
       name:
@@ -173,12 +162,18 @@ objectTypes:
         type: Beer
         list: true
         nullable: true
-        mappedBy: brewery
+        joinColumns:
+          - name: record_id
+            referencedField: brewery
       beerAgg:
         aggregationOf: Beer
-        mappedBy: brewery
+        joinColumns:
+          - name: record_id
+            referencedField: brewery
       history:
         type: History
+        nullable: true
+        presenceColumn: his_age
       relatedTo:
         type: Brewery
         list: true
@@ -191,10 +186,14 @@ objectTypes:
             - name: brewery_related_to_identifier
               referencedField: identifier
 
-  IngredientRelation:
+  BeerIngredient:
     fields:
-      ref:
+      refs:
         type: IngredientRef
+        list: true
+      nodes:
+        type: Ingredient
+        list: true
 
   IngredientRef:
     fields:
@@ -203,6 +202,8 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
+    filters:
+      name: {}
     fields:
       identifier:
         type: ID
@@ -218,6 +219,7 @@ objectTypes:
         type: ID
       street:
         type: String
+        tsvColumn: street_tsv
       city:
         type: String
 

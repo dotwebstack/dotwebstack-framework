@@ -1,0 +1,37 @@
+{
+  "identifier": "d3654375-95fa-46b4-8529-08b0f777bd6b",
+  "aliases": [],
+  "_embedded": {
+    "postalAddress": {
+      "street": "Church Street",
+      "postalCode": "12345",
+      "location": {
+        "type": "Point",
+        "coordinates": [5.38720071, 52.15516755]
+      }
+    },
+    "visitAddresses": [
+      {
+        "street": "5th Avenue",
+        "postalCode": "54321",
+        "location": {}
+      }
+    ]
+  },
+  "salesAreas": [
+    {
+      "type": "Point",
+      "coordinates": [5.38720071, 52.15516755]
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://dotwebstack.org/api/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b"
+    },
+    "beers": {
+      "href": "https://dotwebstack.org/api/breweries/d3654375-95fa-46b4-8529-08b0f777bd6b/beers"
+    }
+  },
+  "name": "Brewery X",
+  "numberOfEmployees": 12
+}
