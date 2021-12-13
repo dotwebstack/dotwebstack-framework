@@ -56,7 +56,6 @@ public class FilterValidator implements SchemaValidator {
     Optional<? extends ObjectField> field = getField(schema, objectTypeName, filterFieldPathArr);
 
     if (field.isEmpty()) {
-
       throw invalidConfigurationException("Filter field '{}' not found in object type '{}'.", filterFieldPath,
           objectTypeName);
     }
