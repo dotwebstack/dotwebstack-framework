@@ -8,10 +8,11 @@ import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 
+
 @Builder
 @Getter
 public class JoinConfiguration {
-  private String name;
+  private PostgresObjectField objectField;
 
   private PostgresObjectField mappedBy;
 
@@ -25,11 +26,30 @@ public class JoinConfiguration {
 
   public static JoinConfiguration toJoinConfiguration(PostgresObjectField objectField) {
     return JoinConfiguration.builder()
-        .name(objectField.getName())
+        .objectField(objectField)
         .targetType((PostgresObjectType) objectField.getTargetType())
         .objectType((PostgresObjectType) objectField.getObjectType())
         .mappedBy(objectField.getMappedByObjectField())
         .joinTable(objectField.getJoinTable())
+        .joinColumns(objectField.getJoinColumns())
+        .build();
+  }
+
+  public static JoinConfiguration toJoinConfiguration(PostgresObjectField objectField,
+      PostgresJoinCondition joinCondition) {
+    JoinTable joinTable;
+    if (joinCondition != null && joinCondition.getJoinTable() != null) {
+      joinTable = joinCondition.getJoinTable();
+    } else {
+      joinTable = objectField.getJoinTable();
+    }
+
+    return JoinConfiguration.builder()
+        .objectField(objectField)
+        .targetType((PostgresObjectType) objectField.getTargetType())
+        .objectType((PostgresObjectType) objectField.getObjectType())
+        .mappedBy(objectField.getMappedByObjectField())
+        .joinTable(joinTable)
         .joinColumns(objectField.getJoinColumns())
         .build();
   }

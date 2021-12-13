@@ -40,15 +40,13 @@ class JoinBuilder {
 
     // Inverted mapped by
     if (joinConfiguration.getMappedBy() != null) {
+      var mappedBy = joinConfiguration.getMappedBy();
       return newJoin().table(relatedTable)
           .relatedTable(table)
           .joinConfiguration(JoinConfiguration.builder()
-              .joinColumns(joinConfiguration.getMappedBy()
-                  .getJoinColumns())
-              .joinTable(joinConfiguration.getMappedBy()
-                  .getJoinTable())
-              .targetType((PostgresObjectType) joinConfiguration.getMappedBy()
-                  .getTargetType())
+              .joinColumns(mappedBy.getJoinColumns())
+              .joinTable(mappedBy.getJoinTable())
+              .targetType((PostgresObjectType) mappedBy.getTargetType())
               .build())
           .tableCreator(tableCreator)
           .build();
@@ -79,6 +77,8 @@ class JoinBuilder {
           .collect(Collectors.toList());
     }
 
-    throw illegalArgumentException("Object field '{}' has no relation configuration!", joinConfiguration.getName());
+    throw illegalArgumentException("Object field '{}' has no relation configuration!",
+        joinConfiguration.getObjectField()
+            .getName());
   }
 }
