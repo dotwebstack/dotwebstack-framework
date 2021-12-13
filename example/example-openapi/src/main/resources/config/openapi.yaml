@@ -25,8 +25,6 @@ paths:
         filters:
           name:
             in: $query.name
-        requiredFields:
-          - identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -152,8 +150,6 @@ paths:
     get:
       x-dws-query:
         field: brewery
-#        requiredFields:
-#          - identifier
         keys:
           identifier: $path.identifier
       parameters:
@@ -216,8 +212,6 @@ paths:
         filters:
           name:
             in: $query.name
-        requiredFields:
-          - soldPerYear
       parameters:
         - name: name
           in: query
@@ -307,6 +301,8 @@ components:
       type: object
       allOf:
         - type: object
+          x-dws-include:
+            - soldPerYear
           required:
             - identifier
           properties:
@@ -398,8 +394,9 @@ components:
                   x-dws-expr: "paging:prev(env.dotwebstack.base_url, args.requestPathAndQuery)"
     Brewery:
       type: object
+      x-dws-include:
+        - identifier
       required:
-#        - identifier
         - name
         - visitAddress
         - _links

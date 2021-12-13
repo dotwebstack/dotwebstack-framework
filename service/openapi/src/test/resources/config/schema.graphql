@@ -45,6 +45,7 @@ type Address {
   street: String!
   postalCode: String!
   location: Geometry
+  locator: String
 }
 
 type Geometry {

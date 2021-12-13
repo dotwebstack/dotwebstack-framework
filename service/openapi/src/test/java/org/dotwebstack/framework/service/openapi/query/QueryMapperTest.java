@@ -65,12 +65,12 @@ class QueryMapperTest {
         Arguments.of("/breweries-filter", APPLICATION_JSON_HAL,
             Map.of("name", List.of("breweryname"), "like", "id1", "empcount", 10), "brewery-collection-filter"),
         Arguments.of("/breweries-maybe", APPLICATION_JSON, Map.of(), "brewery-collection-maybe"),
-        Arguments.of("/brewery-required-fields/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
-            "brewery-required-fields"),
-        Arguments.of("/breweries-required-fields", APPLICATION_JSON_HAL, Map.of(),
-            "brewery-collection-required-fields"),
-        Arguments.of("/breweries-pageable-required-fields", APPLICATION_JSON, Map.of("page", 2, "pageSize", 42),
-            "brewery-pageable-collection-required-fields"));
+        Arguments.of("/brewery-included-fields/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+            "brewery-included-fields"),
+        Arguments.of("/breweries-included-fields", APPLICATION_JSON_HAL, Map.of(),
+            "brewery-collection-included-fields"),
+        Arguments.of("/breweries-pageable-included-fields", APPLICATION_JSON, Map.of("page", 2, "pageSize", 42),
+            "brewery-pageable-collection-included-fields"));
   }
 
   @ParameterizedTest
@@ -118,12 +118,15 @@ class QueryMapperTest {
             "Nullability of `beersMaybe` of type ArraySchema in response schema is stricter than GraphQL schema."),
         Arguments.of("/brewery-invalid-expand", APPLICATION_JSON, Map.of("expand", "identifier"),
             InvalidConfigurationException.class, "Expandable field `identifier` should be nullable or not required."),
-        Arguments.of("/brewery-non-existent-required-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+        Arguments.of("/brewery-non-existent-included-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
             InvalidConfigurationException.class,
-            "Configured required GraphQL field `missingField` does not exist for object type `Brewery`."),
-        Arguments.of("/brewery-non-scalar-required-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+            "Configured included GraphQL field `missingField` does not exist for object type `Brewery`."),
+        Arguments.of("/brewery-non-scalar-included-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
             InvalidConfigurationException.class,
-            "Configured required GraphQL field `postalAddress` is not a scalar type."));
+            "Configured included GraphQL field `postalAddress` is not a scalar type."),
+        Arguments.of("/brewery-non-string-included-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+            InvalidConfigurationException.class,
+            "Encountered non-string included field in x-dws-include: {nonString={type=Object, properties=foo}}"));
   }
 
   @ParameterizedTest
