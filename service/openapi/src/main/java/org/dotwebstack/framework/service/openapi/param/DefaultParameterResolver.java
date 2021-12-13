@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -38,17 +39,21 @@ public class DefaultParameterResolver implements ParameterResolver {
 
   private final JexlHelper jexlHelper;
 
+  private final EnvironmentProperties environmentProperties;
+
   private final List<Parameter> parameters;
 
   private final Map<String, String> dwsParameters;
 
   public DefaultParameterResolver(RequestBody requestBody, RequestBodyContext requestBodyContext,
-      RequestBodyHandlerRouter requestBodyHandlerRouter, ParamHandlerRouter paramHandlerRouter, JexlEngine jexlEngine,
-      List<Parameter> parameters, Map<String, String> dwsParameters) {
+      RequestBodyHandlerRouter requestBodyHandlerRouter, ParamHandlerRouter paramHandlerRouter,
+      EnvironmentProperties environmentProperties, JexlEngine jexlEngine, List<Parameter> parameters,
+      Map<String, String> dwsParameters) {
     this.requestBody = requestBody;
     this.requestBodyContext = requestBodyContext;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.paramHandlerRouter = paramHandlerRouter;
+    this.environmentProperties = environmentProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.parameters = parameters;
     this.dwsParameters = dwsParameters;
@@ -68,7 +73,8 @@ public class DefaultParameterResolver implements ParameterResolver {
 
     validateRequestBodyNonexistent(serverRequest);
 
-    return Mono.just(addEvaluatedDwsParameters(result, dwsParameters, serverRequest, jexlHelper));
+    return Mono
+        .just(addEvaluatedDwsParameters(result, dwsParameters, serverRequest, environmentProperties, jexlHelper));
   }
 
   Map<String, Object> resolveUrlAndHeaderParameters(ServerRequest request) {

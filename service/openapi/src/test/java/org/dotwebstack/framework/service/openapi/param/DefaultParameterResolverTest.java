@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,9 @@ class DefaultParameterResolverTest {
   private ParamHandlerRouter paramHandlerRouter;
 
   @Mock
+  private EnvironmentProperties properties;
+
+  @Mock
   private JexlEngine jexlEngine;
 
   @Mock
@@ -50,7 +54,7 @@ class DefaultParameterResolverTest {
     when(serverRequest.uri()).thenReturn(uri);
 
     DefaultParameterResolver defaultParameterResolver = new DefaultParameterResolver(requestBody, requestBodyContext,
-        requestBodyHandlerRouter, paramHandlerRouter, jexlEngine, List.of(), Map.of());
+        requestBodyHandlerRouter, paramHandlerRouter, properties, jexlEngine, List.of(), Map.of());
 
     Map<String, Object> resolvedParams = defaultParameterResolver.resolveUrlAndHeaderParameters(serverRequest);
 
