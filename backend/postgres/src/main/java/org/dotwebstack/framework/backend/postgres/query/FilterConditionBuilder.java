@@ -10,7 +10,6 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
@@ -52,6 +51,8 @@ import org.locationtech.jts.geom.Geometry;
 @Accessors(fluent = true)
 @Setter
 class FilterConditionBuilder {
+
+  private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
   private static final DataType<Geometry> GEOMETRY_DATATYPE =
       new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
@@ -122,7 +123,7 @@ class FilterConditionBuilder {
       return DSL.exists(filterQuery);
     }
 
-    return createCondition(current, filterCriteria.getFilterType(), filterCriteria.getValue());
+    return createCondition(current, filterCriteria.getValue());
   }
 
   private Condition createConditionsForMatchingNestedReference(PostgresObjectField objectField,
@@ -151,7 +152,7 @@ class FilterConditionBuilder {
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 
-          return createExactConditions(field, filterCriteria.getValue());
+          return createConditions(field, filterCriteria.getValue());
         })
         .collect(Collectors.toList());
   }
@@ -190,73 +191,45 @@ class FilterConditionBuilder {
         .build();
   }
 
-  private Condition createCondition(PostgresObjectField objectField, FilterType filterType,
-      Map<String, Object> values) {
-    if (FilterType.EXACT.equals(filterType)) {
-      var conditions = values.entrySet()
-          .stream()
-          .flatMap(entry -> {
-            if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-              return createExactGeometryCondition(objectField, entry.getKey(), entry.getValue()).stream();
-            }
-            return Stream.of(createExactCondition(objectField, entry.getKey(), entry.getValue()));
-          })
-          .collect(Collectors.toList());
-
-      return andCondition(conditions);
-    }
-
-    if (FilterType.TERM.equals(filterType)) {
-      var conditions = values.entrySet()
-          .stream()
-          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
-
-      return andCondition(conditions);
-    }
-
-    throw unsupportedOperationException("Unknown filtertype '{}'", filterType);
-  }
-
-  private Condition createTermCondition(PostgresObjectField objectField, String operator, Object value) {
-    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
-    if (FilterConstants.EQ_FIELD.equals(operator)) {
-      var queryString = DSL.val(Objects.toString(value));
-      var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
-      return DSL.condition("{0} @@ {1}", field, query);
-    }
-
-    if (FilterConstants.NOT_FIELD.equals(operator)) {
-      var conditions = castToMap(value).entrySet()
-          .stream()
-          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
-
-      return DSL.not(andCondition(conditions));
-    }
-
-    throw illegalArgumentException("Unknown filter field '%s'", operator);
-  }
-
-  private Condition createExactConditions(Field<Object> field, Map<String, Object> values) {
+  private Condition createConditions(Field<Object> field, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .map(entry -> createExactCondition(null, field, entry.getKey(), entry.getValue()))
+        .map(entry -> createCondition(null, field, entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, String operator, Object value) {
-    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
+  private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
+    var conditions = values.entrySet()
+        .stream()
+        .flatMap(entry -> {
+          if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+            return createGeometryCondition(objectField, entry.getKey(), entry.getValue()).stream();
+          }
+          return Stream.of(createCondition(objectField, entry.getKey(), entry.getValue()));
+        })
+        .collect(Collectors.toList());
 
-    return createExactCondition(objectField, field, operator, value);
+    return andCondition(conditions);
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, Field<Object> field, String operator,
+  private Condition createCondition(PostgresObjectField objectField, String operator, Object value) {
+    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
+
+    return createCondition(objectField, field, operator, value);
+  }
+
+  private Condition createCondition(PostgresObjectField objectField, Field<Object> field, String operator,
       Object value) {
     if (FilterConstants.EQ_FIELD.equals(operator)) {
       return field.eq(getValue(objectField, value));
+    }
+
+    if (FilterConstants.MATCH_FIELD.equals(operator)) {
+      var escapedValue = escapeMatchValue(Objects.toString(value));
+      return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
+          .escape(LIKE_ESCAPE_CHARACTER);
     }
 
     if (FilterConstants.LT_FIELD.equals(operator)) {
@@ -282,7 +255,7 @@ class FilterConditionBuilder {
     if (FilterConstants.NOT_FIELD.equals(operator)) {
       var conditions = castToMap(value).entrySet()
           .stream()
-          .map(entry -> createExactCondition(objectField, field, entry.getKey(), entry.getValue()))
+          .map(entry -> createCondition(objectField, field, entry.getKey(), entry.getValue()))
           .collect(Collectors.toList());
 
       return DSL.not(andCondition(conditions));
@@ -307,8 +280,7 @@ class FilterConditionBuilder {
         .orElse(DSL.val(value));
   }
 
-  private Optional<Condition> createExactGeometryCondition(PostgresObjectField objectField, String operator,
-      Object value) {
+  private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, String operator, Object value) {
     if (ARGUMENT_SRID.equals(operator)) {
       return Optional.empty();
     }
@@ -341,5 +313,13 @@ class FilterConditionBuilder {
 
   private Condition andCondition(List<Condition> conditions) {
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+  }
+
+  private String escapeMatchValue(String inputValue) {
+    String result = inputValue.replace(String.valueOf(LIKE_ESCAPE_CHARACTER),
+        String.valueOf(new char[] {LIKE_ESCAPE_CHARACTER, LIKE_ESCAPE_CHARACTER}));
+    result = result.replace("_", LIKE_ESCAPE_CHARACTER + "_");
+    result = result.replace("%", LIKE_ESCAPE_CHARACTER + "%");
+    return result;
   }
 }
