@@ -41,8 +41,7 @@ class FilterValidatorTest {
 
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
-    assertThat(thrown.getMessage(),
-        is("Filter field 'visitAddress.invalid' in object type 'Brewery' can't be resolved to a single scalar type."));
+    assertThat(thrown.getMessage(), is("Filter field 'visitAddress.invalid' not found in object type 'Brewery'."));
   }
 
   @Test
