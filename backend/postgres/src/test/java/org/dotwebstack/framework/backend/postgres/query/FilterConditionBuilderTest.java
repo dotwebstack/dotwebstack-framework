@@ -90,9 +90,9 @@ class FilterConditionBuilderTest {
         arguments(FilterType.EXACT, Map.of("not", Map.of("eq", "foo")), "not (\"x1\".\"column\" = 'foo')"),
         arguments(FilterType.EXACT, Map.of("in", List.of("foo", "bar")),
             "\"x1\".\"column\" in (\n" + "  'foo', 'bar'\n" + ")"),
-        arguments(FilterType.TERM, Map.of("eq", "foo"), "(\"x1\".\"tsv_column\" @@ plainto_tsquery('simple','foo'))"),
-        arguments(FilterType.TERM, Map.of("not", Map.of("eq", "foo")),
-            "not ((\"x1\".\"tsv_column\" @@ plainto_tsquery('simple','foo')))"));
+        arguments(FilterType.PARTIAL, Map.of("match", "foo"), "\"x1\".\"column\" ilike '%foo%' escape '\\'"),
+        arguments(FilterType.PARTIAL, Map.of("not", Map.of("match", "foo")),
+            "not (\"x1\".\"column\" ilike '%foo%' escape '\\')"));
   }
 
   @ParameterizedTest
@@ -109,7 +109,7 @@ class FilterConditionBuilderTest {
 
   public static Stream<Arguments> getUnknownArguments() {
     return Stream.of(arguments(FilterType.EXACT, Map.of("zz", "foo"), "Unknown filter field 'zz'"),
-        arguments(FilterType.TERM, Map.of("zz", "foo"), "Unknown filter field 'zz'"));
+        arguments(FilterType.PARTIAL, Map.of("zz", "foo"), "Unknown filter field 'zz'"));
   }
 
   @ParameterizedTest
@@ -299,7 +299,6 @@ class FilterConditionBuilderTest {
   private FilterCriteria createFilterCriteria(FilterType filterType, Map<String, Object> values) {
     var objectField = new PostgresObjectField();
     objectField.setColumn("column");
-    objectField.setTsvColumn("tsv_column");
 
     return createFilterCriteria(filterType, values, objectField);
   }

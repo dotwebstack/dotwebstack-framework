@@ -152,7 +152,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     postgresObjectField.setName(field.getName());
     postgresObjectField.setType(field.getType());
     postgresObjectField.setColumn(field.getColumn());
-    postgresObjectField.setTsvColumn(field.getTsvColumn());
     postgresObjectField.setColumnPrefix(field.getColumn() == null ? columnPrefix : null);
     postgresObjectField.setObjectType(field.getObjectType());
 

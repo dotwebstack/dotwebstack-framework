@@ -208,7 +208,7 @@ objectTypes:
       beerBreweryName:
         field: beers.brewery.name
       postalAddressStreet:
-        type: Term
+        type: Partial
         field: postalAddress.street
     sortableBy:
       name:
