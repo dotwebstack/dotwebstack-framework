@@ -303,7 +303,7 @@ public class BackendRequestFactory {
     var orGroup = filterArgument.keySet()
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> filterName.startsWith("_or"))
+        .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
         .findFirst()
         .flatMap(filterName -> createFilterCriteria(objectType, MapHelper.getNestedMap(filterArgument, filterName)));
 

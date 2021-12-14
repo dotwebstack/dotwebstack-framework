@@ -28,6 +28,4 @@ public interface FilterCriteria {
 
     throw illegalArgumentException("Not a scalar field filter!");
   }
-
-
 }
