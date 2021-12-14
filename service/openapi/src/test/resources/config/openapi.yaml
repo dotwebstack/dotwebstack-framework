@@ -187,6 +187,23 @@ paths:
                             type: string
                             format: uri
                             x-dws-expr: "paging:prev(env.baseUrl, args.requestPathAndQuery)"
+          headers:
+            X-Pagination-Limit:
+              schema:
+                type: integer
+                x-dws-expr: args.pageSize
+            X-Pagination-Page:
+              schema:
+                type: integer
+                x-dws-expr: args.page
+            X-Forwarded-Host:
+              schema:
+                type: string
+                x-dws-expr: '`${env.baseUrl}/forwarded-host`'
+            X-Foo:
+              schema:
+                type: string
+                default: bar
 
   /breweries-pageable-with-params:
     get:
@@ -565,6 +582,54 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+  /brewery-unsupported-header:
+    get:
+      x-dws-query:
+        field: brewery
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+          headers:
+            unsupported:
+              schema:
+                type: Array
+                items:
+                  type: String
+  /brewery-header-no-results:
+    get:
+      x-dws-query:
+        field: brewery
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+          headers:
+            no-results:
+              schema:
+                type: String
+                x-dws-expr: args.missing
+  /brewery-header-that-does-nothing:
+    get:
+      x-dws-query:
+        field: brewery
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brewery'
+          headers:
+            does-nothing:
+              schema:
+                type: String
 
 components:
   schemas:

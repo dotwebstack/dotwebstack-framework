@@ -37,9 +37,9 @@ public class DefaultParameterResolver implements ParameterResolver {
 
   private final ParamHandlerRouter paramHandlerRouter;
 
-  private final JexlHelper jexlHelper;
-
   private final EnvironmentProperties environmentProperties;
+
+  private final JexlHelper jexlHelper;
 
   private final List<Parameter> parameters;
 

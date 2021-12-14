@@ -21,6 +21,7 @@ import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
+import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolverFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -41,12 +42,15 @@ public class OperationHandlerFactory {
 
   private final ParameterResolverFactory parameterResolverFactory;
 
+  private final ResponseHeaderResolverFactory responseHeaderResolverFactory;
+
   public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper, Collection<BodyMapper> bodyMappers,
-      ParameterResolverFactory parameterResolverFactory) {
+      ParameterResolverFactory parameterResolverFactory, ResponseHeaderResolverFactory responseHeaderResolverFactory) {
     this.graphQL = graphQL;
     this.queryMapper = queryMapper;
     this.bodyMappers = bodyMappers;
     this.parameterResolverFactory = parameterResolverFactory;
+    this.responseHeaderResolverFactory = responseHeaderResolverFactory;
   }
 
   public HandlerFunction<ServerResponse> create(Operation operation) {
@@ -86,11 +90,14 @@ public class OperationHandlerFactory {
     return (executionResult, operationRequest) -> {
       Map<String, Object> data = executionResult.getData();
 
+      var responseHeaderResolver = responseHeaderResolverFactory.create(operationRequest);
+
       return Mono.justOrEmpty(data.get(queryField))
           .flatMap(result -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
               .map(operationRequest, result))
           .flatMap(content -> ServerResponse.ok()
               .contentType(operationRequest.getPreferredMediaType())
+              .headers(responseHeaderResolver)
               .body(BodyInserters.fromValue(content)))
           .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
     };
