@@ -27,8 +27,6 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.TERM_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.TERM_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;

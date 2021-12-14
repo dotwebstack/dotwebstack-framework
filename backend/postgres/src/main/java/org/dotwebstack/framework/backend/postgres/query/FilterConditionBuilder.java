@@ -20,7 +20,6 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
@@ -42,7 +41,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FilterType;
-import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -229,25 +227,26 @@ class FilterConditionBuilder {
     return andCondition(conditions);
   }
 
-//  private Condition createTermCondition(PostgresObjectField objectField, String operator, Object value) {
-//    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
-//    if (FilterConstants.EQ_FIELD.equals(operator)) {
-//      var queryString = DSL.val(Objects.toString(value));
-//      var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
-//      return DSL.condition("{0} @@ {1}", field, query);
-//    }
-//
-//    if (FilterConstants.NOT_FIELD.equals(operator)) {
-//      var conditions = castToMap(value).entrySet()
-//          .stream()
-//          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
-//          .collect(Collectors.toList());
-//
-//      return DSL.not(andCondition(conditions));
-//    }
-//
-//    throw illegalArgumentException("Unknown filter field '%s'", operator);
-//  }
+  // private Condition createTermCondition(PostgresObjectField objectField, String operator, Object
+  // value) {
+  // Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
+  // if (FilterConstants.EQ_FIELD.equals(operator)) {
+  // var queryString = DSL.val(Objects.toString(value));
+  // var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
+  // return DSL.condition("{0} @@ {1}", field, query);
+  // }
+  //
+  // if (FilterConstants.NOT_FIELD.equals(operator)) {
+  // var conditions = castToMap(value).entrySet()
+  // .stream()
+  // .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
+  // .collect(Collectors.toList());
+  //
+  // return DSL.not(andCondition(conditions));
+  // }
+  //
+  // throw illegalArgumentException("Unknown filter field '%s'", operator);
+  // }
 
 
 
@@ -274,8 +273,8 @@ class FilterConditionBuilder {
     }
   }
 
-  private Condition createCondition(PostgresObjectField objectField, Field<Object[]> field,
-      FilterOperator operator, Object[] value) {
+  private Condition createCondition(PostgresObjectField objectField, Field<Object[]> field, FilterOperator operator,
+      Object[] value) {
 
     if (EQ == operator) {
       return field.eq(getArrayValue(objectField, value));

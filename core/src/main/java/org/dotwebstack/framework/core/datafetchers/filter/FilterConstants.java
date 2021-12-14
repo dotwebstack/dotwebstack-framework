@@ -13,6 +13,7 @@ public class FilterConstants {
   public static final String STRING_LIST_FILTER_INPUT_OBJECT_TYPE = "StringListFilter";
 
   public static final String TERM_FILTER_INPUT_OBJECT_TYPE = "TermFilter";
+
   public static final String STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE = "StringPartialFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";
