@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
+import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
@@ -29,6 +30,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -66,8 +68,11 @@ public class QueryMapper {
 
   private final Map<String, TypeMapper> typeMappers;
 
-  public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
-      @NonNull Collection<TypeMapper> typeMappers) {
+  private final OpenAPI openApi;
+
+  public QueryMapper(@NonNull OpenAPI openApi, @NonNull GraphQLSchema graphQlSchema,
+      @NonNull QueryArgumentBuilder queryArgumentBuilder, @NonNull Collection<TypeMapper> typeMappers) {
+    this.openApi = openApi;
     this.graphQlSchema = graphQlSchema;
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
@@ -126,10 +131,10 @@ public class QueryMapper {
           mapSchema(schema.getItems(), nestedFieldDefinition, mappingContext).collect(Collectors.toList()))));
     }
 
-    var itemsSchema = schema.getItems();
+    var itemsSchema = resolveSchema(openApi, schema.getItems());
 
     if ("object".equals(itemsSchema.getType())) {
-      return mapSchema(schema.getItems(), fieldDefinition, mappingContext);
+      return mapSchema(itemsSchema, fieldDefinition, mappingContext);
     }
 
     if (itemsSchema instanceof ComposedSchema) {
@@ -217,7 +222,15 @@ public class QueryMapper {
     var objectType = unwrapObjectType(parentFieldDefinition);
     var fieldDefinition = objectType.getFieldDefinition(name);
 
-    if (fieldDefinition == null || isEnvelope(schema)) {
+    if (isEnvelope(schema)) {
+      return mapSchema(schema, parentFieldDefinition, mappingContext);
+    }
+
+    if (fieldDefinition == null) {
+      if (!mappingContext.getPath()
+          .isEmpty()) {
+        return Stream.empty();
+      }
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
