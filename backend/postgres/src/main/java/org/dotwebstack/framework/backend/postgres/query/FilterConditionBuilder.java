@@ -284,8 +284,8 @@ class FilterConditionBuilder {
     }
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, Field<Object[]> field, FilterOperator operator,
-      Object[] value) {
+  private Condition createExactCondition(PostgresObjectField objectField, Field<Object[]> field,
+      FilterOperator operator, Object[] value) {
 
     if (EQ == operator) {
       return field.eq(getArrayValue(objectField, value));
@@ -342,25 +342,6 @@ class FilterConditionBuilder {
     return DSL.val(data);
   }
 
-  private Field<?> getEnumerationField(PostgresObjectField objectField, Object value) {
-    if (objectField.isEnumeration()) {
-      var type = objectField.getEnumeration()
-          .getType();
-      var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
-      if (objectField.isList()) {
-        // TODO ahu: kent postgress enum met een ander type dan string?
-        // var data = ((List<String>) value).toArray(String[]::new);
-        // Field<?> field = DSL.val(data);
-        var field = getArrayField(objectField, value);
-        return field.cast(dataType.getArrayDataType());
-      } else {
-        var field = DSL.val(value);
-        return field.cast(dataType);
-      }
-    }
-    throw new IllegalArgumentException("TODO");
-  }
-
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
     if (objectField.isEnumeration()) {
       return getEnumerationValue(objectField, value);
@@ -401,9 +382,9 @@ class FilterConditionBuilder {
   private Optional<Condition> createExactGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
       Object value) {
     // TODO check this
-//    if (ARGUMENT_SRID.equals(operator)) {
-//      return Optional.empty();
-//    }
+    // if (ARGUMENT_SRID.equals(operator)) {
+    // return Optional.empty();
+    // }
 
     var mapValue = ObjectHelper.castToMap(value);
 
