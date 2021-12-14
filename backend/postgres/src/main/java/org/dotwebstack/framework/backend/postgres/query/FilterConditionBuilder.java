@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
