@@ -31,9 +31,20 @@ public class OpenApiProperties {
 
   private boolean serializeNull = true;
 
+  private CorsProperties cors = new CorsProperties();
+
   private DateFormatProperties dateproperties;
 
   private SpatialProperties spatial;
+
+  @Getter
+  @Setter
+  public static class CorsProperties {
+
+    private Boolean enabled = false;
+
+    private Boolean allowCredentials = false;
+  }
 
   @Getter
   @Setter
@@ -44,21 +55,21 @@ public class OpenApiProperties {
     private String datetimeformat;
 
     private String timezone;
-
   }
 
   @Getter
   @Setter
   public static class SpatialProperties {
+
     private SridParameterProperties sridParameter;
   }
 
   @Getter
   @Setter
   public static class SridParameterProperties {
+
     private String name;
 
     private Map<String, Integer> valueMap;
   }
-
 }

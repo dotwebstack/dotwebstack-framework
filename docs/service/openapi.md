@@ -628,6 +628,18 @@ dotwebstack:
     apiDocPublicationPath: /openapi.yaml
 ```
 
+### CORS
+
+CORS (Cross-Origin Resource Sharing) can be enabled (and is disabled by default).
+
+```yaml
+dotwebstack:
+  openapi:
+    cors:
+      enabled: true
+      allowCredentials: true  # default: false
+```
+
 ### Date formats
 
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify the
