@@ -2,17 +2,21 @@ package org.dotwebstack.framework.service.openapi;
 
 import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import java.util.Map;
 import java.util.Set;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
@@ -21,13 +25,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -54,6 +63,101 @@ class RouterConfigurationTest {
   void httpAdviceTrait() {
     var httpAdviceTrait = routerConfiguration.httpAdviceTrait();
     assertThat(httpAdviceTrait, is(notNullValue()));
+  }
+
+  @Test
+  void corsWebFilter_handlesGetRequest_whenOriginSent() {
+    var corsProperties = new OpenApiProperties.CorsProperties();
+    corsProperties.setEnabled(true);
+    when(openApiProperties.getCors()).thenReturn(corsProperties);
+
+    var exchange = mockExchange(HttpMethod.GET, Map.of(HttpHeaders.ORIGIN, "foo"));
+    var chain = mock(WebFilterChain.class);
+    when(chain.filter(exchange)).thenReturn(Mono.empty());
+
+    routerConfiguration.corsWebFilter()
+        .filter(exchange, chain)
+        .block();
+
+    var responseHeaders = exchange.getResponse()
+        .getHeaders();
+
+    assertThat(responseHeaders.getAccessControlAllowOrigin(), is("foo"));
+  }
+
+  @Test
+  void corsWebFilter_handlesPreflightRequest_whenOriginSent() {
+    var corsProperties = new OpenApiProperties.CorsProperties();
+    corsProperties.setEnabled(true);
+    when(openApiProperties.getCors()).thenReturn(corsProperties);
+
+    var exchange = mockExchange(HttpMethod.OPTIONS,
+        Map.of(HttpHeaders.ORIGIN, "foo", HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET.name()));
+
+    routerConfiguration.corsWebFilter()
+        .filter(exchange, mock(WebFilterChain.class))
+        .block();
+
+    var responseHeaders = exchange.getResponse()
+        .getHeaders();
+
+    assertThat(responseHeaders.getAccessControlAllowOrigin(), is("foo"));
+    assertThat(responseHeaders.getAccessControlAllowHeaders(), empty());
+    assertThat(responseHeaders.getAccessControlAllowCredentials(), is(false));
+  }
+
+  @Test
+  void corsWebFilter_handlesPreflightRequest_whenOriginSentWithCredentials() {
+    var corsProperties = new OpenApiProperties.CorsProperties();
+    corsProperties.setEnabled(true);
+    corsProperties.setAllowCredentials(true);
+    when(openApiProperties.getCors()).thenReturn(corsProperties);
+
+    var exchange = mockExchange(HttpMethod.OPTIONS,
+        Map.of(HttpHeaders.ORIGIN, "foo", HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET.name()));
+
+    routerConfiguration.corsWebFilter()
+        .filter(exchange, mock(WebFilterChain.class))
+        .block();
+
+    var responseHeaders = exchange.getResponse()
+        .getHeaders();
+
+    assertThat(responseHeaders.getAccessControlAllowOrigin(), is("foo"));
+    assertThat(responseHeaders.getAccessControlAllowHeaders(), empty());
+    assertThat(responseHeaders.getAccessControlAllowCredentials(), is(true));
+  }
+
+  @Test
+  void corsWebFilter_handlesPreflightRequest_whenOriginSentWithHeaders() {
+    var corsProperties = new OpenApiProperties.CorsProperties();
+    corsProperties.setEnabled(true);
+    when(openApiProperties.getCors()).thenReturn(corsProperties);
+
+    var exchange =
+        mockExchange(HttpMethod.OPTIONS, Map.of(HttpHeaders.ORIGIN, "foo", HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,
+            HttpMethod.GET.name(), HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Content-Type, X-Api-Key"));
+
+    routerConfiguration.corsWebFilter()
+        .filter(exchange, mock(WebFilterChain.class))
+        .block();
+
+    var responseHeaders = exchange.getResponse()
+        .getHeaders();
+
+    assertThat(responseHeaders.getAccessControlAllowOrigin(), is("foo"));
+    assertThat(responseHeaders.getAccessControlAllowHeaders(), containsInAnyOrder("Content-Type", "X-Api-Key"));
+  }
+
+  private ServerWebExchange mockExchange(HttpMethod method, Map<String, String> headers) {
+    var request = MockServerHttpRequest.method(method, "http://foo/bar");
+    headers.forEach(request::header);
+
+    var exchange = mock(ServerWebExchange.class);
+    when(exchange.getRequest()).thenReturn(request.build());
+    when(exchange.getResponse()).thenReturn(new MockServerHttpResponse());
+
+    return exchange;
   }
 
   @Test

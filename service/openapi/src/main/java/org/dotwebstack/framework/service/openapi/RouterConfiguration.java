@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -12,10 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RequestPredicates;
@@ -47,6 +52,24 @@ class RouterConfiguration {
   @Bean
   public HttpAdviceTrait httpAdviceTrait() {
     return new HttpAdviceTrait() {};
+  }
+
+  @Bean
+  @ConditionalOnProperty(prefix = "dotwebstack", name = "openapi.cors.enabled")
+  public CorsWebFilter corsWebFilter() {
+    var corsProperties = openApiProperties.getCors();
+
+    var corsConfig = new CorsConfiguration();
+    corsConfig.setAllowedMethods(List.of(HttpMethod.HEAD.name(), HttpMethod.GET.name(), HttpMethod.POST.name()));
+    corsConfig.setAllowedHeaders(List.of(CorsConfiguration.ALL));
+    corsConfig.setAllowedOriginPatterns(List.of(CorsConfiguration.ALL));
+    corsConfig.setAllowCredentials(corsProperties.getAllowCredentials());
+    corsConfig.setMaxAge(86400L);
+
+    var source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", corsConfig);
+
+    return new CorsWebFilter(source);
   }
 
   @Bean
