@@ -9,8 +9,8 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinConfiguration
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINSANYOF;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINSAllOF;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_All_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.EnumUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -62,6 +61,8 @@ import org.locationtech.jts.geom.Geometry;
 @Accessors(fluent = true)
 @Setter
 class FilterConditionBuilder {
+  private static final String ERROR_MESSAGE = "Unknown filter field '%s'";
+
   private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
   private static final DataType<Geometry> GEOMETRY_DATATYPE =
@@ -205,7 +206,7 @@ class FilterConditionBuilder {
     var conditions = values.entrySet()
         .stream()
         .map(entry -> {
-          var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
+          var filterOperator = FilterOperator.getFilterOperator(entry.getKey());
           return createCondition(null, field, filterOperator, entry.getValue());
         })
         .collect(Collectors.toList());
@@ -216,17 +217,14 @@ class FilterConditionBuilder {
   private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .flatMap(entry -> {
-          Optional<Condition> emptyCondition = Optional.empty();
-          return Optional.ofNullable(EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey()))
-              .map(filterOperator -> {
-                if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-                  return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
-                }
-                return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
-              })
-              .orElseThrow(() -> illegalArgumentException("Unknown filter field '%s'", entry.getKey()));
-        })
+        .flatMap(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
+            .map(filterOperator -> {
+              if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+                return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+              }
+              return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
+            })
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
@@ -237,11 +235,9 @@ class FilterConditionBuilder {
     if (NOT == operator) {
       var conditions = castToMap(value).entrySet()
           .stream()
-          .map(entry -> {
-            return Optional.ofNullable(EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey()))
-                .map(filterOperator -> createCondition(objectField, filterOperator, entry.getValue()))
-                .orElseThrow(() -> illegalArgumentException("Unknown filter field '%s'", entry.getKey()));
-          })
+          .map(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
+              .map(filterOperator -> createCondition(objectField, filterOperator, entry.getValue()))
+              .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
           .collect(Collectors.toList());
 
       return DSL.not(andCondition(conditions));
@@ -264,15 +260,15 @@ class FilterConditionBuilder {
       return field.eq(getArrayValue(objectField, value));
     }
 
-    if (CONTAINSAllOF == operator) {
+    if (CONTAINS_All_OF == operator) {
       return field.contains(getArrayValue(objectField, value));
     }
 
-    if (CONTAINSANYOF == operator) {
+    if (CONTAINS_ANY_OF == operator) {
       return PostgresDSL.arrayOverlap(field, getArrayValue(objectField, value));
     }
 
-    throw illegalArgumentException("Unknown filter field '%s'", operator);
+    throw illegalArgumentException(ERROR_MESSAGE, operator);
   }
 
   private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
@@ -306,7 +302,7 @@ class FilterConditionBuilder {
       return field.in(getFieldListValue(objectField, value));
     }
 
-    throw illegalArgumentException("Unknown filter field '%s'", operator);
+    throw illegalArgumentException(ERROR_MESSAGE, operator);
   }
 
   private List<Field<?>> getFieldListValue(PostgresObjectField objectField, Object listValue) {
