@@ -640,6 +640,9 @@ dotwebstack:
       allowCredentials: true  # default: false
 ```
 
+Setting `allowCredentials` to `true` is only needed when your service requires sending client credentials in the
+`Authorization`header.
+
 ### Date formats
 
 You can specify `dateproperties` under the `openapi` section in the `application.yml` file. These properties specify the
