@@ -61,7 +61,7 @@ public class FilterValidator implements SchemaValidator {
           objectTypeName);
     }
 
-    if (FilterType.TERM.equals(filterEntry.getValue()
+    if (FilterType.PARTIAL.equals(filterEntry.getValue()
         .getType()) && field.map(ObjectField::getType)
             .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
             .isPresent()) {

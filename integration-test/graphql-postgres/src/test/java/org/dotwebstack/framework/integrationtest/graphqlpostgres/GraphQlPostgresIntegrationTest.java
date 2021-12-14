@@ -1638,8 +1638,8 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forTermFilter() {
-    String query = "{breweries(filter: {postalAddressStreet: {eq: \"Ch\"}}) { name }}";
+  void graphQlQuery_returnsBreweries_forStringPartialFilter() {
+    String query = "{breweries(filter: {postalAddressStreet: {match: \"Ch\"}}) { name }}";
 
     Map<String, Object> data = WebTestClientHelper.get(client, query);
 

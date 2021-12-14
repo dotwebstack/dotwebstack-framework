@@ -55,7 +55,7 @@ class FilterValidatorTest {
 
     var filterConfiguration = new FilterConfiguration();
     filterConfiguration.setField("identifier");
-    filterConfiguration.setType(FilterType.TERM);
+    filterConfiguration.setType(FilterType.PARTIAL);
     objectType.setFilters(Map.of("testFilter", filterConfiguration));
 
     var schema = new Schema();
@@ -79,7 +79,7 @@ class FilterValidatorTest {
     objectType.setFields(Map.of("identifier", identifierField, "name", nameField));
 
     var filterConfiguration = new FilterConfiguration();
-    filterConfiguration.setType(FilterType.TERM);
+    filterConfiguration.setType(FilterType.PARTIAL);
     filterConfiguration.setField("name");
     objectType.setFilters(Map.of("testFilter", filterConfiguration));
 

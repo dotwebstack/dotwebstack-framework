@@ -6,11 +6,11 @@ public class FilterConstants {
 
   public static final String FILTER_ARGUMENT_NAME = "filter";
 
-  public static final String TERM_NAME = "Term";
+  public static final String STRING_PARTIAL = "StringPartial";
 
   public static final String STRING_FILTER_INPUT_OBJECT_TYPE = "StringFilter";
 
-  public static final String TERM_FILTER_INPUT_OBJECT_TYPE = "TermFilter";
+  public static final String STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE = "StringPartialFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";
 
@@ -21,6 +21,8 @@ public class FilterConstants {
   public static final String DATE_TIME_FILTER_INPUT_OBJECT_TYPE = "DateTimeFilter";
 
   public static final String EQ_FIELD = "eq";
+
+  public static final String MATCH_FIELD = "match";
 
   public static final String IN_FIELD = "in";
 
