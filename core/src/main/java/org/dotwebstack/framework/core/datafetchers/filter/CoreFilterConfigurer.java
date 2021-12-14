@@ -62,11 +62,14 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
   public void configureFieldFilterMapping(@NonNull Map<String, String> fieldFilterMap) {
     // TODO: ahu
     fieldFilterMap.put(GraphQLString.getName(), STRING_FILTER_INPUT_OBJECT_TYPE);
-    fieldFilterMap.put(GraphQLString.getName().concat("List") , STRING_LIST_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put(GraphQLString.getName()
+        .concat("List"), STRING_LIST_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLInt.getName(), INT_FILTER_INPUT_OBJECT_TYPE);
-    fieldFilterMap.put(GraphQLInt.getName().concat("List") , INT_LIST_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put(GraphQLInt.getName()
+        .concat("List"), INT_LIST_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLFloat.getName(), FLOAT_FILTER_INPUT_OBJECT_TYPE);
-    fieldFilterMap.put(GraphQLFloat.getName().concat("List") , FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put(GraphQLFloat.getName()
+        .concat("List"), FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(DATE.getName(), DATE_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(DATETIME.getName(), DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLBoolean.getName(), GraphQLBoolean.getName());
@@ -177,7 +180,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
         .build();
   }
 
-  private InputObjectTypeDefinition createScalarListFilterType(String inputObjectName, String typeName){
+  private InputObjectTypeDefinition createScalarListFilterType(String inputObjectName, String typeName) {
     return newInputObjectDefinition().name(inputObjectName)
         .inputValueDefinition(createArrayInputValue(EQ_FIELD, typeName))
         .inputValueDefinition(createArrayInputValue(CONTAINS_ALL_OF_FIELD, typeName))

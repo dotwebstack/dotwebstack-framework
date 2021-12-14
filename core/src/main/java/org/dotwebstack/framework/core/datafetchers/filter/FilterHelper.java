@@ -51,7 +51,7 @@ public final class FilterHelper {
           .orElse(objectField.getType());
 
       // TODO ahu: generieker maken
-      if(objectField.isList()) {
+      if (objectField.isList()) {
         type = type.concat("List");
       }
       return getTypeNameForFilter(fieldFilterMap, type);
