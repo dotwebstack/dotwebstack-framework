@@ -115,7 +115,6 @@ class FilterConditionBuilder {
       return walkFieldPath(filterCriteria.asScalarFieldFilter());
     }
 
-
     throw unsupportedOperationException("Filter criteria '{}' is not supported!", filterCriteria.getClass()
         .getSimpleName());
   }
