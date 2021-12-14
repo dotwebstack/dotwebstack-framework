@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
+import static org.jooq.impl.DefaultDataType.getDataType;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
@@ -47,6 +48,7 @@ import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
+import org.jooq.util.postgres.PostgresDSL;
 import org.locationtech.jts.geom.Geometry;
 
 @Accessors(fluent = true)
@@ -279,6 +281,15 @@ class FilterConditionBuilder {
       return field.in(getListValue(objectField, value));
     }
 
+    if("containsAllOf".equals(operator)) {
+      return field.contains(getValue(objectField, value));
+    }
+
+    if("containsAnyOf".equals(operator)) {
+
+      // return PostgresDSL.arrayOverlap(field, getValue(objectField, value));
+    }
+
     if (FilterConstants.NOT_FIELD.equals(operator)) {
       var conditions = castToMap(value).entrySet()
           .stream()
@@ -297,13 +308,54 @@ class FilterConditionBuilder {
         .collect(Collectors.toList());
   }
 
-  private Field<?> getValue(PostgresObjectField objectField, Object value) {
-    Field<?> field = DSL.val(value);
+  private Field<?> getArrayField(PostgresObjectField objectField, Object listValue) {
+    var data =  ObjectHelper.castToArray(listValue, objectField.getType());
+    return DSL.val(data);
+  }
 
+  private Field<?> getEnumerationField(PostgresObjectField objectField, Object value){
     return Optional.ofNullable(objectField)
         .map(ObjectField::getEnumeration)
         .map(FieldEnumConfiguration::getType)
-        .map(type -> field.cast(getDefaultDataType(type)))
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          if (objectField.isList()) {
+            // TODO ahu: kent postgress enum met een ander type dan string?
+            var data = ((List<String>) value).toArray(String[]::new);
+            Field<?> field = DSL.val(data);
+            return field.cast(dataType.getArrayDataType());
+          } else {
+            Field<?> field = DSL.val(value);
+            return field.cast(dataType);
+          }
+        }).orElseThrow(() -> new IllegalArgumentException("TODO"));
+  }
+
+  private Field<?> getValue(PostgresObjectField objectField, Object value) {
+    if(objectField.isEnumeration()){
+      return getEnumerationField(objectField, value);
+    } else if(objectField.isList()) {
+      return getArrayField(objectField, value);
+    }
+    return DSL.val(value);
+  }
+
+  private Field<?> getValue2(PostgresObjectField objectField, Object value) {
+    return Optional.ofNullable(objectField)
+        .map(ObjectField::getEnumeration)
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          if (objectField.isList()) {
+            // TODO ahu: kent postgress enum met een ander type dan string?
+            var data = ((List<String>) value).toArray(String[]::new);
+            Field<?> field = DSL.val(data);
+            return field.cast(dataType.getArrayDataType());
+          } else {
+            Field<?> field = DSL.val(value);
+            return field.cast(dataType);
+          }
+        })
         .orElse(DSL.val(value));
   }
 

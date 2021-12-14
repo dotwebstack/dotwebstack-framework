@@ -10,11 +10,17 @@ public class FilterConstants {
 
   public static final String STRING_FILTER_INPUT_OBJECT_TYPE = "StringFilter";
 
+  public static final String STRING_LIST_FILTER_INPUT_OBJECT_TYPE = "StringListFilter";
+
   public static final String TERM_FILTER_INPUT_OBJECT_TYPE = "TermFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";
 
+  public static final String INT_LIST_FILTER_INPUT_OBJECT_TYPE = "IntListFilter";
+
   public static final String FLOAT_FILTER_INPUT_OBJECT_TYPE = "FloatFilter";
+
+  public static final String FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE = "FloatListFilter";
 
   public static final String DATE_FILTER_INPUT_OBJECT_TYPE = "DateFilter";
 
@@ -31,6 +37,10 @@ public class FilterConstants {
   public static final String GT_FIELD = "gt";
 
   public static final String GTE_FIELD = "gte";
+
+  public static final String CONTAINS_ALL_OF_FIELD = "containsAllOf";
+
+  public static final String CONTAINS_ANY_OF_FIELD = "containsAnyOf";
 
   public static final String NOT_FIELD = "not";
 }

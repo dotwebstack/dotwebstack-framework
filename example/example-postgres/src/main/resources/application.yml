@@ -4,7 +4,7 @@ logging:
     org.dotwebstack: DEBUG
 
 dotwebstack:
-  config: dotwebstack.yaml
+  config: dotwebstack-tastefilter.yaml
   postgres:
     host: localhost
     port: 5432

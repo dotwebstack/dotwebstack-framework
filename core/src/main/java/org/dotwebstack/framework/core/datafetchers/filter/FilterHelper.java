@@ -50,6 +50,10 @@ public final class FilterHelper {
           .map(filterType -> FilterConstants.TERM_NAME)
           .orElse(objectField.getType());
 
+      // TODO ahu: generieker maken
+      if(objectField.isList()) {
+        type = type.concat("List");
+      }
       return getTypeNameForFilter(fieldFilterMap, type);
     }
   }

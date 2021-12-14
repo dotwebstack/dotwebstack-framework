@@ -50,6 +50,8 @@ objectTypes:
     filters:
       name:
         field: name
+      taste:
+        field: taste
       breweryCity:
         field: brewery.visitAddress.city
       ingredientName:
@@ -110,8 +112,11 @@ objectTypes:
             - name: ingredients_identifier
               referencedField: identifier
       taste:
-        type: Taste
+        type: String
         list: true
+        enum:
+          type: dbeerpedia.beer_taste
+          values: ["MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY"]
 
   Brewery:
     table: dbeerpedia.breweries
