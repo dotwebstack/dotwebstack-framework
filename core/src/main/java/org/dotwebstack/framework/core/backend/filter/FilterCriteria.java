@@ -1,24 +1,33 @@
 package org.dotwebstack.framework.core.backend.filter;
 
-import java.util.List;
-import java.util.Map;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import org.dotwebstack.framework.core.config.FilterType;
-import org.dotwebstack.framework.core.model.ObjectField;
 
-@Data
-@Builder
-public class FilterCriteria {
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
-  @NonNull
-  @Builder.Default
-  private final FilterType filterType = FilterType.EXACT;
+public interface FilterCriteria {
 
-  @NonNull
-  private final List<ObjectField> fieldPath;
+  default boolean isGroupFilter() {
+    return this instanceof GroupFilterCriteria;
+  }
 
-  @NonNull
-  private final Map<String, Object> value;
+  default GroupFilterCriteria asGroupFilter() {
+    if (isGroupFilter()) {
+      return (GroupFilterCriteria) this;
+    }
+
+    throw illegalArgumentException("Not a group filter!");
+  }
+
+  default boolean isScalarFieldFilter() {
+    return this instanceof ScalarFieldFilterCriteria;
+  }
+
+  default ScalarFieldFilterCriteria asScalarFieldFilter() {
+    if (isScalarFieldFilter()) {
+      return (ScalarFieldFilterCriteria) this;
+    }
+
+    throw illegalArgumentException("Not a scalar field filter!");
+  }
+
+
 }

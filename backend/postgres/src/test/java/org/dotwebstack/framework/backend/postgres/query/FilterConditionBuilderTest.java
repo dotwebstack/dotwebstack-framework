@@ -18,6 +18,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
@@ -68,7 +69,7 @@ class FilterConditionBuilderTest {
 
     objectField.setSpatial(spatial);
 
-    var filterCriteria = FilterCriteria.builder()
+    var filterCriteria = ScalarFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(objectField))
         .value(value)
@@ -172,7 +173,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "foo");
 
-    var filterCriteria = FilterCriteria.builder()
+    var filterCriteria = ScalarFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(parentField, childField))
         .value(values)
@@ -215,7 +216,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "123");
 
-    var filterCriteria = FilterCriteria.builder()
+    var filterCriteria = ScalarFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(childField, refField, identifierField))
         .value(values)
@@ -273,7 +274,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "123");
 
-    var filterCriteria = FilterCriteria.builder()
+    var filterCriteria = ScalarFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(childField, refsField, identifierField))
         .value(values)
@@ -305,7 +306,7 @@ class FilterConditionBuilderTest {
 
   private FilterCriteria createFilterCriteria(FilterType filterType, Map<String, Object> values,
       PostgresObjectField objectField) {
-    return FilterCriteria.builder()
+    return ScalarFieldFilterCriteria.builder()
         .filterType(filterType)
         .fieldPath(List.of(objectField))
         .value(values)

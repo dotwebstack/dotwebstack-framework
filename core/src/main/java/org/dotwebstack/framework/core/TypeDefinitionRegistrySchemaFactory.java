@@ -196,6 +196,10 @@ public class TypeDefinitionRegistrySchemaFactory {
             .build())
         .collect(Collectors.toList());
 
+    inputValueDefinitions.add(newInputValueDefinition().name(FilterConstants.OR_FIELD)
+        .type(newType(filterName))
+        .build());
+
     return newInputObjectDefinition().name(filterName)
         .inputValueDefinitions(inputValueDefinitions)
         .build();

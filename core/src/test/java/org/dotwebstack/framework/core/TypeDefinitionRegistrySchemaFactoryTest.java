@@ -177,17 +177,17 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     assertThat(filterTypeDefinition, notNullValue());
     assertThat(filterTypeDefinition.getInputValueDefinitions()
-        .size(), is(3));
+        .size(), is(4));
     assertThat(filterTypeDefinition.getInputValueDefinitions()
         .stream()
         .map(InputValueDefinition::getName)
-        .collect(Collectors.toList()), equalTo(List.of("name", "abv", "inceptionYear")));
+        .collect(Collectors.toList()), equalTo(List.of("name", "abv", "inceptionYear", FilterConstants.OR_FIELD)));
     assertThat(filterTypeDefinition.getInputValueDefinitions()
         .stream()
         .map(InputValueDefinition::getType)
         .map(TypeName.class::cast)
         .map(TypeName::getName)
-        .collect(Collectors.toList()), equalTo(List.of("StringFilter", "FloatFilter", "IntFilter")));
+        .collect(Collectors.toList()), equalTo(List.of("StringFilter", "FloatFilter", "IntFilter", "BreweryFilter")));
   }
 
   @Test

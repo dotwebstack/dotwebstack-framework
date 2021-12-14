@@ -14,18 +14,18 @@ import org.junit.jupiter.api.Test;
 class FilterCriteriaTest {
 
   @Test
-  void initFilterCriteriaObject() {
-    List<ObjectField> fildPath = new ArrayList<>();
-    fildPath.add(mock(ObjectField.class));
+  void initScalarFieldFilterCriteriaObject() {
+    List<ObjectField> fieldPath = new ArrayList<>();
+    fieldPath.add(mock(ObjectField.class));
     Map<String, Object> value = new HashMap<>();
     value.put("a", "bbb");
 
-    var result = FilterCriteria.builder()
-        .fieldPath(fildPath)
+    var result = ScalarFieldFilterCriteria.builder()
+        .fieldPath(fieldPath)
         .value(value)
         .build();
 
-    assertThat(result.getFieldPath(), is(fildPath));
+    assertThat(result.getFieldPath(), is(fieldPath));
     assertThat(result.getValue(), is(value));
   }
 }

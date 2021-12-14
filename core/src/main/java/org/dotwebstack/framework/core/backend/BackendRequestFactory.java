@@ -33,11 +33,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.GroupFilterOperator;
+import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
+import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -73,10 +77,12 @@ public class BackendRequestFactory {
     var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
 
+    var filterCriteria =
+        createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME));
+
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriterias(
-            createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME)))
+        .filterCriteria(filterCriteria.orElse(null))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
@@ -275,30 +281,54 @@ public class BackendRequestFactory {
             .build());
   }
 
-  private List<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map<String, Object> filterArgument) {
+  private Optional<GroupFilterCriteria> createFilterCriteria(ObjectType<?> objectType,
+      Map<String, Object> filterArgument) {
     if (filterArgument == null) {
-      return List.of();
+      return Optional.empty();
     }
 
-    return filterArgument.keySet()
+    var andCriterias = filterArgument.keySet()
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .map(filterName -> {
-          var filterConfiguration = objectType.getFilters()
-              .get(filterName);
-
-          var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
-
-          var filterValue = createFilterValue(filterArgument, filterName);
-
-          return FilterCriteria.builder()
-              .filterType(filterConfiguration.getType())
-              .fieldPath(fieldPath)
-              .value(filterValue)
-              .build();
-
-        })
+        .filter(filterName -> !filterName.startsWith("_"))
+        .map(filterName -> createScalarFieldFilterCriteria(objectType, filterArgument, filterName))
+        .map(FilterCriteria.class::cast)
         .collect(Collectors.toList());
+
+    var andGroup = GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.AND)
+        .filterCriterias(andCriterias)
+        .build();
+
+    var orGroup = filterArgument.keySet()
+        .stream()
+        .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
+        .filter(filterName -> filterName.startsWith("_or"))
+        .findFirst()
+        .flatMap(filterName -> createFilterCriteria(objectType, MapHelper.getNestedMap(filterArgument, filterName)));
+
+    return orGroup.map(groupFilterCriteria -> GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.OR)
+        .filterCriterias(List.of(andGroup, groupFilterCriteria))
+        .build())
+        .or(() -> Optional.of(andGroup));
+
+  }
+
+  private ScalarFieldFilterCriteria createScalarFieldFilterCriteria(ObjectType<?> objectType,
+      Map<String, Object> filterArgument, String filterName) {
+    var filterConfiguration = objectType.getFilters()
+        .get(filterName);
+
+    var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
+
+    var filterValue = createFilterValue(filterArgument, filterName);
+
+    return ScalarFieldFilterCriteria.builder()
+        .filterType(filterConfiguration.getType())
+        .fieldPath(fieldPath)
+        .value(filterValue)
+        .build();
   }
 
   private Map<String, Object> createFilterValue(Map<String, Object> arguments, String key) {
