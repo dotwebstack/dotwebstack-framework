@@ -226,36 +226,21 @@ class FilterConditionBuilder {
                 return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
               })
               .orElseThrow(() -> illegalArgumentException("Unknown filter field '%s'", entry.getKey()));
-          // .orElse(emptyCondition.stream());
         })
         .collect(Collectors.toList());
 
     return andCondition(conditions);
 
   }
-  // TODO: remove
-  // private Condition createCondition2(PostgresObjectField objectField, Map<String, Object> values) {
-  // var conditions = values.entrySet()
-  // .stream()
-  // .flatMap(entry -> {
-  // var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-  // if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-  // return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
-  // }
-  // return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
-  // })
-  // .collect(Collectors.toList());
-  //
-  // return andCondition(conditions);
-  // }
 
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (NOT == operator) {
       var conditions = castToMap(value).entrySet()
           .stream()
           .map(entry -> {
-            var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-            return createCondition(objectField, filterOperator, entry.getValue());
+            return Optional.ofNullable(EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey()))
+                .map(filterOperator -> createCondition(objectField, filterOperator, entry.getValue()))
+                .orElseThrow(() -> illegalArgumentException("Unknown filter field '%s'", entry.getKey()));
           })
           .collect(Collectors.toList());
 
@@ -344,7 +329,6 @@ class FilterConditionBuilder {
     return DSL.val(value);
   }
 
-  // TODO: use optional construction?
   private Field<Object> getEnumerationValue(PostgresObjectField objectField, Object value) {
     var type = objectField.getEnumeration()
         .getType();
@@ -359,12 +343,11 @@ class FilterConditionBuilder {
           .getType();
       var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
       if (objectField.isList()) {
-        // var field = getArrayField(objectField, value);
         var field = DSL.val(value);
         return field.cast(dataType.getArrayDataType());
       }
     }
-    throw new IllegalArgumentException("TODO");
+    throw illegalArgumentException("Field '%s' is not a list of enumerations", objectField.getName());
   }
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,

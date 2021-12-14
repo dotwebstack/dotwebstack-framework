@@ -12,8 +12,6 @@ public class FilterConstants {
 
   public static final String STRING_LIST_FILTER_INPUT_OBJECT_TYPE = "StringListFilter";
 
-  public static final String TERM_FILTER_INPUT_OBJECT_TYPE = "TermFilter";
-
   public static final String STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE = "StringPartialFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";
@@ -27,6 +25,8 @@ public class FilterConstants {
   public static final String DATE_FILTER_INPUT_OBJECT_TYPE = "DateFilter";
 
   public static final String DATE_TIME_FILTER_INPUT_OBJECT_TYPE = "DateTimeFilter";
+
+  public static final String SCALAR_LIST_FILTER_POSTFIX = "List";
 
   public static final String EQ_FIELD = "eq";
 
