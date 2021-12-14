@@ -56,12 +56,11 @@ public class FilterValidator implements SchemaValidator {
     Optional<? extends ObjectField> field = getField(schema, objectTypeName, filterFieldPathArr);
 
     if (field.isEmpty()) {
-      throw invalidConfigurationException(
-          "Filter field '{}' in object type '{}' can't be resolved to a single scalar type.", filterFieldPath,
+      throw invalidConfigurationException("Filter field '{}' not found in object type '{}'.", filterFieldPath,
           objectTypeName);
     }
 
-    if (FilterType.TERM.equals(filterEntry.getValue()
+    if (FilterType.PARTIAL.equals(filterEntry.getValue()
         .getType()) && field.map(ObjectField::getType)
             .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
             .isPresent()) {
