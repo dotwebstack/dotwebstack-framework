@@ -10,7 +10,6 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +23,6 @@ import org.dotwebstack.framework.service.openapi.helper.OasConstants;
 public class MappingContext {
 
   private final Map<String, Object> parameters;
-
-  private final Set<String> requiredFields;
 
   private final Set<String> expandablePaths;
 
@@ -50,10 +47,6 @@ public class MappingContext {
         .getOperation()
         .getParameters();
 
-    var requiredFields = Collections.unmodifiableSet(new LinkedHashSet<>(operationRequest.getContext()
-        .getQueryProperties()
-        .getRequiredFields()));
-
     if (parameters != null) {
       var expandable = parameters.stream()
           .map(MappingContext::toExpanded)
@@ -61,21 +54,19 @@ public class MappingContext {
           .findFirst()
           .orElse(Set.of());
 
-      return new MappingContext(Collections.unmodifiableMap(operationRequest.getParameters()), requiredFields,
-          expandable, expandedPaths);
+      return new MappingContext(Collections.unmodifiableMap(operationRequest.getParameters()), expandable,
+          expandedPaths);
     }
-    return new MappingContext(Map.of(), requiredFields, Set.of(), expandedPaths);
+    return new MappingContext(Map.of(), Set.of(), expandedPaths);
   }
 
-  public MappingContext(Map<String, Object> parameters, Set<String> requiredFields, Set<String> expandablePaths,
-      Set<String> expandedPaths) {
-    this(parameters, requiredFields, expandablePaths, expandedPaths, List.of(), false);
+  public MappingContext(Map<String, Object> parameters, Set<String> expandablePaths, Set<String> expandedPaths) {
+    this(parameters, expandablePaths, expandedPaths, List.of(), false);
   }
 
-  public MappingContext(Map<String, Object> parameters, Set<String> requiredFields, Set<String> expandablePaths,
-      Set<String> expandedPaths, List<String> path, boolean rootFound) {
+  public MappingContext(Map<String, Object> parameters, Set<String> expandablePaths, Set<String> expandedPaths,
+      List<String> path, boolean rootFound) {
     this.parameters = parameters;
-    this.requiredFields = requiredFields;
     this.expandablePaths = expandablePaths;
     this.expandedPaths = expandedPaths;
     this.path = path;
@@ -84,15 +75,14 @@ public class MappingContext {
 
   public MappingContext updatePath(String key, Schema<?> schema) {
     if (!isEnvelope(schema) && rootFound) {
-      return new MappingContext(parameters, requiredFields, expandablePaths, expandedPaths, createNewPath(key),
-          rootFound);
+      return new MappingContext(parameters, expandablePaths, expandedPaths, createNewPath(key), rootFound);
     }
     rootFound = rootFound || !isEnvelope(schema);
     return this;
   }
 
   public MappingContext updatePath(Schema<?> schema) {
-    return new MappingContext(parameters, requiredFields, expandablePaths, expandedPaths, createNewPath(),
+    return new MappingContext(parameters, expandablePaths, expandedPaths, createNewPath(),
         rootFound || (!isEnvelope(schema)));
   }
 

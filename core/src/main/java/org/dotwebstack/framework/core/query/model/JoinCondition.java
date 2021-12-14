@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.core.query.model;
 
 import java.util.Map;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
-@Builder
+@SuperBuilder
 @EqualsAndHashCode
 public class JoinCondition {
 

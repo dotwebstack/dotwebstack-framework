@@ -4,6 +4,7 @@ query Query {
     name
     aliases
     postalAddress {
+      locator
       street
       postalCode
       location {

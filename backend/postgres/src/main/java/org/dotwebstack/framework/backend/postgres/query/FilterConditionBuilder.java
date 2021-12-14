@@ -202,6 +202,18 @@ class FilterConditionBuilder {
         .build();
   }
 
+  private Condition createConditions(Field<Object> field, Map<String, Object> values) {
+    var conditions = values.entrySet()
+        .stream()
+        .map(entry -> {
+          var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
+          return createCondition(null, field, filterOperator, entry.getValue());
+        })
+        .collect(Collectors.toList());
+
+    return andCondition(conditions);
+  }
+
   private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
@@ -237,17 +249,7 @@ class FilterConditionBuilder {
 //    throw illegalArgumentException("Unknown filter field '%s'", operator);
 //  }
 
-  private Condition createConditions(Field<Object> field, Map<String, Object> values) {
-    var conditions = values.entrySet()
-        .stream()
-        .map(entry -> {
-          var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-          return createCondition(null, field, filterOperator, entry.getValue());
-        })
-        .collect(Collectors.toList());
 
-    return andCondition(conditions);
-  }
 
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (NOT == operator) {

@@ -35,6 +35,19 @@ public class JoinHelper {
     return result;
   }
 
+  public static JoinTable invert(JoinTable joinTable) {
+    if (joinTable == null) {
+      return null;
+    }
+
+    var inverted = new JoinTable();
+    inverted.setName(joinTable.getName());
+    inverted.setJoinColumns(joinTable.getInverseJoinColumns());
+    inverted.setInverseJoinColumns(joinTable.getJoinColumns());
+
+    return inverted;
+  }
+
   public static JoinColumn resolveReferencedField(JoinColumn joinColumn, PostgresObjectType objectType) {
     if (StringUtils.isNotBlank(joinColumn.getReferencedField())) {
       JoinColumn result = new JoinColumn();

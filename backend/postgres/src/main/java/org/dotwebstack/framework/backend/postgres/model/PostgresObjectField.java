@@ -24,8 +24,6 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private String column;
 
-  private String tsvColumn;
-
   private String columnPrefix;
 
   @Valid
@@ -55,10 +53,6 @@ public class PostgresObjectField extends AbstractObjectField {
       column = Optional.ofNullable(columnPrefix)
           .map(prefix -> prefix.concat(columnName))
           .orElse(columnName);
-    }
-
-    if (tsvColumn == null) {
-      tsvColumn = column.concat(TSV_PREFIX);
     }
   }
 }

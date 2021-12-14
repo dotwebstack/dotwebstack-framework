@@ -6,26 +6,24 @@ import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
-import org.dotwebstack.framework.backend.postgres.model.JoinTable;
-import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
-import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.jooq.DSLContext;
 import org.jooq.JoinType;
 import org.jooq.Record;
@@ -42,10 +40,7 @@ class BatchJoinBuilder {
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
   @NotNull
-  private PostgresObjectField objectField;
-
-  @NotNull
-  private PostgresObjectType targetObjectType;
+  private JoinConfiguration joinConfiguration;
 
   private ContextCriteria contextCriteria;
 
@@ -61,7 +56,7 @@ class BatchJoinBuilder {
   private Table<Record> table;
 
   @NotNull
-  private JoinCriteria joinCriteria;
+  private Set<Map<String, Object>> joinKeys;
 
   private BatchJoinBuilder() {}
 
@@ -72,43 +67,44 @@ class BatchJoinBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    PostgresObjectField resolvedObjectField = getObjectField();
+    if (joinConfiguration.getMappedBy() != null) {
+      var mappedBy = joinConfiguration.getMappedBy();
 
-    if (!resolvedObjectField.getJoinColumns()
+      var mappedByJoinConfiguration = JoinConfiguration.builder()
+          .objectField(mappedBy)
+          .joinTable(JoinHelper.invert(mappedBy.getJoinTable()))
+          .joinColumns(mappedBy.getJoinColumns())
+          .objectType((PostgresObjectType) joinConfiguration.getObjectField()
+              .getObjectType())
+          .targetType((PostgresObjectType) mappedBy.getObjectType())
+          .build();
+
+      return newBatchJoining().joinConfiguration(mappedByJoinConfiguration)
+          .contextCriteria(contextCriteria)
+          .aliasManager(aliasManager)
+          .fieldMapper(fieldMapper)
+          .dataQuery(dataQuery)
+          .table(table)
+          .joinKeys(joinKeys)
+          .build();
+    }
+
+    if (!joinConfiguration.getJoinColumns()
         .isEmpty()) {
-      return batchJoin(invertOnList(resolvedObjectField, resolvedObjectField.getJoinColumns()));
+      return batchJoin(invertOnList(joinConfiguration.getObjectField(), joinConfiguration.getJoinColumns()), table);
     }
 
-    if (resolvedObjectField.getJoinTable() != null) {
-      return batchJoin(objectField, resolvedObjectField.getJoinTable(), targetObjectType);
+    if (joinConfiguration.getJoinTable() != null) {
+      return batchJoinTable();
     }
 
-    return batchJoinWithKeysOnly();
-  }
-
-  private SelectQuery<Record> batchJoinWithKeysOnly() {
-    var keyColumnNames = joinCriteria.getKeys()
-        .stream()
-        .findFirst()
-        .stream()
-        .flatMap(map -> map.keySet()
-            .stream())
-        .collect(Collectors.toMap(Function.identity(), Function.identity()));
-
-    var keyTable = createValuesTable(keyColumnNames, joinCriteria.getKeys());
-
-    keyColumnNames.values()
-        .stream()
-        .map(columnName -> QueryHelper.column(null, columnName)
-            .equal(QueryHelper.column(keyTable, columnName)))
-        .forEach(dataQuery::addConditions);
-
-    return batchJoin(keyTable);
+    throw illegalArgumentException("Object field '{}' has no relation configuration!",
+        joinConfiguration.getObjectField()
+            .getName());
   }
 
   private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns, Table<Record> joinConditionTable) {
-
-    var objectType = (PostgresObjectType) objectField.getObjectType();
+    var objectType = joinConfiguration.getObjectType();
 
     var keyJoinColumnAliasMap = joinColumns.stream()
         .collect(Collectors.toMap(joinColumn -> joinColumn, joinColumn -> aliasManager.newAlias()));
@@ -117,7 +113,7 @@ class BatchJoinBuilder {
         .stream()
         .collect(Collectors.toMap(e -> columnName(e.getKey(), objectType), Map.Entry::getValue));
 
-    var keyTable = createValuesTable(keyColumnAliasMap, joinCriteria.getKeys());
+    var keyTable = createValuesTable(keyColumnAliasMap, joinKeys);
 
     keyJoinColumnAliasMap.entrySet()
         .stream()
@@ -125,7 +121,6 @@ class BatchJoinBuilder {
             .getName())
             .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
         .forEach(dataQuery::addConditions);
-
 
     addExists(dataQuery, joinColumns, joinConditionTable);
 
@@ -141,26 +136,18 @@ class BatchJoinBuilder {
     return batchQuery;
   }
 
-  private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns) {
-    return batchJoin(joinColumns, table);
-  }
+  private SelectQuery<Record> batchJoinTable() {
+    var joinTable = joinConfiguration.getJoinTable();
 
-  private SelectQuery<Record> batchJoin(PostgresObjectField objectField, JoinTable joinTable,
-      PostgresObjectType targetObjectType) {
     var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
         .as(aliasManager.newAlias());
 
     dataQuery.addFrom(junctionTable);
 
-    var owningJoinColumns =
-        objectField.getMappedByObjectField() != null ? joinTable.getJoinColumns() : joinTable.getInverseJoinColumns();
+    dataQuery.addConditions(createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
+        joinConfiguration.getTargetType()));
 
-    var keyJoinColumns =
-        objectField.getMappedByObjectField() != null ? joinTable.getInverseJoinColumns() : joinTable.getJoinColumns();
-
-    dataQuery.addConditions(createJoinConditions(junctionTable, table, owningJoinColumns, targetObjectType));
-
-    return batchJoin(keyJoinColumns, junctionTable);
+    return batchJoin(joinTable.getJoinColumns(), junctionTable);
   }
 
   private Table<Record> createValuesTable(Map<String, String> keyColumnNames, Collection<Map<String, Object>> keys) {
@@ -200,11 +187,5 @@ class BatchJoinBuilder {
     fieldMapper.register(EXISTS_KEY, row -> existsColumnNames.stream()
         .filter(key -> !Objects.isNull(row.get(key)))
         .collect(Collectors.toMap(Function.identity(), row::get, (prev, next) -> next, HashMap::new)));
-  }
-
-  private PostgresObjectField getObjectField() {
-    return Optional.of(objectField)
-        .map(PostgresObjectField::getMappedByObjectField)
-        .orElse(objectField);
   }
 }

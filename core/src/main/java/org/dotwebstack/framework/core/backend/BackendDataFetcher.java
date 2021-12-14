@@ -64,8 +64,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
-        return getOrCreateBatchLoader(environment, () -> createManyBatchLoader(environment, requestContext))
-            .load(joinCondition.getKey());
+        return getOrCreateBatchLoader(environment,
+            () -> createManyBatchLoader(environment, requestContext, joinCondition)).load(joinCondition.getKey());
       }
 
       var result = backendLoader.loadMany(collectionRequest, requestContext)
@@ -98,7 +98,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
   }
 
   private DataLoader<Map<String, Object>, List<Map<String, Object>>> createManyBatchLoader(
-      DataFetchingEnvironment environment, RequestContext requestContext) {
+      DataFetchingEnvironment environment, RequestContext requestContext, JoinCondition joinCondition) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
     var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
@@ -108,6 +108,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .collectionRequest(collectionRequest)
           .joinCriteria(JoinCriteria.builder()
               .keys(keys)
+              .joinCondition(joinCondition)
               .build())
           .build();
 

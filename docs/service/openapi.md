@@ -145,26 +145,42 @@ Properties listed as 'expandable' in the enum support the dotted notation for ne
 
 A property marked as 'expandable' should be nullable or not required.
 
-## Required fields
+## Included fields
 A graphql query is usually constructed based on the response schema specified in the OpenAPI document. But in some cases
 it is necessary to request additional fields not specified in the response schema, e.g. for use in 
 [expressions](#response-properties-expression).
 
-To this end it is possible to specify a list of `requiredFields` under the vendor extension `x-dws-query`.
+To this end it is possible to specify a list of "included fields" using vendor extension `x-dws-include`.
 
-A required field may only be a scalar type and will be evaluated on the response object type of the configured GraphQl
-query.
+`x-dws-include` may be used on [non-envelope](#envelope-type) object schemas.
+
+An included field may only be a scalar type and will be evaluated on the type
+in the GraphQl schema corresponding to the schema object type, and included in the GraphQL query.
 
 For example:
 ```yaml
-    x-dws-query:
-      field: breweries
-      requiredFields:
-        - hiddenField
-        - secretField 
+  Brewery:
+    type: object
+    x-dws-include:
+      - identifier
+      - hiddenField
+    required:
+      - name
+      - countries
+    properties:
+      name:
+        type: String
+      countries:
+        $ref: '#/components/schemas/Countries'
+      self:
+        type: String
+        x-dws-expr: '`http://dotwebstack.org/api/beers/${fields.identifier}`'
 ```
 
-Will lead to `hiddenField` and `secretField` being added to the selection set of the `breweries` query.
+Will lead to `identifier` and `hiddenField` being added to the selection set of the corresponding query.
+
+> Note: a common use case for `x-dws-include` is including fields that are only used in expressions, as `identifier` is
+> in the example above.
 
 ## Filters
 OpenApi queries may add filter configuration under the vendor extension `x-dws-query`.
@@ -380,7 +396,7 @@ The entries `pageSize` and `page` map to parameters which will be used to popula
 [paging settings](core/paging.md).
 If paging is disabled, the generated GraphQL query will not contain the `nodes` wrapper field for paged collections.
 
-To create page links in responses, JEXL functions are available, which van be used in a `x-dws-expr`, and need to be
+To create page links in responses, JEXL functions are available, which can be used in a `x-dws-expr`, and need to be
 passed available arguments using existing
 [Response properties expressions](service/openapi?id=response-properties-expression):
 

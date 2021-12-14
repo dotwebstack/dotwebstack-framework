@@ -358,20 +358,6 @@ spatial:
       equivalent: 9067
 ```
 
-### Text search (TSVECTOR)
-
-When a filter for a `String` field is configured with a `term` type DotWebStack will create an SQL condition for this filter against a TSVECTOR column. The TSVECTOR column can be configured with the optional `tsvColumn` property. Default value: `{$fieldname}_tsv`
-
-```yaml
-objectTypes:
-  Beer:
-    table: db.beer_v
-    fields:
-      name:
-        type: String
-        tsvColumn: name_TSVECTOR
-```
-
 ## PostGIS
 
 Geometry and Geography types, as part of the [PostGIS extension](https://postgis.net), are

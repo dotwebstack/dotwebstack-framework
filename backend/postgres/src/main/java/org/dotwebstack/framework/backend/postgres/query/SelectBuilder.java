@@ -46,7 +46,6 @@ import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
-import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -434,9 +433,14 @@ class SelectBuilder {
           // Asked for joinTable
           var joinTable = objectField.getJoinTable();
 
-          objectMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()), row -> JoinCondition.builder()
-              .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
-              .build());
+          objectMapper.register(JOIN_KEY_PREFIX.concat(fieldRequest.getName()), row -> {
+            var resolvedJoinTable = resolveJoinTable((PostgresObjectType) objectField.getObjectType(), joinTable);
+
+            return PostgresJoinCondition.builder()
+                .key(getJoinColumnValues(joinTable.getJoinColumns(), row))
+                .joinTable(resolvedJoinTable)
+                .build();
+          });
 
           return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table)
               .stream()
@@ -608,7 +612,7 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(objectField.getJoinColumns()
             .stream()
             .collect(HashMap::new, (map, joinColumn) -> {
@@ -627,7 +631,7 @@ class SelectBuilder {
 
   private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
       Table<Record> table) {
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> JoinCondition.builder()
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(getJoinColumnValues(joinColumns, row))
         .build());
 
@@ -676,14 +680,17 @@ class SelectBuilder {
 
   private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
       Table<Record> dataTable, JoinCriteria joinCriteria) {
-    return newBatchJoining().objectField((PostgresObjectField) requestContext.getObjectField())
-        .targetObjectType(getObjectType(objectRequest))
+    var objectField = (PostgresObjectField) requestContext.getObjectField();
+
+    var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
+
+    return newBatchJoining().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
         .contextCriteria(objectRequest.getContextCriteria())
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
         .dataQuery(dataQuery)
         .table(dataTable)
-        .joinCriteria(joinCriteria)
+        .joinKeys(joinCriteria.getKeys())
         .build();
   }
 }

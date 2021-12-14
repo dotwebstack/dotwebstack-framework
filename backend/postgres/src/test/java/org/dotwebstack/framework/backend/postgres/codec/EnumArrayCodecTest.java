@@ -117,13 +117,6 @@ class EnumArrayCodecTest {
     assertThrows(UnsupportedOperationException.class, codec::encodeNull);
   }
 
-  @Test
-  void type_ReturnsString_Always() {
-    Class<?> type = codec.type();
-
-    assertThat(type, is(String[].class));
-  }
-
   private ByteBuf createBinaryBuffer(String... values) {
     ByteBuf buffer = Unpooled.buffer();
 

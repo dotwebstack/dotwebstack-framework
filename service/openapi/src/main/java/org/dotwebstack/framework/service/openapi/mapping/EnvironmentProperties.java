@@ -30,7 +30,7 @@ public class EnvironmentProperties {
             return false;
           }
         })
-        .collect(Collectors.toMap(propertyName -> propertyName, environment::getProperty));
+        .collect(Collectors.toMap(propertyName -> propertyName, environment::getProperty, (prop1, prop2) -> prop1));
   }
 
   public Map<String, String> getAllProperties() {

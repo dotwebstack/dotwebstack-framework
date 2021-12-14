@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -140,7 +142,7 @@ public class QueryMapper {
   private Stream<Field> mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
       MappingContext mappingContext) {
 
-    Stream<Field> requiredFields = mapRequiredFields(schema, fieldDefinition, mappingContext);
+    Stream<Field> includedFields = mapIncludedFields(schema, fieldDefinition);
 
     Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
@@ -148,34 +150,50 @@ public class QueryMapper {
         .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition,
             mappingContext));
 
-    return Stream.concat(requiredFields, mappedObjectSchema);
+    return Stream.concat(includedFields, mappedObjectSchema);
   }
 
-  private Stream<Field> mapRequiredFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
-      MappingContext mappingContext) {
-    if (!mappingContext.atBase() || isEnvelope(schema)) {
+  private Stream<Field> mapIncludedFields(Schema<?> schema, GraphQLFieldDefinition fieldDefinition) {
+    if (isEnvelope(schema)) {
       return Stream.of();
     }
 
-    var objectType = unwrapObjectType(fieldDefinition);
+    if (schema.getExtensions() != null && schema.getExtensions()
+        .containsKey(X_DWS_INCLUDE)) {
+      var includes = schema.getExtensions()
+          .get(X_DWS_INCLUDE);
 
-    return mappingContext.getRequiredFields()
-        .stream()
-        .map(requiredField -> newRequiredField(requiredField, objectType));
+      if (includes instanceof Collection<?>) {
+        var objectType = unwrapObjectType(fieldDefinition);
+
+        return ((List<?>) includes).stream()
+            .map(requiredField -> newIncludedField(requiredField, objectType));
+      }
+    }
+
+    return Stream.of();
   }
 
-  private Field newRequiredField(String requiredField, GraphQLObjectType parentObjectType) {
+  private Field newIncludedField(Object includedFieldObject, GraphQLObjectType parentObjectType) {
+
+    if (!(includedFieldObject instanceof String)) {
+      throw new InvalidConfigurationException("Encountered non-string included field in x-dws-include: {}",
+          includedFieldObject);
+    }
+
+    var requiredField = (String) includedFieldObject;
+
     var requiredFieldDefinition = parentObjectType.getFieldDefinition(requiredField);
 
     if (requiredFieldDefinition == null) {
-      throw invalidConfigurationException("Configured required GraphQL field `{}` does not exist for object type `{}`.",
+      throw invalidConfigurationException("Configured included GraphQL field `{}` does not exist for object type `{}`.",
           requiredField, parentObjectType.getName());
     }
 
     var rawFieldType = GraphQLTypeUtil.unwrapAll(requiredFieldDefinition.getType());
 
     if (!(rawFieldType instanceof GraphQLScalarType)) {
-      throw invalidConfigurationException("Configured required GraphQL field `{}` is not a scalar type.",
+      throw invalidConfigurationException("Configured included GraphQL field `{}` is not a scalar type.",
           requiredField);
     }
 

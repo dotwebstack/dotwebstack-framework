@@ -68,11 +68,6 @@ public class EnumArrayCodec implements Codec<String[]> {
   }
 
   @Override
-  public Class<?> type() {
-    return String[].class;
-  }
-
-  @Override
   public boolean canDecode(int dataType, Format format, Class<?> type) {
     return dataTypes.contains(dataType);
   }

@@ -447,27 +447,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Brewery'
-  /brewery-required-fields/{identifier}:
+  /brewery-included-fields/{identifier}:
     get:
       x-dws-query:
         field: brewery
-        requiredFields:
-          - hiddenField
-          - secretField
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Brewery'
-  /breweries-required-fields:
+                $ref: '#/components/schemas/BreweryIncludedFields'
+  /breweries-included-fields:
     get:
       x-dws-query:
         field: breweryCollection
-        requiredFields:
-          - hiddenField
-          - secretField
       responses:
         200:
           description: OK
@@ -488,16 +482,14 @@ paths:
                       breweries:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Brewery'
-  /breweries-pageable-required-fields:
+                          $ref: '#/components/schemas/BreweryIncludedFields'
+  /breweries-pageable-included-fields:
     get:
       x-dws-query:
         field: breweryPageableCollection
         paging:
           pageSize: $query.pageSize
           page: $query.page
-        requiredFields:
-          - hiddenField
       parameters:
         - name: page
           in: query
@@ -518,7 +510,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Brewery'
+                  $ref: '#/components/schemas/BreweryIncludedFields'
             application/hal+json:
               schema:
                 type: object
@@ -536,35 +528,40 @@ paths:
                       breweries:
                         type: array
                         items:
-                          $ref: '#/components/schemas/Brewery'
-  /brewery-non-existent-required-field/{identifier}:
+                          $ref: '#/components/schemas/BreweryIncludedFields'
+  /brewery-non-existent-included-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
-        requiredFields:
-          - hiddenField
-          - missingField
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Brewery'
-  /brewery-non-scalar-required-field/{identifier}:
+                $ref: '#/components/schemas/BreweryIncludedNonExistentFields'
+  /brewery-non-scalar-included-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
-        requiredFields:
-          - hiddenField
-          - postalAddress
       responses:
         200:
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Brewery'
+                $ref: '#/components/schemas/BreweryIncludedNonScalarFields'
+  /brewery-non-string-included-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryIncludedNonStringFields'
 
 components:
   schemas:
@@ -667,6 +664,157 @@ components:
                   format: uri
                   x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
 
+    BreweryIncludedFields:
+      type: object
+      x-dws-include:
+        - hiddenField
+        - secretField
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
+
+    BreweryIncludedNonExistentFields:
+      type: object
+      x-dws-include:
+        - hiddenField
+        - missingField
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
+
+    BreweryIncludedNonScalarFields:
+      type: object
+      x-dws-include:
+        - hiddenField
+        - postalAddress
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
+
+    BreweryIncludedNonStringFields:
+      type: object
+      x-dws-include:
+        - hiddenField
+        - nonString:
+            type: Object
+            properties:
+              foo
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
+
     BreweryVisitAddressWithNullableLocation:
       type: object
       required:
@@ -745,6 +893,8 @@ components:
     AddressNullable:
       type: object
       nullable: true
+      x-dws-include:
+        - locator
       required:
         - street
         - location

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import java.io.IOException;
 import java.util.Objects;
 import org.dotwebstack.framework.core.backend.BackendModule;
@@ -39,9 +39,11 @@ public class TestHelper {
     var deserializerModule =
         new SimpleModule().addDeserializer(ObjectType.class, new TestHelper.ObjectTypeDeserializer(backendModule));
 
-    return new ObjectMapper(new YAMLFactory()).enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .registerModule(deserializerModule);
+    return YAMLMapper.builder()
+        .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+        .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .addModule(deserializerModule)
+        .build();
   }
 
   private static class ObjectTypeDeserializer extends JsonDeserializer<ObjectType<? extends ObjectField>> {

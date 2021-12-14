@@ -46,8 +46,8 @@ public final class FilterHelper {
 
     } else {
       var type = Optional.ofNullable(filterItem.getType())
-          .filter(FilterType.TERM::equals)
-          .map(filterType -> FilterConstants.TERM_NAME)
+          .filter(FilterType.PARTIAL::equals)
+          .map(filterType -> FilterConstants.STRING_PARTIAL)
           .orElse(objectField.getType());
 
       // TODO ahu: generieker maken

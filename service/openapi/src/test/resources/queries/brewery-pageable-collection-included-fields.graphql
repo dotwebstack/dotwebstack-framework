@@ -2,10 +2,12 @@ query Query {
   breweryPageableCollection(first: 42, offset: 42) {
     nodes {
       hiddenField
+      secretField
       identifier
       name
       aliases
       postalAddress {
+        locator
         street
         postalCode
         location {
