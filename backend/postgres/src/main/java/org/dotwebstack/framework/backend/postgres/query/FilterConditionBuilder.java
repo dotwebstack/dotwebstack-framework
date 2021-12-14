@@ -19,6 +19,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
@@ -216,39 +217,37 @@ class FilterConditionBuilder {
     var conditions = values.entrySet()
         .stream()
         .flatMap(entry -> {
-          var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-          if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-            return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
-          }
-          return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
+          Optional<Condition> emptyCondition = Optional.empty();
+          return Optional.ofNullable(EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey()))
+              .map(filterOperator -> {
+                if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+                  return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+                }
+                return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
+              })
+              .orElseThrow(() -> illegalArgumentException("Unknown filter field '%s'", entry.getKey()));
+          // .orElse(emptyCondition.stream());
         })
         .collect(Collectors.toList());
 
     return andCondition(conditions);
-  }
 
-  // private Condition createTermCondition(PostgresObjectField objectField, String operator, Object
-  // value) {
-  // Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
-  // if (FilterConstants.EQ_FIELD.equals(operator)) {
-  // var queryString = DSL.val(Objects.toString(value));
-  // var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
-  // return DSL.condition("{0} @@ {1}", field, query);
-  // }
-  //
-  // if (FilterConstants.NOT_FIELD.equals(operator)) {
-  // var conditions = castToMap(value).entrySet()
+  }
+  // TODO: remove
+  // private Condition createCondition2(PostgresObjectField objectField, Map<String, Object> values) {
+  // var conditions = values.entrySet()
   // .stream()
-  // .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
+  // .flatMap(entry -> {
+  // var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
+  // if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+  // return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+  // }
+  // return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
+  // })
   // .collect(Collectors.toList());
   //
-  // return DSL.not(andCondition(conditions));
+  // return andCondition(conditions);
   // }
-  //
-  // throw illegalArgumentException("Unknown filter field '%s'", operator);
-  // }
-
-
 
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (NOT == operator) {
@@ -331,13 +330,8 @@ class FilterConditionBuilder {
         .collect(Collectors.toList());
   }
 
-  private Field<Object> getArrayField(PostgresObjectField objectField, Object listValue) {
-    var data = ObjectHelper.castToArray(listValue, objectField.getType());
-    return DSL.val(data);
-  }
-
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
-    if (objectField.isEnumeration()) {
+    if (objectField != null && objectField.isEnumeration()) {
       return getEnumerationValue(objectField, value);
     }
     return DSL.val(value);
@@ -375,10 +369,9 @@ class FilterConditionBuilder {
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
       Object value) {
-    // TODO check this
-    // if (ARGUMENT_SRID.equals(operator)) {
-    // return Optional.empty();
-    // }
+    if (SRID == operator) {
+      return Optional.empty();
+    }
 
     var mapValue = ObjectHelper.castToMap(value);
 
