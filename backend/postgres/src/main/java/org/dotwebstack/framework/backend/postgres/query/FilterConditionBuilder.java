@@ -17,6 +17,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LTE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
@@ -62,6 +63,7 @@ import org.locationtech.jts.geom.Geometry;
 @Accessors(fluent = true)
 @Setter
 class FilterConditionBuilder {
+  private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
   private static final DataType<Geometry> GEOMETRY_DATATYPE =
       new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
@@ -132,7 +134,7 @@ class FilterConditionBuilder {
       return DSL.exists(filterQuery);
     }
 
-    return createCondition(current, filterCriteria.getFilterType(), filterCriteria.getValue());
+    return createCondition(current, filterCriteria.getValue());
   }
 
   private Condition createConditionsForMatchingNestedReference(PostgresObjectField objectField,
@@ -161,7 +163,7 @@ class FilterConditionBuilder {
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 
-          return createExactConditions(field, filterCriteria.getValue());
+          return createConditions(field, filterCriteria.getValue());
         })
         .collect(Collectors.toList());
   }
@@ -200,74 +202,60 @@ class FilterConditionBuilder {
         .build();
   }
 
-  private Condition createCondition(PostgresObjectField objectField, FilterType filterType,
-      Map<String, Object> values) {
-    if (FilterType.EXACT.equals(filterType)) {
-      var conditions = values.entrySet()
-          .stream()
-          .flatMap(entry -> {
-            var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-            if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-              return createExactGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
-            }
-            return Stream.of(createExactCondition(objectField, filterOperator, entry.getValue()));
-          })
-          .collect(Collectors.toList());
-
-      return andCondition(conditions);
-    }
-
-    if (FilterType.TERM.equals(filterType)) {
-      var conditions = values.entrySet()
-          .stream()
-          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
-
-      return andCondition(conditions);
-    }
-
-    throw unsupportedOperationException("Unknown filtertype '{}'", filterType);
-  }
-
-  private Condition createTermCondition(PostgresObjectField objectField, String operator, Object value) {
-    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
-    if (FilterConstants.EQ_FIELD.equals(operator)) {
-      var queryString = DSL.val(Objects.toString(value));
-      var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
-      return DSL.condition("{0} @@ {1}", field, query);
-    }
-
-    if (FilterConstants.NOT_FIELD.equals(operator)) {
-      var conditions = castToMap(value).entrySet()
-          .stream()
-          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
-          .collect(Collectors.toList());
-
-      return DSL.not(andCondition(conditions));
-    }
-
-    throw illegalArgumentException("Unknown filter field '%s'", operator);
-  }
-
-  private Condition createExactConditions(Field<Object> field, Map<String, Object> values) {
+  private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .map(entry -> {
+        .flatMap(entry -> {
           var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-          return createExactCondition(null, field, filterOperator, entry.getValue());
+          if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+            return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+          }
+          return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
         })
         .collect(Collectors.toList());
 
     return andCondition(conditions);
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
+//  private Condition createTermCondition(PostgresObjectField objectField, String operator, Object value) {
+//    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getTsvColumn()));
+//    if (FilterConstants.EQ_FIELD.equals(operator)) {
+//      var queryString = DSL.val(Objects.toString(value));
+//      var query = DSL.field("plainto_tsquery('simple',{0})", queryString);
+//      return DSL.condition("{0} @@ {1}", field, query);
+//    }
+//
+//    if (FilterConstants.NOT_FIELD.equals(operator)) {
+//      var conditions = castToMap(value).entrySet()
+//          .stream()
+//          .map(entry -> createTermCondition(objectField, entry.getKey(), entry.getValue()))
+//          .collect(Collectors.toList());
+//
+//      return DSL.not(andCondition(conditions));
+//    }
+//
+//    throw illegalArgumentException("Unknown filter field '%s'", operator);
+//  }
+
+  private Condition createConditions(Field<Object> field, Map<String, Object> values) {
+    var conditions = values.entrySet()
+        .stream()
+        .map(entry -> {
+          var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
+          return createCondition(null, field, filterOperator, entry.getValue());
+        })
+        .collect(Collectors.toList());
+
+    return andCondition(conditions);
+  }
+
+  private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (NOT == operator) {
       var conditions = castToMap(value).entrySet()
           .stream()
           .map(entry -> {
             var filterOperator = EnumUtils.getEnumIgnoreCase(FilterOperator.class, entry.getKey());
-            return createExactCondition(objectField, filterOperator, entry.getValue());
+            return createCondition(objectField, filterOperator, entry.getValue());
           })
           .collect(Collectors.toList());
 
@@ -277,14 +265,14 @@ class FilterConditionBuilder {
     if (objectField.isList()) {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()), Object[].class);
       var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
-      return createExactCondition(objectField, field, operator, arrayValue);
+      return createCondition(objectField, field, operator, arrayValue);
     } else {
       Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
-      return createExactCondition(objectField, field, operator, value);
+      return createCondition(objectField, field, operator, value);
     }
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, Field<Object[]> field,
+  private Condition createCondition(PostgresObjectField objectField, Field<Object[]> field,
       FilterOperator operator, Object[] value) {
 
     if (EQ == operator) {
@@ -302,8 +290,13 @@ class FilterConditionBuilder {
     throw illegalArgumentException("Unknown filter field '%s'", operator);
   }
 
-  private Condition createExactCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
+  private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
       Object value) {
+    if (MATCH == operator) {
+      var escapedValue = escapeMatchValue(Objects.toString(value));
+      return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
+          .escape(LIKE_ESCAPE_CHARACTER);
+    }
     if (EQ == operator) {
       return field.eq(getValue(objectField, value));
     }
@@ -379,7 +372,7 @@ class FilterConditionBuilder {
     throw new IllegalArgumentException("TODO");
   }
 
-  private Optional<Condition> createExactGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
+  private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
       Object value) {
     // TODO check this
     // if (ARGUMENT_SRID.equals(operator)) {
@@ -414,5 +407,13 @@ class FilterConditionBuilder {
 
   private Condition andCondition(List<Condition> conditions) {
     return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
+  }
+
+  private String escapeMatchValue(String inputValue) {
+    String result = inputValue.replace(String.valueOf(LIKE_ESCAPE_CHARACTER),
+        String.valueOf(new char[] {LIKE_ESCAPE_CHARACTER, LIKE_ESCAPE_CHARACTER}));
+    result = result.replace("_", LIKE_ESCAPE_CHARACTER + "_");
+    result = result.replace("%", LIKE_ESCAPE_CHARACTER + "%");
+    return result;
   }
 }
