@@ -47,4 +47,6 @@ public class FilterConstants {
   public static final String CONTAINS_ANY_OF_FIELD = "containsAnyOf";
 
   public static final String NOT_FIELD = "not";
+
+  public static final String OR_FIELD = "_or";
 }

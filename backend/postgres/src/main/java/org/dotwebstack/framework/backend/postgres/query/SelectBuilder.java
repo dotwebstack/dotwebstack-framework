@@ -99,15 +99,15 @@ class SelectBuilder {
         .build()
         .forEach(dataQuery::addOrderBy);
 
-    collectionRequest.getFilterCriterias()
-        .stream()
+    Optional.of(collectionRequest)
+        .map(CollectionRequest::getFilterCriteria)
         .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
             .filterCriteria(filterCriteria)
             .table(DSL.table(tableAlias))
             .contextCriteria(collectionRequest.getObjectRequest()
                 .getContextCriteria())
             .build())
-        .forEach(dataQuery::addConditions);
+        .ifPresent(dataQuery::addConditions);
 
     newPaging().requestContext(requestContext)
         .dataQuery(dataQuery)

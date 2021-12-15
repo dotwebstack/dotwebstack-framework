@@ -28,6 +28,7 @@ import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsIn;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.collection.IsMapContaining;
@@ -1208,6 +1209,19 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.size(), is(2));
     assertThat(beers, is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
         Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"))));
+  }
+
+  @Test
+  void getRequest_returnsBeers_withOrFilter() {
+    String query = "{\n" + "  breweries(filter: {name: {eq: \"Brewery X\"}, status: {eq: \"active\"}, "
+        + "_or: {name: {eq: \"Brewery Z\"}}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data, hasEntry(equalTo("breweries"), IsCollectionWithSize.hasSize(2)));
+    Assert.assertThat(data, hasEntry(equalTo("breweries"),
+        hasItems(equalToObject(Map.of("name", "Brewery X")), equalToObject(Map.of("name", "Brewery Z")))));
   }
 
   @Test
