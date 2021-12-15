@@ -9,6 +9,7 @@ The following types are currently supported:
 - A `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `DateTime` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Boolean` field can be filtered with `true` or `false`.
+- The list fields of type `String`, `Int`, `Float` and enumerations can be filtered with the operators: `eq`, `containsAllOf`, `containsAnyOf` and `not`.
 
 The filter type can be configured on each filter with the `type` property. The default filter type is `exact`, the `partial` filter type can be used by `String` field types for partial matching.
 
@@ -45,9 +46,17 @@ objectTypes:
         type: String
       soldPerYear:
         type: Int
+      taste:
+        type: String
+        list: true
+        enum:
+          type: beer_taste
+          values: ["MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY"]  
     filters:
       name: {}
       soldPerYear: {}
+      taste: {}
+      
   Brewery:
     fields:
       identifier:
@@ -72,6 +81,7 @@ objectTypes:
       status: {}
       multinational:
         default: true
+      
 ```
 
 ### Equals filter
