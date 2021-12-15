@@ -1662,6 +1662,17 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void graphQlQuery_returnsBreweries_forEnumListFilter() {
+//    String query = "{\n" + "  beers(filter: {taste: {containsAllOf: ['MEATY','FRUITY']}}) {\n" + "    name\n" + "  }\n" + "}";
+//    String query = "{beers(filter: {taste: {containsAllOf: [\"MEATY\",\"FRUITY\"]}}) { name }}";
+    String query = "{\n" + "  beers(filter: {taste: {containsAllOf: [\"MEATY\", \"FRUITY\"]}}) {\n" + "    name\n" + "  }\n" + "}";
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data, equalTo(Map.of("beers", List.of(Map.of("name", "Beer 1"), Map.of("name", "Beer 2")))));
+  }
+
+  @Test
   void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{\n" + "  beers {\n" + "    identifier_beer\n" + "    name\n" + "    ingredients{\n"
         + "      identifier_ingredient\n" + "      name\n" + "    }\n" + "  }\n" + "}\n";

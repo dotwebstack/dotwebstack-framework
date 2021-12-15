@@ -151,7 +151,7 @@ class FilterConditionBuilderTest {
     objectField.setList(true);
     objectField.setType(type);
 
-    var filterCriteria = createFilterCriteria(FilterType.EXACT, values, objectField);
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
 
     var condition = build(filterCriteria);
 
@@ -179,7 +179,7 @@ class FilterConditionBuilderTest {
     enumConfiguration.setType("fooType");
     objectField.setEnumeration(enumConfiguration);
 
-    var filterCriteria = createFilterCriteria(FilterType.EXACT, values, objectField);
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
 
     var condition = build(filterCriteria);
 
