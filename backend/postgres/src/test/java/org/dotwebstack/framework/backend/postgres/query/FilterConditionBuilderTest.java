@@ -136,10 +136,10 @@ class FilterConditionBuilderTest {
         arguments("Int", Map.of("containsAnyOf", List.of(33, 44)), "(\"x1\".\"column\" && array[33, 44])"),
         arguments("Int", Map.of("not", Map.of("containsAnyOf", List.of(33, 44))),
             "not ((\"x1\".\"column\" && array[33, 44]))"),
-        arguments("Float", Map.of("eq", List.of(33.3, 44.4)), "\"x1\".\"column\" = array[33.3, 44.4]"),
-        arguments("Float", Map.of("containsAllOf", List.of(33.3, 44.4)), "\"x1\".\"column\" @> array[33.3, 44.4]"),
-        arguments("Float", Map.of("containsAnyOf", List.of(33.3, 44.4)), "(\"x1\".\"column\" && array[33.3, 44.4])"),
-        arguments("Float", Map.of("not", Map.of("containsAnyOf", List.of(33.3, 44.4))),
+        arguments("Float", Map.of("eq", List.of(33.3f, 44.4f)), "\"x1\".\"column\" = array[33.3, 44.4]"),
+        arguments("Float", Map.of("containsAllOf", List.of(33.3f, 44.4f)), "\"x1\".\"column\" @> array[33.3, 44.4]"),
+        arguments("Float", Map.of("containsAnyOf", List.of(33.3f, 44.4f)), "(\"x1\".\"column\" && array[33.3, 44.4])"),
+        arguments("Float", Map.of("not", Map.of("containsAnyOf", List.of(33.3f, 44.4f))),
             "not ((\"x1\".\"column\" && array[33.3, 44.4]))"));
   }
 
