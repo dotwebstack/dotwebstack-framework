@@ -18,6 +18,17 @@ spatial:
       scale: 9
       columnSuffix: _etrs89
       equivalent: 9067
+
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
+
 queries:
   beer:
     type: Beer
@@ -35,6 +46,11 @@ queries:
     type: Brewery
     list: true
     pageable: true
+  breweryCollectionInContext:
+    type: Brewery
+    list: true
+    pageable: true
+    context: history
 
 objectTypes:
   Beer:
