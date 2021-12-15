@@ -2,7 +2,7 @@
 
 This service can be used to expose the internal GraphQL service as
 an [OpenAPI](https://github.com/OAI/OpenAPI-Specification) service. The service can be configured by providing
-an `openapi.yaml` specification in the resource path.
+an OpenAPI document named `openapi.yaml` in the resource path.
 
 The OpenAPI service can be included in a Spring Boot project with the following dependency:
 
@@ -14,10 +14,10 @@ The OpenAPI service can be included in a Spring Boot project with the following 
 </dependency>
 ```
 
-## Specification file
+## OpenAPI document file
 
-The OpenAPI service looks for the OpenAPI specification in the classpath resource `config/openapi.yaml`. Path operations
-and types used in the specification should map to the GraphQL service.
+The OpenAPI service looks for the OpenAPI document in the classpath resource `config/openapi.yaml`. Path operations
+and types used in the OpenAPI document should map to the GraphQL service.
 
 ## Operation mapping
 
@@ -174,7 +174,7 @@ For example:
         $ref: '#/components/schemas/Countries'
       self:
         type: String
-        x-dws-expr: '`http://dotwebstack.org/api/beers/${fields.identifier}`'
+        x-dws-expr: '`http://dotwebstack.org/api/beers/${args.identifier}`'
 ```
 
 Will lead to `identifier` and `hiddenField` being added to the selection set of the corresponding query.
@@ -185,12 +185,10 @@ Will lead to `identifier` and `hiddenField` being added to the selection set of 
 ## Filters
 OpenApi queries may add filter configuration under the vendor extension `x-dws-query`.
 The filter configuration is mapped to the graphQL filter specified for that field and can make use of parameter values
-with a key `$<type>.<parametername>` where `type` may be:
-* `path`
-* `body`
-* `header`
-* `query`
-For instance, `$path.name` refers to the `name` parameter that occurs in the path.
+with a key `args.<parametername>`:
+
+For instance, `args.name` refers to the `name` parameter that occurs in either the path, query, request body or request 
+header.
 
 Filters are configured with an optional map `x-dws-query.filters`. The map contains a filter configuration per GraphQL
 query field.
@@ -209,7 +207,7 @@ The following describes a filter on the `breweries` field:
       field: breweries
       filters:
         name:
-          in: $query.name
+          in: args.name
 ```
 With a value `"Brewery A", "Brewery B"` for the query `name` parameter this will produce the filter
 `breweries(filter: { name: {in :["Brewery A", "Brewery B"]}})`.
@@ -233,28 +231,16 @@ provided.-->
 
 ### Expressions
 A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate
-the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.
+the `name.in` field of the graphQL filter with the uppercase of the`args.name` parameter.
 ```yaml
     x-dws-query:
       field: breweries
       filters:
         name:
           in:
-            x-dws-expr: '$body.name.toUpperCase()'
+            x-dws-expr: 'args.name.toUpperCase()'
 ```
 
-<!-- ## Required fields
-
-In some cases fields are only used within an x-dws-expr. The `requiredField` parameter of the `x-dws-query' extension
-can be used to list fields that are not part of the response data but are required to evaluate the expression:
-
-```yaml
-x-dws-query:
-  field: brewery
-  requiredFields:
-    - postalCode
-```
--->
 ## Request body
 
 In addition to request parameters, it is possible to use the HTTP request body to provide input with the `requestBody`
@@ -350,7 +336,7 @@ properties:
     type: string
   link:
     type: string
-    x-dws-expr: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+    x-dws-expr: '`${env.dotwebstack.base_url}/breweries/${args.name}/beers/${data.identifier}`'
 ```
 
 The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/proper/commons-jexl/) expression. The
@@ -359,14 +345,12 @@ variables:
 
 * `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to
   the `application.yml`.
-* `fields.<property>`: A scalar field of the object containing the `x-dws-expr` property.
-* `fields._parent.<property>`: Same as above, but using the parent of the object. This construction can be used
-  recursively to access parents of parents: `fields._parent._parent.<property>`.
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are
   mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query
   field.
-* `args._parent.<inputName>`: Same as above, but using the parent of the object.
 * `args.requestUri`: The requested URI is available via this argument.
+* `args.requestPathAndQuery`: The path and query part of the requested URI is available via this argument.
+* `data.<property>`: A scalar field of the object containing the `x-dws-expr` property.
 * `data`: The response data object available during field processing.
 
 In some cases the fields you try to access in an `x-dws-expr` are not always present. For this reason it is possible to
@@ -374,7 +358,7 @@ specify a `fallback` for an `x-dws-expr`:
 
 ```yaml
 x-dws-expr:
-  value: '`${env.dotwebstack.base_url}/breweries/${fields._parent.name}/beers/${fields.identifier}`'
+  value: '`${env.dotwebstack.base_url}/breweries/${args.name}/beers/${data.identifier}`'
   fallback: null
 ```
 
@@ -389,8 +373,8 @@ When enabled, paging configuration can be added to the `x-dws-query` settings wi
   x-dws-query:
     field: breweries
     paging:
-      pageSize: $query.pageSize
-      page: $query.page
+      pageSize: args.pageSize
+      page: args.page
 ```
 The entries `pageSize` and `page` map to parameters which will be used to populate the graphpQL 
 [paging settings](core/paging.md).
@@ -658,11 +642,6 @@ dotwebstack:
 - `sridParameter.name` specifies the name of the parameter. Depending on the presence of `valueMap`, it may either be a `string` or an `integer`.
 - `sridParameter.valueMap` is an optional String to Integer map. When present, the parameter value should be a `string` and will be translated using this map. If the map is not present, the parameter value will be passed as-is, and should be an `integer` or a `string` with integer format.
 
-<!-- ### Serialization of null fields
-
-`dotwebstack.openapi.serializeNull` is an optional property that can be set to true/false to include/exclude null fields
-in the openAPI response. By default, i.e. if this property is not set, null fields will be serialized.
--->
 <!-- ### Static Resources
 
 To use static resources, create a folder `assets` in the `config` dir. Place the desired assets in the `assets` folder,
