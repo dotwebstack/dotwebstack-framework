@@ -194,3 +194,14 @@ query {
     }
 }
 ```
+
+### Or filter
+
+```graphql
+query {
+    breweries(filter: {name: {eq: "Brewery X"}, status: {eq: "active"}, _or: {name: {eq: "Brewery Z"}}}) {
+        identifier
+        name
+    }
+}
+```

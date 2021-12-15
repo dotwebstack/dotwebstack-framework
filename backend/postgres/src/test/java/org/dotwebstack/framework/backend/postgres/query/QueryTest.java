@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,7 +46,6 @@ class QueryTest {
 
     var result = new Query(objectRequest, requestContext);
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Query);
   }
 
   @Test
@@ -64,12 +62,10 @@ class QueryTest {
     CollectionRequest request = CollectionRequest.builder()
         .objectRequest(objectRequest)
         .sortCriterias(List.of())
-        .filterCriterias(List.of())
         .build();
 
     var result = new Query(request, requestContext);
     assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof Query);
   }
 
   private ObjectRequest initObjectRequest() {

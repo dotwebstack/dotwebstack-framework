@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
@@ -29,6 +30,7 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
@@ -79,10 +81,45 @@ class FilterConditionBuilder {
   Condition build() {
     validateFields(this);
 
-    return walkFieldPath(filterCriteria);
+    return build(filterCriteria);
   }
 
-  private Condition walkFieldPath(FilterCriteria filterCriteria) {
+  private Condition build(FilterCriteria filterCriteria) {
+    if (filterCriteria.isGroupFilter()) {
+      var group = filterCriteria.asGroupFilter();
+
+      var conditions = group.getFilterCriterias()
+          .stream()
+          .map(this::build)
+          .collect(Collectors.toList());
+
+      if (conditions.size() > 1) {
+        switch (group.getLogicalOperator()) {
+          case AND:
+            return DSL.and(conditions);
+          case OR:
+            return DSL.or(conditions);
+          default:
+            throw unsupportedOperationException("Logical operator '{}' is not supported!", group.getLogicalOperator());
+        }
+      }
+
+      if (conditions.size() == 1) {
+        return conditions.get(0);
+      }
+
+      return null;
+    }
+
+    if (filterCriteria.isScalarFieldFilter()) {
+      return walkFieldPath(filterCriteria.asScalarFieldFilter());
+    }
+
+    throw unsupportedOperationException("Filter criteria '{}' is not supported!", filterCriteria.getClass()
+        .getSimpleName());
+  }
+
+  private Condition walkFieldPath(ScalarFieldFilterCriteria filterCriteria) {
     var fieldPath = filterCriteria.getFieldPath();
     var current = (PostgresObjectField) fieldPath.get(0);
 
@@ -92,7 +129,7 @@ class FilterConditionBuilder {
       if (current.getTargetType()
           .isNested()) {
         if (JoinHelper.hasNestedReference(current)) {
-          return createConditionsForMatchingNestedReference(current, fieldPath);
+          return createConditionsForMatchingNestedReference(filterCriteria, current, fieldPath);
         }
 
         return walkFieldPath(childCriteria);
@@ -126,18 +163,18 @@ class FilterConditionBuilder {
     return createCondition(current, filterCriteria.getValue());
   }
 
-  private Condition createConditionsForMatchingNestedReference(PostgresObjectField objectField,
-      List<ObjectField> fieldPath) {
+  private Condition createConditionsForMatchingNestedReference(ScalarFieldFilterCriteria filterCriteria,
+      PostgresObjectField objectField, List<ObjectField> fieldPath) {
     String referencedField = toFieldPathString(fieldPath.subList(1, fieldPath.size()));
 
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return andCondition(
-          createConditionsForMatchingNestedReference(objectField.getJoinColumns(), referencedField, table.getName()));
+      return andCondition(createConditionsForMatchingNestedReference(filterCriteria, objectField.getJoinColumns(),
+          referencedField, table.getName()));
     }
 
     if (objectField.getJoinTable() != null) {
-      return createConditionsForMatchingNestedReference(objectField, referencedField);
+      return createConditionsForMatchingNestedReference(filterCriteria, objectField, referencedField);
     }
 
     throw illegalArgumentException("ObjectField '{}' in ObjectType '{}' has no join configuration",
@@ -145,8 +182,8 @@ class FilterConditionBuilder {
             .getName());
   }
 
-  private List<Condition> createConditionsForMatchingNestedReference(List<JoinColumn> joinColumns,
-      String referencedField, String tableName) {
+  private List<Condition> createConditionsForMatchingNestedReference(ScalarFieldFilterCriteria filterCriteria,
+      List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
         .filter(joinColumn -> referencedField.equals(joinColumn.getReferencedField()))
         .map(joinColumn -> {
@@ -157,7 +194,8 @@ class FilterConditionBuilder {
         .collect(Collectors.toList());
   }
 
-  private Condition createConditionsForMatchingNestedReference(PostgresObjectField current, String referencedField) {
+  private Condition createConditionsForMatchingNestedReference(ScalarFieldFilterCriteria filterCriteria,
+      PostgresObjectField current, String referencedField) {
     var joinTable = findTable(current.getJoinTable()
         .getName(), contextCriteria);
 
@@ -170,7 +208,7 @@ class FilterConditionBuilder {
 
     filterQuery.addSelect(DSL.val(1));
 
-    createConditionsForMatchingNestedReference(current.getJoinTable()
+    createConditionsForMatchingNestedReference(filterCriteria, current.getJoinTable()
         .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
 
     return DSL.exists(filterQuery);
@@ -182,9 +220,9 @@ class FilterConditionBuilder {
         .collect(Collectors.joining("."));
   }
 
-  private FilterCriteria createChildCriteria(FilterType filterType, List<ObjectField> fieldPath,
+  private ScalarFieldFilterCriteria createChildCriteria(FilterType filterType, List<ObjectField> fieldPath,
       Map<String, Object> value) {
-    return FilterCriteria.builder()
+    return ScalarFieldFilterCriteria.builder()
         .filterType(filterType)
         .fieldPath(fieldPath.subList(1, fieldPath.size()))
         .value(value)

@@ -34,7 +34,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.r2dbc.core.FetchSpec;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -72,7 +71,6 @@ class PostgresBackendLoaderTest {
     var res = backendLoader.loadSingle(objectRequest, requestContext);
 
     assertThat(res, CoreMatchers.is(notNullValue()));
-    assertTrue(res instanceof Mono);
     res.doOnNext(result -> assertTrue(result.isEmpty()))
         .subscribe();
   }
@@ -99,12 +97,10 @@ class PostgresBackendLoaderTest {
     CollectionRequest request = CollectionRequest.builder()
         .objectRequest(objectRequest)
         .sortCriterias(List.of())
-        .filterCriterias(List.of())
         .build();
 
     var res = backendLoader.loadMany(request, requestContext);
     assertThat(res, CoreMatchers.is(notNullValue()));
-    assertTrue(res instanceof Flux);
     res.doOnNext(result -> assertTrue(result.isEmpty()))
         .subscribe();
   }
@@ -132,7 +128,6 @@ class PostgresBackendLoaderTest {
     CollectionRequest collectionRequest = CollectionRequest.builder()
         .objectRequest(objectRequest)
         .sortCriterias(List.of())
-        .filterCriterias(List.of())
         .build();
 
     CollectionBatchRequest request = CollectionBatchRequest.builder()
@@ -143,7 +138,6 @@ class PostgresBackendLoaderTest {
 
     var res = backendLoader.batchLoadMany(request, requestContext);
     assertThat(res, CoreMatchers.is(notNullValue()));
-    assertTrue(res instanceof Flux);
   }
 
   private ObjectRequest initObjectRequest() {

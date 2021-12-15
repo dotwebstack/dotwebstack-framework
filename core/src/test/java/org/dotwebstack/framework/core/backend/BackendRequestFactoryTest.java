@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -132,8 +131,7 @@ class BackendRequestFactoryTest {
     assertThat(result.getObjectRequest()
         .getObjectType()
         .getName(), is("Brewery"));
-    assertFalse(result.getFilterCriterias()
-        .isEmpty());
+    assertThat(result.getFilterCriteria(), is(notNullValue()));
     assertThat(result.getSortCriterias()
         .get(0)
         .getFieldPath()
