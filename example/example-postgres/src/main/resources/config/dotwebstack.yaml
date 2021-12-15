@@ -241,6 +241,3 @@ objectTypes:
         type: String
         column: his_history
 
-enumerations:
-  Taste:
-    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
