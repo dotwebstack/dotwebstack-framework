@@ -143,13 +143,13 @@ class FilterConditionBuilder {
 
       filterQuery.addSelect(DSL.val(1));
 
-      var joinCondition = newJoin().table(table)
+      var joinConditions = newJoin().table(table)
           .joinConfiguration(toJoinConfiguration(current))
           .tableCreator(createTableCreator(filterQuery, contextCriteria, aliasManager))
           .relatedTable(filterTable)
           .build();
 
-      filterQuery.addConditions(joinCondition);
+      filterQuery.addConditions(joinConditions);
 
       var nestedCondition = newFiltering().aliasManager(aliasManager)
           .contextCriteria(contextCriteria)

@@ -281,13 +281,13 @@ class SelectBuilder {
     aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
         aliasedAggregateTable));
 
-    var joinCondition = newJoin().table(table)
+    var joinConditions = newJoin().table(table)
         .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .relatedTable(aliasedAggregateTable)
         .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
         .build();
 
-    subSelect.addConditions(joinCondition);
+    subSelect.addConditions(joinConditions);
 
     return subSelect;
   }
@@ -397,13 +397,13 @@ class SelectBuilder {
       select.addLimit(1);
     }
 
-    var joinCondition = newJoin().table(table)
+    var joinConditions = newJoin().table(table)
         .relatedTable(DSL.table(objectMapper.getAlias()))
         .joinConfiguration(joinConfiguration)
         .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
         .build();
 
-    select.addConditions(joinCondition);
+    select.addConditions(joinConditions);
 
     return Stream.of(SelectResult.builder()
         .selectQuery(select)
