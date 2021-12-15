@@ -42,9 +42,11 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
@@ -350,10 +352,15 @@ class FilterConditionBuilder {
   }
 
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
-    if (objectField != null && objectField.isEnumeration()) {
-      return getEnumerationValue(objectField, value);
-    }
-    return DSL.val(value);
+    var field = DSL.val(value);
+    return Optional.ofNullable(objectField)
+        .map(AbstractObjectField::getEnumeration)
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          return field.cast(dataType);
+        })
+        .orElse(field);
   }
 
   private Field<Object[]> getArrayValue(PostgresObjectField objectField, Object[] value) {
@@ -363,25 +370,16 @@ class FilterConditionBuilder {
     return DSL.val(value);
   }
 
-  private Field<Object> getEnumerationValue(PostgresObjectField objectField, Object value) {
-    var type = objectField.getEnumeration()
-        .getType();
-    var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
-    var field = DSL.val(value);
-    return field.cast(dataType);
-  }
-
   private Field<Object[]> getEnumerationArrayValue(PostgresObjectField objectField, Object[] value) {
-    if (objectField.isEnumeration()) {
-      var type = objectField.getEnumeration()
-          .getType();
-      var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
-      if (objectField.isList()) {
-        var field = DSL.val(value);
-        return field.cast(dataType.getArrayDataType());
-      }
-    }
-    throw illegalArgumentException("Field '%s' is not a list of enumerations", objectField.getName());
+    return Optional.ofNullable(objectField.getEnumeration())
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          var field = DSL.val(value);
+          return field.cast(dataType.getArrayDataType());
+        })
+        .orElseThrow(
+            () -> illegalArgumentException("Field '%s' is not a list of enumerations.", objectField.getName()));
   }
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
