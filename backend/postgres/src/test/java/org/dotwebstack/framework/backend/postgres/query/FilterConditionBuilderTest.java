@@ -168,6 +168,7 @@ class FilterConditionBuilderTest {
 
     var parentField = new PostgresObjectField();
     parentField.setJoinColumns(joinColumns);
+    parentField.setObjectType(new PostgresObjectType());
     parentField.setTargetType(childObjectType);
 
     var childField = new PostgresObjectField();

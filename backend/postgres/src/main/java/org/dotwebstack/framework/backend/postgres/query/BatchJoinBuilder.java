@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.invertOnList;
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Collection;
@@ -144,8 +144,10 @@ class BatchJoinBuilder {
 
     dataQuery.addFrom(junctionTable);
 
-    dataQuery.addConditions(createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
-        joinConfiguration.getTargetType()));
+    var joinConditions = createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
+        joinConfiguration.getTargetType());
+
+    dataQuery.addConditions(joinConditions);
 
     return batchJoin(joinTable.getJoinColumns(), junctionTable);
   }

@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +13,10 @@ import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.ObjectType;
+import org.jooq.Condition;
+import org.jooq.Record;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 
 public class JoinHelper {
@@ -136,5 +143,26 @@ public class JoinHelper {
     jc.setReferencedField(StringUtils.substringAfter(joinColumn.getReferencedField(), "."));
     jc.setReferencedColumn(joinColumn.getReferencedColumn());
     return jc;
+  }
+
+  public static Condition createJoinConditions(Table<Record> table, Table<Record> referencedTable,
+      List<JoinColumn> joinColumns, PostgresObjectType objectType) {
+    List<Condition> conditions = joinColumns.stream()
+        .map(joinColumn -> column(table, joinColumn.getName()).equal(column(referencedTable, joinColumn, objectType)))
+        .collect(Collectors.toList());
+
+    return andCondition(conditions);
+  }
+
+  public static Condition andCondition(List<Condition> conditions) {
+    if (conditions.size() == 1) {
+      return conditions.get(0);
+    }
+
+    if (conditions.size() > 1) {
+      return DSL.and(conditions);
+    }
+
+    throw illegalArgumentException("And condition called for empty condition list!");
   }
 }

@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import java.util.List;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -14,7 +14,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 @Getter
 public class JoinConfiguration {
 
-  @NotNull
+  @NonNull
   private PostgresObjectField objectField;
 
   private PostgresObjectField mappedBy;
@@ -23,10 +23,10 @@ public class JoinConfiguration {
 
   private JoinTable joinTable;
 
-  @NotNull
+  @NonNull
   private PostgresObjectType objectType;
 
-  @NotNull
+  @NonNull
   private PostgresObjectType targetType;
 
   public static JoinConfiguration toJoinConfiguration(PostgresObjectField objectField) {

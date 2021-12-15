@@ -3,7 +3,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -14,7 +13,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
-import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -64,13 +62,6 @@ class QueryHelper {
 
   public static PostgresObjectField getObjectField(ObjectRequest objectRequest, String name) {
     return getObjectType(objectRequest).getField(name);
-  }
-
-  public static List<Condition> createJoinConditions(Table<Record> table, Table<Record> referencedTable,
-      List<JoinColumn> joinColumns, PostgresObjectType objectType) {
-    return joinColumns.stream()
-        .map(joinColumn -> column(table, joinColumn.getName()).equal(column(referencedTable, joinColumn, objectType)))
-        .collect(Collectors.toList());
   }
 
   public static Table<Record> findTable(String name, ContextCriteria contextCriteria) {

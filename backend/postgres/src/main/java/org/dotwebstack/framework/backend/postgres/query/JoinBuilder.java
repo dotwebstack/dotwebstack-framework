@@ -1,14 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -16,6 +12,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.jooq.Condition;
 import org.jooq.Record;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 
 @Accessors(fluent = true)
 @Setter
@@ -35,7 +32,7 @@ class JoinBuilder {
     return new JoinBuilder();
   }
 
-  List<Condition> build() {
+  Condition build() {
     validateFields(this);
 
     // Inverted mapped by
@@ -44,6 +41,7 @@ class JoinBuilder {
       return newJoin().table(relatedTable)
           .relatedTable(table)
           .joinConfiguration(JoinConfiguration.builder()
+              .objectField(mappedBy)
               .joinColumns(mappedBy.getJoinColumns())
               .joinTable(mappedBy.getJoinTable())
               .objectType((PostgresObjectType) mappedBy.getObjectType())
@@ -68,14 +66,14 @@ class JoinBuilder {
       var leftSide =
           createJoinConditions(junctionTable, table, joinTable.getJoinColumns(), joinConfiguration.getObjectType());
 
-      List<Condition> rightSide = new ArrayList<>();
       if (relatedTable != null) {
-        rightSide.addAll(createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
-            joinConfiguration.getTargetType()));
+        var rightSide = createJoinConditions(junctionTable, relatedTable, joinTable.getInverseJoinColumns(),
+            joinConfiguration.getTargetType());
+
+        return DSL.and(leftSide, rightSide);
       }
 
-      return Stream.concat(leftSide.stream(), rightSide.stream())
-          .collect(Collectors.toList());
+      return leftSide;
     }
 
     throw illegalArgumentException("Object field '{}' has no relation configuration!",

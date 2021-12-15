@@ -6,7 +6,8 @@ import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatial
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.JoinConfiguration.toJoinConfiguration;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCondition;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
@@ -142,12 +143,13 @@ class FilterConditionBuilder {
 
       filterQuery.addSelect(DSL.val(1));
 
-      newJoin().table(table)
+      var joinCondition = newJoin().table(table)
           .joinConfiguration(toJoinConfiguration(current))
           .tableCreator(createTableCreator(filterQuery, contextCriteria, aliasManager))
           .relatedTable(filterTable)
-          .build()
-          .forEach(filterQuery::addConditions);
+          .build();
+
+      filterQuery.addConditions(joinCondition);
 
       var nestedCondition = newFiltering().aliasManager(aliasManager)
           .contextCriteria(contextCriteria)
@@ -347,10 +349,6 @@ class FilterConditionBuilder {
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");
     }
-  }
-
-  private Condition andCondition(List<Condition> conditions) {
-    return conditions.size() > 1 ? DSL.and(conditions) : conditions.get(0);
   }
 
   private String escapeMatchValue(String inputValue) {
