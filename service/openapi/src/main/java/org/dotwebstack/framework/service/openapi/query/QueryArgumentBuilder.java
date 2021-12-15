@@ -1,5 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
+import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
+
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
 import graphql.language.FloatValue;
@@ -20,7 +24,6 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
-import org.dotwebstack.framework.service.openapi.jexl.JexlContextUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.stereotype.Component;
 
@@ -124,14 +127,17 @@ public class QueryArgumentBuilder {
 
   @SuppressWarnings({"rawtypes"})
   protected Value createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
-    var expression = (String) map.get(OasConstants.X_DWS_EXPR);
-    if (expression.endsWith("!")) {
-      expression = expression.substring(0, expression.length() - 1);
-    }
-    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, parameters);
-    var expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, Object.class)
+    var expression = map.get(OasConstants.X_DWS_EXPR);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), parameters);
+    var optionalJexlExpression = getJexlExpression(expression, map,
+        expressionValue -> expressionValue.endsWith("!") ? expressionValue.substring(0, expressionValue.length() - 1)
+            : expressionValue);
+
+    var expressionResult = optionalJexlExpression
+        .flatMap(jexlExpression -> evaluateJexlExpression(jexlExpression, jexlHelper, jexlContext, Object.class))
         .orElse(null);
-    return expressionValue != null ? toArgumentValue(expressionValue) : null;
+
+    return expressionResult != null ? toArgumentValue(expressionResult) : null;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})

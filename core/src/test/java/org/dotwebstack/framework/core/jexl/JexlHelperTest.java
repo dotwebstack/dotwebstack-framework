@@ -152,8 +152,8 @@ class JexlHelperTest {
 
     JexlContext context = JexlHelper.getJexlContext(envParams, argParams);
 
-    assertEquals("value", context.get("env.key"));
-    assertEquals("test", context.get("args.name"));
+    assertEquals("value", evaluateExpressionToString("env.key", context));
+    assertEquals("test", evaluateExpressionToString("args.name", context));
   }
 
   @Test
@@ -181,9 +181,9 @@ class JexlHelperTest {
 
     JexlContext context = JexlHelper.getJexlContext(fieldDefinition);
 
-    assertEquals("1", context.get("args.defaultValue"));
-    assertEquals("12", context.get("args.value"));
-    assertEquals("12", context.get("args.both"));
+    assertEquals("1", evaluateExpressionToString("args.defaultValue", context));
+    assertEquals("12", evaluateExpressionToString("args.value", context));
+    assertEquals("12", evaluateExpressionToString("args.both", context));
   }
 
   private GraphQLDirective getGraphQlDirective() {
@@ -194,5 +194,10 @@ class JexlHelperTest {
             .type(Scalars.GraphQLString)
             .valueProgrammatic("directiveValue1"))
         .build();
+  }
+
+  private String evaluateExpressionToString(String expression, JexlContext jexlContext) {
+    return this.jexlHelper.evaluateExpression(expression, jexlContext, String.class)
+        .orElse(null);
   }
 }

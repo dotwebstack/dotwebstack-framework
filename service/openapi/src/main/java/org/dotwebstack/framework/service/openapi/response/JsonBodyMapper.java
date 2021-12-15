@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
+import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
@@ -29,7 +30,6 @@ import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.jexl.JexlContextUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -66,7 +66,7 @@ public class JsonBodyMapper implements BodyMapper {
             .getQueryProperties()
             .getField());
 
-    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, operationRequest.getParameters());
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getParameters());
 
     return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result, jexlContext));
   }
@@ -265,23 +265,12 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   private Object evaluateScalarData(Schema<?> schema, Object data, JexlContext jexlContext) {
-    if (schema.getExtensions() != null && schema.getExtensions()
-        .containsKey(X_DWS_EXPR)) {
+    var defaultValue = schema.getDefault();
 
-      Object defaultValue = schema.getDefault();
+    var optionalJexlExpression = getJexlExpression(schema);
 
-      String expression = schema.getExtensions()
-          .get(X_DWS_EXPR)
-          .toString();
-
-      String fallBackValue = schema.getExtensions()
-          .containsKey(X_DWS_EXPR_FALLBACK_VALUE)
-              ? schema.getExtensions()
-                  .get(X_DWS_EXPR_FALLBACK_VALUE)
-                  .toString()
-              : null;
-
-      return this.jexlHelper.evaluateScriptWithFallback(expression, fallBackValue, jexlContext, Object.class)
+    if (optionalJexlExpression.isPresent()) {
+      return evaluateJexlExpression(optionalJexlExpression.get(), jexlHelper, jexlContext, Object.class)
           .orElse(defaultValue);
     }
 

@@ -7,15 +7,21 @@ import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelpe
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.Test;
 
@@ -186,4 +192,69 @@ class DwsExtensionHelperTest {
     assertTrue(hasDwsExtensionWithValue(parameter, OasConstants.X_DWS_TYPE, "specialtype"));
   }
 
+  @Test
+  void getJexlExpression_givenStringExpression_returnsCorrectly() {
+    var expression = "foo";
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var optionalJexlExpression = DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter);
+
+    assertThat(optionalJexlExpression.isPresent(), is(true));
+
+    var jexlExpression = optionalJexlExpression.get();
+    assertThat(jexlExpression.getValue(), is("foobar"));
+    assertThat(jexlExpression.getFallback(), is(Optional.empty()));
+  }
+
+  @Test
+  void getJexlExpression_givenExpressionObject_returnsCorrectly() {
+    var expression = Map.<String, Object>of("value", "foo", "fallback", "baz");
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var optionalJexlExpression = DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter);
+
+    assertThat(optionalJexlExpression.isPresent(), is(true));
+
+    var jexlExpression = optionalJexlExpression.get();
+    assertThat(jexlExpression.getValue(), is("foobar"));
+    assertThat(jexlExpression.getFallback(), is(Optional.of("baz")));
+  }
+
+  @Test
+  void getJexlExpression_givenStringExpressionWithUnsupportedValueType_throwsException() {
+    var expression = List.of();
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var exception = assertThrows(InvalidConfigurationException.class,
+        () -> DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter));
+
+    assertThat(exception.getMessage(), is("Unsupported value [] for x-dws-expr found in context"));
+  }
+
+  @Test
+  void getJexlExpression_givenExpressionObjectWithUnsupportedValueType_throwsException() {
+    var expression = Map.<String, Object>of("value", List.of(), "fallback", "baz");
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var exception = assertThrows(InvalidConfigurationException.class,
+        () -> DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter));
+
+    assertThat(exception.getMessage(), is("Unsupported value [] for x-dws-expr.value found in context"));
+  }
+
+  @Test
+  void getJexlExpression_givenExpressionObjectWithUnsupportedFallbackType_throwsException() {
+    var expression = Map.<String, Object>of("value", "foo", "fallback", List.of());
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var exception = assertThrows(InvalidConfigurationException.class,
+        () -> DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter));
+
+    assertThat(exception.getMessage(), is("Unsupported value [] for x-dws-expr.fallback found in context"));
+  }
 }
