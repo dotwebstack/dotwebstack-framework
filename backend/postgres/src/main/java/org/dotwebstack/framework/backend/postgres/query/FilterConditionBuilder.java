@@ -90,7 +90,9 @@ class FilterConditionBuilder {
   Condition build() {
     validateFields(this);
 
-    return walkFieldPath(filterCriteria);
+    // TODO: aanpassen
+    var cond = walkFieldPath(filterCriteria);
+    return cond;
   }
 
   private Condition walkFieldPath(FilterCriteria filterCriteria) {

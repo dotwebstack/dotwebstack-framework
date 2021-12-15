@@ -31,8 +31,10 @@ public class ObjectHelper {
       return castToList(value).toArray(String[]::new);
     } else if (type.equals("Int")) {
       return castToList(value).toArray(Integer[]::new);
+    } else if (type.equals("Float")) {
+      return castToList(value).toArray(Double[]::new);
     }
-    return castToList(value).toArray(String[]::new);
+    return castToList(value).toArray(Object[]::new);
   }
 
   @SuppressWarnings("unchecked")
