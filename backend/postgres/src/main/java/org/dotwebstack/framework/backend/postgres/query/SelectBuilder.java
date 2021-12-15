@@ -9,11 +9,11 @@ import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHel
 import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
@@ -281,12 +281,13 @@ class SelectBuilder {
     aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
         aliasedAggregateTable));
 
-    newJoin().table(table)
+    var joinConditions = newJoin().table(table)
         .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .relatedTable(aliasedAggregateTable)
         .tableCreator(createTableCreator(subSelect, contextCriteria, aliasManager))
-        .build()
-        .forEach(subSelect::addConditions);
+        .build();
+
+    subSelect.addConditions(joinConditions);
 
     return subSelect;
   }
@@ -396,12 +397,13 @@ class SelectBuilder {
       select.addLimit(1);
     }
 
-    newJoin().table(table)
+    var joinConditions = newJoin().table(table)
         .relatedTable(DSL.table(objectMapper.getAlias()))
         .joinConfiguration(joinConfiguration)
         .tableCreator(createTableCreator(select, objectRequest.getContextCriteria(), aliasManager))
-        .build()
-        .forEach(select::addConditions);
+        .build();
+
+    select.addConditions(joinConditions);
 
     return Stream.of(SelectResult.builder()
         .selectQuery(select)
@@ -495,6 +497,7 @@ class SelectBuilder {
       var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
 
       var joinConfiguration = JoinConfiguration.builder()
+          .objectField(childObjectField)
           .targetType((PostgresObjectType) childObjectField.getTargetType())
           .objectType((PostgresObjectType) childObjectField.getObjectType())
           .mappedBy(objectField.getMappedByObjectField())
@@ -589,7 +592,9 @@ class SelectBuilder {
 
     var query = dslContext.selectQuery(table);
 
-    createJoinConditions(table, parentTable, joinTable.getJoinColumns(), objectType).forEach(query::addConditions);
+    var joinConditions = createJoinConditions(table, parentTable, joinTable.getJoinColumns(), objectType);
+
+    query.addConditions(joinConditions);
 
     var arrayObjectMapper = new ArrayObjectMapper();
     nestedFieldMapper.register(fieldRequest.getName(), arrayObjectMapper);

@@ -1,15 +1,15 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
@@ -23,26 +23,75 @@ import org.junit.jupiter.api.Test;
 class JoinBuilderTest {
 
   @Test
-  void build_returnsJoinConditions_forMappedBy() {
+  void build_returnsJoinConditions_forMappedByJoinColumn() {
     var mappedByObjectField = new PostgresObjectField();
     mappedByObjectField.setJoinColumns(createJoinColumns());
 
-    var objectType = createObjectType();
-    mappedByObjectField.setTargetType(objectType);
+    var parentObjectType = createObjectType();
+    var childObjectType = createObjectType();
+    mappedByObjectField.setObjectType(parentObjectType);
+    mappedByObjectField.setTargetType(childObjectType);
 
     var objectField = new PostgresObjectField();
+    objectField.setObjectType(childObjectType);
+    objectField.setTargetType(parentObjectType);
     objectField.setMappedByObjectField(mappedByObjectField);
 
-    var result = JoinBuilder.newJoin()
-        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
+    var result = newJoin().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x1"))
         .relatedTable(createTable("x2"))
         .build();
 
-    assertThat(result.get(0)
-        .toString(), is("\"x2\".\"a_identifier\" = \"x1\".\"b_identifier\""));
-    assertThat(result.get(1)
-        .toString(), is("\"x2\".\"c_identifier\" = \"x1\".\"d_identifier\""));
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), is("(\n" + "  \"x2\".\"a_identifier\" = \"x1\".\"b_identifier\"\n"
+        + "  and \"x2\".\"c_identifier\" = \"x1\".\"d_identifier\"\n" + ")"));
+  }
+
+  @Test
+  void build_returnsJoinConditions_forMappedByJoinTable() {
+    var joinTable = new JoinTable();
+
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("k_p_identifier");
+    joinColumn.setReferencedField("p_identifier_f");
+    joinTable.setJoinColumns(List.of(joinColumn));
+
+    var inverseJoinColumn = new JoinColumn();
+    inverseJoinColumn.setName("k_c_identifier");
+    inverseJoinColumn.setReferencedField("c_identifier_f");
+    joinTable.setInverseJoinColumns(List.of(inverseJoinColumn));
+
+    var mappedByObjectField = new PostgresObjectField();
+    mappedByObjectField.setJoinTable(joinTable);
+
+    var parentObjectType = createObjectType();
+    var parentIdentifierField = new PostgresObjectField();
+    parentIdentifierField.setColumn("p_identifier_f_column");
+    parentObjectType.setFields(Map.of("p_identifier_f", parentIdentifierField));
+
+    var childObjectType = createObjectType();
+    var childIdentifierField = new PostgresObjectField();
+    childIdentifierField.setColumn("c_identifier_f_column");
+    childObjectType.setFields(Map.of("c_identifier_f", childIdentifierField));
+
+    mappedByObjectField.setObjectType(parentObjectType);
+    mappedByObjectField.setTargetType(childObjectType);
+
+    var objectField = new PostgresObjectField();
+    objectField.setMappedByObjectField(mappedByObjectField);
+    objectField.setObjectType(childObjectType);
+    objectField.setTargetType(parentObjectType);
+
+    var result = newJoin().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
+        .table(createTable("x1"))
+        .relatedTable(createTable("x2"))
+        .tableCreator(junctionTable -> DSL.table(junctionTable)
+            .as("x3"))
+        .build();
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("(\n" + "  \"x3\".\"k_p_identifier\" = \"x2\".\"p_identifier_f_column\"\n"
+        + "  and \"x3\".\"k_c_identifier\" = \"x1\".\"c_identifier_f_column\"\n" + ")"));
   }
 
   @Test
@@ -51,18 +100,17 @@ class JoinBuilderTest {
     objectField.setJoinColumns(createJoinColumns());
 
     var objectType = createObjectType();
+    objectField.setObjectType(objectType);
     objectField.setTargetType(objectType);
 
-    var result = JoinBuilder.newJoin()
-        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
+    var result = newJoin().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"))
         .build();
 
-    assertThat(result.get(0)
-        .toString(), is("\"x2\".\"a_identifier\" = \"x1\".\"b_identifier\""));
-    assertThat(result.get(1)
-        .toString(), is("\"x2\".\"c_identifier\" = \"x1\".\"d_identifier\""));
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("(\n" + "  \"x2\".\"a_identifier\" = \"x1\".\"b_identifier\"\n"
+        + "  and \"x2\".\"c_identifier\" = \"x1\".\"d_identifier\"\n" + ")"));
   }
 
   @Test
@@ -70,11 +118,10 @@ class JoinBuilderTest {
     var objectField = new PostgresObjectField();
     objectField.setName("identifier");
 
-    var objectType = createObjectType();
-    objectField.setTargetType(objectType);
+    objectField.setObjectType(createObjectType());
+    objectField.setTargetType(createObjectType());
 
-    var builder = JoinBuilder.newJoin()
-        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
+    var builder = newJoin().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"));
 
@@ -114,24 +161,21 @@ class JoinBuilderTest {
 
     objectField.setJoinTable(joinTable);
 
-    var result = JoinBuilder.newJoin()
-        .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
+    var result = newJoin().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
         .table(createTable("x2"))
         .relatedTable(createTable("x1"))
         .tableCreator(junctionTable -> DSL.table(junctionTable)
             .as("x3"))
         .build();
 
-    assertThat(result.stream()
-        .map(Object::toString)
-        .collect(Collectors.toList()),
-        containsInAnyOrder("\"x3\".\"k_p_identifier\" = \"x2\".\"p_identifier\"",
-            "\"x3\".\"k_c_identifier\" = \"x1\".\"c_identifier\""));
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("(\n" + "  \"x3\".\"k_p_identifier\" = \"x2\".\"p_identifier\"\n"
+        + "  and \"x3\".\"k_c_identifier\" = \"x1\".\"c_identifier\"\n" + ")"));
   }
 
   @Test
   void build_throwsException_forMissingFields() {
-    JoinBuilder builder = JoinBuilder.newJoin();
+    JoinBuilder builder = newJoin();
     var exception = assertThrows(ConstraintViolationException.class, builder::build);
 
     assertThat(exception.getMessage(),
