@@ -26,6 +26,12 @@ paths:
           name:
             in: $query.name
       parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            x-dws-expr: active
         - name: expand
           x-dws-type: expand
           in: query
@@ -99,15 +105,15 @@ paths:
             application/stream+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
-    #          headers:
-    #            X-Pagination-Limit:
-    #              schema:
-    #                type: integer
-    #                x-dws-expr: args.pageSize
-    #            X-Pagination-Page:
-    #              schema:
-    #                type: integer
-    #                x-dws-expr: args.page
+          headers:
+            X-Pagination-Limit:
+              schema:
+                type: integer
+                x-dws-expr: args.pageSize
+            X-Pagination-Page:
+              schema:
+                type: integer
+                x-dws-expr: args.page
     post:
       x-dws-query:
         field: breweryCollection
@@ -407,7 +413,7 @@ components:
 #          type: string
         name:
           type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
+          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${data.identifier}`'
 #        nameEnvelope:
 #          x-dws-envelope: true
 #          type: object

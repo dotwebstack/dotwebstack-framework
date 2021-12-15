@@ -210,8 +210,8 @@ paths:
       x-dws-query:
         field: breweryPageableCollection
         paging:
-          pageSize: $query.pageSize
-          page: $query.page
+          pageSize: args.pageSize
+          page: args.page
       parameters:
         - name: page
           in: query
@@ -350,12 +350,12 @@ paths:
         filters:
           name:
             like:
-              x-dws-expr: $query.like + '%'
+              x-dws-expr: args.like + '%'
           identifier:
-            in: $query.name
+            in: args.name
           employees:
             not:
-              gt: $query.empcount
+              gt: args.empcount
       parameters:
         - name: name
           in: query
@@ -505,8 +505,8 @@ paths:
       x-dws-query:
         field: breweryPageableCollection
         paging:
-          pageSize: $query.pageSize
-          page: $query.page
+          pageSize: args.pageSize
+          page: args.page
       parameters:
         - name: page
           in: query
@@ -718,7 +718,7 @@ components:
                 href:
                   type: string
                   format: uri
-                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}`'
+                  x-dws-expr: '`${env.baseUrl}/breweries/${data.identifier}`'
             beers:
               type: object
               x-dws-envelope: true
@@ -728,7 +728,7 @@ components:
                 href:
                   type: string
                   format: uri
-                  x-dws-expr: '`${env.baseUrl}/breweries/${fields.identifier}/beers`'
+                  x-dws-expr: '`${env.baseUrl}/breweries/${data.identifier}/beers`'
 
     BreweryIncludedFields:
       type: object

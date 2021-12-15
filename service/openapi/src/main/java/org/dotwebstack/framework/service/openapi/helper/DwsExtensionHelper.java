@@ -29,8 +29,6 @@ public class DwsExtensionHelper {
 
   static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
 
-  static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
-
   static final String DWS_QUERY_SELECTION_SET = "selectionSet";
 
   private DwsExtensionHelper() {}

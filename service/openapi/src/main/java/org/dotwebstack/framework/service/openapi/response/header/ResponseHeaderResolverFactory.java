@@ -19,7 +19,7 @@ public class ResponseHeaderResolverFactory {
     this.jexlEngine = jexlEngine;
   }
 
-  public ResponseHeaderResolver create(OperationRequest operationRequest) {
-    return new DefaultResponseHeaderResolver(operationRequest, environmentProperties, jexlEngine);
+  public ResponseHeaderResolver create(OperationRequest operationRequest, Object data) {
+    return new DefaultResponseHeaderResolver(operationRequest, data, environmentProperties, jexlEngine);
   }
 }

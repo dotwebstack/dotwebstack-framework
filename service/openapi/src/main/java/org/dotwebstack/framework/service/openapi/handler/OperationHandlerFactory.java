@@ -90,14 +90,12 @@ public class OperationHandlerFactory {
     return (executionResult, operationRequest) -> {
       Map<String, Object> data = executionResult.getData();
 
-      var responseHeaderResolver = responseHeaderResolverFactory.create(operationRequest);
-
       return Mono.justOrEmpty(data.get(queryField))
           .flatMap(result -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
               .map(operationRequest, result))
           .flatMap(content -> ServerResponse.ok()
               .contentType(operationRequest.getPreferredMediaType())
-              .headers(responseHeaderResolver)
+              .headers(responseHeaderResolverFactory.create(operationRequest, content))
               .body(BodyInserters.fromValue(content)))
           .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
     };

@@ -10,11 +10,12 @@ import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.jexl.JexlContextUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.CollectionUtils;
@@ -27,11 +28,12 @@ public class DefaultResponseHeaderResolver implements ResponseHeaderResolver {
 
   private final JexlContext jexlContext;
 
-  public DefaultResponseHeaderResolver(OperationRequest operationRequest, EnvironmentProperties environmentProperties,
-      JexlEngine jexlEngine) {
+  public DefaultResponseHeaderResolver(@NonNull OperationRequest operationRequest, Object data,
+      @NonNull EnvironmentProperties environmentProperties, @NonNull JexlEngine jexlEngine) {
     this.operationRequest = operationRequest;
     this.jexlHelper = new JexlHelper(jexlEngine);
-    this.jexlContext = createJexlContext(operationRequest, environmentProperties);
+    this.jexlContext =
+        JexlContextUtils.createJexlContext(environmentProperties, operationRequest.getParameters(), data);
   }
 
   @Override
@@ -50,19 +52,6 @@ public class DefaultResponseHeaderResolver implements ResponseHeaderResolver {
 
       httpHeaders.addAll(CollectionUtils.toMultiValueMap(dwsHeaders));
     }
-  }
-
-  private JexlContext createJexlContext(OperationRequest operationRequest,
-      EnvironmentProperties environmentProperties) {
-    var parameters = operationRequest.getParameters();
-    var context = new MapContext();
-
-    context.set("args", parameters);
-
-    environmentProperties.getAllProperties()
-        .forEach((prop, value) -> context.set(String.format("env.%s", prop), value));
-
-    return context;
   }
 
   private Map.Entry<String, List<String>> evaluateResponseHeader(Map.Entry<String, Header> headerEntry) {

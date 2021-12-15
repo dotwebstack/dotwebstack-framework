@@ -13,10 +13,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.jexl.JexlContextUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -100,13 +100,9 @@ public class CoreRequestHelper {
 
   private static JexlContext buildJexlContext(ServerRequest request, EnvironmentProperties environmentProperties,
       Map<String, Object> inputParams) {
+    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, inputParams, null);
+    jexlContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
 
-    var mapContext = new MapContext();
-    environmentProperties.getAllProperties()
-        .forEach((prop, value) -> mapContext.set(String.format("env.%s", prop), value));
-
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
-    return mapContext;
+    return jexlContext;
   }
 }

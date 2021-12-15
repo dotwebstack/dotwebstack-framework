@@ -47,16 +47,16 @@ class DefaultResponseHeaderResolverTest {
   }
 
   static Stream<Arguments> arguments() {
-    return Stream.of(Arguments.of("/breweries", Map.of(), Map.of()),
-        Arguments.of("/brewery-header-that-does-nothing", Map.of(), Map.of()),
-        Arguments.of("/breweries-pageable", Map.of("pageSize", 10, "page", 1),
+    return Stream.of(Arguments.of("/breweries", Map.of(), null, Map.of()),
+        Arguments.of("/brewery-header-that-does-nothing", Map.of(), null, Map.of()),
+        Arguments.of("/breweries-pageable", Map.of("pageSize", 10, "page", 1), null,
             Map.of("X-Pagination-Limit", "10", "X-Pagination-Page", "1", "X-Forwarded-Host",
                 "https://dotwebstack.org/api/forwarded-host", "X-Foo", "bar")));
   }
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void accept(String path, Map<String, Object> parameters, Map<String, String> expectedResponseHeaders) {
+  void accept(String path, Map<String, Object> parameters, Object data, Map<String, String> expectedResponseHeaders) {
     when(environmentProperties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
 
     var operationRequest = OperationRequest.builder()
@@ -66,7 +66,7 @@ class DefaultResponseHeaderResolverTest {
         .build();
 
     var defaultResponseHeaderResolver =
-        new DefaultResponseHeaderResolver(operationRequest, environmentProperties, jexlEngine);
+        new DefaultResponseHeaderResolver(operationRequest, data, environmentProperties, jexlEngine);
 
     var httpHeaders = new HttpHeaders();
 
@@ -99,7 +99,7 @@ class DefaultResponseHeaderResolverTest {
         .build();
 
     var defaultResponseHeaderResolver =
-        new DefaultResponseHeaderResolver(operationRequest, environmentProperties, jexlEngine);
+        new DefaultResponseHeaderResolver(operationRequest, null, environmentProperties, jexlEngine);
 
     var httpHeaders = new HttpHeaders();
 

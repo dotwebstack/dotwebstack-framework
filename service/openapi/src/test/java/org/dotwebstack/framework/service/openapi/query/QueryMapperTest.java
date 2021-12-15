@@ -19,23 +19,31 @@ import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 
+@ExtendWith(MockitoExtension.class)
 class QueryMapperTest {
 
-  private static OpenAPI openApi;
+  private OpenAPI openApi;
 
-  private static QueryMapper queryFactory;
+  private QueryMapper queryFactory;
 
-  @BeforeAll
-  static void beforeAll() {
-    var queryArgumentBuilder = new QueryArgumentBuilder(new JexlBuilder().silent(false)
+  @Mock
+  private EnvironmentProperties environmentProperties;
+
+  @BeforeEach
+  void beforeEach() {
+    var queryArgumentBuilder = new QueryArgumentBuilder(environmentProperties, new JexlBuilder().silent(false)
         .strict(true)
         .create());
 

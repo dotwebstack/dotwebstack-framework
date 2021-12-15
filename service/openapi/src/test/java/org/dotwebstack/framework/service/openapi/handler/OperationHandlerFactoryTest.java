@@ -78,7 +78,7 @@ class OperationHandlerFactoryTest {
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
-    when(responseHeaderResolverFactory.create(any())).thenReturn(httpHeaders -> {
+    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
     });
 
     var result = operationHandlerFactory.create(operation);
@@ -104,7 +104,7 @@ class OperationHandlerFactoryTest {
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
-    when(responseHeaderResolverFactory.create(any())).thenReturn(httpHeaders -> {
+    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
     });
 
     var result = operationHandlerFactory.create(operation);

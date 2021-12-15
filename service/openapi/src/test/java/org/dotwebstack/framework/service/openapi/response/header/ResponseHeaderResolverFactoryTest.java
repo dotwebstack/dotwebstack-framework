@@ -27,6 +27,6 @@ class ResponseHeaderResolverFactoryTest {
     ResponseHeaderResolverFactory responseHeaderResolverFactory =
         new ResponseHeaderResolverFactory(environmentProperties, jexlEngine);
 
-    assertDoesNotThrow(() -> responseHeaderResolverFactory.create(operationRequest));
+    assertDoesNotThrow(() -> responseHeaderResolverFactory.create(operationRequest, null));
   }
 }

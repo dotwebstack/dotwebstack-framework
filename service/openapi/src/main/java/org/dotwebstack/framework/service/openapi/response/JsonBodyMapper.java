@@ -29,6 +29,7 @@ import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.jexl.JexlContextUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -65,7 +66,7 @@ public class JsonBodyMapper implements BodyMapper {
             .getQueryProperties()
             .getField());
 
-    var jexlContext = createJexlContext(operationRequest);
+    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, operationRequest.getParameters());
 
     return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result, jexlContext));
   }
@@ -245,18 +246,6 @@ public class JsonBodyMapper implements BodyMapper {
         .collect(Collectors.toList());
   }
 
-  private JexlContext createJexlContext(OperationRequest operationRequest) {
-    var parameters = operationRequest.getParameters();
-    var context = new MapContext();
-
-    context.set("args", parameters);
-
-    environmentProperties.getAllProperties()
-        .forEach((prop, value) -> context.set(String.format("env.%s", prop), value));
-
-    return context;
-  }
-
   @SuppressWarnings("unchecked")
   private JexlContext updateJexlContext(Object data, JexlContext jexlContext) {
     if (!(data instanceof Map)) {
@@ -271,11 +260,6 @@ public class JsonBodyMapper implements BodyMapper {
         .forEach((prop, value) -> newContext.set(String.format("env.%s", prop), value));
 
     newContext.set("data", data);
-
-    ((Map<String, Object>) data).entrySet()
-        .stream()
-        .filter(entry -> !(entry.getValue() instanceof Map))
-        .forEach(entry -> newContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
 
     return newContext;
   }
