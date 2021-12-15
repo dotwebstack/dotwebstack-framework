@@ -46,6 +46,7 @@ class JoinBuilder {
           .joinConfiguration(JoinConfiguration.builder()
               .joinColumns(mappedBy.getJoinColumns())
               .joinTable(mappedBy.getJoinTable())
+              .objectType((PostgresObjectType) mappedBy.getObjectType())
               .targetType((PostgresObjectType) mappedBy.getTargetType())
               .build())
           .tableCreator(tableCreator)
