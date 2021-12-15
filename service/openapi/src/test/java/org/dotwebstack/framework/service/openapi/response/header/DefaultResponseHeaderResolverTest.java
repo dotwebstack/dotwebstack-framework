@@ -49,9 +49,9 @@ class DefaultResponseHeaderResolverTest {
   static Stream<Arguments> arguments() {
     return Stream.of(Arguments.of("/breweries", Map.of(), null, Map.of()),
         Arguments.of("/brewery-header-that-does-nothing", Map.of(), null, Map.of()),
-        Arguments.of("/breweries-pageable", Map.of("pageSize", 10, "page", 1), null,
+        Arguments.of("/breweries-pageable", Map.of("pageSize", 10, "page", 1), Map.of("foo", Map.of("bar", "baz")),
             Map.of("X-Pagination-Limit", "10", "X-Pagination-Page", "1", "X-Forwarded-Host",
-                "https://dotwebstack.org/api/forwarded-host", "X-Foo", "bar")));
+                "https://dotwebstack.org/api/forwarded-host", "X-Foo", "bar", "X-Data-Foo", "baz")));
   }
 
   @ParameterizedTest

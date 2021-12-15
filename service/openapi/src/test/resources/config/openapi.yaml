@@ -204,6 +204,10 @@ paths:
               schema:
                 type: string
                 default: bar
+            X-Data-Foo:
+              schema:
+                type: string
+                x-dws-expr: 'data.foo.bar'
 
   /breweries-pageable-with-params:
     get:
