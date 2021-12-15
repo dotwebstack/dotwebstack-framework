@@ -32,9 +32,9 @@ public class ObjectHelper {
     } else if (type.equals("Int")) {
       return castToList(value).toArray(Integer[]::new);
     } else if (type.equals("Float")) {
-      return castToList(value).toArray(Double[]::new);
+      return castToList(value).toArray(Float[]::new);
     }
-    return castToList(value).toArray(Object[]::new);
+    throw illegalArgumentException("Object with type '{}' can not be casted to an array.", type);
   }
 
   @SuppressWarnings("unchecked")
