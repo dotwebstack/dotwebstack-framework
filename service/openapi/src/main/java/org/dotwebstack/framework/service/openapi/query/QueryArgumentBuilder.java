@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJ
 
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
+import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.ObjectField;
@@ -153,6 +154,8 @@ public class QueryArgumentBuilder {
       return new IntValue(new BigInteger(e.toString()));
     } else if (e instanceof Float || e instanceof Double) {
       return new FloatValue(new BigDecimal(e.toString()));
+    } else if (e instanceof Boolean) {
+      return new BooleanValue((Boolean) e);
     } else {
       return new StringValue(e.toString());
     }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
 import graphql.language.AstPrinter;
+import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.StringValue;
@@ -108,8 +109,6 @@ class QueryArgumentBuilderTest {
         Arguments.of(1, new IntValue(new BigInteger("1"))), Arguments.of(1L, new IntValue(new BigInteger("1"))),
         Arguments.of(1.2f, new FloatValue(new BigDecimal("1.2"))),
         Arguments.of(1.2d, new FloatValue(new BigDecimal("1.2"))),
-        Arguments.of(Map.of("1", "2"), new StringValue("{1=2}"))
-
-    );
+        Arguments.of(Map.of("1", "2"), new StringValue("{1=2}")), Arguments.of(false, new BooleanValue(false)));
   }
 }
