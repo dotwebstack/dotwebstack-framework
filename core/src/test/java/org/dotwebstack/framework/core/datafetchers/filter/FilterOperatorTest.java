@@ -11,7 +11,7 @@ class FilterOperatorTest {
   void getFilterOperator_returnsFilterOperator_forContainsAllOf() {
     var operator = FilterOperator.getFilterOperator("containsAllOf");
 
-    assertThat(operator, is(FilterOperator.CONTAINS_All_OF));
+    assertThat(operator, is(FilterOperator.CONTAINS_ALL_OF));
   }
 
   @Test

@@ -10,7 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_All_OF;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
@@ -298,7 +298,7 @@ class FilterConditionBuilder {
       return field.eq(getArrayValue(objectField, value));
     }
 
-    if (CONTAINS_All_OF == operator) {
+    if (CONTAINS_ALL_OF == operator) {
       return field.contains(getArrayValue(objectField, value));
     }
 
