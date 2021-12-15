@@ -100,7 +100,7 @@ public class CoreRequestHelper {
 
   private static JexlContext buildJexlContext(ServerRequest request, EnvironmentProperties environmentProperties,
       Map<String, Object> inputParams) {
-    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, inputParams, null);
+    var jexlContext = JexlContextUtils.createJexlContext(environmentProperties, inputParams);
     jexlContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
 
     return jexlContext;
