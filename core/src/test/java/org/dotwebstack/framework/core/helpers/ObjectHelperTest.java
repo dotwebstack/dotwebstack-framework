@@ -58,7 +58,8 @@ class ObjectHelperTest {
 
   @Test
   void castToArray_throwsIllegalArgumentException_forUnknownType() {
-    assertThrows(IllegalArgumentException.class, () -> ObjectHelper.castToArray(List.of(33.3f, 44.4f), "Unknown"));
+    var listToCast = List.of(33.3f, 44.4f);
+    assertThrows(IllegalArgumentException.class, () -> ObjectHelper.castToArray(listToCast, "Unknown"));
   }
 
   @Test
