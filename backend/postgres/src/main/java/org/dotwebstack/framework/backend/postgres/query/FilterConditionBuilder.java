@@ -10,12 +10,22 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCon
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LT;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LTE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
-import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
@@ -35,8 +45,9 @@ import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
-import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
@@ -49,11 +60,13 @@ import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
+import org.jooq.util.postgres.PostgresDSL;
 import org.locationtech.jts.geom.Geometry;
 
 @Accessors(fluent = true)
 @Setter
 class FilterConditionBuilder {
+  private static final String ERROR_MESSAGE = "Unknown filter field '%s'";
 
   private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
@@ -234,7 +247,10 @@ class FilterConditionBuilder {
   private Condition createConditions(Field<Object> field, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .map(entry -> createCondition(null, field, entry.getKey(), entry.getValue()))
+        .map(entry -> {
+          var filterOperator = FilterOperator.getFilterOperator(entry.getKey());
+          return createCondition(null, field, filterOperator, entry.getValue());
+        })
         .collect(Collectors.toList());
 
     return andCondition(conditions);
@@ -243,85 +259,134 @@ class FilterConditionBuilder {
   private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
     var conditions = values.entrySet()
         .stream()
-        .flatMap(entry -> {
-          if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-            return createGeometryCondition(objectField, entry.getKey(), entry.getValue()).stream();
-          }
-          return Stream.of(createCondition(objectField, entry.getKey(), entry.getValue()));
-        })
+        .flatMap(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
+            .map(filterOperator -> {
+              if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+                return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+              }
+              return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
+            })
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
+
   }
 
-  private Condition createCondition(PostgresObjectField objectField, String operator, Object value) {
-    Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
-
-    return createCondition(objectField, field, operator, value);
-  }
-
-  private Condition createCondition(PostgresObjectField objectField, Field<Object> field, String operator,
-      Object value) {
-    if (FilterConstants.EQ_FIELD.equals(operator)) {
-      return field.eq(getValue(objectField, value));
-    }
-
-    if (FilterConstants.MATCH_FIELD.equals(operator)) {
-      var escapedValue = escapeMatchValue(Objects.toString(value));
-      return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
-          .escape(LIKE_ESCAPE_CHARACTER);
-    }
-
-    if (FilterConstants.LT_FIELD.equals(operator)) {
-      return field.lt(getValue(objectField, value));
-    }
-
-    if (FilterConstants.LTE_FIELD.equals(operator)) {
-      return field.le(getValue(objectField, value));
-    }
-
-    if (FilterConstants.GT_FIELD.equals(operator)) {
-      return field.gt(getValue(objectField, value));
-    }
-
-    if (FilterConstants.GTE_FIELD.equals(operator)) {
-      return field.ge(getValue(objectField, value));
-    }
-
-    if (FilterConstants.IN_FIELD.equals(operator)) {
-      return field.in(getListValue(objectField, value));
-    }
-
-    if (FilterConstants.NOT_FIELD.equals(operator)) {
+  private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
+    if (NOT == operator) {
       var conditions = castToMap(value).entrySet()
           .stream()
-          .map(entry -> createCondition(objectField, field, entry.getKey(), entry.getValue()))
+          .map(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
+              .map(filterOperator -> createCondition(objectField, filterOperator, entry.getValue()))
+              .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
           .collect(Collectors.toList());
 
       return DSL.not(andCondition(conditions));
     }
 
-    throw illegalArgumentException("Unknown filter field '%s'", operator);
+    if (objectField.isList()) {
+      var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()), Object[].class);
+      var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
+      return createCondition(objectField, field, operator, arrayValue);
+    } else {
+      Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
+      return createCondition(objectField, field, operator, value);
+    }
   }
 
-  private List<Field<?>> getListValue(PostgresObjectField objectField, Object listValue) {
+  private Condition createCondition(PostgresObjectField objectField, Field<Object[]> field, FilterOperator operator,
+      Object[] value) {
+
+    if (EQ == operator) {
+      return field.eq(getArrayValue(objectField, value));
+    }
+
+    if (CONTAINS_ALL_OF == operator) {
+      return field.contains(getArrayValue(objectField, value));
+    }
+
+    if (CONTAINS_ANY_OF == operator) {
+      return PostgresDSL.arrayOverlap(field, getArrayValue(objectField, value));
+    }
+
+    throw illegalArgumentException(ERROR_MESSAGE, operator);
+  }
+
+  private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
+      Object value) {
+    if (MATCH == operator) {
+      var escapedValue = escapeMatchValue(Objects.toString(value));
+      return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
+          .escape(LIKE_ESCAPE_CHARACTER);
+    }
+    if (EQ == operator) {
+      return field.eq(getValue(objectField, value));
+    }
+
+    if (LT == operator) {
+      return field.lt(getValue(objectField, value));
+    }
+
+    if (LTE == operator) {
+      return field.le(getValue(objectField, value));
+    }
+
+    if (GT == operator) {
+      return field.gt(getValue(objectField, value));
+    }
+
+    if (GTE == operator) {
+      return field.ge(getValue(objectField, value));
+    }
+
+    if (IN == operator) {
+      return field.in(getFieldListValue(objectField, value));
+    }
+
+    throw illegalArgumentException(ERROR_MESSAGE, operator);
+  }
+
+  private List<Field<?>> getFieldListValue(PostgresObjectField objectField, Object listValue) {
     return castToList(listValue).stream()
         .map(value -> getValue(objectField, value))
         .collect(Collectors.toList());
   }
 
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
-    Field<?> field = DSL.val(value);
-
+    var field = DSL.val(value);
     return Optional.ofNullable(objectField)
-        .map(ObjectField::getEnumeration)
+        .map(AbstractObjectField::getEnumeration)
         .map(FieldEnumConfiguration::getType)
-        .map(type -> field.cast(getDefaultDataType(type)))
-        .orElse(DSL.val(value));
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          return field.cast(dataType);
+        })
+        .orElse(field);
   }
 
-  private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, String operator, Object value) {
-    if (ARGUMENT_SRID.equals(operator)) {
+  private Field<Object[]> getArrayValue(PostgresObjectField objectField, Object[] value) {
+    if (objectField.isEnumeration()) {
+      return getEnumerationArrayValue(objectField, value);
+    }
+    return DSL.val(value);
+  }
+
+  private Field<Object[]> getEnumerationArrayValue(PostgresObjectField objectField, Object[] value) {
+    return Optional.ofNullable(objectField.getEnumeration())
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          var field = DSL.val(value);
+          return field.cast(dataType.getArrayDataType());
+        })
+        .orElseThrow(
+            () -> illegalArgumentException("Field '%s' is not a list of enumerations.", objectField.getName()));
+  }
+
+  private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
+      Object value) {
+    if (SRID == operator) {
       return Optional.empty();
     }
 
@@ -340,11 +405,11 @@ class FilterConditionBuilder {
         .cast(GEOMETRY_DATATYPE);
 
     switch (operator) {
-      case SpatialConstants.CONTAINS:
+      case CONTAINS:
         return Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoField));
-      case SpatialConstants.WITHIN:
+      case WITHIN:
         return Optional.of(DSL.condition("ST_Within({0}, {1})", geoField, field));
-      case SpatialConstants.INTERSECTS:
+      case INTERSECTS:
         return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoField));
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");

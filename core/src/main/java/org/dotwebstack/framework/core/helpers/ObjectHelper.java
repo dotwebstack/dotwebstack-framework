@@ -26,6 +26,17 @@ public class ObjectHelper {
     return cast(List.class, value);
   }
 
+  public static Object[] castToArray(Object value, String type) {
+    if (type.equals("String")) {
+      return castToList(value).toArray(String[]::new);
+    } else if (type.equals("Int")) {
+      return castToList(value).toArray(Integer[]::new);
+    } else if (type.equals("Float")) {
+      return castToList(value).toArray(Float[]::new);
+    }
+    throw illegalArgumentException("Object with type '{}' can not be casted to an array.", type);
+  }
+
   @SuppressWarnings("unchecked")
   public static Map<String, Object> castToMap(Object value) {
     return cast(Map.class, value);

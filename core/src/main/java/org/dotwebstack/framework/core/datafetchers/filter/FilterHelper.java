@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.SCALAR_LIST_FILTER_POSTFIX;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Map;
@@ -50,6 +51,9 @@ public final class FilterHelper {
           .map(filterType -> FilterConstants.STRING_PARTIAL)
           .orElse(objectField.getType());
 
+      if (objectField.isList()) {
+        type = type.concat(SCALAR_LIST_FILTER_POSTFIX);
+      }
       return getTypeNameForFilter(fieldFilterMap, type);
     }
   }

@@ -93,8 +93,11 @@ objectTypes:
             - name: ingredient_code
               referencedField: code
       taste:
-        type: Taste
+        type: String
         list: true
+        enum:
+          type: db.taste
+          values: [ "MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY" ]
       since:
         type: Date
       lastBrewed:
@@ -110,6 +113,8 @@ objectTypes:
         field: brewery.postalAddress.city
       breweryHistoryAge:
         field: brewery.history.age
+      taste:
+        field: taste
     sortableBy:
       name:
         - field: name

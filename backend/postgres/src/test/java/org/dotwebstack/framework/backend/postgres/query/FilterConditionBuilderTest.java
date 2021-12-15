@@ -125,7 +125,69 @@ class FilterConditionBuilderTest {
     assertThat(thrown.getMessage(), equalTo(expected));
   }
 
-  public static Stream<Arguments> getEnumArguments() {
+  private static Stream<Arguments> getListArguments() {
+    return Stream.of(arguments("String", Map.of("eq", List.of("foo")), "\"x1\".\"column\" = array['foo']"),
+        arguments("String", Map.of("containsAllOf", List.of("foo")), "\"x1\".\"column\" @> array['foo']"),
+        arguments("String", Map.of("containsAnyOf", List.of("foo")), "(\"x1\".\"column\" && array['foo'])"),
+        arguments("String", Map.of("not", Map.of("containsAnyOf", List.of("foo"))),
+            "not ((\"x1\".\"column\" && array['foo']))"),
+        arguments("Int", Map.of("eq", List.of(33, 44)), "\"x1\".\"column\" = array[33, 44]"),
+        arguments("Int", Map.of("containsAllOf", List.of(33, 44)), "\"x1\".\"column\" @> array[33, 44]"),
+        arguments("Int", Map.of("containsAnyOf", List.of(33, 44)), "(\"x1\".\"column\" && array[33, 44])"),
+        arguments("Int", Map.of("not", Map.of("containsAnyOf", List.of(33, 44))),
+            "not ((\"x1\".\"column\" && array[33, 44]))"),
+        arguments("Float", Map.of("eq", List.of(33.3f, 44.4f)), "\"x1\".\"column\" = array[33.3, 44.4]"),
+        arguments("Float", Map.of("containsAllOf", List.of(33.3f, 44.4f)), "\"x1\".\"column\" @> array[33.3, 44.4]"),
+        arguments("Float", Map.of("containsAnyOf", List.of(33.3f, 44.4f)), "(\"x1\".\"column\" && array[33.3, 44.4])"),
+        arguments("Float", Map.of("not", Map.of("containsAnyOf", List.of(33.3f, 44.4f))),
+            "not ((\"x1\".\"column\" && array[33.3, 44.4]))"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getListArguments")
+  void build_returnsCondition_forListFilterCriteria(String type, Map<String, Object> values, String expected) {
+    var objectField = new PostgresObjectField();
+    objectField.setColumn("column");
+    objectField.setList(true);
+    objectField.setType(type);
+
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo(expected));
+  }
+
+  private static Stream<Arguments> getEnumListArguments() {
+    return Stream.of(arguments(Map.of("eq", List.of("foo")), "\"x1\".\"column\" = cast(array['foo'] as fooType[])"),
+        arguments(Map.of("containsAllOf", List.of("foo")), "\"x1\".\"column\" @> cast(array['foo'] as fooType[])"),
+        arguments(Map.of("containsAnyOf", List.of("foo")), "(\"x1\".\"column\" && cast(array['foo'] as fooType[]))"),
+        arguments(Map.of("not", Map.of("containsAnyOf", List.of("foo"))),
+            "not ((\"x1\".\"column\" && cast(array['foo'] as fooType[])))"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getEnumListArguments")
+  void build_returnsCondition_forEnumListFilterCriteria(Map<String, Object> values, String expected) {
+    var objectField = new PostgresObjectField();
+    objectField.setColumn("column");
+    objectField.setList(true);
+    objectField.setType("String");
+
+    var enumConfiguration = new FieldEnumConfiguration();
+    enumConfiguration.setType("fooType");
+    objectField.setEnumeration(enumConfiguration);
+
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo(expected));
+  }
+
+  private static Stream<Arguments> getEnumArguments() {
     return Stream.of(arguments(Map.of("eq", "foo"), "\"x1\".\"column\" = cast('foo' as fooType)"),
         arguments(Map.of("lt", "foo"), "\"x1\".\"column\" < cast('foo' as fooType)"),
         arguments(Map.of("lte", "foo"), "\"x1\".\"column\" <= cast('foo' as fooType)"),
