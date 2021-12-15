@@ -1663,9 +1663,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void graphQlQuery_returnsBreweries_forEnumListFilter() {
-//    String query = "{\n" + "  beers(filter: {taste: {containsAllOf: ['MEATY','FRUITY']}}) {\n" + "    name\n" + "  }\n" + "}";
-//    String query = "{beers(filter: {taste: {containsAllOf: [\"MEATY\",\"FRUITY\"]}}) { name }}";
-    String query = "{\n" + "  beers(filter: {taste: {containsAllOf: [\"MEATY\", \"FRUITY\"]}}) {\n" + "    name\n" + "  }\n" + "}";
+    // String query = "{\n" + " beers(filter: {taste: {containsAllOf: ['MEATY','FRUITY']}}) {\n" + "
+    // name\n" + " }\n" + "}";
+    // String query = "{beers(filter: {taste: {containsAllOf: [\"MEATY\",\"FRUITY\"]}}) { name }}";
+    String query =
+        "{\n" + "  beers(filter: {taste: {containsAllOf: [\"MEATY\", \"FRUITY\"]}}) {\n" + "    name\n" + "  }\n" + "}";
     Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
