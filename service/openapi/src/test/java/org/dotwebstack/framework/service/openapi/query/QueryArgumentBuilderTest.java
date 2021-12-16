@@ -1,12 +1,16 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableMap;
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
 import graphql.language.AstPrinter;
@@ -15,6 +19,8 @@ import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.StringValue;
 import graphql.language.Value;
+import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -52,14 +58,16 @@ class QueryArgumentBuilderTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  void buildArguments_returnsExpectedArgument() throws IOException {
+  void buildArguments_returnsExpectedArgument_forFilter() throws IOException {
     Map<String, Map<String, Object>> filter = (Map<String, Map<String, Object>>) TestResources.filter("filter1");
-    OperationRequest operationRequest = createOperationRequest(filter);
+    OperationRequest operationRequest = createFilterOperationRequest(filter);
 
     Map<String, Object> parameters = Map.of("p1", "value1", "p2", "value2", "p3", "value3", "p4", "value4");
     when(operationRequest.getParameters()).thenReturn(parameters);
 
-    List<Argument> arguments = queryArgumentBuilder.buildArguments(operationRequest);
+    var fieldDefinition = createFieldDefinition(FILTER_ARGUMENT_NAME);
+
+    List<Argument> arguments = queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest);
     assertThat(arguments.size(), is(1));
     String pretty = AstPrinter.printAst(arguments.get(0));
 
@@ -67,31 +75,70 @@ class QueryArgumentBuilderTest {
         + "\"value3_suffix\", field5 : {not : {field6 : \"value4\"}}}}}}"));
   }
 
+  @Test
+  void buildArguments_returnsExpectedArgument_forContext() {
+    Map<String, Object> context = ImmutableMap.of("field1", "$query.p1", "field2", "$query.p2");
+
+    OperationRequest operationRequest = createContextOperationRequest(context);
+
+    Map<String, Object> parameters = Map.of("p1", "value1", "p2", "value2");
+    when(operationRequest.getParameters()).thenReturn(parameters);
+
+    var fieldDefinition = createFieldDefinition(CONTEXT_ARGUMENT_NAME);
+
+    List<Argument> arguments = queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest);
+    assertThat(arguments.size(), is(1));
+    String pretty = AstPrinter.printAst(arguments.get(0));
+
+    assertThat(pretty, is("context: {field1 : \"value1\", field2 : \"value2\"}"));
+  }
+
+
   @SuppressWarnings("unchecked")
   @Test
-  void buildArguments_throwsExcepction_forUnsupportedType() throws IOException {
+  void buildArguments_throwsException_forUnsupportedFilterType() throws IOException {
     Map<String, Map<String, Object>> filter =
         (Map<String, Map<String, Object>>) TestResources.filter("filter_unsupported_type");
-    OperationRequest operationRequest = createOperationRequest(filter);
 
-    assertThrows(IllegalArgumentException.class, () -> queryArgumentBuilder.buildArguments(operationRequest));
+    var fieldDefinition = createFieldDefinition(FILTER_ARGUMENT_NAME);
+
+    var operationRequest = createFilterOperationRequest(filter);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest));
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  void buildArguments_throwsExcepction_forUnsupportedTypeAtRoot() throws IOException {
+  void buildArguments_throwsException_forUnsupportedFilterTypeAtRoot() throws IOException {
     Map<String, Map<String, Object>> filter =
         (Map<String, Map<String, Object>>) TestResources.filter("filter_unsupported_type_root");
-    OperationRequest operationRequest = createOperationRequest(filter);
 
-    assertThrows(IllegalArgumentException.class, () -> queryArgumentBuilder.buildArguments(operationRequest));
+    var fieldDefinition = createFieldDefinition(FILTER_ARGUMENT_NAME);
+
+    var operationRequest = createFilterOperationRequest(filter);
+
+    assertThrows(IllegalArgumentException.class,
+        () -> queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest));
   }
 
-  private OperationRequest createOperationRequest(Map<String, Map<String, Object>> filter) {
-    OperationRequest operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
+  private OperationRequest createContextOperationRequest(Map<String, Object> context) {
+    var operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
+
+    when(operationRequest.getContext()
+        .getQueryProperties()
+        .getContext()).thenReturn(context);
+
+    return operationRequest;
+  }
+
+  private OperationRequest createFilterOperationRequest(Map<String, Map<String, Object>> filter) {
+    var operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
+
     when(operationRequest.getContext()
         .getQueryProperties()
         .getFilters()).thenReturn(filter);
+
     return operationRequest;
   }
 
@@ -110,5 +157,13 @@ class QueryArgumentBuilderTest {
         Arguments.of(1.2f, new FloatValue(new BigDecimal("1.2"))),
         Arguments.of(1.2d, new FloatValue(new BigDecimal("1.2"))),
         Arguments.of(Map.of("1", "2"), new StringValue("{1=2}")), Arguments.of(false, new BooleanValue(false)));
+  }
+
+  private GraphQLFieldDefinition createFieldDefinition(String argumentName) {
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+    lenient().when(fieldDefinition.getArgument(argumentName))
+        .thenReturn(mock(GraphQLArgument.class));
+
+    return fieldDefinition;
   }
 }

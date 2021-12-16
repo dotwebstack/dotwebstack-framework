@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
 import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
@@ -13,12 +15,14 @@ import graphql.language.ObjectField;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Value;
+import graphql.schema.GraphQLFieldDefinition;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
@@ -41,17 +45,45 @@ public class QueryArgumentBuilder {
     this.jexlHelper = new JexlHelper(jexlEngine);
   }
 
-  public List<Argument> buildArguments(@NonNull OperationRequest operationRequest) {
-    return createFilterArguments(operationRequest);
+  public List<Argument> buildArguments(@NonNull GraphQLFieldDefinition fieldDefinition,
+      @NonNull OperationRequest operationRequest) {
+    var filterArguments = createFilterArguments(fieldDefinition, operationRequest);
+
+    var contextArguments = createContextArguments(fieldDefinition, operationRequest);
+
+    return Stream.concat(filterArguments.stream(), contextArguments.stream())
+        .collect(Collectors.toList());
   }
 
-  private List<Argument> createFilterArguments(OperationRequest operationRequest) {
+  private List<Argument> createContextArguments(GraphQLFieldDefinition fieldDefinition,
+      OperationRequest operationRequest) {
+    if (fieldDefinition.getArgument(CONTEXT_ARGUMENT_NAME) == null) {
+      return List.of();
+    }
+
+    var context = operationRequest.getContext()
+        .getQueryProperties()
+        .getContext();
+
+    var objectField = createObjectValue(context, operationRequest.getParameters());
+
+    return objectField != null ? List.of(new Argument(CONTEXT_ARGUMENT_NAME, objectField)) : List.of();
+  }
+
+  private List<Argument> createFilterArguments(GraphQLFieldDefinition fieldDefinition,
+      OperationRequest operationRequest) {
+    if (fieldDefinition.getArgument(FILTER_ARGUMENT_NAME) == null) {
+      return List.of();
+    }
+
     var filters = operationRequest.getContext()
         .getQueryProperties()
         .getFilters();
+
     List<ObjectField> objectFields = createObjectFields(filters, operationRequest.getParameters());
 
-    return !objectFields.isEmpty() ? List.of(new Argument("filter", new ObjectValue(objectFields))) : List.of();
+    return !objectFields.isEmpty() ? List.of(new Argument(FILTER_ARGUMENT_NAME, new ObjectValue(objectFields)))
+        : List.of();
   }
 
   private List<ObjectField> createObjectFields(Map<String, Map<String, Object>> map, Map<String, Object> parameters) {

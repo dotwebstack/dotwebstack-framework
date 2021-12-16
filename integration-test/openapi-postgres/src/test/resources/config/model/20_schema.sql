@@ -19,7 +19,11 @@ CREATE TABLE db.brewery (
   geometry geometry(Geometry, 4326) NOT NULL,
   his_age INT NOT NULL,
   his_history character varying NOT NULL,
-  multinational boolean NOT NULL
+  multinational boolean NOT NULL,
+  valid_start DATE NOT NULL,
+  valid_end DATE,
+  available_start timestamp with time zone not null,
+  available_end timestamp with time zone
 );
 
 CREATE TABLE db.beer (
@@ -45,3 +49,24 @@ CREATE TABLE db.beer_ingredient (
   ingredient_code character varying(4) NOT NULL REFERENCES db.ingredient (code),
   PRIMARY KEY (beer_identifier,ingredient_code)
 );
+
+CREATE FUNCTION db.brewery_history_ctx(date,timestamp with time zone) RETURNS SETOF db.brewery AS $$
+   SELECT * FROM db.brewery WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
+$$ language SQL immutable;
+
+CREATE FUNCTION db.beer_history_ctx(date,timestamp with time zone) RETURNS SETOF db.beer AS $$
+   SELECT * FROM db.beer
+$$ language SQL immutable;
+
+CREATE FUNCTION db.address_history_ctx(date,timestamp with time zone) RETURNS SETOF db.address AS $$
+   SELECT * FROM db.address
+$$ language SQL immutable;
+
+CREATE FUNCTION db.ingredient_history_ctx(date,timestamp with time zone) RETURNS SETOF db.ingredient AS $$
+   SELECT * FROM db.ingredient
+$$ language SQL immutable;
+
+CREATE FUNCTION db.beer_ingredient_history_ctx(date,timestamp with time zone) RETURNS SETOF db.beer_ingredient AS $$
+   SELECT * FROM db.beer_ingredient
+$$ language SQL immutable;
+

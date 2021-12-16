@@ -22,7 +22,7 @@ public class TypeValidator {
   public static final String MAPPING_ERROR_FROM =
       "OAS type '{}' in property '{}' cannot be mapped from GraphQl type '{}'.";
 
-  public void validateTypesOpenApiToGraphQ(@NonNull String oasType, @NonNull String graphQlType,
+  public void validateTypesOpenApiToGraphQl(@NonNull String oasType, @NonNull String graphQlType,
       @NonNull String identifier) {
     switch (oasType) {
       case STRING_TYPE:
