@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.addEvaluatedDwsParameters;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.getParameterNamesOfType;
 import static org.dotwebstack.framework.service.openapi.helper.CoreRequestHelper.validateParameterExistence;
@@ -66,7 +67,14 @@ public class DefaultParameterResolver implements ParameterResolver {
       return requestBodyHandlerRouter.getRequestBodyHandler(requestBody)
           .getValues(serverRequest, requestBodyContext, requestBody, result)
           .map(values -> {
-            result.putAll(values);
+            values.forEach((name, value) -> {
+              if (result.containsKey(name)) {
+                throw invalidConfigurationException("Request body name `{}` already used in parameter `{}`.", name,
+                    result.get(name));
+              }
+              result.put(name, value);
+            });
+
             return result;
           });
     }
@@ -96,7 +104,14 @@ public class DefaultParameterResolver implements ParameterResolver {
       for (Parameter parameter : parameters) {
         var handler = paramHandlerRouter.getParamHandler(parameter);
         handler.getValue(request, parameter)
-            .ifPresent(value -> result.put(handler.getParameterName(parameter), value));
+            .ifPresent(value -> {
+              var name = handler.getParameterName(parameter);
+              if (result.containsKey(name)) {
+                throw invalidConfigurationException("Encountered duplicate parameter name `{}` at `{}`.", name,
+                    parameter);
+              }
+              result.put(name, value);
+            });
       }
     }
 
