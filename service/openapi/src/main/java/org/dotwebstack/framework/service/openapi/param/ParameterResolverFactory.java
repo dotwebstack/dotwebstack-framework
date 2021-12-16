@@ -10,6 +10,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.dotwebstack.framework.service.openapi.response.RequestBodyContext;
 import org.springframework.stereotype.Component;
@@ -18,14 +19,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ParameterResolverFactory {
 
+  private final EnvironmentProperties environmentProperties;
+
   private final JexlEngine jexlEngine;
 
   private final RequestBodyHandlerRouter requestBodyHandlerRouter;
 
   private final ParamHandlerRouter paramHandlerRouter;
 
-  public ParameterResolverFactory(@NonNull JexlEngine jexlEngine,
+  public ParameterResolverFactory(@NonNull EnvironmentProperties environmentProperties, @NonNull JexlEngine jexlEngine,
       @NonNull RequestBodyHandlerRouter requestBodyHandlerRouter, @NonNull ParamHandlerRouter paramHandlerRouter) {
+    this.environmentProperties = environmentProperties;
     this.jexlEngine = jexlEngine;
     this.requestBodyHandlerRouter = requestBodyHandlerRouter;
     this.paramHandlerRouter = paramHandlerRouter;
@@ -41,6 +45,6 @@ public class ParameterResolverFactory {
     Map<String, String> dwsParameters = DwsExtensionHelper.getDwsQueryParameters(operation);
 
     return new DefaultParameterResolver(requestBody, requestBodyContext, requestBodyHandlerRouter, paramHandlerRouter,
-        jexlEngine, parameters, dwsParameters);
+        environmentProperties, jexlEngine, parameters, dwsParameters);
   }
 }

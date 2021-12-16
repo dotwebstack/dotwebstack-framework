@@ -20,11 +20,11 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 @Slf4j
 public class JexlHelper {
 
-  private static final String ENVIRONMENT_PREFIX = "env.";
+  private static final String ENVIRONMENT_PREFIX = "env";
 
-  private static final String ARGUMENT_PREFIX = "args.";
+  private static final String ARGUMENT_PREFIX = "args";
 
-  private static final String FIELDS_PREFIX = "fields.";
+  private static final String DATA_PREFIX = "data";
 
   private final JexlEngine engine;
 
@@ -37,22 +37,19 @@ public class JexlHelper {
   }
 
   public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
-      Map<String, Object> resultData) {
+      Object resultData) {
     JexlContext jexlContext = new MapContext();
 
     if (envParams != null) {
-      envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
-    }
-
-    if (resultData != null) {
-      resultData.entrySet()
-          .stream()
-          .filter(entry -> !(entry.getValue() instanceof Map))
-          .forEach(entry -> jexlContext.set(FIELDS_PREFIX + entry.getKey(), entry.getValue()));
+      jexlContext.set(ENVIRONMENT_PREFIX, envParams);
     }
 
     if (argParams != null) {
-      argParams.forEach((key, value) -> jexlContext.set(ARGUMENT_PREFIX + key, value.toString()));
+      jexlContext.set(ARGUMENT_PREFIX, argParams);
+    }
+
+    if (resultData != null) {
+      jexlContext.set(DATA_PREFIX, resultData);
     }
 
     return jexlContext;
@@ -72,7 +69,7 @@ public class JexlHelper {
               .getValue())
               .or(() -> Optional.ofNullable(argument.getArgumentDefaultValue()
                   .getValue()))
-              .ifPresent(argValue -> jexlContext.set(ARGUMENT_PREFIX + argument.getName(), argValue)));
+              .ifPresent(argValue -> jexlContext.set(ARGUMENT_PREFIX + "." + argument.getName(), argValue)));
     }
 
     return jexlContext;

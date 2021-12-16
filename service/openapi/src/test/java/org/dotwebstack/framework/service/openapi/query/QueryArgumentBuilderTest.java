@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
 import graphql.language.AstPrinter;
+import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.StringValue;
@@ -23,23 +24,28 @@ import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.junit.jupiter.api.BeforeAll;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Answers;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class QueryArgumentBuilderTest {
 
-  private static QueryArgumentBuilder queryArgumentBuilder;
+  private QueryArgumentBuilder queryArgumentBuilder;
 
-  @BeforeAll
-  static void beforeAll() {
-    queryArgumentBuilder = new QueryArgumentBuilder(new JexlBuilder().silent(false)
+  @Mock
+  private EnvironmentProperties environmentProperties;
+
+  @BeforeEach
+  void beforeAll() {
+    queryArgumentBuilder = new QueryArgumentBuilder(environmentProperties, new JexlBuilder().silent(false)
         .strict(true)
         .create());
   }
@@ -103,8 +109,6 @@ class QueryArgumentBuilderTest {
         Arguments.of(1, new IntValue(new BigInteger("1"))), Arguments.of(1L, new IntValue(new BigInteger("1"))),
         Arguments.of(1.2f, new FloatValue(new BigDecimal("1.2"))),
         Arguments.of(1.2d, new FloatValue(new BigDecimal("1.2"))),
-        Arguments.of(Map.of("1", "2"), new StringValue("{1=2}"))
-
-    );
+        Arguments.of(Map.of("1", "2"), new StringValue("{1=2}")), Arguments.of(false, new BooleanValue(false)));
   }
 }

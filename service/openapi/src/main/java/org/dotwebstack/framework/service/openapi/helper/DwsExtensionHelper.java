@@ -3,9 +3,12 @@ package org.dotwebstack.framework.service.openapi.helper;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_DEFAULT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_ENVELOPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_FIELD;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
@@ -23,13 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import lombok.NonNull;
+import org.dotwebstack.framework.service.openapi.jexl.JexlExpression;
 
 public class DwsExtensionHelper {
 
   static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
-
-  static final String DWS_QUERY_JEXL_CONTEXT_PARAMS = "params";
 
   static final String DWS_QUERY_SELECTION_SET = "selectionSet";
 
@@ -107,5 +110,55 @@ public class DwsExtensionHelper {
           (String) ((Map<?, ?>) o).get(X_DWS_QUERY_PARAMETER_VALUEEXPR)));
     }
     return result;
+  }
+
+  public static Optional<JexlExpression> getJexlExpression(@NonNull Schema<?> schema) {
+    var expr = getDwsExtension(schema, X_DWS_EXPR);
+    if (expr == null) {
+      return Optional.empty();
+    }
+
+    return getJexlExpression(expr, schema, val -> val);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Optional<JexlExpression> getJexlExpression(@NonNull Object expr, @NonNull Object context,
+      UnaryOperator<String> expressionValueAdapter) {
+    if (expr instanceof String) {
+      var value = expressionValueAdapter.apply(String.valueOf(expr));
+
+      return Optional.of(JexlExpression.builder()
+          .value(value)
+          .build());
+    } else if (expr instanceof Map<?, ?>) {
+      var exprMap = (Map<String, Object>) expr;
+
+      if (exprMap.containsKey(X_DWS_EXPR_VALUE)) {
+        var exprBuilder = JexlExpression.builder();
+        var value = checkAndGetExpressionStringProperty(exprMap.get(X_DWS_EXPR_VALUE), X_DWS_EXPR_VALUE, context);
+
+        exprBuilder.value(expressionValueAdapter.apply(value));
+
+        if (exprMap.containsKey(X_DWS_EXPR_FALLBACK_VALUE)) {
+          var fallback = checkAndGetExpressionStringProperty(exprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
+              X_DWS_EXPR_FALLBACK_VALUE, context);
+
+          exprBuilder.fallback(fallback);
+        }
+
+        return Optional.of(exprBuilder.build());
+      }
+    }
+
+    throw invalidConfigurationException("Unsupported value {} for {} found in {}", expr, X_DWS_EXPR, context);
+  }
+
+  private static String checkAndGetExpressionStringProperty(Object value, String propertyName, Object context) {
+    if (!(value instanceof String)) {
+      throw invalidConfigurationException("Expected value of type 'string', but found {} for {}.{} found in {}", value,
+          X_DWS_EXPR, propertyName, context);
+    }
+
+    return (String) value;
   }
 }

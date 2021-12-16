@@ -57,7 +57,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public boolean supports(Parameter parameter) {
+  public boolean supports(@NonNull Parameter parameter) {
     return true;
   }
 
@@ -102,7 +102,7 @@ public class DefaultParamHandler implements ParamHandler {
   }
 
   @Override
-  public void validate(GraphQlField field, Parameter parameter, String pathName) {
+  public void validate(@NonNull GraphQlField field, Parameter parameter, @NonNull String pathName) {
     String parameterName = parameter.getName();
     if (Objects.nonNull(parameter.getExtensions())) {
       if (parameter.getExtensions()
