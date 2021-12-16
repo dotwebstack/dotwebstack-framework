@@ -1,11 +1,10 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
 import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
-
-import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 
 import graphql.language.Argument;
 import graphql.language.ArrayValue;

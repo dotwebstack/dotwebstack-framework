@@ -231,20 +231,18 @@ provided.-->
 
 ## Context
 OpenApi queries may add context configuration under the vendor extension `x-dws-query`.
-The context configuration is mapped to the graphQL context specified for that query and can make use of parameter values
-with a key `$<type>.<parametername>` where `type` may be:
-* `path`
-* `body`
-* `header`
-* `query`
-  For instance, `$path.name` refers to the `name` parameter that occurs in the path.
+The context configuration is mapped to the context specified for that query and can make use of parameter values
+with a key `args.<parametername>`:
+
+For instance, `$args.name` refers to the `name` parameter that occurs in either the path, query, request body or request
+header.
 
 Context fields are configured with an optional map `x-dws-query.context`.
 ```yaml
     x-dws-query:
       field: breweries
       context:
-        field1: $query.field1
+        field1: $args.field1
 ```
 
 The following describes a context on the `breweriesInContext` field:
@@ -252,7 +250,7 @@ The following describes a context on the `breweriesInContext` field:
     x-dws-query:
       field: breweriesInContext
       context:
-        validOn: $query.validOn
+        validOn: $args.validOn
 ```
 With a value `"2021-01-01"` for the query `validOn` parameter this will produce the query with context
 `breweriesInContext(context: { validOn: "2021-01-01"})`.

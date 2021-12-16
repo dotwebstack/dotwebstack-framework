@@ -133,7 +133,7 @@ paths:
             type: BreweryFilter
             fields:
               name:
-                in: $query.name
+                in: $args.name
       parameters:
         - name: expand
           x-dws-type: expand
@@ -224,10 +224,10 @@ paths:
             type: BreweryFilter
             fields:
               name:
-                in: $query.name
+                in: $args.name
         context:
-          validOn: $query.validOn
-          availableOn: $query.availableOn
+          validOn: $args.validOn
+          availableOn: $args.availableOn
       parameters:
         - name: expand
           x-dws-type: expand
