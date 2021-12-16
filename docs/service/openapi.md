@@ -174,7 +174,7 @@ For example:
         $ref: '#/components/schemas/Countries'
       self:
         type: String
-        x-dws-expr: '`http://dotwebstack.org/api/beers/${args.identifier}`'
+        x-dws-expr: '`http://dotwebstack.org/api/beers/${data.identifier}`'
 ```
 
 Will lead to `identifier` and `hiddenField` being added to the selection set of the corresponding query.
