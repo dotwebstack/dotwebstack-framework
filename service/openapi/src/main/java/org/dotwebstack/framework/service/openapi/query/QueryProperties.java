@@ -23,6 +23,8 @@ public class QueryProperties {
 
   private Map<String, Object> context = new HashMap<>();
 
+  private String selectionSet;
+
   public static QueryProperties fromOperation(Operation operation) {
     var extension = ofNullable(operation.getExtensions())
         .flatMap(extensions -> ofNullable(extensions.get(OasConstants.X_DWS_QUERY)))

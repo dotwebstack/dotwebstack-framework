@@ -632,6 +632,72 @@ paths:
             does-nothing:
               schema:
                 type: String
+  /breweries-pageable-with-params-selection-set:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: args.pageSize
+          page: args.page
+        selectionSet: |
+          {
+            nodes {
+              identifier
+              name
+              aliases
+              postalAddress {
+                locator
+                street
+                postalCode
+                location {
+                  asGeoJSON
+                }
+              }
+              visitAddresses {
+                street
+                postalCode
+                location {
+                  asGeoJSON
+                }
+              }
+              numberOfEmployees
+              salesAreas {
+                asGeoJSON
+              }
+            }
+          }
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [ 10, 20, 50 ]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema: ~
+  /breweries-invalid-selection-set:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        selectionSet: |
+          type Brewery {
+            id: String!
+          }
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema: ~
 
 components:
   schemas:

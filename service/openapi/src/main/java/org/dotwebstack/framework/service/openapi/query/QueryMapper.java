@@ -20,6 +20,7 @@ import graphql.language.OperationDefinition;
 import graphql.language.SelectionSet;
 import graphql.language.StringValue;
 import graphql.language.Value;
+import graphql.parser.Parser;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
@@ -42,6 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
@@ -51,6 +53,7 @@ import org.dotwebstack.framework.service.openapi.query.mapping.MappingContext;
 import org.dotwebstack.framework.service.openapi.query.paging.QueryPaging;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @SuppressWarnings("rawtypes")
 public class QueryMapper {
@@ -82,10 +85,9 @@ public class QueryMapper {
     var queryType = graphQlSchema.getQueryType();
     var fieldDefinition = getObjectField(queryType, fieldName);
     var fieldArguments = mapArguments(fieldDefinition, graphQlSchema.getQueryType(), operationRequest);
-    var queryField = new Field(fieldName, fieldArguments,
-        new SelectionSet(
-            mapSchema(operationRequest.getResponseSchema(), fieldDefinition, MappingContext.build(operationRequest))
-                .collect(Collectors.toList())));
+
+    var selectionSet = createSelectionSet(operationRequest, fieldDefinition);
+    var queryField = new Field(fieldName, fieldArguments, selectionSet);
 
     var query = OperationDefinition.newOperationDefinition()
         .name(OPERATION_NAME)
@@ -97,6 +99,27 @@ public class QueryMapper {
         .query(AstPrinter.printAst(query))
         .dataLoaderRegistry(new DataLoaderRegistry())
         .build();
+  }
+
+  private SelectionSet createSelectionSet(OperationRequest operationRequest, GraphQLFieldDefinition fieldDefinition) {
+    var selectionSetString = operationRequest.getContext()
+        .getQueryProperties()
+        .getSelectionSet();
+
+    if (selectionSetString != null) {
+      LOG.debug("Parsing specified selection set:");
+      LOG.debug("{}", selectionSetString);
+
+      return Parser.parse(selectionSetString)
+          .getFirstDefinitionOfType(OperationDefinition.class)
+          .map(OperationDefinition::getSelectionSet)
+          .orElseThrow(() -> invalidConfigurationException(
+              "Could not create valid selection set for `selectionSet`: {}", selectionSetString));
+    }
+
+    return new SelectionSet(
+        mapSchema(operationRequest.getResponseSchema(), fieldDefinition, MappingContext.build(operationRequest))
+            .collect(Collectors.toList()));
   }
 
   private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,

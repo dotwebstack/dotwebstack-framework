@@ -5,6 +5,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -78,7 +79,9 @@ class QueryMapperTest {
         Arguments.of("/breweries-included-fields", APPLICATION_JSON_HAL, Map.of(),
             "brewery-collection-included-fields"),
         Arguments.of("/breweries-pageable-included-fields", APPLICATION_JSON, Map.of("page", 2, "pageSize", 42),
-            "brewery-pageable-collection-included-fields"));
+            "brewery-pageable-collection-included-fields"),
+        Arguments.of("/breweries-pageable-with-params-selection-set", APPLICATION_JSON,
+            Map.of("page", 2, "pageSize", 42), "brewery-pageable-collection-with-params"));
   }
 
   @ParameterizedTest
@@ -134,7 +137,10 @@ class QueryMapperTest {
             "Configured included GraphQL field `postalAddress` is not a scalar type."),
         Arguments.of("/brewery-non-string-included-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
             InvalidConfigurationException.class,
-            "Encountered non-string included field in x-dws-include: {nonString={type=Object, properties=foo}}"));
+            "Encountered non-string included field in x-dws-include: {nonString={type=Object, properties=foo}}"),
+        Arguments.of("/breweries-invalid-selection-set", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
+            "Could not create valid selection set for `selectionSet`: type Brewery {"));
   }
 
   @ParameterizedTest
@@ -158,6 +164,6 @@ class QueryMapperTest {
     var throwable = assertThrows(RuntimeException.class, () -> queryFactory.map(operationRequest));
 
     assertThat(throwable, is(instanceOf(exceptionClass)));
-    assertThat(throwable.getMessage(), is(message));
+    assertThat(throwable.getMessage(), startsWith(message));
   }
 }
