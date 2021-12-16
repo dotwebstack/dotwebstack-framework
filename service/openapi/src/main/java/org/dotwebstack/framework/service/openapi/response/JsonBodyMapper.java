@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
 import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
@@ -30,6 +31,7 @@ import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -114,7 +116,8 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = entry.getKey();
+          var dwsName = DwsExtensionHelper.getDwsExtension(entry.getValue(), X_DWS_NAME);
+          var property = (dwsName != null) ? (String) dwsName : entry.getKey();
           var nestedSchema = entry.getValue();
           var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
@@ -134,7 +137,8 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = entry.getKey();
+          var dwsName = DwsExtensionHelper.getDwsExtension(entry.getValue(), X_DWS_NAME);
+          var property = (dwsName != null) ? (String) dwsName : entry.getKey();
           var nestedSchema = entry.getValue();
           var nestedFieldDefinition = rawType.getFieldDefinition(property);
           Object nestedValue;

@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
 import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
@@ -47,6 +48,7 @@ import lombok.NonNull;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
+import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.dotwebstack.framework.service.openapi.query.mapping.MappingContext;
@@ -152,8 +154,11 @@ public class QueryMapper {
     Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
         .stream()
-        .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition,
-            mappingContext));
+        .flatMap(entry -> {
+          Object dwsName = DwsExtensionHelper.getDwsExtension(entry.getValue(), X_DWS_NAME);
+          String name = (dwsName != null) ? (String) dwsName : entry.getKey();
+          return mapObjectSchemaProperty(name, entry.getValue(), schema, fieldDefinition, mappingContext);
+        });
 
     return Stream.concat(includedFields, mappedObjectSchema);
   }
@@ -222,15 +227,7 @@ public class QueryMapper {
     var objectType = unwrapObjectType(parentFieldDefinition);
     var fieldDefinition = objectType.getFieldDefinition(name);
 
-    if (isEnvelope(schema)) {
-      return mapSchema(schema, parentFieldDefinition, mappingContext);
-    }
-
-    if (fieldDefinition == null) {
-      if (!mappingContext.getPath()
-          .isEmpty()) {
-        return Stream.empty();
-      }
+    if (fieldDefinition == null || isEnvelope(schema)) {
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
