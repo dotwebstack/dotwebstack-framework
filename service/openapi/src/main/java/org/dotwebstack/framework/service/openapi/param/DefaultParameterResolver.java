@@ -46,6 +46,7 @@ public class DefaultParameterResolver implements ParameterResolver {
 
   private final Map<String, String> dwsParameters;
 
+  @SuppressWarnings("java:S107")
   public DefaultParameterResolver(RequestBody requestBody, RequestBodyContext requestBodyContext,
       RequestBodyHandlerRouter requestBodyHandlerRouter, ParamHandlerRouter paramHandlerRouter,
       EnvironmentProperties environmentProperties, JexlEngine jexlEngine, List<Parameter> parameters,
