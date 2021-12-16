@@ -3,8 +3,8 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
-import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
+import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
