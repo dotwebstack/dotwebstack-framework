@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.ext.spatial;
 
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
+
 import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.idl.FieldWiringEnvironment;
