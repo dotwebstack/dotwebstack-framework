@@ -54,7 +54,7 @@ CREATE TABLE dbeerpedia.beers (
   brewery bigint NOT NULL REFERENCES dbeerpedia.breweries (record_id),
   sold_per_year INT NOT NULL,
   taste dbeerpedia.beer_taste [] NOT NULL,
-  retired boolean NOT NULL,
+  retired boolean,
   valid_start DATE NOT NULL,
   valid_end DATE,
   available_start timestamp with time zone not null,
@@ -68,7 +68,7 @@ INSERT INTO dbeerpedia.beers(identifier, name, abv, brewery, sold_per_year, tast
   ('1295f4c1-846b-440c-b302-80bbc1f9f3a9', 'Beer 2', 4.7, 1, 500000, array['MEATY', 'SPICY', 'SMOKY', 'WATERY', 'FRUITY']::dbeerpedia.beer_taste[], false,'2020-01-01','2020-06-01','2020-01-01T00:00:00Z',null),
   ('973832e7-1dd9-4683-a039-22390b1c1995', 'Beer 3', 8.0, 2, 250000, array['MEATY', 'SMOKY', 'SMOKY']::dbeerpedia.beer_taste[], false,'2020-01-01',null,'2020-01-01T00:00:00Z',null),
   ('a5148422-be13-452a-b9fa-e72c155df3b2', 'Beer 4', 9.5, 1, 200000, array['SPICY']::dbeerpedia.beer_taste[], false,'2020-01-01',null,'2020-01-01T00:00:00Z',null),
-  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, 2, 100000, array['MEATY', 'SPICY']::dbeerpedia.beer_taste[], false,'2020-01-01',null,'2020-01-01T00:00:00Z','2020-03-01T00:00:00Z'),
+  ('766883b5-3482-41cf-a66d-a81e79a4f0ed', 'Beer 5', 6.2, 2, 100000, array['MEATY', 'SPICY']::dbeerpedia.beer_taste[], null,'2020-01-01',null,'2020-01-01T00:00:00Z','2020-03-01T00:00:00Z'),
   ('766883b5-3482-41cf-a66d-a81e79a4f321', 'Beer 6', 6.5, 2, 25100000, array['WATERY']::dbeerpedia.beer_taste[], true,'2020-01-01',null,'2020-01-01T00:00:00Z',null);
 
 

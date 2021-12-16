@@ -961,7 +961,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withBooleanFilter() {
-    String query = "{breweries(filter: {multinational: true}){ identifier_brewery name }}";
+    String query = "{breweries(filter: {multinational: { eq:true }}){ identifier_brewery name }}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -980,7 +980,7 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withBooleanNullFilter() {
-    String query = "{breweries(filter: {multinational: null}){ identifier_brewery name }}";
+    String query = "{breweries(filter: {multinational: { eq: null }}){ identifier_brewery name }}";
 
     JsonNode json = executeGetRequestDefault(query);
 
@@ -993,7 +993,7 @@ class GraphQlPostgresIntegrationTest {
 
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(data.containsKey(BREWERIES), is(true));
-    assertThat(breweries.size(), is(4));
+    assertThat(breweries.size(), is(1));
     assertThat(breweries.get(0),
         is(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S")));
   }

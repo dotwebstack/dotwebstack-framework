@@ -9,6 +9,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ListType.newListType;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.BOOLEAN_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ALL_OF_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ANY_OF_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.DATE_FILTER_INPUT_OBJECT_TYPE;
@@ -58,6 +59,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     registry.add(createDateFilterType());
     registry.add(createDateTimeFilterType());
     registry.add(createStringPartialFilterType());
+    registry.add(createBooleanFilterType());
   }
 
   @Override
@@ -73,8 +75,17 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
         .concat(SCALAR_LIST_FILTER_POSTFIX), FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(DATE.getName(), DATE_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(DATETIME.getName(), DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
-    fieldFilterMap.put(GraphQLBoolean.getName(), GraphQLBoolean.getName());
+    fieldFilterMap.put(GraphQLBoolean.getName(), BOOLEAN_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(STRING_PARTIAL, STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE);
+  }
+
+  private InputObjectTypeDefinition createBooleanFilterType() {
+    var typeName = GraphQLBoolean.getName();
+
+    return newInputObjectDefinition().name(BOOLEAN_FILTER_INPUT_OBJECT_TYPE)
+        .inputValueDefinition(createInputValueDefinition(EQ_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, BOOLEAN_FILTER_INPUT_OBJECT_TYPE))
+        .build();
   }
 
   private InputObjectTypeDefinition createStringPartialFilterType() {

@@ -24,7 +24,7 @@ CREATE TABLE db.brewery (
   geometry_etrs89 geometry(GeometryZ, 7931) NOT NULL,
   his_age INT,
   his_history character varying,
-  multinational boolean NOT NULL
+  multinational boolean
 );
 
 CREATE TABLE db.beer (
