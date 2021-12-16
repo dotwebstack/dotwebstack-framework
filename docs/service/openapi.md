@@ -231,6 +231,34 @@ following configuration specifies that `$path.name` is required:
 If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is
 provided.-->
 
+## Context
+OpenApi queries may add context configuration under the vendor extension `x-dws-query`.
+The context configuration is mapped to the graphQL context specified for that query and can make use of parameter values
+with a key `$<type>.<parametername>` where `type` may be:
+* `path`
+* `body`
+* `header`
+* `query`
+  For instance, `$path.name` refers to the `name` parameter that occurs in the path.
+
+Context fields are configured with an optional map `x-dws-query.context`.
+```yaml
+    x-dws-query:
+      field: breweries
+      context:
+        field1: $query.field1
+```
+
+The following describes a context on the `breweriesInContext` field:
+```yaml
+    x-dws-query:
+      field: breweriesInContext
+      context:
+        validOn: $query.validOn
+```
+With a value `"2021-01-01"` for the query `validOn` parameter this will produce the query with context
+`breweriesInContext(context: { validOn: "2021-01-01"})`.
+
 ### Expressions
 A value may be resolved from an expression, using the `x-dws-expr` extension. The following simple example will populate
 the `name.in` field of the graphQL filter with the uppercase of the`$body.name` parameter.

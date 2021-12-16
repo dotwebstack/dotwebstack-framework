@@ -215,6 +215,46 @@ paths:
 #              schema:
 #                type: integer
 #                x-dws-expr: args.page
+  /breweriesInContext:
+    get:
+      x-dws-query:
+        field: breweriesInContext
+        filters:
+          breweries:
+            type: BreweryFilter
+            fields:
+              name:
+                in: $query.name
+        context:
+          validOn: $query.validOn
+          availableOn: $query.availableOn
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ['postalAddress', 'beers','beers.class', 'beers.ingredients', 'founded', 'hasBeers', 'postalCode','countries','class']
+        - name: name
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
   /brewery/{identifier_brewery}:
     get:
       x-dws-query:

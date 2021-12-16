@@ -108,62 +108,71 @@ paths:
     #              schema:
     #                type: integer
     #                x-dws-expr: args.page
-/breweriesInContext:
-  get:
-    x-dws-query:
-      field: breweryCollectionInContext
-      paging:
-        pageSize: $query.pageSize
-        page: $query.page
-      filters:
-        name:
-          in: $query.name
-      context:
-        validOn: $query.validOn
-    parameters:
-      - name: expand
-        x-dws-type: expand
-        in: query
-        schema:
-          type: array
-          items:
+  /breweriesInContext:
+    get:
+      x-dws-query:
+        field: breweryCollectionInContext
+        paging:
+          pageSize: $query.pageSize
+          page: $query.page
+        filters:
+          name:
+            in: $query.name
+        context:
+          validOn: $query.validOn
+          availableOn: $query.availableOn
+      parameters:
+        - name: expand
+          x-dws-type: expand
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [ 'history', 'beers','beers.class', 'beers.ingredients']
+        - name: name
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 3
+        - name: validOn
+          in: query
+          required: false
+          schema:
             type: string
-            enum: [ 'history', 'beers','beers.class', 'beers.ingredients']
-      - name: name
-        in: query
-        explode: false
-        required: false
-        schema:
-          type: array
-          items:
+            format: date
+            example: '2021-01-01'
+        - name: availableOn
+          in: query
+          required: false
+          schema:
             type: string
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 1
-      - name: pageSize
-        in: query
-        schema:
-          type: integer
-          default: 2
-      - name: validOn
-        in: query
-        required: false
-        schema:
-          type: integer
-          default: 1
-    responses:
-      200:
-        description: OK
-        content:
-          application/hal+json:
-            schema:
-              $ref: '#/components/schemas/BreweryCollection'
-          application/stream+json:
-            schema:
-              $ref: '#/components/schemas/BreweryCollection'
+            format: date-time
+            example: '2021-01-01T12:00:00.000+01:00'
+      responses:
+        200:
+          description: OK
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
+            application/stream+json:
+              schema:
+                $ref: '#/components/schemas/BreweryCollection'
     post:
       x-dws-query:
         field: breweryCollection

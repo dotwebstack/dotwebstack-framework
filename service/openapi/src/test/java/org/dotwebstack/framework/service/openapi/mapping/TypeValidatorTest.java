@@ -20,7 +20,7 @@ class TypeValidatorTest {
   void validateTypesOpenApiToGraphQ_throwsException_forUnsupportedType() {
     var typeValidator = new TypeValidator();
     assertThrows(InvalidConfigurationException.class,
-        () -> typeValidator.validateTypesOpenApiToGraphQ("not " + "supported", "float", "1"));
+        () -> typeValidator.validateTypesOpenApiToGraphQl("not " + "supported", "float", "1"));
   }
 
   @Test
@@ -34,7 +34,7 @@ class TypeValidatorTest {
   @ParameterizedTest(name = "validateTypesOpenApiToGraphQ is valid with [{arguments}]")
   @MethodSource("getValidOasToGraphQl")
   void validateTypesOpenApiToGraphQ_isValid(String oasType, String graphQlType, String identifier) {
-    new TypeValidator().validateTypesOpenApiToGraphQ(oasType, graphQlType, identifier);
+    new TypeValidator().validateTypesOpenApiToGraphQl(oasType, graphQlType, identifier);
   }
 
   @ParameterizedTest(name = "validateTypesOpenApiToGraphQ is invalid with [{arguments}]")
@@ -43,7 +43,7 @@ class TypeValidatorTest {
       String identifier) {
     var typeValidator = new TypeValidator();
     assertThrows(InvalidConfigurationException.class,
-        () -> typeValidator.validateTypesOpenApiToGraphQ(oasType, graphQlType, identifier));
+        () -> typeValidator.validateTypesOpenApiToGraphQl(oasType, graphQlType, identifier));
   }
 
   @ParameterizedTest(name = "validateTypesGraphQlToOpenApi is valid with [{arguments}]")

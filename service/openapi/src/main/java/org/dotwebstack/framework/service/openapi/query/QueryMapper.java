@@ -278,9 +278,8 @@ public class QueryMapper {
             .map(parameterValue -> new Argument(argument.getName(), mapArgument(argument, parameterValue))))
         .collect(Collectors.toList());
 
-    if (fieldDefinition.getArgument(FILTER_ARGUMENT_NAME) != null
-        && MapperUtils.isQueryField(fieldDefinition, parentFieldsContainer)) {
-      result.addAll(queryArgumentBuilder.buildArguments(operationRequest));
+    if (MapperUtils.isQueryField(fieldDefinition, parentFieldsContainer)) {
+      result.addAll(queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest));
     }
     return result;
   }

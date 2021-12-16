@@ -4,6 +4,16 @@ spatial:
       dimensions: 2
       scale: 9
 
+contexts:
+  history:
+    fields:
+      validOn:
+        type: Date
+        default: NOW
+      availableOn:
+        type: DateTime
+        default: NOW
+
 queries:
   beers:
     type: Beer
@@ -15,6 +25,10 @@ queries:
   breweries:
     type: Brewery
     list: true
+  breweriesInContext:
+    type: Brewery
+    list: true
+    context: history
   brewery:
     type: Brewery
     keys:
