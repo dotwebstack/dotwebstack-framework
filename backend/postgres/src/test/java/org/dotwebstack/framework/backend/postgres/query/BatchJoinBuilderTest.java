@@ -38,18 +38,20 @@ class BatchJoinBuilderTest {
     var beerType = new PostgresObjectType();
     beerType.setName("Beer");
 
+    var ingredientType = new PostgresObjectType();
+    ingredientType.setName("Ingredient");
+
     var ingredients = new PostgresObjectField();
     ingredients.setName("ingredients");
     ingredients.setJoinTable(createJoinTable());
+    ingredients.setObjectType(ingredientType);
     beerType.getFields()
         .put("ingredients", ingredients);
 
     var partsOf = new PostgresObjectField();
     partsOf.setName("partsOf");
+    partsOf.setObjectType(ingredientType);
     partsOf.setTargetType(beerType);
-
-    var ingredientType = new PostgresObjectType();
-    beerType.setName("Ingredient");
 
     var joinConfiguration = JoinConfiguration.builder()
         .objectField(partsOf)

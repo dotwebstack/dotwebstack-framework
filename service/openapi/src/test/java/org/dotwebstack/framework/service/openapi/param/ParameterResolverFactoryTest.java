@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.requestbody.RequestBodyHandlerRouter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ParameterResolverFactoryTest {
+  @Mock
+  EnvironmentProperties environmentProperties;
+
   @Mock
   JexlEngine jexlEngine;
 
@@ -33,7 +37,7 @@ class ParameterResolverFactoryTest {
     when(operation.getParameters()).thenReturn(parameters);
 
     ParameterResolverFactory parameterResolverFactory =
-        new ParameterResolverFactory(jexlEngine, requestBodyHandlerRouter, paramHandlerRouter);
+        new ParameterResolverFactory(environmentProperties, jexlEngine, requestBodyHandlerRouter, paramHandlerRouter);
     assertDoesNotThrow(() -> parameterResolverFactory.create(operation));
   }
 
@@ -44,7 +48,7 @@ class ParameterResolverFactoryTest {
     when(operation.getParameters()).thenReturn(parameters);
 
     ParameterResolverFactory parameterResolverFactory =
-        new ParameterResolverFactory(jexlEngine, requestBodyHandlerRouter, paramHandlerRouter);
+        new ParameterResolverFactory(environmentProperties, jexlEngine, requestBodyHandlerRouter, paramHandlerRouter);
     assertDoesNotThrow(() -> parameterResolverFactory.create(operation));
   }
 }

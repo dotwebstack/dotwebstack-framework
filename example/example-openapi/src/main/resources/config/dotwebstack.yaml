@@ -62,6 +62,7 @@ objectTypes:
         field: brewery.visitAddress.city
       ingredientName:
         field: ingredients.name
+      retired: {}
     sortableBy:
       name:
         - field: name

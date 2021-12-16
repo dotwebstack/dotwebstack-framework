@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
@@ -13,10 +14,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
@@ -88,18 +89,20 @@ public class CoreRequestHelper {
   }
 
   public static Map<String, Object> addEvaluatedDwsParameters(Map<String, Object> inputParams,
-      Map<String, String> dwsParameters, ServerRequest request, JexlHelper jexlHelper) {
-    var jexlContext = buildJexlContext(request, inputParams);
+      Map<String, String> dwsParameters, ServerRequest request, EnvironmentProperties environmentProperties,
+      JexlHelper jexlHelper) {
+    var jexlContext = buildJexlContext(request, environmentProperties, inputParams);
     Map<String, Object> allParams = new HashMap<>(inputParams);
     dwsParameters.forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
         .ifPresent(value -> allParams.put(name, value)));
     return allParams;
   }
 
-  private static JexlContext buildJexlContext(ServerRequest request, Map<String, Object> inputParams) {
-    var mapContext = new MapContext();
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
-    mapContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_PARAMS, inputParams);
-    return mapContext;
+  private static JexlContext buildJexlContext(ServerRequest request, EnvironmentProperties environmentProperties,
+      Map<String, Object> inputParams) {
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), inputParams);
+    jexlContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
+
+    return jexlContext;
   }
 }

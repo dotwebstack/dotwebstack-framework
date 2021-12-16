@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
+import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
@@ -65,7 +66,7 @@ public class JsonBodyMapper implements BodyMapper {
             .getQueryProperties()
             .getField());
 
-    var jexlContext = createJexlContext(operationRequest);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getParameters());
 
     return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result, jexlContext));
   }
@@ -245,18 +246,6 @@ public class JsonBodyMapper implements BodyMapper {
         .collect(Collectors.toList());
   }
 
-  private JexlContext createJexlContext(OperationRequest operationRequest) {
-    var parameters = operationRequest.getParameters();
-    var context = new MapContext();
-
-    context.set("args", parameters);
-
-    environmentProperties.getAllProperties()
-        .forEach((prop, value) -> context.set(String.format("env.%s", prop), value));
-
-    return context;
-  }
-
   @SuppressWarnings("unchecked")
   private JexlContext updateJexlContext(Object data, JexlContext jexlContext) {
     if (!(data instanceof Map)) {
@@ -272,32 +261,16 @@ public class JsonBodyMapper implements BodyMapper {
 
     newContext.set("data", data);
 
-    ((Map<String, Object>) data).entrySet()
-        .stream()
-        .filter(entry -> !(entry.getValue() instanceof Map))
-        .forEach(entry -> newContext.set(String.format("fields.%s", entry.getKey()), entry.getValue()));
-
     return newContext;
   }
 
   private Object evaluateScalarData(Schema<?> schema, Object data, JexlContext jexlContext) {
-    if (schema.getExtensions() != null && schema.getExtensions()
-        .containsKey(X_DWS_EXPR)) {
+    var defaultValue = schema.getDefault();
 
-      Object defaultValue = schema.getDefault();
+    var optionalJexlExpression = getJexlExpression(schema);
 
-      String expression = schema.getExtensions()
-          .get(X_DWS_EXPR)
-          .toString();
-
-      String fallBackValue = schema.getExtensions()
-          .containsKey(X_DWS_EXPR_FALLBACK_VALUE)
-              ? schema.getExtensions()
-                  .get(X_DWS_EXPR_FALLBACK_VALUE)
-                  .toString()
-              : null;
-
-      return this.jexlHelper.evaluateScriptWithFallback(expression, fallBackValue, jexlContext, Object.class)
+    if (optionalJexlExpression.isPresent()) {
+      return evaluateJexlExpression(optionalJexlExpression.get(), jexlHelper, jexlContext, Object.class)
           .orElse(defaultValue);
     }
 

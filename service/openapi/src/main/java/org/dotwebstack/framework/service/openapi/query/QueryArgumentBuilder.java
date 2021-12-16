@@ -1,10 +1,15 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
+import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
+
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
+import graphql.language.BooleanValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.ObjectField;
@@ -21,21 +26,23 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.MapContext;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
 public class QueryArgumentBuilder {
 
+  private final EnvironmentProperties environmentProperties;
+
   private final JexlHelper jexlHelper;
 
-  public QueryArgumentBuilder(@NonNull JexlEngine jexlEngine) {
+  public QueryArgumentBuilder(@NonNull EnvironmentProperties environmentProperties, @NonNull JexlEngine jexlEngine) {
+    this.environmentProperties = environmentProperties;
     this.jexlHelper = new JexlHelper(jexlEngine);
   }
 
@@ -154,16 +161,18 @@ public class QueryArgumentBuilder {
 
   @SuppressWarnings({"rawtypes"})
   protected Value createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
-    var expression = (String) map.get(OasConstants.X_DWS_EXPR);
-    if (expression.endsWith("!")) {
-      expression = expression.substring(0, expression.length() - 1);
-    }
-    var jexlContext = createJexlContext(parameters);
-    var expressionValue = this.jexlHelper.evaluateExpression(expression, jexlContext, Object.class)
-        .orElse(null);
-    return expressionValue != null ? toArgumentValue(expressionValue) : null;
-  }
+    var expression = map.get(OasConstants.X_DWS_EXPR);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), parameters);
+    var optionalJexlExpression = getJexlExpression(expression, map,
+        expressionValue -> expressionValue.endsWith("!") ? expressionValue.substring(0, expressionValue.length() - 1)
+            : expressionValue);
 
+    var expressionResult = optionalJexlExpression
+        .flatMap(jexlExpression -> evaluateJexlExpression(jexlExpression, jexlHelper, jexlContext, Object.class))
+        .orElse(null);
+
+    return expressionResult != null ? toArgumentValue(expressionResult) : null;
+  }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   protected Value toArgumentValue(Object e) {
@@ -178,6 +187,8 @@ public class QueryArgumentBuilder {
       return new IntValue(new BigInteger(e.toString()));
     } else if (e instanceof Float || e instanceof Double) {
       return new FloatValue(new BigDecimal(e.toString()));
+    } else if (e instanceof Boolean) {
+      return new BooleanValue((Boolean) e);
     } else {
       return new StringValue(e.toString());
     }
@@ -185,15 +196,5 @@ public class QueryArgumentBuilder {
 
   private String paramKeyFromPath(String path) {
     return path.substring(path.lastIndexOf(".") + 1);
-  }
-
-  private JexlContext createJexlContext(Map<String, Object> parameters) {
-    MapContext result = new MapContext();
-    result.set("$body", parameters);
-    result.set("$query", parameters);
-    result.set("$path", parameters);
-    result.set("$header", parameters);
-
-    return result;
   }
 }

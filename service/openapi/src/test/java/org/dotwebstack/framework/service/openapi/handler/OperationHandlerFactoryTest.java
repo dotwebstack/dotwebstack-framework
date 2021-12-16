@@ -27,6 +27,7 @@ import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
+import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolverFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,9 @@ class OperationHandlerFactoryTest {
   private ParameterResolverFactory parameterResolverFactory;
 
   @Mock
+  private ResponseHeaderResolverFactory responseHeaderResolverFactory;
+
+  @Mock
   private BodyMapper bodyMapper;
 
   @BeforeAll
@@ -66,14 +70,16 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.supports(any(), any())).thenReturn(true);
     when(bodyMapper.map(any(), any())).thenReturn(Mono.just(List.of()));
 
-    var operationHandlerFactory =
-        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
+    });
 
     var result = operationHandlerFactory.create(operation);
 
@@ -90,14 +96,16 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.supports(any(), any())).thenReturn(true);
     when(bodyMapper.map(any(), any())).thenReturn(Mono.just(Map.of()));
 
-    var operationHandlerFactory =
-        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
+    });
 
     var result = operationHandlerFactory.create(operation);
 
@@ -126,8 +134,8 @@ class OperationHandlerFactoryTest {
     var operation = createOperation("/brewery/{identifier}", Map.of("identifier", "foo"));
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
-    var operationHandlerFactory =
-        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-not-found");
@@ -146,8 +154,8 @@ class OperationHandlerFactoryTest {
     var operation = createOperation("/breweries", Map.of());
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
-    var operationHandlerFactory =
-        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolverFactory);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = ExecutionResultImpl.newExecutionResult()
@@ -169,8 +177,8 @@ class OperationHandlerFactoryTest {
 
     when(bodyMapper.supports(any(), any())).thenReturn(true, false);
 
-    var operationHandlerFactory =
-        new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper), parameterResolverFactory);
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolverFactory);
 
     Assertions.assertThrows(InvalidConfigurationException.class, () -> operationHandlerFactory.create(operation));
   }

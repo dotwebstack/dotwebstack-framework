@@ -1,6 +1,12 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +15,12 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.collection.IsCollectionWithSize;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.junit.jupiter.api.Test;
 
 class JoinHelperTest {
@@ -113,6 +123,30 @@ class JoinHelperTest {
     joinTable.setInverseJoinColumns(inverseJoinColumns);
 
     return joinTable;
+  }
+
+  @Test
+  void createJoinConditions_returnsListCondition() {
+    var contextCriteria = ContextCriteria.builder()
+        .name("test")
+        .context(mock(Context.class))
+        .values(Map.of("arg", "val"))
+        .build();
+    Table<Record> junctionTable = findTable("table1", contextCriteria);
+    Table<Record> referencedTable = findTable("table2", contextCriteria);
+    JoinColumn joinColumn = mock(JoinColumn.class);
+    when(joinColumn.getName()).thenReturn("arg");
+    List<JoinColumn> joinColumns = List.of(joinColumn);
+    when(joinColumn.getReferencedField()).thenReturn("any");
+    PostgresObjectType objectType = mock(PostgresObjectType.class);
+    PostgresObjectField field = mock(PostgresObjectField.class);
+    when(field.getColumn()).thenReturn("arg");
+    when(objectType.getField(any(String.class))).thenReturn(field);
+
+    var result = createJoinConditions(junctionTable, referencedTable, joinColumns, objectType);
+
+    assertThat(result, CoreMatchers.notNullValue());
+    assertThat(result.toString(), is("\"table1_test_ctx({0})\".\"arg\" = \"table2_test_ctx({0})\".\"arg\""));
   }
 
 }

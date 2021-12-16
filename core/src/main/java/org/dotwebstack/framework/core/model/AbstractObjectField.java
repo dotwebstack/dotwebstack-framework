@@ -39,4 +39,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   @Valid
   protected List<FieldArgument> arguments = new ArrayList<>();
+
+  public boolean isEnumeration() {
+    return enumeration != null;
+  }
 }

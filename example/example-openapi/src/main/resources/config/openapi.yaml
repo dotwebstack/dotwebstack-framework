@@ -20,12 +20,18 @@ paths:
       x-dws-query:
         field: breweryCollection
         paging:
-          pageSize: $query.pageSize
-          page: $query.page
+          pageSize: args.pageSize
+          page: args.page
         filters:
           name:
-            in: $query.name
+            in: args.name
       parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            x-dws-expr: active
         - name: expand
           x-dws-type: expand
           in: query
@@ -99,15 +105,15 @@ paths:
             application/stream+json:
               schema:
                 $ref: '#/components/schemas/BreweryCollection'
-    #          headers:
-    #            X-Pagination-Limit:
-    #              schema:
-    #                type: integer
-    #                x-dws-expr: args.pageSize
-    #            X-Pagination-Page:
-    #              schema:
-    #                type: integer
-    #                x-dws-expr: args.page
+          headers:
+            X-Pagination-Limit:
+              schema:
+                type: integer
+                x-dws-expr: args.pageSize
+            X-Pagination-Page:
+              schema:
+                type: integer
+                x-dws-expr: args.page
   /breweriesInContext:
     get:
       x-dws-query:
@@ -216,7 +222,7 @@ paths:
       x-dws-query:
         field: brewery
         keys:
-          identifier: $path.identifier
+          identifier: args.identifier
       parameters:
         - name: expand
           x-dws-type: expand
@@ -267,16 +273,18 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+
   /beers:
     get:
       x-dws-query:
         field: beerCollection
         paging:
-          pageSize: $query.pageSize
-          page: $query.page
+          pageSize: args.pageSize
+          page: args.page
         filters:
           name:
-            in: $query.name
+            in: args.name
+      #          retired: args.retired
       parameters:
         - name: name
           in: query
@@ -286,6 +294,11 @@ paths:
             type: array
             items:
               type: string
+        - name: retired
+          in: query
+          required: false
+          schema:
+            type: boolean
         - name: page
           in: query
           required: false
@@ -472,13 +485,23 @@ components:
 #          type: string
         name:
           type: string
-          x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${fields.identifier}`'
 #        nameEnvelope:
 #          x-dws-envelope: true
 #          type: object
 #          properties:
 #            name:
 #              type: string
+        _links:
+          x-dws-envelope: true
+          type: object
+          properties:
+            self:
+              x-dws-envelope: true
+              type: object
+              properties:
+                href:
+                  type: string
+                  x-dws-expr: '`${env.dotwebstack.base_url}/brewery/${data.identifier}`'
         geometry:
           type: object
         status:

@@ -19,8 +19,10 @@ import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
 import org.dotwebstack.framework.service.openapi.exception.ParameterValidationException;
+import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
@@ -31,6 +33,9 @@ import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 class CoreRequestHelperTest {
+
+  @Mock
+  private EnvironmentProperties environmentProperties;
 
   @Test
   void parameterValidation_throwsError_withNonexistentParam() {
@@ -76,7 +81,7 @@ class CoreRequestHelperTest {
   @Test
   void addEvaluatedDwsParameters_addsEvaluatedJexlParams() {
     Map<String, Object> inputParams = Collections.singletonMap("someParam", "someValue");
-    Map<String, String> dwsParameters = Collections.singletonMap("dwsParam", "request.path()");
+    Map<String, String> dwsParameters = Map.of("dwsParam", "request.path()", "url", "env.baseUrl");
 
     ServerRequest request = Mockito.mock(ServerRequest.class);
     when(request.path()).thenReturn("/path");
@@ -84,10 +89,14 @@ class CoreRequestHelperTest {
     JexlEngine jexlEngine = new JexlBuilder().create();
     JexlHelper jexlHelper = new JexlHelper(jexlEngine);
 
-    Map<String, Object> result = addEvaluatedDwsParameters(inputParams, dwsParameters, request, jexlHelper);
+    when(environmentProperties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
+
+    Map<String, Object> result =
+        addEvaluatedDwsParameters(inputParams, dwsParameters, request, environmentProperties, jexlHelper);
 
     assertEquals("someValue", result.get("someParam"));
     assertEquals("/path", result.get("dwsParam"));
+    assertEquals("https://dotwebstack.org/api", result.get("url"));
   }
 
   @Test
