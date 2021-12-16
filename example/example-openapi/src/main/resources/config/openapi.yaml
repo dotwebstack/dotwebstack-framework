@@ -119,14 +119,14 @@ paths:
       x-dws-query:
         field: breweryCollectionInContext
         paging:
-          pageSize: $args.pageSize
-          page: $args.page
+          pageSize: args.pageSize
+          page: args.page
         filters:
           name:
-            in: $args.name
+            in: args.name
         context:
-          validOn: $args.validOn
-          availableOn: $args.availableOn
+          validOn: args.validOn
+          availableOn: args.availableOn
       parameters:
         - name: expand
           x-dws-type: expand

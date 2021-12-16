@@ -133,7 +133,7 @@ paths:
             type: BreweryFilter
             fields:
               name:
-                in: $args.name
+                in: args.name
       parameters:
         - name: expand
           x-dws-type: expand
@@ -224,10 +224,10 @@ paths:
             type: BreweryFilter
             fields:
               name:
-                in: $args.name
+                in: args.name
         context:
-          validOn: $args.validOn
-          availableOn: $args.availableOn
+          validOn: args.validOn
+          availableOn: args.availableOn
       parameters:
         - name: expand
           x-dws-type: expand
@@ -245,6 +245,20 @@ paths:
             type: array
             items:
               type: string
+        - name: validOn
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: '2021-01-01'
+        - name: availableOn
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+            example: '2021-01-01T12:00:00.000+01:00'
       responses:
         200:
           description: OK
