@@ -135,24 +135,15 @@ public class DwsExtensionHelper {
 
       if (exprMap.containsKey(X_DWS_EXPR_VALUE)) {
         var exprBuilder = JexlExpression.builder();
-        var value = exprMap.get(X_DWS_EXPR_VALUE);
+        var value = checkAndGetExpressionStringProperty(exprMap.get(X_DWS_EXPR_VALUE), X_DWS_EXPR_VALUE, context);
 
-        if (!(value instanceof String)) {
-          throw invalidConfigurationException("Unsupported value {} for {}.{} found in {}", value, X_DWS_EXPR,
-              X_DWS_EXPR_VALUE, context);
-        }
-
-        exprBuilder.value(expressionValueAdapter.apply((String) value));
+        exprBuilder.value(expressionValueAdapter.apply(value));
 
         if (exprMap.containsKey(X_DWS_EXPR_FALLBACK_VALUE)) {
-          var fallback = exprMap.get(X_DWS_EXPR_FALLBACK_VALUE);
+          var fallback = checkAndGetExpressionStringProperty(exprMap.get(X_DWS_EXPR_FALLBACK_VALUE),
+              X_DWS_EXPR_FALLBACK_VALUE, context);
 
-          if (!(fallback instanceof String)) {
-            throw invalidConfigurationException("Unsupported value {} for {}.{} found in {}", fallback, X_DWS_EXPR,
-                X_DWS_EXPR_FALLBACK_VALUE, context);
-          }
-
-          exprBuilder.fallback((String) fallback);
+          exprBuilder.fallback(fallback);
         }
 
         return Optional.of(exprBuilder.build());
@@ -160,5 +151,14 @@ public class DwsExtensionHelper {
     }
 
     throw invalidConfigurationException("Unsupported value {} for {} found in {}", expr, X_DWS_EXPR, context);
+  }
+
+  private static String checkAndGetExpressionStringProperty(Object value, String propertyName, Object context) {
+    if (!(value instanceof String)) {
+      throw invalidConfigurationException("Expected value of type 'string', but found {} for {}.{} found in {}", value,
+          X_DWS_EXPR, propertyName, context);
+    }
+
+    return (String) value;
   }
 }

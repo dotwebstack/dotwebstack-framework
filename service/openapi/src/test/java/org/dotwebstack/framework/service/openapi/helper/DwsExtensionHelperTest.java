@@ -243,7 +243,8 @@ class DwsExtensionHelperTest {
     var exception = assertThrows(InvalidConfigurationException.class,
         () -> DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter));
 
-    assertThat(exception.getMessage(), is("Unsupported value [] for x-dws-expr.value found in context"));
+    assertThat(exception.getMessage(),
+        is("Expected value of type 'string', but found [] for x-dws-expr.value found in context"));
   }
 
   @Test
@@ -255,6 +256,7 @@ class DwsExtensionHelperTest {
     var exception = assertThrows(InvalidConfigurationException.class,
         () -> DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter));
 
-    assertThat(exception.getMessage(), is("Unsupported value [] for x-dws-expr.fallback found in context"));
+    assertThat(exception.getMessage(),
+        is("Expected value of type 'string', but found [] for x-dws-expr.fallback found in context"));
   }
 }
