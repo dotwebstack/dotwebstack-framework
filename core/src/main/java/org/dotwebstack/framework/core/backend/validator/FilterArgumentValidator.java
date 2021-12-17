@@ -140,6 +140,6 @@ public class FilterArgumentValidator implements GraphQlValidator {
         .map(FilterConfiguration::getField)
         .map(filterFieldPath -> createObjectFieldPath(schema, objectType, filterFieldPath))
         .map(Iterables::getLast)
-        .orElseThrow(() -> illegalStateException("No corrsponding field found for Filter name {}.", filterName));
+        .orElseThrow(() -> illegalStateException("No corresponding field found for Filter name {}.", filterName));
   }
 }
