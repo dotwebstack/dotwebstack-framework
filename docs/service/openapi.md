@@ -99,27 +99,6 @@ Exceptions to this are the arguments `sort`, `filter` and `context` which are tr
 a given request, the application will return a `400` response with and a message stating which of the given parameters
 are not allowed.-->
 
-## Sort parameter
-
-The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with
-this extension should have an array type schema where the array contains the fields on which to sort.
-**Ordering:** A field preceded by `-` is mapped to DESC order and a field without a prefix to ASC order.
-**Default:** A default value may be specified which will be used if there is no input from the request. The following
-parameter will sort on ascending name and descending description and specifies the default value `['name']`:
-
-```yaml
-parameters:
-  - name: sort
-    in: header
-    x-dws-type: sort
-    schema:
-      type: array
-      default: [ 'name' ]
-      items:
-        type: string
-        enum: [ 'name', '-description' ]
-```
-
 ## Expand parameter
 The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that
 are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
@@ -249,8 +228,17 @@ The following describes a sort on the `breweries` field:
     x-dws-query:
       field: breweries
       sort: args.sort
+    parameters:
+    - name: sort
+      in: query
+      schema:
+        type: string
+        enum: [ 'name', '-name' ]
 ```
-With a value `"nameDesc"` for the query `sort` parameter this will produce the query 
+With a value `"name"` for the query `sort` parameter this will produce the query 
+`breweries(sort: "NAME")`.
+
+With a value `"-name"` for the query `sort` parameter this will produce the query
 `breweries(sort: "NAME_DESC")`.
 
 ## Context

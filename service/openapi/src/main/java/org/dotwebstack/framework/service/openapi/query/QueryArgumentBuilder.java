@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
@@ -41,6 +43,10 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class QueryArgumentBuilder {
 
+  public static final String SORT_DESCENDING_PREFIX = "-";
+
+  public static final String GRAPHQL_SORT_DESCENDING_SUFFIX = "Desc";
+
   private final EnvironmentProperties environmentProperties;
 
   private final JexlHelper jexlHelper;
@@ -77,6 +83,12 @@ public class QueryArgumentBuilder {
     var parameters = operationRequest.getParameters();
 
     return ofNullable(parameters.get(paramKey)).map(Objects::toString)
+        .map(sortValue -> {
+          if (startsWith(sortValue, SORT_DESCENDING_PREFIX)) {
+            return substringAfter(sortValue, SORT_DESCENDING_PREFIX) + GRAPHQL_SORT_DESCENDING_SUFFIX;
+          }
+          return sortValue;
+        })
         .map(StringHelper::toSnakeCase)
         .map(String::toUpperCase)
         .map(EnumValue::new)
