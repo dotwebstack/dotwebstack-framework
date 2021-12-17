@@ -5,11 +5,11 @@ info:
   version: 1.0.0
 
 paths:
-  /id/beer/{id}:
+  /id/beer/{identifier}:
     description: ID endpoint for beer dereferencing
     get:
       parameters:
-        - name: id
+        - name: identifier
           description: Identifier
           in: path
           required: true
@@ -23,11 +23,11 @@ paths:
               schema:
                 type: string
                 x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/beer/${args.id}`'
-  /doc/beer/{id}:
+  /doc/beer/{identifier}:
     description: DOC endpoint for beer dereferencing
     get:
       parameters:
-        - name: id
+        - name: identifier
           description: Identifier
           in: path
           required: true
@@ -35,8 +35,6 @@ paths:
             type: string
       x-dws-query:
         field: beer
-        keys:
-          identifier: $path.id
         selectionSet: |
           {
             identifier
@@ -48,9 +46,7 @@ paths:
               identifier
             }
             ingredients {
-              nodes {
-                identifier
-              }
+              identifier
             }
             taste
           }
@@ -93,7 +89,7 @@ paths:
       x-dws-query:
         field: brewery
         keys:
-          identifier: $path.id
+          identifier: args.id
         selectionSet: |
           {
             identifier

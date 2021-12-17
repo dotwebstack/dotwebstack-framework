@@ -4,6 +4,7 @@ import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.logicalsourceresolver.JaywayJacksonJsonPathResolver;
 import com.taxonic.carml.model.TriplesMap;
 import com.taxonic.carml.vocab.Rdf;
+import io.swagger.v3.oas.models.Operation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.Setter;
-import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
@@ -48,7 +48,7 @@ public class RmlConfiguration {
   }
 
   @Bean
-  RdfRmlMapper rmlMapper(@NonNull Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation,
+  RdfRmlMapper rmlMapper(@NonNull Map<Operation, Set<TriplesMap>> mappingsPerOperation,
       @NonNull List<RmlMapperConfigurer> rmlMapperConfigurers) {
 
     RdfRmlMapper.Builder mapperBuilder = RdfRmlMapper.builder()

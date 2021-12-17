@@ -278,6 +278,20 @@ paths:
     get:
       x-dws-query:
         field: beerCollection
+#        selectionSet: |
+#          {
+#            nodes {
+#              identifier
+#              abv
+#              validStart
+#              validEnd
+#              name
+#              ingredients {
+#                identifier
+#                name
+#              }
+#            }
+#          }
         paging:
           pageSize: args.pageSize
           page: args.page

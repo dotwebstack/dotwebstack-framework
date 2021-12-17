@@ -5,13 +5,11 @@ info:
   version: 3.0.0
 
 paths:
-  /id/beer/{id}:
+  /id/beer/{identifier}:
     description: endpoint for beer dereferencing
     get:
       x-dws-query:
         field: beer
-        keys:
-          identifier: $path.id
         selectionSet: |
           {
             identifier
@@ -31,7 +29,7 @@ paths:
           }
       x-dws-rml-mapping: beer.rml.ttl
       parameters:
-        - name: id
+        - name: identifier
           description: Identifier
           in: path
           required: true

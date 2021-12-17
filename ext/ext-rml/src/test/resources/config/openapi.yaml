@@ -47,3 +47,17 @@ paths:
           description: OK
           content:
             text/turtle: {}
+  /path-complete:
+    get:
+      x-dws-query: beers
+      responses:
+        200:
+          description: OK
+          content:
+            text/turtle: {}
+            application/ld+json: {}
+            text/n3: {}
+            application/n-quads: {}
+            application/n-triples: {}
+            application/rdf+xml: {}
+            application/trig: {}
