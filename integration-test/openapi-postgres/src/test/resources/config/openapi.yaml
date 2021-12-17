@@ -151,6 +151,12 @@ paths:
             type: array
             items:
               type: string
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['name', 'nameDesc']
 #        - name: foundedAfter
 #          in: query
 #          required: false

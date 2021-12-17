@@ -78,6 +78,18 @@ class OpenapiPostgresIntegrationTest {
   }
 
   @Test
+  void breweries_returnsExpectedResult_withSort() throws IOException {
+    String result = client.get()
+        .uri("/breweries?sort=nameDesc")
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    assertResult(result, "breweries_sort.json");
+  }
+
+  @Test
   void breweries_returnsExpectedResult_withExpanded() throws IOException {
     String result = client.get()
         .uri("/breweries?expand=postalAddress")

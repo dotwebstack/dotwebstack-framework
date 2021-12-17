@@ -229,6 +229,30 @@ following configuration specifies that `$path.name` is required:
 If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is
 provided.-->
 
+## Sorting
+OpenApi queries may add sort configuration under the vendor extension `x-dws-query`.
+The sort configuration is mapped to the graphQL sort argument specified for that field and can make use of parameter values
+with a key `args.<parametername>`:
+
+For instance, `args.name` refers to the `name` parameter that occurs in either the path, query, request body or request
+header.
+
+The sort field is configured with an optional property `x-dws-query.sort`.
+```yaml
+    x-dws-query:
+      field: breweries
+      sort: args.field1
+```
+
+The following describes a sort on the `breweries` field:
+```yaml
+    x-dws-query:
+      field: breweries
+      sort: args.sort
+```
+With a value `"nameDesc"` for the query `sort` parameter this will produce the query 
+`breweries(sort: "NAME_DESC")`.
+
 ## Context
 OpenApi queries may add context configuration under the vendor extension `x-dws-query`.
 The context configuration is mapped to the context specified for that query and can make use of parameter values

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,7 +78,7 @@ class QueryArgumentBuilderTest {
 
   @Test
   void buildArguments_returnsExpectedArgument_forContext() {
-    Map<String, Object> context = ImmutableMap.of("field1", "$query.p1", "field2", "$query.p2");
+    Map<String, Object> context = ImmutableMap.of("field1", "args.p1", "field2", "args.p2");
 
     OperationRequest operationRequest = createContextOperationRequest(context);
 
@@ -93,6 +94,23 @@ class QueryArgumentBuilderTest {
     assertThat(pretty, is("context: {field1 : \"value1\", field2 : \"value2\"}"));
   }
 
+  @Test
+  void buildArguments_returnsExpectedArgument_forSort() {
+    String sort = "args.p2";
+
+    OperationRequest operationRequest = createSortOperationRequest(sort);
+
+    Map<String, Object> parameters = Map.of("p1", "value1", "p2", "testValue2");
+    when(operationRequest.getParameters()).thenReturn(parameters);
+
+    var fieldDefinition = createFieldDefinition(SORT_ARGUMENT_NAME);
+
+    List<Argument> arguments = queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest);
+    assertThat(arguments.size(), is(1));
+    String pretty = AstPrinter.printAst(arguments.get(0));
+
+    assertThat(pretty, is("sort: TEST_VALUE2"));
+  }
 
   @SuppressWarnings("unchecked")
   @Test
@@ -120,6 +138,16 @@ class QueryArgumentBuilderTest {
 
     assertThrows(IllegalArgumentException.class,
         () -> queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest));
+  }
+
+  private OperationRequest createSortOperationRequest(String sort) {
+    var operationRequest = mock(OperationRequest.class, Answers.RETURNS_DEEP_STUBS);
+
+    when(operationRequest.getContext()
+        .getQueryProperties()
+        .getSort()).thenReturn(sort);
+
+    return operationRequest;
   }
 
   private OperationRequest createContextOperationRequest(Map<String, Object> context) {
