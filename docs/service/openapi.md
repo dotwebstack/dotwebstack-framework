@@ -99,27 +99,6 @@ Exceptions to this are the arguments `sort`, `filter` and `context` which are tr
 a given request, the application will return a `400` response with and a message stating which of the given parameters
 are not allowed.-->
 
-## Sort parameter
-
-The parameter for providing sort information is modelled with a vendor extension `x-dws-type: sort`. Parameters with
-this extension should have an array type schema where the array contains the fields on which to sort.
-**Ordering:** A field preceded by `-` is mapped to DESC order and a field without a prefix to ASC order.
-**Default:** A default value may be specified which will be used if there is no input from the request. The following
-parameter will sort on ascending name and descending description and specifies the default value `['name']`:
-
-```yaml
-parameters:
-  - name: sort
-    in: header
-    x-dws-type: sort
-    schema:
-      type: array
-      default: [ 'name' ]
-      items:
-        type: string
-        enum: [ 'name', '-description' ]
-```
-
 ## Expand parameter
 The `x-dws-type: expand` configuration may be added to a parameter, with an enum of result object property names that
 are 'expandable'. These properties will only be selected when explicitly request with `expand=<property>`.
@@ -228,6 +207,39 @@ following configuration specifies that `$path.name` is required:
 ```
 If `$path.name` is absent, the `name` element (and thus the entire filter) will remain empty, even if `$query.name` is
 provided.-->
+
+## Sorting
+OpenApi queries may add sort configuration under the vendor extension `x-dws-query`.
+The sort configuration is mapped to the graphQL sort argument specified for that field and can make use of parameter values
+with a key `args.<parametername>`:
+
+For instance, `args.name` refers to the `name` parameter that occurs in either the path, query, request body or request
+header.
+
+The sort field is configured with an optional property `x-dws-query.sort`.
+```yaml
+    x-dws-query:
+      field: breweries
+      sort: args.field1
+```
+
+The following describes a sort on the `breweries` field:
+```yaml
+    x-dws-query:
+      field: breweries
+      sort: args.sort
+    parameters:
+    - name: sort
+      in: query
+      schema:
+        type: string
+        enum: [ 'name', '-name' ]
+```
+With a value `"name"` for the query `sort` parameter this will produce the query 
+`breweries(sort: "NAME")`.
+
+With a value `"-name"` for the query `sort` parameter this will produce the query
+`breweries(sort: "NAME_DESC")`.
 
 ## Context
 OpenApi queries may add context configuration under the vendor extension `x-dws-query`.

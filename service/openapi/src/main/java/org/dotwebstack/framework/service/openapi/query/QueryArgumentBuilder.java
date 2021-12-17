@@ -1,6 +1,10 @@
 package org.dotwebstack.framework.service.openapi.query;
 
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
@@ -9,6 +13,7 @@ import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJ
 import graphql.language.Argument;
 import graphql.language.ArrayValue;
 import graphql.language.BooleanValue;
+import graphql.language.EnumValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.ObjectField;
@@ -21,11 +26,13 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlEngine;
+import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
@@ -35,6 +42,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class QueryArgumentBuilder {
+
+  public static final String SORT_DESCENDING_PREFIX = "-";
+
+  public static final String GRAPHQL_SORT_DESCENDING_SUFFIX = "Desc";
 
   private final EnvironmentProperties environmentProperties;
 
@@ -51,8 +62,37 @@ public class QueryArgumentBuilder {
 
     var contextArguments = createContextArguments(fieldDefinition, operationRequest);
 
-    return Stream.concat(filterArguments.stream(), contextArguments.stream())
+    var sortArgument = createSortArgument(fieldDefinition, operationRequest);
+
+    return Stream.concat(Stream.concat(filterArguments.stream(), contextArguments.stream()), sortArgument.stream())
         .collect(Collectors.toList());
+  }
+
+  private Optional<Argument> createSortArgument(GraphQLFieldDefinition fieldDefinition,
+      OperationRequest operationRequest) {
+    var sort = operationRequest.getContext()
+        .getQueryProperties()
+        .getSort();
+
+    if (fieldDefinition.getArgument(SORT_ARGUMENT_NAME) == null || sort == null) {
+      return Optional.empty();
+    }
+
+    var paramKey = paramKeyFromPath(sort);
+
+    var parameters = operationRequest.getParameters();
+
+    return ofNullable(parameters.get(paramKey)).map(Objects::toString)
+        .map(sortValue -> {
+          if (startsWith(sortValue, SORT_DESCENDING_PREFIX)) {
+            return substringAfter(sortValue, SORT_DESCENDING_PREFIX) + GRAPHQL_SORT_DESCENDING_SUFFIX;
+          }
+          return sortValue;
+        })
+        .map(StringHelper::toSnakeCase)
+        .map(String::toUpperCase)
+        .map(EnumValue::new)
+        .map(argumentValue -> new Argument(SORT_ARGUMENT_NAME, argumentValue));
   }
 
   private List<Argument> createContextArguments(GraphQLFieldDefinition fieldDefinition,
@@ -112,7 +152,7 @@ public class QueryArgumentBuilder {
             var objectValue = createObjectValue((Map<String, Object>) value, parameters);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof String) {
-            return filterValueToObjectField(key, (String) value, parameters);
+            return keyValueToObjectField(key, (String) value, parameters);
           } else {
             throw new IllegalArgumentException("Type not supported: " + value.getClass()
                 .getSimpleName());
@@ -131,7 +171,7 @@ public class QueryArgumentBuilder {
           var value = e.getValue();
 
           if (value instanceof String) {
-            return filterValueToObjectField(key, (String) value, parameters);
+            return keyValueToObjectField(key, (String) value, parameters);
           } else if (value instanceof Map && isExpression((Map<String, Object>) value)) {
             var objectValue = createExpressionObjectValue((Map<String, Object>) value, parameters);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
@@ -148,7 +188,7 @@ public class QueryArgumentBuilder {
     return objectFields.isEmpty() ? null : new ObjectValue(objectFields);
   }
 
-  private ObjectField filterValueToObjectField(String key, String value, Map<String, Object> parameters) {
+  private ObjectField keyValueToObjectField(String key, String value, Map<String, Object> parameters) {
     var paramKey = paramKeyFromPath(value);
     var paramValue = parameters.get(paramKey);
     return paramValue != null ? new ObjectField(key, toArgumentValue(paramValue)) : null;

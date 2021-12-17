@@ -133,14 +133,9 @@ objectTypes:
       name:
         - field: name
           direction: ASC
-      address:
-        - field: postalAddress.street
-          direction: ASC
-        - field: postalAddress.city
-          direction: ASC
-      historyAge:
-        - field: history.age
-          direction: ASC
+      nameDesc:
+        - field: name
+          direction: DESC
     filters:
       name: { }
       status: { }

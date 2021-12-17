@@ -25,6 +25,7 @@ paths:
         filters:
           name:
             in: args.name
+        sort: args.sort
       parameters:
         - name: status
           in: query
@@ -58,16 +59,12 @@ paths:
         #          required: false
         #          schema:
         #            type: string
-        #        - name: sort
-        #          in: header
-        #          x-dws-type: sort
-        #          required: true
-        #          schema:
-        #            type: array
-        #            default: ['name']
-        #            items:
-        #              type: string
-        #              enum: ['-address.subject', '-beers.name', 'identifier', 'name', '-postalCode', 'subject', '-subject', 'beerCount']
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [ 'name', '-name']
         - name: page
           in: query
           required: false
