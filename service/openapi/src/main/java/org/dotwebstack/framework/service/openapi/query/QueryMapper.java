@@ -227,7 +227,15 @@ public class QueryMapper {
     var objectType = unwrapObjectType(parentFieldDefinition);
     var fieldDefinition = objectType.getFieldDefinition(name);
 
-    if (fieldDefinition == null || isEnvelope(schema)) {
+    if (isEnvelope(schema)) {
+      return mapSchema(schema, parentFieldDefinition, mappingContext);
+    }
+
+    if (fieldDefinition == null) {
+      if (!mappingContext.getPath()
+          .isEmpty()) {
+        return Stream.empty();
+      }
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
