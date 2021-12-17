@@ -479,6 +479,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryIncludedFields'
+  /brewery-rename-field/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BreweryRenamedField'
   /breweries-included-fields:
     get:
       x-dws-query:
@@ -946,6 +957,43 @@ components:
         numberOfEmployees:
           type: integer
           nullable: true
+
+    BreweryRenamedField:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        translated:
+          type: string
+          x-dws-name: hiddenField
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          $ref: '#/components/schemas/AddressNullable'
+        visitAddresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: array
+          nullable: true
+          items:
+            type: object
 
     Address:
       type: object

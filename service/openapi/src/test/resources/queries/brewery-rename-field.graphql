@@ -1,0 +1,27 @@
+query Query {
+  brewery(identifier: "foo") {
+    identifier
+    name
+    hiddenField
+    aliases
+    postalAddress {
+      locator
+      street
+      postalCode
+      location {
+        asGeoJSON
+      }
+    }
+    visitAddresses {
+      street
+      postalCode
+      location {
+        asGeoJSON
+      }
+    }
+    numberOfEmployees
+    salesAreas {
+      asGeoJSON
+    }
+  }
+}

@@ -78,7 +78,9 @@ class QueryMapperTest {
         Arguments.of("/breweries-included-fields", APPLICATION_JSON_HAL, Map.of(),
             "brewery-collection-included-fields"),
         Arguments.of("/breweries-pageable-included-fields", APPLICATION_JSON, Map.of("page", 2, "pageSize", 42),
-            "brewery-pageable-collection-included-fields"));
+            "brewery-pageable-collection-included-fields"),
+        Arguments.of("/brewery-rename-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+            "brewery-rename-field"));
   }
 
   @ParameterizedTest
