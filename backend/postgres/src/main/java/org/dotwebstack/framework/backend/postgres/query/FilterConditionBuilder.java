@@ -321,7 +321,11 @@ class FilterConditionBuilder {
           .escape(LIKE_ESCAPE_CHARACTER);
     }
     if (EQ == operator) {
-      return field.eq(getValue(objectField, value));
+      if (value == null) {
+        return field.isNull();
+      } else {
+        return field.eq(getValue(objectField, value));
+      }
     }
 
     if (LT == operator) {
@@ -354,7 +358,12 @@ class FilterConditionBuilder {
   }
 
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
+    if (value == null) {
+      return DSL.param(createDataType(Boolean.class));
+    }
+
     var field = DSL.val(value);
+
     return Optional.ofNullable(objectField)
         .map(AbstractObjectField::getEnumeration)
         .map(FieldEnumConfiguration::getType)
@@ -363,6 +372,10 @@ class FilterConditionBuilder {
           return field.cast(dataType);
         })
         .orElse(field);
+  }
+
+  private DataType<?> createDataType(Class<?> dataType) {
+    return DefaultDataType.getDataType(SQLDialect.POSTGRES, dataType);
   }
 
   private Field<Object[]> getArrayValue(PostgresObjectField objectField, Object[] value) {

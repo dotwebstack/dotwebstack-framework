@@ -201,6 +201,7 @@ objectTypes:
         presenceColumn: his_age
       multinational:
         type: Boolean
+        nullable: true
     filters:
       name: {}
       status:
