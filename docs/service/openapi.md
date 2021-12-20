@@ -381,8 +381,9 @@ The content of `x-dws-expr` should be a valid [JEXL](http://commons.apache.org/p
 expression is evaluated while translating the GraphQL response to the REST response and supports the following
 variables:
 
-* `env`: The Spring environment variables. The most straightforward way to use an environment variable is to add it to
-  the `application.yml`.
+* `env.<environmentVariable>`: The Spring environment variables. The most straightforward way to use an environment 
+  variable is to add it to the `application.yml`.
+* `request`: The Spring ServerRequest object, containing the request information. 
 * `args.<inputName>`: An input parameter mapped to the current container field. Currently, all input parameters are
   mapped to the root/query field because mapping of OAS parameters to GraphQL arguments is restricted to the query
   field.
@@ -523,6 +524,49 @@ to response properties.
 
 ## Redirects
 
+Configuring custom redirects reuses the ability to [customize Response headers](#response-headers), combined with a 3XX 
+response.
+
+```yaml
+/breweries:
+  get:
+    x-dws-query: breweries
+    responses:
+      303:
+        ...
+        headers:
+          Location:
+            schema:
+              type: string
+              x-dws-expr: '`${env.baseUrl}/see-other-breweries`'
+```
+
+In some cases it is useful to be able to control the resulting `Location` header based on a media type provided in the
+`Accept` header of the request.
+
+To achieve this the `req:accepts` JEXL function can be used. Provided with a media type template string it will return
+whether this media type is accepted by the client.
+
+Using that information one could alter the location header.
+
+```yaml
+/breweries/{identifier}:
+  get:
+    x-dws-query: breweries
+    responses:
+      303:
+        ...
+        headers:
+          Location:
+            schema:
+              type: string
+              x-dws-expr: |
+                req:accepts("text/html", request) ?
+                `${env.dotwebstack.baseUrl}/page/beer/${args.identifier}.html` :
+                `${env.dotwebstack.baseUrl}/doc/beer/${args.identifier}`
+```
+
+> NOTE: The `req:accepts` does not take into account the media type quality factor
 
 <!-- ## Default values
 

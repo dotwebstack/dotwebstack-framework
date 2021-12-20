@@ -39,7 +39,7 @@ To configure the mapping of responses to RDF, you need an:
 
 * an [OpenAPI](ext/rml?id=openapi) file describing your operations,
 * [RML mapping](ext/rml?id=rml-mappings) files to use on operations,
-* and, optionally, [namespace prefix declarations](ext/rml?id=configuring-namespace-prefixes) to apply when serializing 
+* and, optionally, [namespace prefix declarations](#configuring-namespace-prefixes) to apply when serializing 
 responses.
 
 ### OpenApi
@@ -103,12 +103,13 @@ paths:
 #### Content negotiation
 
 It is possible to configure (multiple) `contents` to allow
-different [supported RDF response media types](ext/rml?id=supported-rdf-formats):
+different [supported RDF response media types](#supported-rdf-formats):
 
 ```yaml
 paths:
   /doc/beer/{id}:
     get:
+      ...
       responses:
         200:
           description: OK
@@ -123,7 +124,33 @@ paths:
             application/trig: { }
 ```
 
-> Note that it is also possible to use 303 redirects to employ common Linked Data dereferencing strategies.
+It is also possible to use [303 redirects](service/openapi?id=redirects) to employ common Linked Data dereferencing 
+strategies.
+This can be done with or without a query.
+
+The following is an example of redirecting using a query.
+
+```yaml
+paths:
+  /id/beer/{identifier}:
+    get:
+      x-dws-query:
+        field: beer
+        selectionSet: |
+          {
+            version {
+              identifier
+            }
+          }
+      ...
+      responses:
+        303:
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`http://dotwebstack.org/doc/beer/${data.version.identifier}`'
+```
 
 #### Example operation
 
@@ -224,7 +251,8 @@ rml:
 
 Custom prefixes will be merged with the default prefixes, and applied to supporting response formats.
 
-> If a custom prefix is the same as a default prefix, the custom prefix overrides the default prefix. However, this is discouraged.
+> If a custom prefix is the same as a default prefix, the custom prefix overrides the default prefix. However, this is 
+> discouraged.
 
 ## Customizing RML mapping behavior
 
