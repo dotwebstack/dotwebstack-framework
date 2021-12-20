@@ -581,6 +581,22 @@ class SelectBuilderTest {
         .key(Map.of("identifier", "id-brewery-1"))
         .build())));
     assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
+
+    Map<String, Object> row = new HashMap<>();
+    row.put("x2", null);
+    row.put("x3", null);
+
+    fieldMapperResult = fieldMapper.apply(row);
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, not(hasKey(equalTo("identifier"))));
+
+    Map<String, Object> keyWithNullIdentifier = new HashMap<>();
+    keyWithNullIdentifier.put("identifier", null);
+
+    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
+        .key(keyWithNullIdentifier)
+        .build())));
   }
 
   @Test

@@ -626,10 +626,13 @@ class SelectBuilder {
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(selectFields.entrySet()
             .stream()
-            .collect(Collectors.toMap(joinSelectField -> joinSelectField.getKey()
-                .getName(),
-                joinSelectField -> row.get(joinSelectField.getValue()
-                    .getName()))))
+            .collect(HashMap::new, (map, joinSelectField) -> {
+              var key = joinSelectField.getKey()
+                  .getName();
+              var value = row.get(joinSelectField.getValue()
+                  .getName());
+              map.put(key, value);
+            }, HashMap::putAll))
         .build());
 
     return new ArrayList<>(selectFields.values());
