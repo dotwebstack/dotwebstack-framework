@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
@@ -617,21 +618,21 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
+    var selectFields = objectField.getJoinColumns()
+        .stream()
+        .collect(Collectors.toMap(Function.identity(),
+            joinColumn -> column(table, joinColumn.getName()).as(aliasManager.newAlias())));
+
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
-        .key(objectField.getJoinColumns()
+        .key(selectFields.entrySet()
             .stream()
-            .collect(HashMap::new, (map, joinColumn) -> {
-              var key = joinColumn.getName();
-              map.put(key, fieldMapper.getFieldMapper(key)
-                  .apply(row));
-            }, HashMap::putAll))
+            .collect(Collectors.toMap(joinSelectField -> joinSelectField.getKey()
+                .getName(),
+                joinSelectField -> row.get(joinSelectField.getValue()
+                    .getName()))))
         .build());
 
-    return objectField.getJoinColumns()
-        .stream()
-        .map(JoinColumn::getName)
-        .map(columnName -> getColumnMapper(table, columnName).getColumn())
-        .collect(Collectors.toList());
+    return new ArrayList<>(selectFields.values());
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
