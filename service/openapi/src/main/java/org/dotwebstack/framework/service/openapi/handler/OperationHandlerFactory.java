@@ -4,6 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalSer
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.defaultMediaTypeFirst;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 
 import graphql.ExecutionInput;
@@ -152,10 +153,14 @@ public class OperationHandlerFactory {
 
   private ContentNegotiator createContentNegotiator(ApiResponse bodyResponse) {
     var supportedMediaTypes = bodyResponse.getContent()
-        .keySet()
+        .entrySet()
         .stream()
+        .sorted((mediaTypeEntry1, mediaTypeEntry2) -> defaultMediaTypeFirst(mediaTypeEntry1.getValue(),
+            mediaTypeEntry2.getValue()))
+        .map(Map.Entry::getKey)
         .map(MediaType::valueOf)
         .collect(Collectors.toList());
+
 
     return serverRequest -> {
       var acceptableMediaTypes = serverRequest.headers()

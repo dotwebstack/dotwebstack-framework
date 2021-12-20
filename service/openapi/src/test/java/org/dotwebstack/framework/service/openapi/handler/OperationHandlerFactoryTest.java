@@ -36,6 +36,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -84,9 +85,7 @@ class OperationHandlerFactoryTest {
     var result = operationHandlerFactory.create(operation);
 
     StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/breweries")))
-        .assertNext(response -> {
-          assertThat(response.statusCode(), is(HttpStatus.OK));
-        })
+        .assertNext(response -> assertThat(response.statusCode(), is(HttpStatus.OK)))
         .verifyComplete();
   }
 
@@ -108,9 +107,7 @@ class OperationHandlerFactoryTest {
     var result = operationHandlerFactory.create(operation);
 
     StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/brewery-old/foo")))
-        .assertNext(response -> {
-          assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER));
-        })
+        .assertNext(response -> assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER)))
         .verifyComplete();
   }
 
@@ -127,9 +124,7 @@ class OperationHandlerFactoryTest {
     var result = operationHandlerFactory.create(operation);
 
     StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/brewery-old2/foo")))
-        .assertNext(response -> {
-          assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER));
-        })
+        .assertNext(response -> assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER)))
         .verifyComplete();
   }
 
@@ -165,6 +160,14 @@ class OperationHandlerFactoryTest {
           assertThat(response.statusCode(), is(HttpStatus.OK));
           var responseHeaders = response.headers();
           assertThat(responseHeaders.getContentType(), is(APPLICATION_JSON_HAL));
+        })
+        .verifyComplete();
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/breweries")))
+        .assertNext(response -> {
+          assertThat(response.statusCode(), is(HttpStatus.OK));
+          var responseHeaders = response.headers();
+          assertThat(responseHeaders.getContentType(), is(MediaType.parseMediaType("application/ld+json")));
         })
         .verifyComplete();
 
