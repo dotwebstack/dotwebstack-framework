@@ -107,9 +107,10 @@ class DefaultResponseHeaderResolverTest {
 
     var httpHeaders = new HttpHeaders();
 
-    InvalidConfigurationException invalidConfigurationException = assertThrows(InvalidConfigurationException.class,
-        () -> defaultResponseHeaderResolver.resolve(operationRequest, null)
-            .accept(httpHeaders));
+    var headerConsumer = defaultResponseHeaderResolver.resolve(operationRequest, null);
+
+    InvalidConfigurationException invalidConfigurationException =
+        assertThrows(InvalidConfigurationException.class, () -> headerConsumer.accept(httpHeaders));
 
     assertThat(invalidConfigurationException.getMessage(), is(message));
   }
