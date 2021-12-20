@@ -64,6 +64,7 @@ class RouterConfiguration {
     corsConfig.setAllowedHeaders(List.of(CorsConfiguration.ALL));
     corsConfig.setAllowedOriginPatterns(List.of(CorsConfiguration.ALL));
     corsConfig.setAllowCredentials(corsProperties.getAllowCredentials());
+    corsConfig.setExposedHeaders(List.of(CorsConfiguration.ALL));
     corsConfig.setMaxAge(86400L);
 
     var source = new UrlBasedCorsConfigurationSource();
