@@ -631,7 +631,10 @@ class SelectBuilder {
                   .getName();
               var value = row.get(joinSelectField.getValue()
                   .getName());
-              map.put(key, value);
+
+              if (value != null) {
+                map.put(key, value);
+              }
             }, HashMap::putAll))
         .build());
 
