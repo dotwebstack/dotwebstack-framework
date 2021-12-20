@@ -63,6 +63,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/BreweryHAL'
 
+  /brewery-old/{identifier}:
+    get:
+      x-dws-query: brewery-old
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "303 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.baseUrl}/brewery/${data.identifier}`'
+
+  /brewery-old2/{identifier}:
+    get:
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "303 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.baseUrl}/brewery/${args.identifier}`'
+
   /brewery-nulls/{identifier}:
     get:
       x-dws-query: brewery

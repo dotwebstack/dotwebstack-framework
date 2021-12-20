@@ -16,6 +16,7 @@ import org.dotwebstack.framework.test.TestApplication;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -64,6 +65,26 @@ class RmlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
   }
 
+  @Test
+  void redirect_returnsExpectedResult_forRequest() {
+    client.get()
+        .uri("/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
+        .accept(MediaType.parseMediaType("text/turtle"))
+        .exchange()
+        .expectHeader()
+        .valueMatches("Location", "http://dotwebstack.org/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c");
+  }
+
+  @Test
+  void redirectWithQuery_returnsExpectedResult_forRequest() {
+    client.get()
+        .uri("/id/beer-brewed-by/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
+        .accept(MediaType.parseMediaType("text/turtle"))
+        .exchange()
+        .expectHeader()
+        .valueMatches("Location", "http://dotwebstack.org/doc/brewery/d3654375-95fa-46b4-8529-08b0f777bd6b");
+  }
+
   @ParameterizedTest
   @MethodSource("createMediaTypeResponseFileNameArguments")
   void dereference_returnsExpectedResult_forRequest(MediaType mediaType, String expectedResultFileName)
@@ -74,7 +95,7 @@ class RmlPostgresIntegrationTest {
     Model expected = Rio.parse(getFileInputStream(expectedResultFileName), rdfFormat);
 
     String responseBody = client.get()
-        .uri("/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
+        .uri("/doc/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
         .accept(mediaType)
         .exchange()
         .expectBody(String.class)

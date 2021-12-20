@@ -285,7 +285,7 @@ public class JsonBodyMapper implements BodyMapper {
   public boolean supports(MediaType mediaType, OperationContext operationContext) {
     var mediaTypeString = mediaType.toString();
 
-    var schema = operationContext.getSuccessResponse()
+    var schema = operationContext.getResponse()
         .getContent()
         .get(mediaTypeString)
         .getSchema();

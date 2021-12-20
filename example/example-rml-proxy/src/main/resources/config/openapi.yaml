@@ -22,7 +22,7 @@ paths:
             Location:
               schema:
                 type: string
-                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/beer/${args.id}`'
+                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/beer/${args.identifier}`'
   /doc/beer/{identifier}:
     description: DOC endpoint for beer dereferencing
     get:

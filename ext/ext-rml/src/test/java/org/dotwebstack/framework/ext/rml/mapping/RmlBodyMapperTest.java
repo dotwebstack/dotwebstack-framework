@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.ext.rml.mapping.TurtleRmlBodyMapper.TURTLE_MEDIA_TYPE;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -26,7 +27,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.eclipse.rdf4j.model.Model;
@@ -57,7 +57,7 @@ class RmlBodyMapperTest {
       .context(OperationContext.builder()
           .operation(OPERATION)
           .queryProperties(QueryProperties.fromOperation(OPERATION))
-          .successResponse(MapperUtils.getSuccessResponse(OPERATION))
+          .responseEntry(getHandleableResponseEntry(OPERATION))
           .build())
       .preferredMediaType(TURTLE_MEDIA_TYPE)
       .build();

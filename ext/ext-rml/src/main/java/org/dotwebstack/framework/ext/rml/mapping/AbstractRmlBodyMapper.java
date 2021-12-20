@@ -52,7 +52,7 @@ abstract class AbstractRmlBodyMapper implements BodyMapper {
 
   @Override
   public boolean supports(MediaType mediaType, OperationContext operationContext) {
-    var schema = operationContext.getSuccessResponse()
+    var schema = operationContext.getResponse()
         .getContent()
         .get(mediaType.toString())
         .getSchema();

@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.response;
 
 import static org.dotwebstack.framework.service.openapi.TestConstants.APPLICATION_JSON_HAL;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -19,7 +20,6 @@ import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.jexl.PagingFunctions;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -118,7 +118,7 @@ class JsonBodyMapperTest {
 
     return OperationContext.builder()
         .operation(operation)
-        .successResponse(MapperUtils.getSuccessResponse(operation))
+        .responseEntry(getHandleableResponseEntry(operation))
         .queryProperties(QueryProperties.fromOperation(operation))
         .build();
   }

@@ -18,12 +18,11 @@ public class OperationRequest {
   @Builder.Default
   private final Map<String, Object> parameters = Map.of();
 
-  @NonNull
   private final MediaType preferredMediaType;
 
   @SuppressWarnings("rawtypes")
   public Schema<?> getResponseSchema() {
-    return context.getSuccessResponse()
+    return context.getResponse()
         .getContent()
         .get(preferredMediaType.toString())
         .getSchema();

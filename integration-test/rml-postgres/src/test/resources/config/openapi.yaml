@@ -8,6 +8,52 @@ paths:
   /id/beer/{identifier}:
     description: endpoint for beer dereferencing
     get:
+      parameters:
+        - name: identifier
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`http://dotwebstack.org/doc/beer/${args.identifier}`'
+
+  /id/beer-brewed-by/{identifier}:
+    description: endpoint for beer dereferencing
+    get:
+      x-dws-query:
+        field: beer
+        selectionSet: |
+          {
+            brewery {
+              identifier
+            }
+          }
+      parameters:
+        - name: identifier
+          description: Identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "300 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`http://dotwebstack.org/doc/brewery/${data.brewery.identifier}`'
+
+  /doc/beer/{identifier}:
+    description: endpoint for beer dereferencing
+    get:
       x-dws-query:
         field: beer
         selectionSet: |

@@ -27,7 +27,7 @@ import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
 import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
-import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolverFactory;
+import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolver;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -54,7 +54,7 @@ class OperationHandlerFactoryTest {
   private ParameterResolverFactory parameterResolverFactory;
 
   @Mock
-  private ResponseHeaderResolverFactory responseHeaderResolverFactory;
+  private ResponseHeaderResolver responseHeaderResolver;
 
   @Mock
   private BodyMapper bodyMapper;
@@ -71,14 +71,14 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.map(any(), any())).thenReturn(Mono.just(List.of()));
 
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
-        parameterResolverFactory, responseHeaderResolverFactory);
+        parameterResolverFactory, responseHeaderResolver);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
-    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
+    when(responseHeaderResolver.resolve(any(), any())).thenReturn(httpHeaders -> {
     });
 
     var result = operationHandlerFactory.create(operation);
@@ -91,20 +91,63 @@ class OperationHandlerFactoryTest {
   }
 
   @Test
+  void create_createsRedirectingHandler_forValidConfigWithQuery() {
+    var operation = createOperation("/brewery-old/{identifier}", Map.of("identifier", "foo"));
+
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolver);
+
+    var executionInput = mock(ExecutionInput.class);
+    var executionResult = TestResources.graphQlResult("brewery-old");
+
+    when(queryMapper.map(any())).thenReturn(executionInput);
+    when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+    when(responseHeaderResolver.resolve(any(), any())).thenReturn(httpHeaders -> {
+    });
+
+    var result = operationHandlerFactory.create(operation);
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/brewery-old/foo")))
+        .assertNext(response -> {
+          assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER));
+        })
+        .verifyComplete();
+  }
+
+  @Test
+  void create_createsRedirectingHandler_forValidConfigWithoutQuery() {
+    var operation = createOperation("/brewery-old2/{identifier}", Map.of("identifier", "foo"));
+
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolver);
+
+    when(responseHeaderResolver.resolve(any(), any())).thenReturn(httpHeaders -> {
+    });
+
+    var result = operationHandlerFactory.create(operation);
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/brewery-old2/foo")))
+        .assertNext(response -> {
+          assertThat(response.statusCode(), is(HttpStatus.SEE_OTHER));
+        })
+        .verifyComplete();
+  }
+
+  @Test
   void create_createsContentNegotiatingHandler_ifAcceptHeaderIsUsed() {
     var operation = createOperation("/breweries", Map.of());
     when(bodyMapper.supports(any(), any())).thenReturn(true);
     when(bodyMapper.map(any(), any())).thenReturn(Mono.just(Map.of()));
 
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
-        parameterResolverFactory, responseHeaderResolverFactory);
+        parameterResolverFactory, responseHeaderResolver);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-collection");
 
     when(queryMapper.map(any())).thenReturn(executionInput);
     when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
-    when(responseHeaderResolverFactory.create(any(), any())).thenReturn(httpHeaders -> {
+    when(responseHeaderResolver.resolve(any(), any())).thenReturn(httpHeaders -> {
     });
 
     var result = operationHandlerFactory.create(operation);
@@ -135,7 +178,7 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
-        parameterResolverFactory, responseHeaderResolverFactory);
+        parameterResolverFactory, responseHeaderResolver);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = TestResources.graphQlResult("brewery-not-found");
@@ -155,7 +198,7 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
-        parameterResolverFactory, responseHeaderResolverFactory);
+        parameterResolverFactory, responseHeaderResolver);
 
     var executionInput = mock(ExecutionInput.class);
     var executionResult = ExecutionResultImpl.newExecutionResult()
@@ -178,7 +221,7 @@ class OperationHandlerFactoryTest {
     when(bodyMapper.supports(any(), any())).thenReturn(true, false);
 
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
-        parameterResolverFactory, responseHeaderResolverFactory);
+        parameterResolverFactory, responseHeaderResolver);
 
     Assertions.assertThrows(InvalidConfigurationException.class, () -> operationHandlerFactory.create(operation));
   }

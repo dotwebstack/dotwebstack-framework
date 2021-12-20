@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.service.openapi.TestConstants.APPLICATION_JSON_HAL;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -22,7 +23,6 @@ import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -95,7 +95,7 @@ class QueryMapperTest {
     var operationRequest = OperationRequest.builder()
         .context(OperationContext.builder()
             .operation(operation)
-            .successResponse(MapperUtils.getSuccessResponse(operation))
+            .responseEntry(getHandleableResponseEntry(operation))
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
@@ -154,7 +154,7 @@ class QueryMapperTest {
     var operationRequest = OperationRequest.builder()
         .context(OperationContext.builder()
             .operation(operation)
-            .successResponse(MapperUtils.getSuccessResponse(operation))
+            .responseEntry(getHandleableResponseEntry(operation))
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
