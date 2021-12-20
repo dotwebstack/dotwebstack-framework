@@ -30,6 +30,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
@@ -41,6 +42,9 @@ class JsonBodyMapperTest {
 
   @Mock
   private EnvironmentProperties properties;
+
+  @Mock
+  private ServerRequest serverRequest;
 
   @BeforeEach
   void beforeEach() {
@@ -89,6 +93,7 @@ class JsonBodyMapperTest {
         .context(createOperationContext(path))
         .preferredMediaType(preferredMediaType)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     Map<String, Object> data = TestResources.graphQlResult(graphQlResult)

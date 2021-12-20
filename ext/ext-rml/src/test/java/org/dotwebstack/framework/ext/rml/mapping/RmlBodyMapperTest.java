@@ -43,6 +43,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.ServerRequest;
 import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,8 +61,8 @@ class RmlBodyMapperTest {
           .responseEntry(getHandleableResponseEntry(OPERATION))
           .build())
       .preferredMediaType(TURTLE_MEDIA_TYPE)
+      .serverRequest(mock(ServerRequest.class))
       .build();
-
 
   @ParameterizedTest
   @MethodSource("createBodyMappersWithOutputMimeType")

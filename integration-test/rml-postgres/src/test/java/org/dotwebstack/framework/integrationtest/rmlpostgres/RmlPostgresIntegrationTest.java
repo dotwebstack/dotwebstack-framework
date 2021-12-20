@@ -76,6 +76,16 @@ class RmlPostgresIntegrationTest {
   }
 
   @Test
+  void redirect_returnsExpectedResult_forRequestWithHtmlAcceptHeader() {
+    client.get()
+        .uri("/id/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c")
+        .accept(MediaType.parseMediaType("text/html"))
+        .exchange()
+        .expectHeader()
+        .valueMatches("Location", "http://dotwebstack.org/page/beer/b0e7cf18-e3ce-439b-a63e-034c8452f59c.html");
+  }
+
+  @Test
   void redirectWithQuery_returnsExpectedResult_forRequest() {
     client.get()
         .uri("/id/beer-brewed-by/b0e7cf18-e3ce-439b-a63e-034c8452f59c")

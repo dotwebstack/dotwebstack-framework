@@ -87,7 +87,8 @@ public class OperationHandlerFactory {
       ServerRequest serverRequest) {
     var builder = OperationRequest.builder()
         .context(operationContext)
-        .parameters(parameters);
+        .parameters(parameters)
+        .serverRequest(serverRequest);
 
     if (operationContext.isResponseWithBody()) {
       var contentNegotiator = createContentNegotiator(operationContext.getResponse());

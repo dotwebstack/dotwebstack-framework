@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultResponseHeaderResolverTest {
@@ -35,6 +36,9 @@ class DefaultResponseHeaderResolverTest {
 
   @Mock
   private EnvironmentProperties environmentProperties;
+
+  @Mock
+  private ServerRequest serverRequest;
 
   private JexlEngine jexlEngine;
 
@@ -64,6 +68,7 @@ class DefaultResponseHeaderResolverTest {
         .context(createOperationContext(path))
         .preferredMediaType(APPLICATION_JSON)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var defaultResponseHeaderResolver = new DefaultResponseHeaderResolver(environmentProperties, jexlEngine);
@@ -95,6 +100,7 @@ class DefaultResponseHeaderResolverTest {
         .context(createOperationContext(path))
         .preferredMediaType(APPLICATION_JSON)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var defaultResponseHeaderResolver = new DefaultResponseHeaderResolver(environmentProperties, jexlEngine);

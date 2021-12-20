@@ -20,7 +20,9 @@ import org.dotwebstack.framework.core.directives.DirectiveUtils;
 @Slf4j
 public class JexlHelper {
 
-  private static final String ENVIRONMENT_PREFIX = "env";
+  private static final String ENVIRONMENT_PREFIX = "env.";
+
+  private static final String REQUEST_PREFIX = "request";
 
   private static final String ARGUMENT_PREFIX = "args";
 
@@ -32,16 +34,21 @@ public class JexlHelper {
     this.engine = engine;
   }
 
-  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams) {
-    return getJexlContext(envParams, argParams, null);
+  public static JexlContext getJexlContext(Map<String, String> envParams, Object serverRequest,
+      Map<String, Object> argParams) {
+    return getJexlContext(envParams, serverRequest, argParams, null);
   }
 
-  public static JexlContext getJexlContext(Map<String, String> envParams, Map<String, Object> argParams,
-      Object resultData) {
+  public static JexlContext getJexlContext(Map<String, String> envParams, Object serverRequest,
+      Map<String, Object> argParams, Object resultData) {
     JexlContext jexlContext = new MapContext();
 
     if (envParams != null) {
-      jexlContext.set(ENVIRONMENT_PREFIX, envParams);
+      envParams.forEach((key, value) -> jexlContext.set(ENVIRONMENT_PREFIX + key, value));
+    }
+
+    if (serverRequest != null) {
+      jexlContext.set(REQUEST_PREFIX, serverRequest);
     }
 
     if (argParams != null) {

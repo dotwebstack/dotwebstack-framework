@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 class QueryMapperTest {
@@ -41,6 +42,9 @@ class QueryMapperTest {
 
   @Mock
   private EnvironmentProperties environmentProperties;
+
+  @Mock
+  private ServerRequest serverRequest;
 
   @BeforeEach
   void beforeEach() {
@@ -100,6 +104,7 @@ class QueryMapperTest {
             .build())
         .preferredMediaType(preferredMediaType)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var executionInput = queryFactory.map(operationRequest);
@@ -159,6 +164,7 @@ class QueryMapperTest {
             .build())
         .preferredMediaType(preferredMediaType)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var throwable = assertThrows(RuntimeException.class, () -> queryFactory.map(operationRequest));

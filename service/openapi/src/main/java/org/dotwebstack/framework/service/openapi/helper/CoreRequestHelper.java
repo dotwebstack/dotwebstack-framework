@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
@@ -91,18 +90,10 @@ public class CoreRequestHelper {
   public static Map<String, Object> addEvaluatedDwsParameters(Map<String, Object> inputParams,
       Map<String, String> dwsParameters, ServerRequest request, EnvironmentProperties environmentProperties,
       JexlHelper jexlHelper) {
-    var jexlContext = buildJexlContext(request, environmentProperties, inputParams);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), request, inputParams);
     Map<String, Object> allParams = new HashMap<>(inputParams);
     dwsParameters.forEach((name, valueExpr) -> jexlHelper.evaluateExpression(valueExpr, jexlContext, Object.class)
         .ifPresent(value -> allParams.put(name, value)));
     return allParams;
-  }
-
-  private static JexlContext buildJexlContext(ServerRequest request, EnvironmentProperties environmentProperties,
-      Map<String, Object> inputParams) {
-    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), inputParams);
-    jexlContext.set(DwsExtensionHelper.DWS_QUERY_JEXL_CONTEXT_REQUEST, request);
-
-    return jexlContext;
   }
 }

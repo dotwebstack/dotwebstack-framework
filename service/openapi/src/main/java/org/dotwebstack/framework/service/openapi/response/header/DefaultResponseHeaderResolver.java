@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response.header;
 import static java.util.stream.Collectors.toMap;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
 
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -15,7 +16,6 @@ import lombok.NonNull;
 import org.apache.commons.jexl3.JexlEngine;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.jexl.JexlUtils;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.springframework.http.HttpHeaders;
@@ -67,10 +67,11 @@ public class DefaultResponseHeaderResolver implements ResponseHeaderResolver {
           "Unsupported header configuration for `{}`. Headers should have a scalar schema type", headerName);
     }
 
-    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getParameters(), data);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getServerRequest(),
+        operationRequest.getParameters(), data);
     var defaultValue = headerSchema.getDefault();
 
-    String headerValue = DwsExtensionHelper.getJexlExpression(headerSchema)
+    String headerValue = getJexlExpression(headerSchema)
         .map(jexlExpression -> JexlUtils.evaluateJexlExpression(jexlExpression, jexlHelper, jexlContext, Object.class)
             .or(() -> Optional.ofNullable(defaultValue))
             .map(String::valueOf)

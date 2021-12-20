@@ -34,6 +34,12 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Brewery'
+            application/ld+json:
+              x-dws-default: true
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
 
   /brewery/{identifier}:
     get:

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 @Builder
 @Getter
@@ -19,6 +20,9 @@ public class OperationRequest {
   private final Map<String, Object> parameters = Map.of();
 
   private final MediaType preferredMediaType;
+
+  @NonNull
+  private final ServerRequest serverRequest;
 
   @SuppressWarnings("rawtypes")
   public Schema<?> getResponseSchema() {
