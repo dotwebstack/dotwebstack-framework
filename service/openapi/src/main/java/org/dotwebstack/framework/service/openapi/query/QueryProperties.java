@@ -24,6 +24,8 @@ public class QueryProperties {
 
   private String selectionSet;
 
+  private String sort;
+
   public static QueryProperties fromOperation(Operation operation) {
     var extension = ofNullable(operation.getExtensions())
         .flatMap(extensions -> ofNullable(extensions.get(OasConstants.X_DWS_QUERY)))

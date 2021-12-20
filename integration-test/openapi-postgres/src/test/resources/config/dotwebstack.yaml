@@ -191,6 +191,9 @@ objectTypes:
       name:
         - field: name
           direction: ASC
+      nameDesc:
+        - field: name
+          direction: DESC
 
   Address:
     table: db.address
