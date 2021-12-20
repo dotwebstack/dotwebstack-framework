@@ -476,28 +476,6 @@ brewery:
 The response of brewery contains the combined set of required properties of both schema's defined under the `allOf`
 property. Currently `anyOf` and `oneOf` are not supported.
 
-## Response headers
-
-It is possible to return response headers in a DotWebStack response. Their configuration is similar to response
-properties:
-
-```yaml
-/breweries:
-  get:
-    x-dws-query: breweries
-    responses:
-      200:
-        ...
-        headers:
-          X-Pagination-Page:
-            schema:
-              type: string
-              x-dws-expr: '`args.pageSize`'
-```
-
-This configuration adds the `X-Pagination-Page` header to the response. Its value is set using an `x-dws-expr`, similar
-to response properties.
-
 ## Content negotiation
 
 It is possible to configure (multiple) contents to allow different response types:
@@ -520,6 +498,31 @@ It is possible to configure (multiple) contents to allow different response type
 
 This configuration allows Accept headers for `application/json` and `application/xml`. When no Accept header is
 provided, the default will be used. The default is set by using `x-dws-default: true` on a content configuration.
+
+## Response headers
+
+It is possible to return response headers in a DotWebStack response. Their configuration is similar to response
+properties:
+
+```yaml
+/breweries:
+  get:
+    x-dws-query: breweries
+    responses:
+      200:
+        ...
+        headers:
+          X-Pagination-Page:
+            schema:
+              type: string
+              x-dws-expr: '`args.pageSize`'
+```
+
+This configuration adds the `X-Pagination-Page` header to the response. Its value is set using an `x-dws-expr`, similar
+to response properties.
+
+## Redirects
+
 
 <!-- ## Default values
 

@@ -60,7 +60,7 @@ class DefaultResponseHeaderResolverTest {
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void accept(String path, Map<String, Object> parameters, Object data, Map<String, String> expectedResponseHeaders) {
+  void resolve(String path, Map<String, Object> parameters, Object data, Map<String, String> expectedResponseHeaders) {
     lenient().when(environmentProperties.getAllProperties())
         .thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
 
@@ -95,7 +95,7 @@ class DefaultResponseHeaderResolverTest {
 
   @ParameterizedTest
   @MethodSource("argumentsForExceptions")
-  void accept_throwsException_ForErrorCases(String path, Map<String, Object> parameters, String message) {
+  void resolve_throwsException_ForErrorCases(String path, Map<String, Object> parameters, String message) {
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))
         .preferredMediaType(APPLICATION_JSON)
@@ -105,12 +105,8 @@ class DefaultResponseHeaderResolverTest {
 
     var defaultResponseHeaderResolver = new DefaultResponseHeaderResolver(environmentProperties, jexlEngine);
 
-    var httpHeaders = new HttpHeaders();
-
-    var headerConsumer = defaultResponseHeaderResolver.resolve(operationRequest, null);
-
-    InvalidConfigurationException invalidConfigurationException =
-        assertThrows(InvalidConfigurationException.class, () -> headerConsumer.accept(httpHeaders));
+    InvalidConfigurationException invalidConfigurationException = assertThrows(InvalidConfigurationException.class,
+        () -> defaultResponseHeaderResolver.resolve(operationRequest, null));
 
     assertThat(invalidConfigurationException.getMessage(), is(message));
   }
