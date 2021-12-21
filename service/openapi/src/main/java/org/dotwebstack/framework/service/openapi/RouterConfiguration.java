@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -101,7 +102,12 @@ class RouterConfiguration {
 
   private boolean isDwsOperation(Operation operation) {
     return operation.getExtensions() != null && operation.getExtensions()
-        .containsKey(OasConstants.X_DWS_QUERY);
+        .containsKey(OasConstants.X_DWS_QUERY) || operation.getResponses()
+            .keySet()
+            .stream()
+            .map(Integer::parseInt)
+            .map(HttpStatus::valueOf)
+            .anyMatch(HttpStatus::is3xxRedirection);
   }
 
   private RouterFunction<ServerResponse> routeApiDocs() {

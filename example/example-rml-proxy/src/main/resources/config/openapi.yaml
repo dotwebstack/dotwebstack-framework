@@ -5,11 +5,11 @@ info:
   version: 1.0.0
 
 paths:
-  /id/beer/{id}:
+  /id/beer/{identifier}:
     description: ID endpoint for beer dereferencing
     get:
       parameters:
-        - name: id
+        - name: identifier
           description: Identifier
           in: path
           required: true
@@ -22,12 +22,16 @@ paths:
             Location:
               schema:
                 type: string
-                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/beer/${args.id}`'
-  /doc/beer/{id}:
+                x-dws-expr: |
+                  req:accepts("text/html", request) ?
+                    `${env.dotwebstack.baseUrl}/page/beer/${args.identifier}.html` :
+                    `${env.dotwebstack.baseUrl}/doc/beer/${args.identifier}`
+
+  /doc/beer/{identifier}:
     description: DOC endpoint for beer dereferencing
     get:
       parameters:
-        - name: id
+        - name: identifier
           description: Identifier
           in: path
           required: true
@@ -35,8 +39,6 @@ paths:
             type: string
       x-dws-query:
         field: beer
-        keys:
-          identifier: $path.id
         selectionSet: |
           {
             identifier
@@ -48,9 +50,7 @@ paths:
               identifier
             }
             ingredients {
-              nodes {
-                identifier
-              }
+              identifier
             }
             taste
           }
@@ -61,14 +61,14 @@ paths:
           content:
             text/turtle:
               x-dws-default: true
-#            text/html:
-#              x-dws-template: resource.html
+            text/html: {}
             application/ld+json: {}
             text/n3: {}
             application/n-quads: {}
             application/n-triples: {}
             application/rdf+xml: {}
             application/trig: {}
+
   /id/brewery/{id}:
     description: ID endpoint for brewery dereferencing
     get:
@@ -86,14 +86,18 @@ paths:
             Location:
               schema:
                 type: string
-                x-dws-expr: '`${env.dotwebstack.template.baseUrl}/doc/brewery/${args.id}`'
+                x-dws-expr: |
+                  req:accepts("text/html", request) ?
+                    `${env.dotwebstack.baseUrl}/page/brewery/${args.identifier}.html` :
+                    `${env.dotwebstack.baseUrl}/doc/brewery/${args.identifier}`
+
   /doc/brewery/{id}:
     description: DOC endpoint for brewery dereferencing
     get:
       x-dws-query:
         field: brewery
         keys:
-          identifier: $path.id
+          identifier: args.id
         selectionSet: |
           {
             identifier
@@ -133,8 +137,7 @@ paths:
           content:
             text/turtle:
               x-dws-default: true
-#            text/html:
-#              x-dws-template: resource.html
+            text/html: {}
             application/ld+json: {}
             text/n3: {}
             application/n-quads: {}

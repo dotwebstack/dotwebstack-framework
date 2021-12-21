@@ -1,9 +1,10 @@
 package org.dotwebstack.framework.service.openapi.response.header;
 
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -17,7 +18,6 @@ import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultResponseHeaderResolverTest {
@@ -35,6 +36,9 @@ class DefaultResponseHeaderResolverTest {
 
   @Mock
   private EnvironmentProperties environmentProperties;
+
+  @Mock
+  private ServerRequest serverRequest;
 
   private JexlEngine jexlEngine;
 
@@ -56,21 +60,23 @@ class DefaultResponseHeaderResolverTest {
 
   @ParameterizedTest
   @MethodSource("arguments")
-  void accept(String path, Map<String, Object> parameters, Object data, Map<String, String> expectedResponseHeaders) {
-    when(environmentProperties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
+  void resolve(String path, Map<String, Object> parameters, Object data, Map<String, String> expectedResponseHeaders) {
+    lenient().when(environmentProperties.getAllProperties())
+        .thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
 
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))
         .preferredMediaType(APPLICATION_JSON)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
-    var defaultResponseHeaderResolver =
-        new DefaultResponseHeaderResolver(operationRequest, data, environmentProperties, jexlEngine);
+    var defaultResponseHeaderResolver = new DefaultResponseHeaderResolver(environmentProperties, jexlEngine);
 
     var httpHeaders = new HttpHeaders();
 
-    defaultResponseHeaderResolver.accept(httpHeaders);
+    defaultResponseHeaderResolver.resolve(operationRequest, data)
+        .accept(httpHeaders);
 
     if (!expectedResponseHeaders.isEmpty()) {
       expectedResponseHeaders.forEach((name, value) -> assertThat(httpHeaders.get(name), is(List.of(value))));
@@ -89,22 +95,18 @@ class DefaultResponseHeaderResolverTest {
 
   @ParameterizedTest
   @MethodSource("argumentsForExceptions")
-  void accept_throwsException_ForErrorCases(String path, Map<String, Object> parameters, String message) {
-    when(environmentProperties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
-
+  void resolve_throwsException_ForErrorCases(String path, Map<String, Object> parameters, String message) {
     var operationRequest = OperationRequest.builder()
         .context(createOperationContext(path))
         .preferredMediaType(APPLICATION_JSON)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
-    var defaultResponseHeaderResolver =
-        new DefaultResponseHeaderResolver(operationRequest, null, environmentProperties, jexlEngine);
+    var defaultResponseHeaderResolver = new DefaultResponseHeaderResolver(environmentProperties, jexlEngine);
 
-    var httpHeaders = new HttpHeaders();
-
-    InvalidConfigurationException invalidConfigurationException =
-        assertThrows(InvalidConfigurationException.class, () -> defaultResponseHeaderResolver.accept(httpHeaders));
+    InvalidConfigurationException invalidConfigurationException = assertThrows(InvalidConfigurationException.class,
+        () -> defaultResponseHeaderResolver.resolve(operationRequest, null));
 
     assertThat(invalidConfigurationException.getMessage(), is(message));
   }
@@ -116,7 +118,7 @@ class DefaultResponseHeaderResolverTest {
 
     return OperationContext.builder()
         .operation(operation)
-        .successResponse(MapperUtils.getSuccessResponse(operation))
+        .responseEntry(getHandleableResponseEntry(operation))
         .queryProperties(QueryProperties.fromOperation(operation))
         .build();
   }

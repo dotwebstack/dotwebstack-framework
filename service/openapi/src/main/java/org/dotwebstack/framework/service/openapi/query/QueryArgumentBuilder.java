@@ -105,7 +105,7 @@ public class QueryArgumentBuilder {
         .getQueryProperties()
         .getContext();
 
-    var objectField = createObjectValue(context, operationRequest.getParameters());
+    var objectField = createObjectValue(operationRequest, context);
 
     return objectField != null ? List.of(new Argument(CONTEXT_ARGUMENT_NAME, objectField)) : List.of();
   }
@@ -120,18 +120,19 @@ public class QueryArgumentBuilder {
         .getQueryProperties()
         .getFilters();
 
-    List<ObjectField> objectFields = createObjectFields(filters, operationRequest.getParameters());
+    List<ObjectField> objectFields = createObjectFields(filters, operationRequest);
 
     return !objectFields.isEmpty() ? List.of(new Argument(FILTER_ARGUMENT_NAME, new ObjectValue(objectFields)))
         : List.of();
   }
 
-  private List<ObjectField> createObjectFields(Map<String, Map<String, Object>> map, Map<String, Object> parameters) {
+  private List<ObjectField> createObjectFields(Map<String, Map<String, Object>> map,
+      OperationRequest operationRequest) {
     return map.entrySet()
         .stream()
         .map(entry -> {
           var key = entry.getKey();
-          var value = createObjectValue(entry.getValue(), parameters);
+          var value = createObjectValue(operationRequest, entry.getValue());
           return value != null ? new ObjectField(key, value) : null;
         })
         .filter(Objects::nonNull)
@@ -139,20 +140,20 @@ public class QueryArgumentBuilder {
   }
 
   @SuppressWarnings({"unchecked"})
-  private List<ObjectField> createObjectField(Map<String, Object> map, Map<String, Object> parameters) {
+  private List<ObjectField> createObjectField(OperationRequest operationRequest, Map<String, Object> map) {
     return map.entrySet()
         .stream()
         .map(entry -> {
           var key = entry.getKey();
           var value = entry.getValue();
           if (value instanceof Map && isExpression((Map<String, Object>) value)) {
-            var objectValue = createExpressionObjectValue((Map<String, Object>) value, parameters);
+            var objectValue = createExpressionObjectValue(operationRequest, (Map<String, Object>) value);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof Map) {
-            var objectValue = createObjectValue((Map<String, Object>) value, parameters);
+            var objectValue = createObjectValue(operationRequest, (Map<String, Object>) value);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof String) {
-            return keyValueToObjectField(key, (String) value, parameters);
+            return keyValueToObjectField(key, (String) value, operationRequest.getParameters());
           } else {
             throw new IllegalArgumentException("Type not supported: " + value.getClass()
                 .getSimpleName());
@@ -163,7 +164,7 @@ public class QueryArgumentBuilder {
   }
 
   @SuppressWarnings({"unchecked"})
-  private ObjectValue createObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
+  private ObjectValue createObjectValue(OperationRequest operationRequest, Map<String, Object> map) {
     List<ObjectField> objectFields = map.entrySet()
         .stream()
         .map(e -> {
@@ -171,12 +172,12 @@ public class QueryArgumentBuilder {
           var value = e.getValue();
 
           if (value instanceof String) {
-            return keyValueToObjectField(key, (String) value, parameters);
+            return keyValueToObjectField(key, (String) value, operationRequest.getParameters());
           } else if (value instanceof Map && isExpression((Map<String, Object>) value)) {
-            var objectValue = createExpressionObjectValue((Map<String, Object>) value, parameters);
+            var objectValue = createExpressionObjectValue(operationRequest, (Map<String, Object>) value);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
           } else if (value instanceof Map) {
-            var childFields = createObjectField((Map<String, Object>) value, parameters);
+            var childFields = createObjectField(operationRequest, (Map<String, Object>) value);
             return childFields.isEmpty() ? null : new ObjectField(key, new ObjectValue(childFields));
           } else {
             throw new IllegalArgumentException("Type not supported: " + value.getClass()
@@ -199,9 +200,10 @@ public class QueryArgumentBuilder {
   }
 
   @SuppressWarnings({"rawtypes"})
-  protected Value createExpressionObjectValue(Map<String, Object> map, Map<String, Object> parameters) {
+  protected Value createExpressionObjectValue(OperationRequest operationRequest, Map<String, Object> map) {
     var expression = map.get(OasConstants.X_DWS_EXPR);
-    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), parameters);
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getServerRequest(),
+        operationRequest.getParameters());
     var optionalJexlExpression = getJexlExpression(expression, map,
         expressionValue -> expressionValue.endsWith("!") ? expressionValue.substring(0, expressionValue.length() - 1)
             : expressionValue);

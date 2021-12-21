@@ -34,6 +34,12 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Brewery'
+            application/ld+json:
+              x-dws-default: true
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
 
   /brewery/{identifier}:
     get:
@@ -62,6 +68,41 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/BreweryHAL'
+
+  /brewery-old/{identifier}:
+    get:
+      x-dws-query: brewery-old
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "303 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.baseUrl}/brewery/${data.identifier}`'
+
+  /brewery-old2/{identifier}:
+    get:
+      parameters:
+        - name: identifier
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        303:
+          description: "303 response"
+          headers:
+            Location:
+              schema:
+                type: string
+                x-dws-expr: '`${env.baseUrl}/brewery/${args.identifier}`'
 
   /brewery-nulls/{identifier}:
     get:
@@ -632,6 +673,72 @@ paths:
             does-nothing:
               schema:
                 type: String
+  /breweries-pageable-with-params-selection-set:
+    get:
+      x-dws-query:
+        field: breweryPageableCollection
+        paging:
+          pageSize: args.pageSize
+          page: args.page
+        selectionSet: |
+          {
+            nodes {
+              identifier
+              name
+              aliases
+              postalAddress {
+                locator
+                street
+                postalCode
+                location {
+                  asGeoJSON
+                }
+              }
+              visitAddresses {
+                street
+                postalCode
+                location {
+                  asGeoJSON
+                }
+              }
+              numberOfEmployees
+              salesAreas {
+                asGeoJSON
+              }
+            }
+          }
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            enum: [ 10, 20, 50 ]
+            default: 10
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema: ~
+  /breweries-invalid-selection-set:
+    get:
+      x-dws-query:
+        field: breweryCollection
+        selectionSet: |
+          type Brewery {
+            id: String!
+          }
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema: ~
 
 components:
   schemas:

@@ -4,24 +4,26 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalSer
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notAcceptableException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.defaultMediaTypeFirst;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
-import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolverFactory;
+import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolver;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -42,26 +44,31 @@ public class OperationHandlerFactory {
 
   private final ParameterResolverFactory parameterResolverFactory;
 
-  private final ResponseHeaderResolverFactory responseHeaderResolverFactory;
+  private final ResponseHeaderResolver responseHeaderResolver;
 
   public OperationHandlerFactory(GraphQL graphQL, QueryMapper queryMapper, Collection<BodyMapper> bodyMappers,
-      ParameterResolverFactory parameterResolverFactory, ResponseHeaderResolverFactory responseHeaderResolverFactory) {
+      ParameterResolverFactory parameterResolverFactory, ResponseHeaderResolver responseHeaderResolver) {
     this.graphQL = graphQL;
     this.queryMapper = queryMapper;
     this.bodyMappers = bodyMappers;
     this.parameterResolverFactory = parameterResolverFactory;
-    this.responseHeaderResolverFactory = responseHeaderResolverFactory;
+    this.responseHeaderResolver = responseHeaderResolver;
   }
 
   public HandlerFunction<ServerResponse> create(Operation operation) {
     var operationContext = OperationContext.builder()
         .operation(operation)
+        .responseEntry(getHandleableResponseEntry(operation))
         .queryProperties(QueryProperties.fromOperation(operation))
-        .successResponse(MapperUtils.getSuccessResponse(operation))
         .build();
 
     var requestHandler = createRequestHandler(operationContext);
     var responseHandler = createResponseHandler(operationContext);
+
+    if (!operationContext.hasQuery()) {
+      return serverRequest -> requestHandler.apply(serverRequest)
+          .flatMap(operationRequest -> responseHandler.apply(null, operationRequest));
+    }
 
     return serverRequest -> requestHandler.apply(serverRequest)
         .flatMap(operationRequest -> Mono.just(queryMapper.map(operationRequest))
@@ -70,34 +77,55 @@ public class OperationHandlerFactory {
   }
 
   private Function<ServerRequest, Mono<OperationRequest>> createRequestHandler(OperationContext operationContext) {
-    var contentNegotiator = createContentNegotiator(operationContext);
     var parameterResolver = parameterResolverFactory.create(operationContext.getOperation());
 
     return serverRequest -> parameterResolver.resolveParameters(serverRequest)
-        .map(parameters -> OperationRequest.builder()
-            .context(operationContext)
-            .parameters(parameters)
-            .preferredMediaType(contentNegotiator.negotiate(serverRequest))
-            .build());
+        .map(parameters -> buildOperationRequest(operationContext, parameters, serverRequest));
+  }
+
+  private OperationRequest buildOperationRequest(OperationContext operationContext, Map<String, Object> parameters,
+      ServerRequest serverRequest) {
+    var builder = OperationRequest.builder()
+        .context(operationContext)
+        .parameters(parameters)
+        .serverRequest(serverRequest);
+
+    if (operationContext.isResponseWithBody()) {
+      var contentNegotiator = createContentNegotiator(operationContext.getResponse());
+      builder.preferredMediaType(contentNegotiator.negotiate(serverRequest));
+    }
+
+    return builder.build();
   }
 
   private BiFunction<ExecutionResult, OperationRequest, Mono<ServerResponse>> createResponseHandler(
       OperationContext operationContext) {
     var bodyMapperMap = createBodyMapperMap(operationContext);
-    var queryField = operationContext.getQueryProperties()
-        .getField();
 
     return (executionResult, operationRequest) -> {
-      Map<String, Object> data = executionResult.getData();
+      Object queryResult = null;
+      if (operationContext.hasQuery()) {
+        Map<String, Object> data = executionResult.getData();
+        queryResult = data.get(operationContext.getQueryProperties()
+            .getField());
 
-      return Mono.justOrEmpty(data.get(queryField))
-          .flatMap(result -> bodyMapperMap.get(operationRequest.getPreferredMediaType())
-              .map(operationRequest, result))
-          .flatMap(content -> ServerResponse.ok()
-              .contentType(operationRequest.getPreferredMediaType())
-              .headers(responseHeaderResolverFactory.create(operationRequest, content))
-              .body(BodyInserters.fromValue(content)))
-          .switchIfEmpty(Mono.error(notFoundException("Did not find data for your response.")));
+        if (queryResult == null) {
+          return Mono.error(notFoundException("Did not find data for your response."));
+        }
+      }
+
+      if (operationContext.isResponseWithBody()) {
+        return bodyMapperMap.get(operationRequest.getPreferredMediaType())
+            .map(operationRequest, queryResult)
+            .flatMap(content -> ServerResponse.status(operationContext.getHttpStatus())
+                .contentType(operationRequest.getPreferredMediaType())
+                .headers(responseHeaderResolver.resolve(operationRequest, content))
+                .body(BodyInserters.fromValue(content)));
+      }
+
+      return ServerResponse.status(operationContext.getHttpStatus())
+          .headers(responseHeaderResolver.resolve(operationRequest, queryResult))
+          .build();
     };
   }
 
@@ -124,13 +152,16 @@ public class OperationHandlerFactory {
     return Mono.error(internalServerErrorException());
   }
 
-  private ContentNegotiator createContentNegotiator(OperationContext operationContext) {
-    var supportedMediaTypes = operationContext.getSuccessResponse()
-        .getContent()
-        .keySet()
+  private ContentNegotiator createContentNegotiator(ApiResponse bodyResponse) {
+    var supportedMediaTypes = bodyResponse.getContent()
+        .entrySet()
         .stream()
+        .sorted((mediaTypeEntry1, mediaTypeEntry2) -> defaultMediaTypeFirst(mediaTypeEntry1.getValue(),
+            mediaTypeEntry2.getValue()))
+        .map(Map.Entry::getKey)
         .map(MediaType::valueOf)
         .collect(Collectors.toList());
+
 
     return serverRequest -> {
       var acceptableMediaTypes = serverRequest.headers()
@@ -155,12 +186,16 @@ public class OperationHandlerFactory {
   }
 
   private Map<MediaType, BodyMapper> createBodyMapperMap(OperationContext operationContext) {
-    return operationContext.getSuccessResponse()
+    if (!operationContext.isResponseWithBody()) {
+      return Map.of();
+    }
+
+    return operationContext.getResponse()
         .getContent()
-        .entrySet()
+        .keySet()
         .stream()
-        .collect(Collectors.toMap(entry -> MediaType.valueOf(entry.getKey()),
-            entry -> findBodyMapper(MediaType.valueOf(entry.getKey()), operationContext)));
+        .collect(Collectors.toMap(MediaType::valueOf,
+            mediaType -> findBodyMapper(MediaType.valueOf(mediaType), operationContext)));
   }
 
   private BodyMapper findBodyMapper(MediaType mediaType, OperationContext operationContext) {
