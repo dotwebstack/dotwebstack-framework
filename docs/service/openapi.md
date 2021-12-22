@@ -318,6 +318,17 @@ will be mapped to the `Beer` type defined in `schema.graphqls`:
 Similarly, properties defined in the OpenAPI type are mapped to GraphQL type fields based on their name. When defining
 an openAPI type, properties are restricted to a subset of the fields of the corresponding GraphQL type.
 
+It is also possible to use the `x-dws-name` extension to use a different name when mapping properties:
+```yaml
+  Brewery:
+     type: object
+     properties:
+        name:
+          type: string
+          x-dws-name: breweryName
+```
+In this case, the openAPI `Brewery.name` property will be mapped to the GraphQL field `Brewery.breweryName`.
+
 ## Envelope type
 
 It is also possible to add fields to an OpenApi response that are not in the GraphQL response. This is useful if you
