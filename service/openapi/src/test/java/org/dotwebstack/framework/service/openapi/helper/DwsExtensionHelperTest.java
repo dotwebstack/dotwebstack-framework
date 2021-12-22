@@ -17,6 +17,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -220,6 +221,24 @@ class DwsExtensionHelperTest {
     var jexlExpression = optionalJexlExpression.get();
     assertThat(jexlExpression.getValue(), is("foobar"));
     assertThat(jexlExpression.getFallback(), is(Optional.of("baz")));
+  }
+
+  @Test
+  void getJexlExpression_givenExpressionObjectWithNullFallback_returnsCorrectly() {
+    Map<String, String> expression = new HashMap<>();
+    expression.put("value", "foo");
+    expression.put("fallback", null);
+
+    var context = "context";
+    UnaryOperator<String> expressionValueAdapter = foo -> foo + "bar";
+
+    var optionalJexlExpression = DwsExtensionHelper.getJexlExpression(expression, context, expressionValueAdapter);
+
+    assertThat(optionalJexlExpression.isPresent(), is(true));
+
+    var jexlExpression = optionalJexlExpression.get();
+    assertThat(jexlExpression.getValue(), is("foobar"));
+    assertThat(jexlExpression.getFallback(), is(Optional.empty()));
   }
 
   @Test

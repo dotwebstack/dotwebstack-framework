@@ -86,11 +86,8 @@ class DefaultResponseHeaderResolverTest {
   }
 
   static Stream<Arguments> argumentsForExceptions() {
-    return Stream.of(
-        Arguments.of("/brewery-unsupported-header", Map.of(),
-            "Unsupported header configuration for `unsupported`. Headers should have a scalar schema type"),
-        Arguments.of("/brewery-header-no-results", Map.of(),
-            "Could not determine value for header `no-results` with expression or default value."));
+    return Stream.of(Arguments.of("/brewery-unsupported-header", Map.of(),
+        "Unsupported header configuration for `unsupported`. Headers should have a scalar schema type"));
   }
 
   @ParameterizedTest

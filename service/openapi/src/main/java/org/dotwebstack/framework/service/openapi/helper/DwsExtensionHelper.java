@@ -171,6 +171,10 @@ public class DwsExtensionHelper {
   }
 
   private static String checkAndGetExpressionStringProperty(Object value, String propertyName, Object context) {
+    if (value == null) {
+      return null;
+    }
+
     if (!(value instanceof String)) {
       throw invalidConfigurationException("Expected value of type 'string', but found {} for {}.{} found in {}", value,
           X_DWS_EXPR, propertyName, context);

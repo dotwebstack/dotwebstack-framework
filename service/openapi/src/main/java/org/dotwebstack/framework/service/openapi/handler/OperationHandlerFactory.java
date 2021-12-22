@@ -202,6 +202,6 @@ public class OperationHandlerFactory {
     return bodyMappers.stream()
         .filter(responseMapper -> responseMapper.supports(mediaType, operationContext))
         .findFirst()
-        .orElseThrow(() -> invalidConfigurationException("Could not find body mapper."));
+        .orElseThrow(() -> invalidConfigurationException("Could not find body mapper for media type {}.", mediaType));
   }
 }

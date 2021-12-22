@@ -21,13 +21,15 @@ import org.eclipse.rdf4j.model.util.ModelCollector;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.WriterConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 abstract class AbstractRmlBodyMapper implements BodyMapper {
 
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  @Autowired
+  private ObjectMapper objectMapper;
 
   final RdfRmlMapper rmlMapper;
 
@@ -69,7 +71,7 @@ abstract class AbstractRmlBodyMapper implements BodyMapper {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Mapping response data:");
         try {
-          LOG.debug("{}", OBJECT_MAPPER.writerWithDefaultPrettyPrinter()
+          LOG.debug("{}", objectMapper.writerWithDefaultPrettyPrinter()
               .writeValueAsString(result));
         } catch (JsonProcessingException jsonProcessingException) {
           throw new RmlBodyMapperException(formatMessage("Error processing: {}", result), jsonProcessingException);
