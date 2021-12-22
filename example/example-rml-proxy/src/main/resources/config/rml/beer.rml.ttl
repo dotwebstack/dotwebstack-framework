@@ -116,7 +116,7 @@
 :Beer_ingredient
   rr:predicate beer:ingredient ;
   rr:objectMap [
-    rr:template "http://dotwebstack.org/id/ingredient/{ingredients.nodes[*].identifier}" ;
+    rr:template "http://dotwebstack.org/id/ingredient/{ingredients[*].identifier}" ;
   ] ;
 .
 

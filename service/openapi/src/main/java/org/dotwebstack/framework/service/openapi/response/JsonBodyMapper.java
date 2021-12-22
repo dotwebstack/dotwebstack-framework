@@ -68,7 +68,8 @@ public class JsonBodyMapper implements BodyMapper {
             .getQueryProperties()
             .getField());
 
-    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getParameters());
+    var jexlContext = getJexlContext(environmentProperties.getAllProperties(), operationRequest.getServerRequest(),
+        operationRequest.getParameters());
 
     return Mono.just(mapSchema(operationRequest.getResponseSchema(), queryField, result, jexlContext));
   }
@@ -289,7 +290,7 @@ public class JsonBodyMapper implements BodyMapper {
   public boolean supports(MediaType mediaType, OperationContext operationContext) {
     var mediaTypeString = mediaType.toString();
 
-    var schema = operationContext.getSuccessResponse()
+    var schema = operationContext.getResponse()
         .getContent()
         .get(mediaTypeString)
         .getSchema();

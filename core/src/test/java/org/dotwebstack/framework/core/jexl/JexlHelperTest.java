@@ -150,7 +150,7 @@ class JexlHelperTest {
     Map<String, String> envParams = Map.of("key", "value");
     Map<String, Object> argParams = Map.of("name", "test");
 
-    JexlContext context = JexlHelper.getJexlContext(envParams, argParams);
+    JexlContext context = JexlHelper.getJexlContext(envParams, null, argParams);
 
     assertEquals("value", evaluateExpressionToString("env.key", context));
     assertEquals("test", evaluateExpressionToString("args.name", context));

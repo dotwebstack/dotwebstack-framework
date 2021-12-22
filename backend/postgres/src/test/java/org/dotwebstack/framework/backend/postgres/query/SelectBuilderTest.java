@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -575,11 +576,24 @@ class SelectBuilderTest {
     var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
 
     assertThat(fieldMapperResult, notNullValue());
-    assertThat(fieldMapperResult, hasEntry(equalTo("identifier"), equalTo("id-brewery-1")));
+    assertThat(fieldMapperResult, not(hasKey(equalTo("identifier"))));
     assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
         .key(Map.of("identifier", "id-brewery-1"))
         .build())));
     assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
+
+    Map<String, Object> row = new HashMap<>();
+    row.put("x2", null);
+    row.put("x3", null);
+
+    fieldMapperResult = fieldMapper.apply(row);
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, not(hasKey(equalTo("identifier"))));
+
+    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
+        .key(Map.of())
+        .build())));
   }
 
   @Test

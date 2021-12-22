@@ -26,6 +26,8 @@ public class FilterConstants {
 
   public static final String DATE_TIME_FILTER_INPUT_OBJECT_TYPE = "DateTimeFilter";
 
+  public static final String BOOLEAN_FILTER_INPUT_OBJECT_TYPE = "BooleanFilter";
+
   public static final String SCALAR_LIST_FILTER_POSTFIX = "List";
 
   public static final String EQ_FIELD = "eq";

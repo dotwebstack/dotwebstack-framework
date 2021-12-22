@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.service.openapi.query;
 
 import static org.dotwebstack.framework.service.openapi.TestConstants.APPLICATION_JSON_HAL;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -21,7 +23,6 @@ import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
 import org.dotwebstack.framework.service.openapi.mapping.GeometryTypeMapper;
-import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,6 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 class QueryMapperTest {
@@ -40,6 +42,9 @@ class QueryMapperTest {
 
   @Mock
   private EnvironmentProperties environmentProperties;
+
+  @Mock
+  private ServerRequest serverRequest;
 
   @BeforeEach
   void beforeEach() {
@@ -79,8 +84,8 @@ class QueryMapperTest {
             "brewery-collection-included-fields"),
         Arguments.of("/breweries-pageable-included-fields", APPLICATION_JSON, Map.of("page", 2, "pageSize", 42),
             "brewery-pageable-collection-included-fields"),
-        Arguments.of("/brewery-rename-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
-            "brewery-rename-field"));
+        Arguments.of("/breweries-pageable-with-params-selection-set", APPLICATION_JSON,
+            Map.of("page", 2, "pageSize", 42), "brewery-pageable-collection-with-params"));
   }
 
   @ParameterizedTest
@@ -94,11 +99,12 @@ class QueryMapperTest {
     var operationRequest = OperationRequest.builder()
         .context(OperationContext.builder()
             .operation(operation)
-            .successResponse(MapperUtils.getSuccessResponse(operation))
+            .responseEntry(getHandleableResponseEntry(operation))
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var executionInput = queryFactory.map(operationRequest);
@@ -136,7 +142,10 @@ class QueryMapperTest {
             "Configured included GraphQL field `postalAddress` is not a scalar type."),
         Arguments.of("/brewery-non-string-included-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
             InvalidConfigurationException.class,
-            "Encountered non-string included field in x-dws-include: {nonString={type=Object, properties=foo}}"));
+            "Encountered non-string included field in x-dws-include: {nonString={type=Object, properties=foo}}"),
+        Arguments.of("/breweries-invalid-selection-set", APPLICATION_JSON, Map.of(),
+            InvalidConfigurationException.class,
+            "Could not create valid selection set for `selectionSet`: type Brewery {"));
   }
 
   @ParameterizedTest
@@ -150,16 +159,17 @@ class QueryMapperTest {
     var operationRequest = OperationRequest.builder()
         .context(OperationContext.builder()
             .operation(operation)
-            .successResponse(MapperUtils.getSuccessResponse(operation))
+            .responseEntry(getHandleableResponseEntry(operation))
             .queryProperties(QueryProperties.fromOperation(operation))
             .build())
         .preferredMediaType(preferredMediaType)
         .parameters(parameters)
+        .serverRequest(serverRequest)
         .build();
 
     var throwable = assertThrows(RuntimeException.class, () -> queryFactory.map(operationRequest));
 
     assertThat(throwable, is(instanceOf(exceptionClass)));
-    assertThat(throwable.getMessage(), is(message));
+    assertThat(throwable.getMessage(), startsWith(message));
   }
 }

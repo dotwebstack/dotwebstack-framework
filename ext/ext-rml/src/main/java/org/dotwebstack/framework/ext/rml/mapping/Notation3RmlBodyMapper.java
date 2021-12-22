@@ -2,31 +2,31 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.model.TriplesMap;
+import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import java.util.Set;
-import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.rio.RDFFormat;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.MimeType;
 
 @Component
-public class NQuadsRmlResponseMapper extends AbstractRmlResponseMapper {
+public class Notation3RmlBodyMapper extends AbstractRmlBodyMapper {
 
-  static final MimeType N_QUADS_MEDIA_TYPE = MimeType.valueOf("application/n-quads");
+  static final MediaType N3_MEDIA_TYPE = MediaType.parseMediaType("text/n3");
 
-  NQuadsRmlResponseMapper(RdfRmlMapper rmlMapper, Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation,
+  Notation3RmlBodyMapper(RdfRmlMapper rmlMapper, Map<Operation, Set<TriplesMap>> mappingsPerOperation,
       Set<Namespace> namespaces) {
     super(rmlMapper, mappingsPerOperation, namespaces);
   }
 
   @Override
-  MimeType supportedMimeType() {
-    return N_QUADS_MEDIA_TYPE;
+  MediaType supportedMediaType() {
+    return N3_MEDIA_TYPE;
   }
 
   @Override
   RDFFormat rdfFormat() {
-    return RDFFormat.NQUADS;
+    return RDFFormat.N3;
   }
 }

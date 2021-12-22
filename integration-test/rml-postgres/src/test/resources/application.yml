@@ -4,3 +4,6 @@ logging:
     org.dotwebstack: DEBUG
 
 spring.main.banner-mode: 'off'
+
+dotwebstack:
+  baseUrl: http://dotwebstack.org

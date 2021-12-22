@@ -22,7 +22,7 @@ class JexlUtilsTest {
   void beforeEach() {
     var envProperties = Map.<String, String>of("foo", "bar");
     var argProperties = Map.<String, Object>of("baz", "qux");
-    jexlContext = getJexlContext(envProperties, argProperties);
+    jexlContext = getJexlContext(envProperties, null, argProperties);
 
     jexlHelper = new JexlHelper(new JexlBuilder().silent(false)
         .strict(true)

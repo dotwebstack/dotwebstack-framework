@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.springframework.http.HttpStatus;
 
 public class MapperUtils {
 
@@ -27,16 +28,19 @@ public class MapperUtils {
         list -> list.size() == 1 ? Optional.of(list.get(0)) : Optional.empty());
   }
 
-  public static ApiResponse getSuccessResponse(Operation operation) {
+  public static Map.Entry<HttpStatus, ApiResponse> getHandleableResponseEntry(Operation operation) {
     return operation.getResponses()
         .entrySet()
         .stream()
-        .filter(entry -> entry.getKey()
-            .matches("^2\\d{2}$"))
-        .map(Map.Entry::getValue)
+        .map(responseEntry -> Map.entry(HttpStatus.valueOf(Integer.parseInt(responseEntry.getKey())),
+            responseEntry.getValue()))
+        .filter(responseEntry -> responseEntry.getKey()
+            .is3xxRedirection()
+            || responseEntry.getKey()
+                .is2xxSuccessful())
         .collect(MapperUtils.collectExactlyOne())
         .orElseThrow(
-            () -> invalidOpenApiConfigurationException("Operation does not contain exactly one success response."));
+            () -> invalidOpenApiConfigurationException("Operation does not contain exactly one handleable response."));
   }
 
   public static boolean isEnvelope(Schema<?> schema) {

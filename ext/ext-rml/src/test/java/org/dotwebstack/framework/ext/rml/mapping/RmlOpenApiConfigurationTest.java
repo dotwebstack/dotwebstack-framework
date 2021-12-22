@@ -6,11 +6,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.taxonic.carml.model.TriplesMap;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.service.openapi.HttpMethodOperation;
 import org.junit.jupiter.api.Test;
 
 class RmlOpenApiConfigurationTest {
@@ -20,26 +20,22 @@ class RmlOpenApiConfigurationTest {
     var openApi = TestResources.openApi("config/openapi.yaml");
     var rmlOpenApiConfiguration = new RmlOpenApiConfiguration();
 
-    Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation =
-        rmlOpenApiConfiguration.mappingsPerOperation(openApi);
+    Map<Operation, Set<TriplesMap>> mappingsPerOperation = rmlOpenApiConfiguration.mappingsPerOperation(openApi);
 
     assertThat(mappingsPerOperation.size(), is(4));
-    assertThat(getTriplesMapsByPathName("/path1", mappingsPerOperation).size(), is(1));
-    assertThat(getTriplesMapsByPathName("/path2", mappingsPerOperation).size(), is(2));
-    assertThat(getTriplesMapsByPathName("/path3", mappingsPerOperation).size(), is(0));
-    assertThat(getTriplesMapsByPathName("/path4", mappingsPerOperation).size(), is(1));
+    assertThat(getTriplesMapsByPathName("/path1", openApi, mappingsPerOperation).size(), is(1));
+    assertThat(getTriplesMapsByPathName("/path2", openApi, mappingsPerOperation).size(), is(2));
+    assertThat(getTriplesMapsByPathName("/path3", openApi, mappingsPerOperation).size(), is(0));
+    assertThat(getTriplesMapsByPathName("/path4", openApi, mappingsPerOperation).size(), is(1));
   }
 
-  private Set<TriplesMap> getTriplesMapsByPathName(String pathName,
-      Map<HttpMethodOperation, Set<TriplesMap>> mappingsPerOperation) {
-    return mappingsPerOperation.entrySet()
-        .stream()
-        .filter(entry -> entry.getKey()
-            .getName()
-            .equals(pathName))
-        .map(Map.Entry::getValue)
-        .flatMap(Set::stream)
-        .collect(Collectors.toUnmodifiableSet());
+  private Set<TriplesMap> getTriplesMapsByPathName(String pathName, OpenAPI openApi,
+      Map<Operation, Set<TriplesMap>> mappingsPerOperation) {
+    var operation = openApi.getPaths()
+        .get(pathName)
+        .getGet();
+
+    return mappingsPerOperation.get(operation);
   }
 
   @Test

@@ -64,6 +64,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
+        if (joinCondition.getKey()
+            .isEmpty()) {
+          return List.of();
+        }
+
         return getOrCreateBatchLoader(environment,
             () -> createManyBatchLoader(environment, requestContext, joinCondition)).load(joinCondition.getKey());
       }

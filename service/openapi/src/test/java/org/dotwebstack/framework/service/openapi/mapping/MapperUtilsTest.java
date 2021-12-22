@@ -2,8 +2,8 @@ package org.dotwebstack.framework.service.openapi.mapping;
 
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.collectExactlyOne;
+import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
-import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getSuccessResponse;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -54,21 +54,21 @@ class MapperUtilsTest {
   }
 
   @Test
-  void getSuccessResponse_returnsSuccessResponse_whenExactlyOne() {
+  void getHandleableResponseEntry_returnsCorrectResponse_whenExactlyOne() {
     var response200 = new ApiResponse();
     var operation = createOperation(new ApiResponses().addApiResponse("200", response200));
 
-    var successResponse = getSuccessResponse(operation);
+    var responseEntry = getHandleableResponseEntry(operation);
 
-    assertThat(successResponse, is(response200));
+    assertThat(responseEntry.getValue(), is(response200));
   }
 
   @Test
-  void getSuccessResponse_throwsException_whenMoeThanOne() {
+  void getHandleableResponseEntry_throwsException_whenMoeThanOne() {
     var operation = createOperation(new ApiResponses().addApiResponse("200", new ApiResponse())
         .addApiResponse("201", new ApiResponse()));
 
-    assertThrows(InvalidOpenApiConfigurationException.class, () -> getSuccessResponse(operation));
+    assertThrows(InvalidOpenApiConfigurationException.class, () -> getHandleableResponseEntry(operation));
   }
 
   private static Operation createOperation(ApiResponses apiResponses) {

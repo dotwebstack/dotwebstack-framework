@@ -18,6 +18,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_TYPE;
 
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -33,8 +34,6 @@ import org.dotwebstack.framework.service.openapi.jexl.JexlExpression;
 public class DwsExtensionHelper {
 
   static final String DWS_QUERY_JEXL_CONTEXT_REQUEST = "request";
-
-  static final String DWS_QUERY_SELECTION_SET = "selectionSet";
 
   private DwsExtensionHelper() {}
 
@@ -74,6 +73,24 @@ public class DwsExtensionHelper {
 
   public static boolean isDefault(@NonNull Schema<?> schema) {
     return getDwsExtension(schema, X_DWS_DEFAULT) != null;
+  }
+
+  public static boolean isDefaultMediaType(@NonNull MediaType mediaType) {
+    Map<String, Object> extensions = mediaType.getExtensions();
+    return extensions != null && Boolean.TRUE.equals(extensions.get(X_DWS_DEFAULT));
+  }
+
+  public static int defaultMediaTypeFirst(@NonNull MediaType mediaTypeOne, @NonNull MediaType mediaTypeTwo) {
+    var oneDefault = isDefaultMediaType(mediaTypeOne);
+    var twoDefault = isDefaultMediaType(mediaTypeTwo);
+
+    if (oneDefault && !twoDefault) {
+      return -1;
+    } else if (!oneDefault && twoDefault) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 
   public static boolean isTransient(@NonNull Schema<?> schema) {
@@ -154,6 +171,10 @@ public class DwsExtensionHelper {
   }
 
   private static String checkAndGetExpressionStringProperty(Object value, String propertyName, Object context) {
+    if (value == null) {
+      return null;
+    }
+
     if (!(value instanceof String)) {
       throw invalidConfigurationException("Expected value of type 'string', but found {} for {}.{} found in {}", value,
           X_DWS_EXPR, propertyName, context);

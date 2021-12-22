@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.78-SNAPSHOT</version>
+  <version>0.3.83-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -52,15 +52,15 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>2.6.1</spring-boot.version>
+    <spring-boot.version>2.6.2</spring-boot.version>
     <rdf4j.version>3.7.4</rdf4j.version>
     <graphql.java.version>17.3</graphql.java.version>
-    <graphql.java.orchestrate.version>0.1.11</graphql.java.orchestrate.version>
+    <graphql.java.orchestrate.version>0.1.12</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
-    <swagger-parser.version>2.0.28</swagger-parser.version>
+    <swagger-parser.version>2.0.29</swagger-parser.version>
     <lombok.version>1.18.22</lombok.version>
     <guava.version>31.0.1-jre</guava.version>
     <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
@@ -68,7 +68,7 @@
     <testcontainers.version>1.16.2</testcontainers.version>
     <postgis-jdbc-jtsparser.version>2.5.1</postgis-jdbc-jtsparser.version>
     <jts-io-common.version>1.18.2</jts-io-common.version>
-    <carml.version>0.4.0-beta-2</carml.version>
+    <carml.version>0.4.0-beta-4</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
@@ -90,7 +90,7 @@
       <dependency>
         <groupId>org.checkerframework</groupId>
         <artifactId>checker-qual</artifactId>
-        <version>3.20.0</version>
+        <version>3.21.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.code.findbugs</groupId>
@@ -295,7 +295,7 @@
           <extensions>true</extensions>
           <configuration>
             <serverId>ossrh</serverId>
-            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
             <autoReleaseAfterClose>true</autoReleaseAfterClose>
           </configuration>
         </plugin>
@@ -401,7 +401,7 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.17.6</version>
+          <version>2.17.7</version>
           <configuration>
             <java>
               <eclipse>
@@ -516,11 +516,11 @@
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </snapshotRepository>
     <repository>
       <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
   </distributionManagement>
 </project>
