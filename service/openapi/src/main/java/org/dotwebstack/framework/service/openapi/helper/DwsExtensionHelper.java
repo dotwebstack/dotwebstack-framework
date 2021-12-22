@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DW
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_FALLBACK_VALUE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_EXPR_VALUE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_FIELD;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_QUERY_PARAMETERS;
@@ -65,6 +66,26 @@ public class DwsExtensionHelper {
   public static Object getDwsExtension(@NonNull Schema<?> schema, @NonNull String typeName) {
     Map<String, Object> extensions = schema.getExtensions();
     return (extensions != null) ? extensions.get(typeName) : null;
+  }
+
+  public static String resolveDwsName(@NonNull Schema<?> schema, @NonNull String name) {
+    var dwsName = getDwsExtensionOfClass(schema, X_DWS_NAME, String.class);
+    return dwsName != null ? dwsName : name;
+  }
+
+  public static <T> T getDwsExtensionOfClass(@NonNull Schema<?> schema, @NonNull String typeName,
+      Class<T> expectedClass) {
+    var extensions = schema.getExtensions();
+    if (extensions == null) {
+      return null;
+    }
+    var o = extensions.get(typeName);
+    if (o == null) {
+      return null;
+    } else if (!expectedClass.isInstance(o)) {
+      throw invalidConfigurationException("Extension {} should be a {}", typeName, expectedClass.getName());
+    }
+    return expectedClass.cast(o);
   }
 
   private static boolean isExpr(@NonNull Schema<?> schema) {

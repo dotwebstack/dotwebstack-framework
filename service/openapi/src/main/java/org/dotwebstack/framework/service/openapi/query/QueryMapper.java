@@ -6,9 +6,8 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.resolveDwsName;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
-import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_NAME;
-import static org.dotwebstack.framework.service.openapi.helper.SchemaResolver.resolveSchema;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
@@ -50,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
-import org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
 import org.dotwebstack.framework.service.openapi.query.mapping.MappingContext;
@@ -156,7 +154,7 @@ public class QueryMapper {
           mapSchema(schema.getItems(), nestedFieldDefinition, mappingContext).collect(Collectors.toList()))));
     }
 
-    var itemsSchema = resolveSchema(openApi, schema.getItems());
+    var itemsSchema = schema.getItems();
 
     if ("object".equals(itemsSchema.getType())) {
       return mapSchema(itemsSchema, fieldDefinition, mappingContext);
@@ -178,8 +176,7 @@ public class QueryMapper {
         .entrySet()
         .stream()
         .flatMap(entry -> {
-          Object dwsName = DwsExtensionHelper.getDwsExtension(entry.getValue(), X_DWS_NAME);
-          String name = (dwsName != null) ? (String) dwsName : entry.getKey();
+          var name = resolveDwsName(entry.getValue(), entry.getKey());
           return mapObjectSchemaProperty(name, entry.getValue(), schema, fieldDefinition, mappingContext);
         });
 
@@ -255,8 +252,7 @@ public class QueryMapper {
     }
 
     if (fieldDefinition == null) {
-      if (!mappingContext.getPath()
-          .isEmpty()) {
+      if (!mappingContext.atBase()) {
         return Stream.empty();
       }
       return mapSchema(schema, parentFieldDefinition, mappingContext);

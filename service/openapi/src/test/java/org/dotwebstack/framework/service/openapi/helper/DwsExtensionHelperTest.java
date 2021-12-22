@@ -2,6 +2,7 @@ package org.dotwebstack.framework.service.openapi.helper;
 
 import static graphql.Assert.assertTrue;
 import static java.util.Collections.emptyMap;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsExtensionOfClass;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryName;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getDwsQueryParameters;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.hasDwsExtensionWithValue;
@@ -191,6 +192,30 @@ class DwsExtensionHelperTest {
         .get(0);
 
     assertTrue(hasDwsExtensionWithValue(parameter, OasConstants.X_DWS_TYPE, "specialtype"));
+  }
+
+  @Test
+  void getDwsExtensionOfClass_returnsValue_whenClassMatches() {
+    Schema<?> object1 = TestResources.openApi()
+        .getComponents()
+        .getSchemas()
+        .get("Object1");
+    Schema<?> schema = object1.getProperties()
+        .get("o1_prop1");
+    assertThat(getDwsExtensionOfClass(schema, OasConstants.X_DWS_EXPR, String.class), is("template_content"));
+  }
+
+  @Test
+  void getDwsExtensionOfClass_throwsException_whenClassDoesNotMatch() {
+    Schema<?> object1 = TestResources.openApi()
+        .getComponents()
+        .getSchemas()
+        .get("Object1");
+    Schema<?> schema = object1.getProperties()
+        .get("o1_prop1");
+
+    assertThrows(InvalidConfigurationException.class,
+        () -> getDwsExtensionOfClass(schema, OasConstants.X_DWS_EXPR, List.class));
   }
 
   @Test
