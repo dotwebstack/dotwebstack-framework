@@ -75,8 +75,7 @@ public class DefaultResponseHeaderResolver implements ResponseHeaderResolver {
         .map(jexlExpression -> JexlUtils.evaluateJexlExpression(jexlExpression, jexlHelper, jexlContext, Object.class)
             .or(() -> Optional.ofNullable(defaultValue))
             .map(String::valueOf)
-            .orElseThrow(() -> invalidConfigurationException(
-                "Could not determine value for header `{}` with expression or default value.", headerName)))
+            .orElse(null))
         .orElseGet(() -> defaultValue != null ? String.valueOf(defaultValue) : null);
 
     return headerValue != null ? Map.entry(headerName, List.of(headerValue)) : Map.entry(headerName, List.of());
