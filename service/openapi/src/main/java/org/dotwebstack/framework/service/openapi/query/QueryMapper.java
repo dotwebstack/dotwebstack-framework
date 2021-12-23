@@ -31,7 +31,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeUtil;
-import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -71,11 +70,8 @@ public class QueryMapper {
 
   private final Map<String, TypeMapper> typeMappers;
 
-  private final OpenAPI openApi;
-
-  public QueryMapper(@NonNull OpenAPI openApi, @NonNull GraphQLSchema graphQlSchema,
-      @NonNull QueryArgumentBuilder queryArgumentBuilder, @NonNull Collection<TypeMapper> typeMappers) {
-    this.openApi = openApi;
+  public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
+      @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQlSchema;
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
