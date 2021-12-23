@@ -13,6 +13,9 @@ public class FilterConfiguration {
   @JsonProperty("default")
   private Object defaultValue;
 
+  @JsonProperty("caseSensitive")
+  private boolean isCaseSensitive = true;
+
   public boolean hasDefaultValue() {
     return defaultValue != null;
   }

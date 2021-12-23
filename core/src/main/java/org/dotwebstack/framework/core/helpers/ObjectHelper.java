@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,24 @@ public class ObjectHelper {
   @SuppressWarnings("unchecked")
   public static List<Object> castToList(Object value) {
     return cast(List.class, value);
+  }
+
+  public static <T> List<T> castToList(Object value, Class<T> clazz) {
+    return cast(List.class, value);
+  }
+
+
+  public static <T> T[] castToArray(Object value, Class<T> type, boolean toLower) {
+    var list = castToList(value);
+    T[] result = (T[]) Array.newInstance(type, list.size());
+    for (int i = 0; i < list.size(); i++) {
+      var item = (T) list.get(i);
+      if (toLower && String.class.equals(type)) {
+        item = (T) ((String) item).toLowerCase();
+      }
+      result[i] = item;
+    }
+    return result;
   }
 
   public static Object[] castToArray(Object value, String type) {

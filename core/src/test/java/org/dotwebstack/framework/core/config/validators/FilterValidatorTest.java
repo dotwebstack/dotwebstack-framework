@@ -6,8 +6,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import graphql.Scalars;
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.config.SchemaReader;
@@ -45,9 +47,60 @@ class FilterValidatorTest {
   }
 
   @Test
+  void validate_throwsException_withInvalidCaseInsensitiveEnumerationFilterField() {
+    var statusField = new TestObjectField();
+    statusField.setType(Scalars.GraphQLString.getName());
+    var enumStatus = new FieldEnumConfiguration();
+    enumStatus.setType("status");
+    enumStatus.setValues(List.of("active"));
+    statusField.setEnumeration(enumStatus);
+
+    var objectType = new TestObjectType();
+    objectType.setFields(Map.of("status", statusField));
+
+    var filterConfiguration = new FilterConfiguration();
+    filterConfiguration.setType(FilterType.EXACT);
+    filterConfiguration.setField("status");
+    filterConfiguration.setCaseSensitive(false);
+    objectType.setFilters(Map.of("statusFilter", filterConfiguration));
+
+    var schema = new Schema();
+    schema.setObjectTypes(Map.of("Brewery", objectType));
+
+    var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
+
+    assertThat(thrown.getMessage(),
+        is("Filter 'statusFilter' with property 'caseSensitive' is 'false' not valid for enumerations."));
+  }
+
+  @Test
+  void validate_throwsException_withInvalidCaseInsensitiveIntegerFilterField() {
+    var intField = new TestObjectField();
+    intField.setType(Scalars.GraphQLInt.getName());
+
+    var objectType = new TestObjectType();
+    objectType.setFields(Map.of("intField", intField));
+
+    var filterConfiguration = new FilterConfiguration();
+    filterConfiguration.setType(FilterType.EXACT);
+    filterConfiguration.setField("intField");
+    filterConfiguration.setCaseSensitive(false);
+    objectType.setFilters(Map.of("intFilter", filterConfiguration));
+
+    var schema = new Schema();
+    schema.setObjectTypes(Map.of("Brewery", objectType));
+
+    var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
+
+    assertThat(thrown.getMessage(),
+        is("Filter 'intFilter' with property 'caseSensitive' is 'false' not valid for type 'Int'."));
+  }
+
+  @Test
   void validate_throwsException_withInvalidTermFieldTypeConfiguration() {
     var identifierField = new TestObjectField();
     identifierField.setType(Scalars.GraphQLInt.getName());
+
 
     var objectType = new TestObjectType();
     objectType.setFields(Map.of("identifier", identifierField));

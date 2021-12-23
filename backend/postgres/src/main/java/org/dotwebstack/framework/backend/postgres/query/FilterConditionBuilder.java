@@ -13,9 +13,11 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findT
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ_IGNORE_CASE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN_IGNORE_CASE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
@@ -66,7 +68,7 @@ import org.locationtech.jts.geom.Geometry;
 @Accessors(fluent = true)
 @Setter
 class FilterConditionBuilder {
-  private static final String ERROR_MESSAGE = "Unknown filter field '%s'";
+  private static final String ERROR_MESSAGE = "Unknown filter field '%s' for type '%s'";
 
   private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
@@ -175,7 +177,7 @@ class FilterConditionBuilder {
       return DSL.exists(filterQuery);
     }
 
-    return createCondition(current, filterCriteria.getValue());
+    return createCondition(current, filterCriteria);
   }
 
   private Condition createConditionsForMatchingNestedReference(ScalarFieldFilterCriteria filterCriteria,
@@ -204,7 +206,7 @@ class FilterConditionBuilder {
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 
-          return createConditions(field, filterCriteria.getValue());
+          return createConditions(field, filterCriteria);
         })
         .collect(Collectors.toList());
   }
@@ -244,11 +246,12 @@ class FilterConditionBuilder {
         .build();
   }
 
-  private Condition createConditions(Field<Object> field, Map<String, Object> values) {
+  private Condition createConditions(Field<Object> field, ScalarFieldFilterCriteria filterCriteria) {
+    var values = filterCriteria.getValue();
     var conditions = values.entrySet()
         .stream()
         .map(entry -> {
-          var filterOperator = FilterOperator.getFilterOperator(entry.getKey());
+          var filterOperator = FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive());
           return createCondition(null, field, filterOperator, entry.getValue());
         })
         .collect(Collectors.toList());
@@ -256,17 +259,22 @@ class FilterConditionBuilder {
     return andCondition(conditions);
   }
 
-  private Condition createCondition(PostgresObjectField objectField, Map<String, Object> values) {
+  private Condition createCondition(PostgresObjectField objectField, ScalarFieldFilterCriteria filterCriteria) {
+    var values = filterCriteria.getValue();
     var conditions = values.entrySet()
         .stream()
-        .flatMap(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
+        .flatMap(entry -> Optional
+            .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
             .map(filterOperator -> {
               if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
                 return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
               }
+              if (NOT == filterOperator) {
+                return Stream.of(createNotCondition(objectField, filterCriteria, castToMap(entry.getValue())));
+              }
               return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
             })
-            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
@@ -274,23 +282,12 @@ class FilterConditionBuilder {
   }
 
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
-    if (NOT == operator) {
-      var conditions = castToMap(value).entrySet()
-          .stream()
-          .map(entry -> Optional.ofNullable(FilterOperator.getFilterOperator(entry.getKey()))
-              .map(filterOperator -> createCondition(objectField, filterOperator, entry.getValue()))
-              .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey())))
-          .collect(Collectors.toList());
-
-      return DSL.not(andCondition(conditions));
-    }
-
     if (objectField.isList()) {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()), Object[].class);
       var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
       return createCondition(objectField, field, operator, arrayValue);
     } else {
-      Field<Object> field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
+      var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
       return createCondition(objectField, field, operator, value);
     }
   }
@@ -310,7 +307,7 @@ class FilterConditionBuilder {
       return PostgresDSL.arrayOverlap(field, getArrayValue(objectField, value));
     }
 
-    throw illegalArgumentException(ERROR_MESSAGE, operator);
+    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
   private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
@@ -325,6 +322,14 @@ class FilterConditionBuilder {
         return field.isNull();
       } else {
         return field.eq(getValue(objectField, value));
+      }
+    }
+
+    if (EQ_IGNORE_CASE == operator) {
+      if (value == null) {
+        return field.isNull();
+      } else {
+        return field.equalIgnoreCase((Field<String>) getValue(objectField, value));
       }
     }
 
@@ -348,7 +353,29 @@ class FilterConditionBuilder {
       return field.in(getFieldListValue(objectField, value));
     }
 
-    throw illegalArgumentException(ERROR_MESSAGE, operator);
+    if (IN_IGNORE_CASE == operator) {
+      if (objectField.getType()
+          .equals("String")) {
+        var lowerField = DSL.lower(DSL.field(DSL.name(table.getName(), objectField.getColumn()), String.class));
+        var arrayValues = ObjectHelper.castToArray(value, String.class, true);
+        return lowerField.in(arrayValues);
+      }
+    }
+
+    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+  }
+
+  private Condition createNotCondition(PostgresObjectField objectField, ScalarFieldFilterCriteria filterCriteria,
+      Map<String, Object> values) {
+    var conditions = values.entrySet()
+        .stream()
+        .map(entry -> Optional
+            .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
+            .map(filterOperator1 -> createCondition(objectField, filterOperator1, entry.getValue()))
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
+        .collect(Collectors.toList());
+
+    return DSL.not(andCondition(conditions));
   }
 
   private List<Field<?>> getFieldListValue(PostgresObjectField objectField, Object listValue) {
@@ -359,7 +386,7 @@ class FilterConditionBuilder {
 
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
     if (value == null) {
-      return DSL.param(createDataType(Boolean.class));
+      DSL.param(createDataType(Boolean.class));
     }
 
     var field = DSL.val(value);

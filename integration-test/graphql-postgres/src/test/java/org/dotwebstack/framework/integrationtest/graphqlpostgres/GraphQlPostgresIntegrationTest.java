@@ -1013,6 +1013,20 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsBreweries_withCaseInsensitiveFilter() {
+    String query = "{breweries(filter: {name: {eq: \"BrEwErY z\"}}){ identifier_brewery name }}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data, equalTo(Map.of("breweries",
+        List.of(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c31959", "name", "Brewery Z")))));
+  }
+
+  @Test
   void getRequest_returnsBreweries_withNestedFilter() {
     String query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
         + "{ identifier_beer name} }}";

@@ -326,6 +326,7 @@ public class BackendRequestFactory {
 
     return ScalarFieldFilterCriteria.builder()
         .filterType(filterConfiguration.getType())
+        .isCaseSensitive(filterConfiguration.isCaseSensitive())
         .fieldPath(fieldPath)
         .value(filterValue)
         .build();

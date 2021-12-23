@@ -20,4 +20,7 @@ public class ScalarFieldFilterCriteria implements FilterCriteria {
 
   @NonNull
   private final Map<String, Object> value;
+
+  @Builder.Default
+  private boolean isCaseSensitive = true;
 }
