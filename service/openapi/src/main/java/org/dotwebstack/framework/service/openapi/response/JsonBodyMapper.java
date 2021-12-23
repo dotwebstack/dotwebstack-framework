@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.response;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.resolveDwsName;
 import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJexlExpression;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
@@ -115,7 +116,7 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = entry.getKey();
+          var property = resolveDwsName(entry.getValue(), entry.getKey());
           var nestedSchema = entry.getValue();
           var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
@@ -135,7 +136,7 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = entry.getKey();
+          var property = resolveDwsName(entry.getValue(), entry.getKey());
           var nestedSchema = entry.getValue();
           var nestedFieldDefinition = rawType.getFieldDefinition(property);
           Object nestedValue;

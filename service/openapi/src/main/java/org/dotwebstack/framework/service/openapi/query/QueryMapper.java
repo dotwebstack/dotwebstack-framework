@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARG
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.resolveDwsName;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.X_DWS_INCLUDE;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
@@ -152,7 +153,7 @@ public class QueryMapper {
     var itemsSchema = schema.getItems();
 
     if ("object".equals(itemsSchema.getType())) {
-      return mapSchema(schema.getItems(), fieldDefinition, mappingContext);
+      return mapSchema(itemsSchema, fieldDefinition, mappingContext);
     }
 
     if (itemsSchema instanceof ComposedSchema) {
@@ -170,8 +171,10 @@ public class QueryMapper {
     Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
         .stream()
-        .flatMap(entry -> mapObjectSchemaProperty(entry.getKey(), entry.getValue(), schema, fieldDefinition,
-            mappingContext));
+        .flatMap(entry -> {
+          var name = resolveDwsName(entry.getValue(), entry.getKey());
+          return mapObjectSchemaProperty(name, entry.getValue(), schema, fieldDefinition, mappingContext);
+        });
 
     return Stream.concat(includedFields, mappedObjectSchema);
   }
@@ -240,7 +243,14 @@ public class QueryMapper {
     var objectType = unwrapObjectType(parentFieldDefinition);
     var fieldDefinition = objectType.getFieldDefinition(name);
 
-    if (fieldDefinition == null || isEnvelope(schema)) {
+    if (isEnvelope(schema)) {
+      return mapSchema(schema, parentFieldDefinition, mappingContext);
+    }
+
+    if (fieldDefinition == null) {
+      if (!mappingContext.atBase()) {
+        return Stream.empty();
+      }
       return mapSchema(schema, parentFieldDefinition, mappingContext);
     }
 
