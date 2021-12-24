@@ -318,7 +318,7 @@ class FilterConditionBuilder {
           .escape(LIKE_ESCAPE_CHARACTER);
     }
     if (EQ == operator && value == null) {
-        return field.isNull();
+      return field.isNull();
     }
 
     if (EQ == operator && value != null) {
@@ -326,10 +326,10 @@ class FilterConditionBuilder {
     }
 
     if (EQ_IGNORE_CASE == operator && value == null) {
-        return field.isNull();
+      return field.isNull();
     }
 
-    if(EQ_IGNORE_CASE == operator && value != null){
+    if (EQ_IGNORE_CASE == operator && value != null) {
       return field.equalIgnoreCase((Field<String>) getValue(objectField, value));
     }
 
@@ -353,16 +353,16 @@ class FilterConditionBuilder {
       return field.in(getFieldListValue(objectField, value));
     }
 
-    if(isInIgnoreCaseAndOfTypeString(operator, objectField)){
-        var lowerField = DSL.lower(DSL.field(DSL.name(table.getName(), objectField.getColumn()), String.class));
-        var arrayValues = ObjectHelper.castToArray(value, String.class, true);
-        return lowerField.in(arrayValues);
+    if (isInIgnoreCaseAndOfTypeString(operator, objectField)) {
+      var lowerField = DSL.lower(DSL.field(DSL.name(table.getName(), objectField.getColumn()), String.class));
+      var arrayValues = ObjectHelper.castToArray(value, String.class, true);
+      return lowerField.in(arrayValues);
     }
 
     throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
-  private boolean isInIgnoreCaseAndOfTypeString(FilterOperator operator, PostgresObjectField objectField){
+  private boolean isInIgnoreCaseAndOfTypeString(FilterOperator operator, PostgresObjectField objectField) {
     return IN_IGNORE_CASE == operator && objectField.getType()
         .equals("String");
   }
