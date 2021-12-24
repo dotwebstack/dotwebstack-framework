@@ -49,8 +49,32 @@ class ObjectHelperTest {
   }
 
   @Test
+  void castToArray_returnsArrayWithLowercaseValues_forListWithStrings() {
+    var array = ObjectHelper.castToArray(List.of("Foo", "Bar"), String.class, true);
+
+    var expectedArray = new String[] {"foo", "bar"};
+    assertThat(array, is(expectedArray));
+  }
+
+  @Test
+  void castToArray_returnsArrayWithUnchangedValues_forListWithStrings() {
+    var array = ObjectHelper.castToArray(List.of("Foo", "Bar"), String.class, false);
+
+    var expectedArray = new String[] {"Foo", "Bar"};
+    assertThat(array, is(expectedArray));
+  }
+
+  @Test
   void castToArray_returnsArray_forListWithFloats() {
     var array = ObjectHelper.castToArray(List.of(33.3f, 44.4f), "Float");
+
+    var expectedArray = new Float[] {33.3f, 44.4f};
+    assertThat(array, is(expectedArray));
+  }
+
+  @Test
+  void castToArray_returnsArrayWithUnchangedValues_forListWithFloatsAndToLower() {
+    var array = ObjectHelper.castToArray(List.of(33.3f, 44.4f), Float.class, true);
 
     var expectedArray = new Float[] {33.3f, 44.4f};
     assertThat(array, is(expectedArray));
