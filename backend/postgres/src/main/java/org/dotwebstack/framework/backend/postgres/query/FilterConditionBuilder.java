@@ -317,20 +317,13 @@ class FilterConditionBuilder {
       return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
           .escape(LIKE_ESCAPE_CHARACTER);
     }
-    if (EQ == operator && value == null) {
-      return field.isNull();
+
+    if (EQ == operator) {
+      return value != null ? field.eq(getValue(objectField, value)) : field.isNull();
     }
 
-    if (EQ == operator && value != null) {
-      return field.eq(getValue(objectField, value));
-    }
-
-    if (EQ_IGNORE_CASE == operator && value == null) {
-      return field.isNull();
-    }
-
-    if (EQ_IGNORE_CASE == operator && value != null) {
-      return field.equalIgnoreCase((Field<String>) getValue(objectField, value));
+    if (EQ_IGNORE_CASE == operator) {
+      return value != null ? field.equalIgnoreCase((Field<String>) getValue(objectField, value)) : field.isNull();
     }
 
     if (LT == operator) {
