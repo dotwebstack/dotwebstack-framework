@@ -73,7 +73,7 @@ class QueryArgumentBuilderTest {
     String pretty = AstPrinter.printAst(arguments.get(0));
 
     assertThat(pretty, is("filter: {filter : {field1 : \"value1\", field2 : {and : {field3 : \"value2\", field4 : "
-        + "\"value3_suffix\", field5 : {not : {field6 : \"value4\"}}}}}}"));
+        + "\"value3_suffix\", field5 : {not : {field6 : \"value4\"}}}}, field12 : null}}"));
   }
 
   @Test
