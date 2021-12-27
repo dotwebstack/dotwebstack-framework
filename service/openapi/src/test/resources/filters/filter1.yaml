@@ -12,5 +12,6 @@ filter:
         field8: args.missing
       field10:
         field11:
-          x-dws-expr: args.missing
+          x-dws-expr: '`${args.missing}`'
+  field12: null
 

@@ -1,0 +1,15 @@
+schema {
+  query: Query
+}
+
+type Query {
+  beers(first: Int = 10, offset: Int = 0): BeerConnection!
+}
+
+type BeerConnection {
+  nodes: [Beer!]!
+}
+
+type Beer {
+  identifier: ID!
+}

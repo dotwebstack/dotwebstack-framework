@@ -17,6 +17,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.Test;
 
 
@@ -108,12 +109,14 @@ class JexlHelperTest {
   }
 
   @Test
-  void evaluateScript_throwsException_forTypeMismatch() {
+  void evaluateScript_throwsException_forMissingContextProperties() {
     final String expectedValue = "value1";
     final JexlContext context = new MapContext(ImmutableMap.of("key1", expectedValue));
 
-    assertThrows(IllegalArgumentException.class,
-        () -> this.jexlHelper.evaluateScript("return 12;", context, String.class));
+    InvalidConfigurationException invalidConfigurationException = assertThrows(InvalidConfigurationException.class,
+        () -> this.jexlHelper.evaluateScript("`foo${bar}`", context, Object.class));
+
+    assertThat(invalidConfigurationException.getMessage(), is("Error evaluating expression `foo${bar}`"));
   }
 
   @Test

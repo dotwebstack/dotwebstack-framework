@@ -16,6 +16,7 @@ import graphql.language.BooleanValue;
 import graphql.language.EnumValue;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
+import graphql.language.NullValue;
 import graphql.language.ObjectField;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
@@ -171,7 +172,10 @@ public class QueryArgumentBuilder {
           var key = e.getKey();
           var value = e.getValue();
 
-          if (value instanceof String) {
+          if (value == null) {
+            return new ObjectField(key, NullValue.newNullValue()
+                .build());
+          } else if (value instanceof String) {
             return keyValueToObjectField(key, (String) value, operationRequest.getParameters());
           } else if (value instanceof Map && isExpression((Map<String, Object>) value)) {
             var objectValue = createExpressionObjectValue(operationRequest, (Map<String, Object>) value);

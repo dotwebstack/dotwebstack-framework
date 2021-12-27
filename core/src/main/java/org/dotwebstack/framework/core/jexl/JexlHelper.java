@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.jexl;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
 import graphql.schema.GraphQLDirective;
@@ -118,8 +119,13 @@ public class JexlHelper {
 
   public <T> Optional<T> evaluateScript(@NonNull String scriptString, @NonNull JexlContext context,
       @NonNull Class<T> clazz) {
-    JexlScript script = this.engine.createScript(scriptString);
-    Object evaluated = script.execute(context);
+    Object evaluated;
+    try {
+      JexlScript script = this.engine.createScript(scriptString);
+      evaluated = script.execute(context);
+    } catch (Exception exception) {
+      throw invalidConfigurationException("Error evaluating expression {}", scriptString, exception);
+    }
     if (Objects.isNull(evaluated)) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {

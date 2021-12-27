@@ -2,6 +2,7 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.model.TriplesMap;
+import graphql.schema.GraphQLSchema;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import java.util.Set;
@@ -20,9 +21,9 @@ public class JsonLdRmlBodyMapper extends AbstractRmlBodyMapper {
 
   private final WriterConfig jsonLdSettings;
 
-  JsonLdRmlBodyMapper(RdfRmlMapper rmlMapper, Map<Operation, Set<TriplesMap>> mappingsPerOperation,
-      Set<Namespace> namespaces) {
-    super(rmlMapper, mappingsPerOperation, namespaces);
+  JsonLdRmlBodyMapper(GraphQLSchema graphQlSchema, RdfRmlMapper rmlMapper,
+      Map<Operation, Set<TriplesMap>> mappingsPerOperation, Set<Namespace> namespaces) {
+    super(graphQlSchema, rmlMapper, mappingsPerOperation, namespaces);
 
     WriterConfig writerConfig = new WriterConfig();
     writerConfig.set(JSONLDSettings.HIERARCHICAL_VIEW, true);
