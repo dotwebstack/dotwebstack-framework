@@ -2,10 +2,15 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import graphql.schema.GraphQLSchema;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 
 class TestResources {
@@ -23,5 +28,12 @@ class TestResources {
     } catch (IOException e) {
       throw illegalArgumentException("Resource {} not found.", path);
     }
+  }
+
+  public static GraphQLSchema graphQlSchema() {
+    var typeDefinitionRegistry = new SchemaParser().parse(Objects.requireNonNull(TestResources.class.getClassLoader()
+        .getResourceAsStream("config/schema.graphql")));
+
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.MOCKED_WIRING);
   }
 }
