@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
+import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -48,6 +49,11 @@ public class TestResources {
   public static InputStream openApiStream() {
     return TestResources.class.getClassLoader()
         .getResourceAsStream(OPEN_API_FILE);
+  }
+
+  public static GraphQL graphQl() {
+    return GraphQL.newGraphQL(graphQlSchema())
+        .build();
   }
 
   public static GraphQLSchema graphQlSchema() {
