@@ -167,6 +167,10 @@ public class QueryMapper {
 
     Stream<Field> includedFields = mapIncludedFields(schema, fieldDefinition);
 
+    if (schema.getProperties() == null) {
+      return includedFields;
+    }
+
     Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
         .stream()

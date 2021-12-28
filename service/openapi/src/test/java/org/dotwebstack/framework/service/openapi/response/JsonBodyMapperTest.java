@@ -50,7 +50,7 @@ class JsonBodyMapperTest {
   void beforeEach() {
     openApi = TestResources.openApi("openapi.yaml");
     var pagingLinkFunctions = new PagingFunctions();
-    bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
+    bodyMapper = new JsonBodyMapper(TestResources.graphQl(), new JexlBuilder().silent(false)
         .strict(true)
         .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
         .create(), properties, List.of(new GeometryTypeMapper(new OpenApiProperties())));
