@@ -30,4 +30,6 @@ public interface ObjectField {
   ObjectType<? extends ObjectField> getTargetType();
 
   FieldEnumConfiguration getEnumeration();
+
+  boolean isEnumeration();
 }

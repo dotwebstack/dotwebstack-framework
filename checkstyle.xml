@@ -42,10 +42,12 @@
     </module>
 
     <module name="LineLength">
+        <property name="id" value="checkstyle:linelength"/>
         <property name="fileExtensions" value="java"/>
         <property name="max" value="120"/>
         <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
     </module>
+
 
     <module name="TreeWalker">
         <module name="OuterTypeFilename"/>
@@ -361,5 +363,7 @@
                       default="checkstyle-xpath-suppressions.xml" />
             <property name="optional" value="true"/>
         </module>
+        <module name="SuppressWarningsHolder"/>
     </module>
+    <module name="SuppressWarningsFilter"/>
 </module>

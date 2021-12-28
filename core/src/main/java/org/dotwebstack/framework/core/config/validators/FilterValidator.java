@@ -53,17 +53,31 @@ public class FilterValidator implements SchemaValidator {
     String filterFieldPath = getFilterFieldPath(filterEntry);
     String[] filterFieldPathArr = filterFieldPath.split("\\.");
 
-    Optional<? extends ObjectField> field = getField(schema, objectTypeName, filterFieldPathArr);
+    Optional<? extends ObjectField> optionalField = getField(schema, objectTypeName, filterFieldPathArr);
 
-    if (field.isEmpty()) {
+    if (optionalField.isEmpty()) {
       throw invalidConfigurationException("Filter field '{}' not found in object type '{}'.", filterFieldPath,
           objectTypeName);
     }
-
-    if (FilterType.PARTIAL.equals(filterEntry.getValue()
-        .getType()) && field.map(ObjectField::getType)
-            .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
-            .isPresent()) {
+    var filterConfiguration = filterEntry.getValue();
+    if (!filterConfiguration.isCaseSensitive()) {
+      if (optionalField.filter(ObjectField::isEnumeration)
+          .isPresent()) {
+        throw invalidConfigurationException(
+            "Filter '{}' with property 'caseSensitive' is 'false' not valid for enumerations.", filterEntry.getKey());
+      }
+      if (optionalField.map(ObjectField::getType)
+          .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
+          .isPresent()) {
+        throw invalidConfigurationException(
+            "Filter '{}' with property 'caseSensitive' is 'false' not valid for type '{}'.", filterEntry.getKey(),
+            optionalField.get()
+                .getType());
+      }
+    }
+    if (FilterType.PARTIAL.equals(filterConfiguration.getType()) && optionalField.map(ObjectField::getType)
+        .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
+        .isPresent()) {
       throw invalidConfigurationException(
           "Filter '{}' of type 'Term' in object type '{}' doesn´t refer to a 'String' field type.",
           filterEntry.getKey(), objectTypeName);
