@@ -203,7 +203,9 @@ objectTypes:
         type: Boolean
         nullable: true
     filters:
-      name: {}
+      name:
+        field: name
+        caseSensitive: false
       status:
         field: status
       multinational:

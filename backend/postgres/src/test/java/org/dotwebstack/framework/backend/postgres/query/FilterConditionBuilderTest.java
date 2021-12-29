@@ -109,9 +109,30 @@ class FilterConditionBuilderTest {
     assertThat(condition.toString(), equalTo(expected));
   }
 
+  public static Stream<Arguments> getCaseInsensitiveScalarFieldArguments() {
+    return Stream.of(
+        arguments(FilterType.EXACT, Map.of("eq", "foo"), "lower(cast(\"x1\".\"column\" as varchar)) = lower('foo')"),
+        arguments(FilterType.EXACT, Map.of("not", Map.of("eq", "foo")),
+            "not (lower(cast(\"x1\".\"column\" as varchar)) = lower('foo'))"),
+        arguments(FilterType.EXACT, Map.of("in", List.of("foo", "bar")),
+            "lower(\"x1\".\"column\") in (\n" + "  'foo', 'bar'\n" + ")"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getCaseInsensitiveScalarFieldArguments")
+  void build_returnsConditions_forCaseInsensitiveFilterCriterias(FilterType filterType, Map<String, Object> values,
+      String expected) {
+    var filterCriteria = createScalarFieldFilterCriteria(filterType, values, "String", false);
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo(expected));
+  }
+
   public static Stream<Arguments> getUnknownArguments() {
-    return Stream.of(arguments(FilterType.EXACT, Map.of("zz", "foo"), "Unknown filter field 'zz'"),
-        arguments(FilterType.PARTIAL, Map.of("zz", "foo"), "Unknown filter field 'zz'"));
+    return Stream.of(arguments(FilterType.EXACT, Map.of("zz", "foo"), "Unknown filter field 'zz' for type 'String'"),
+        arguments(FilterType.PARTIAL, Map.of("zz", "foo"), "Unknown filter field 'zz' for type 'String'"));
   }
 
   @ParameterizedTest
@@ -151,7 +172,7 @@ class FilterConditionBuilderTest {
     objectField.setList(true);
     objectField.setType(type);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -179,7 +200,7 @@ class FilterConditionBuilderTest {
     enumConfiguration.setType("fooType");
     objectField.setEnumeration(enumConfiguration);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -208,7 +229,7 @@ class FilterConditionBuilderTest {
     enumConfiguration.setType("fooType");
     objectField.setEnumeration(enumConfiguration);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField);
+    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -387,16 +408,23 @@ class FilterConditionBuilderTest {
   }
 
   private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values) {
+    return createScalarFieldFilterCriteria(filterType, values, "String", true);
+  }
+
+  private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values, String type,
+      boolean caseSensitive) {
     var objectField = new PostgresObjectField();
     objectField.setColumn("column");
+    objectField.setType(type);
 
-    return createScalarFieldFilterCriteria(filterType, values, objectField);
+    return createScalarFieldFilterCriteria(filterType, values, objectField, caseSensitive);
   }
 
   private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values,
-      PostgresObjectField objectField) {
+      PostgresObjectField objectField, boolean caseSensitive) {
     return ScalarFieldFilterCriteria.builder()
         .filterType(filterType)
+        .isCaseSensitive(caseSensitive)
         .fieldPath(List.of(objectField))
         .value(values)
         .build();

@@ -137,9 +137,12 @@ objectTypes:
         - field: history.age
           direction: ASC
     filters:
-      name: { }
-      status: { }
-      geometry: { }
+      name:
+        field: name
+        caseSensitive: false
+      status: {}
+      geometry:
+        field: geometry
       postalAddress: {}
 #      postalStreet:
 #        field: postalAddress.street
