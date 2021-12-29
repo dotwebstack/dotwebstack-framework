@@ -4,15 +4,19 @@ import static org.dotwebstack.framework.service.openapi.TestConstants.APPLICATIO
 import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_XML;
 
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
+import graphql.execution.ResultPath;
+import graphql.language.SourceLocation;
 import graphql.schema.idl.errors.QueryOperationMissingError;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -28,7 +32,6 @@ import org.dotwebstack.framework.service.openapi.param.ParameterResolverFactory;
 import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolver;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +40,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -218,6 +222,29 @@ class OperationHandlerFactoryTest {
   }
 
   @Test
+  void create_createsFailingHandler_ifThrowableProblemsOccur() {
+    var operation = createOperation("/breweries", Map.of());
+    when(bodyMapper.supports(any(), any())).thenReturn(true);
+
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolver);
+
+    var throwableProblem = new ThrowableProblem() {};
+    var executionInput = mock(ExecutionInput.class);
+    var executionResult = ExecutionResultImpl.newExecutionResult()
+        .addError(new ExceptionWhileDataFetching(ResultPath.rootPath(), throwableProblem, SourceLocation.EMPTY))
+        .build();
+
+    when(queryMapper.map(any())).thenReturn(executionInput);
+    when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    var result = operationHandlerFactory.create(operation);
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/breweries")))
+        .verifyError(ThrowableProblem.class);
+  }
+
+  @Test
   void create_throwsException_ifNoMatchingBodyMapperFound() {
     var operation = createOperation("/breweries", Map.of());
 
@@ -226,7 +253,7 @@ class OperationHandlerFactoryTest {
     var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
         parameterResolverFactory, responseHeaderResolver);
 
-    Assertions.assertThrows(InvalidConfigurationException.class, () -> operationHandlerFactory.create(operation));
+    assertThrows(InvalidConfigurationException.class, () -> operationHandlerFactory.create(operation));
   }
 
   private Operation createOperation(String path, Map<String, Object> parameters) {
