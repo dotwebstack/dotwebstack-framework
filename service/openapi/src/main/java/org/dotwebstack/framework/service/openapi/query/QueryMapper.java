@@ -13,13 +13,12 @@ import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEn
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPageableField;
 
 import graphql.ExecutionInput;
+import graphql.GraphQL;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
 import graphql.language.Field;
-import graphql.language.IntValue;
 import graphql.language.OperationDefinition;
 import graphql.language.SelectionSet;
-import graphql.language.StringValue;
 import graphql.language.Value;
 import graphql.parser.Parser;
 import graphql.schema.GraphQLArgument;
@@ -70,9 +69,9 @@ public class QueryMapper {
 
   private final Map<String, TypeMapper> typeMappers;
 
-  public QueryMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull QueryArgumentBuilder queryArgumentBuilder,
+  public QueryMapper(@NonNull GraphQL graphQL, @NonNull QueryArgumentBuilder queryArgumentBuilder,
       @NonNull Collection<TypeMapper> typeMappers) {
-    this.graphQlSchema = graphQlSchema;
+    this.graphQlSchema = graphQL.getGraphQLSchema();
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
         .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
@@ -167,6 +166,10 @@ public class QueryMapper {
       MappingContext mappingContext) {
 
     Stream<Field> includedFields = mapIncludedFields(schema, fieldDefinition);
+
+    if (schema.getProperties() == null) {
+      return includedFields;
+    }
 
     Stream<Field> mappedObjectSchema = schema.getProperties()
         .entrySet()
@@ -319,26 +322,14 @@ public class QueryMapper {
 
   private Value<?> mapArgument(GraphQLArgument argument, Object parameterValue) {
     var inputType = unwrapAll(argument.getType());
-    if (inputType instanceof GraphQLScalarType) {
-      String type = inputType.getName();
-      switch (type) {
-        case "Int":
-          if (parameterValue instanceof Integer) {
-            return IntValue.of((Integer) parameterValue);
-          }
 
-          throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type Int",
-              parameterValue, argument.getName());
-        case "String":
-        case "ID":
-          return StringValue.of(String.valueOf(parameterValue));
-        default:
-          throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type {}",
-              parameterValue, argument.getName(), type);
-      }
+    if (!(inputType instanceof GraphQLScalarType)) {
+      throw invalidConfigurationException("Could not map parameter value {} for GraphQL argument {} of type {}",
+          parameterValue, argument.getName(), inputType.getName());
     }
 
-    return StringValue.of(String.valueOf(parameterValue));
+    return ((GraphQLScalarType) inputType).getCoercing()
+        .valueToLiteral(parameterValue);
   }
 
   private boolean isSchemaNullabilityValid(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,

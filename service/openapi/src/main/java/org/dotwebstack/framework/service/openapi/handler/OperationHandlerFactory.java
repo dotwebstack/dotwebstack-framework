@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.service.openapi.exception.OpenApiExcepti
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.defaultMediaTypeFirst;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -148,6 +151,16 @@ public class OperationHandlerFactory {
         .map(GraphQLError::getMessage)
         .map("- "::concat)
         .collect(Collectors.joining("\n")));
+
+    Optional.of(errors.get(0))
+        .filter(ExceptionWhileDataFetching.class::isInstance)
+        .map(ExceptionWhileDataFetching.class::cast)
+        .map(ExceptionWhileDataFetching::getException)
+        .filter(ThrowableProblem.class::isInstance)
+        .map(ThrowableProblem.class::cast)
+        .ifPresent(throwableProblem -> {
+          throw throwableProblem;
+        });
 
     return Mono.error(internalServerErrorException());
   }

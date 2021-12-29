@@ -45,11 +45,7 @@ paths:
     get:
       x-dws-query: brewery
       parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Identifier'
         - name: expand
           x-dws-type: expand
           in: query
@@ -73,11 +69,7 @@ paths:
     get:
       x-dws-query: brewery-old
       parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Identifier'
       responses:
         303:
           description: "303 response"
@@ -90,11 +82,7 @@ paths:
   /brewery-old2/{identifier}:
     get:
       parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Identifier'
       responses:
         303:
           description: "303 response"
@@ -108,11 +96,7 @@ paths:
     get:
       x-dws-query: brewery
       parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Identifier'
         - name: expand
           x-dws-type: expand
           in: query
@@ -133,11 +117,7 @@ paths:
     get:
       x-dws-query: brewery
       parameters:
-        - name: identifier
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/Identifier'
         - name: expand
           x-dws-type: expand
           in: query
@@ -491,6 +471,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BreweryMaybeArrayNullabilityException'
+
   /brewery-invalid-expand:
     get:
       x-dws-query: brewery
@@ -509,10 +490,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Brewery'
+
   /brewery-included-fields/{identifier}:
     get:
       x-dws-query:
         field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
       responses:
         200:
           description: OK
@@ -520,10 +504,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryIncludedFields'
+
   /brewery-rename-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
       responses:
         200:
           description: OK
@@ -531,6 +518,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryRenamedField'
+
   /breweries-included-fields:
     get:
       x-dws-query:
@@ -556,6 +544,7 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/BreweryIncludedFields'
+
   /breweries-pageable-included-fields:
     get:
       x-dws-query:
@@ -602,10 +591,13 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/BreweryIncludedFields'
+
   /brewery-non-existent-included-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
       responses:
         200:
           description: OK
@@ -613,10 +605,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryIncludedNonExistentFields'
+
   /brewery-non-scalar-included-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
       responses:
         200:
           description: OK
@@ -624,10 +619,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryIncludedNonScalarFields'
+
   /brewery-non-string-included-field/{identifier}:
     get:
       x-dws-query:
         field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
       responses:
         200:
           description: OK
@@ -635,6 +633,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BreweryIncludedNonStringFields'
+
+  /brewery-schemaless-object/{identifier}:
+    get:
+      x-dws-query:
+        field: brewery
+      parameters:
+        - $ref: '#/components/parameters/Identifier'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BrewerySchemalessObject'
 
   /brewery-unsupported-header:
     get:
@@ -653,6 +665,7 @@ paths:
                 type: Array
                 items:
                   type: String
+
   /brewery-header-no-results:
     get:
       x-dws-query:
@@ -669,6 +682,7 @@ paths:
               schema:
                 type: String
                 x-dws-expr: args.missing
+
   /brewery-header-that-does-nothing:
     get:
       x-dws-query:
@@ -684,6 +698,7 @@ paths:
             does-nothing:
               schema:
                 type: String
+
   /breweries-pageable-with-params-selection-set:
     get:
       x-dws-query:
@@ -734,8 +749,12 @@ paths:
         200:
           description: OK
           content:
-            application/json:
-              schema: ~
+            application/hal+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
+
   /breweries-invalid-selection-set:
     get:
       x-dws-query:
@@ -748,10 +767,21 @@ paths:
         200:
           description: OK
           content:
-            application/json:
-              schema: ~
+            application/hal+json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brewery'
 
 components:
+  parameters:
+    Identifier:
+      name: identifier
+      in: path
+      required: true
+      schema:
+        type: string
+
   schemas:
     Brewery:
       type: object
@@ -1101,6 +1131,37 @@ components:
           nullable: true
           items:
             type: object
+
+    BrewerySchemalessObject:
+      type: object
+      required:
+        - identifier
+        - name
+        - aliases
+        - numberOfEmployees
+        - visitAddresses
+        - salesAreas
+      properties:
+        identifier:
+          type: string
+          nullable: false
+        name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        postalAddress:
+          type: object
+        visitAddresses:
+          type: array
+          items:
+            type: object
+        numberOfEmployees:
+          type: integer
+          nullable: true
+        salesAreas:
+          type: object
 
     Address:
       type: object

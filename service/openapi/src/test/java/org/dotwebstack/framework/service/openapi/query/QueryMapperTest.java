@@ -54,7 +54,7 @@ class QueryMapperTest {
 
     openApi = TestResources.openApi("openapi.yaml");
 
-    queryFactory = new QueryMapper(TestResources.graphQlSchema(), queryArgumentBuilder,
+    queryFactory = new QueryMapper(TestResources.graphQl(), queryArgumentBuilder,
         List.of(new GeometryTypeMapper(new OpenApiProperties())));
   }
 

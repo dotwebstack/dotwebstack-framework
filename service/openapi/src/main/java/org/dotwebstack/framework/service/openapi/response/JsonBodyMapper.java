@@ -8,6 +8,8 @@ import static org.dotwebstack.framework.service.openapi.jexl.JexlUtils.evaluateJ
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isEnvelope;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isMappable;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.GraphQL;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
@@ -51,9 +53,9 @@ public class JsonBodyMapper implements BodyMapper {
 
   private final Map<String, TypeMapper> typeMappers;
 
-  public JsonBodyMapper(@NonNull GraphQLSchema graphQlSchema, @NonNull JexlEngine jexlEngine,
+  public JsonBodyMapper(@NonNull GraphQL graphQL, @NonNull JexlEngine jexlEngine,
       @NonNull EnvironmentProperties environmentProperties, @NonNull Collection<TypeMapper> typeMappers) {
-    this.graphQlSchema = graphQlSchema;
+    this.graphQlSchema = graphQL.getGraphQLSchema();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
     this.typeMappers = typeMappers.stream()
@@ -106,11 +108,21 @@ public class JsonBodyMapper implements BodyMapper {
           .fieldToBody(data, schema);
     }
 
+    Map<String, Object> dataMap;
+
     if (!(data instanceof Map)) {
-      throw illegalStateException("Data is not compatible with object schema.");
+      try {
+        dataMap = new ObjectMapper().convertValue(data, Map.class);
+      } catch (IllegalArgumentException e) {
+        throw illegalStateException("Data is not compatible with object schema.", e);
+      }
+    } else {
+      dataMap = (Map<String, Object>) data;
     }
 
-    var dataMap = (Map<String, Object>) data;
+    if (schema.getProperties() == null) {
+      return dataMap;
+    }
 
     return schema.getProperties()
         .entrySet()

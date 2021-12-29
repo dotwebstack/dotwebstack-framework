@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.model.TriplesMap;
+import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import io.swagger.v3.oas.models.Operation;
 import java.io.StringWriter;
@@ -46,9 +47,9 @@ abstract class AbstractRmlBodyMapper implements BodyMapper {
 
   final Set<Namespace> namespaces;
 
-  AbstractRmlBodyMapper(GraphQLSchema graphQlSchema, RdfRmlMapper rmlMapper,
-      Map<Operation, Set<TriplesMap>> mappingsPerOperation, Set<Namespace> namespaces) {
-    this.graphQlSchema = graphQlSchema;
+  AbstractRmlBodyMapper(GraphQL graphQL, RdfRmlMapper rmlMapper, Map<Operation, Set<TriplesMap>> mappingsPerOperation,
+      Set<Namespace> namespaces) {
+    this.graphQlSchema = graphQL.getGraphQLSchema();
     this.rmlMapper = rmlMapper;
     this.actionableMappingsPerOperation = mappingsPerOperation;
     this.namespaces = namespaces;

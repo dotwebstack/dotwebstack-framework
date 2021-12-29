@@ -50,7 +50,7 @@ class JsonBodyMapperTest {
   void beforeEach() {
     openApi = TestResources.openApi("openapi.yaml");
     var pagingLinkFunctions = new PagingFunctions();
-    bodyMapper = new JsonBodyMapper(TestResources.graphQlSchema(), new JexlBuilder().silent(false)
+    bodyMapper = new JsonBodyMapper(TestResources.graphQl(), new JexlBuilder().silent(false)
         .strict(true)
         .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
         .create(), properties, List.of(new GeometryTypeMapper(new OpenApiProperties())));
@@ -81,7 +81,9 @@ class JsonBodyMapperTest {
         Arguments.of("/brewery-required-empty-nullable-envelope/{identifier}", APPLICATION_JSON,
             Map.of("identifier", "foo"), "brewery", "brewery-json-required-empty-nullable-envelope"),
         Arguments.of("/brewery-rename-field/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"), "brewery",
-            "brewery-json-translated"));
+            "brewery-json-translated"),
+        Arguments.of("/brewery-schemaless-object/{identifier}", APPLICATION_JSON, Map.of("identifier", "foo"),
+            "brewery", "brewery-json-schemaless-object"));
   }
 
   @ParameterizedTest
