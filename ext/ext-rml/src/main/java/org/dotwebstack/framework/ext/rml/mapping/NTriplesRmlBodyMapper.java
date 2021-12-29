@@ -2,7 +2,7 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import com.taxonic.carml.engine.rdf.RdfRmlMapper;
 import com.taxonic.carml.model.TriplesMap;
-import graphql.schema.GraphQLSchema;
+import graphql.GraphQL;
 import io.swagger.v3.oas.models.Operation;
 import java.util.Map;
 import java.util.Set;
@@ -16,9 +16,9 @@ public class NTriplesRmlBodyMapper extends AbstractRmlBodyMapper {
 
   static final MediaType N_TRIPLES_MEDIA_TYPE = MediaType.parseMediaType("application/n-triples");
 
-  NTriplesRmlBodyMapper(GraphQLSchema graphQlSchema, RdfRmlMapper rmlMapper,
-      Map<Operation, Set<TriplesMap>> mappingsPerOperation, Set<Namespace> namespaces) {
-    super(graphQlSchema, rmlMapper, mappingsPerOperation, namespaces);
+  NTriplesRmlBodyMapper(GraphQL graphQL, RdfRmlMapper rmlMapper, Map<Operation, Set<TriplesMap>> mappingsPerOperation,
+      Set<Namespace> namespaces) {
+    super(graphQL, rmlMapper, mappingsPerOperation, namespaces);
   }
 
   @Override

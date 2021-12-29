@@ -2,6 +2,7 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -28,6 +29,11 @@ class TestResources {
     } catch (IOException e) {
       throw illegalArgumentException("Resource {} not found.", path);
     }
+  }
+
+  public static GraphQL graphQl() {
+    return GraphQL.newGraphQL(graphQlSchema())
+        .build();
   }
 
   public static GraphQLSchema graphQlSchema() {
