@@ -144,8 +144,8 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withJoinColumnFilterOnReferenceObject() {
-    var query = "{\n" + "  beerCollection(filter: {brewery: {eq: \"d3654375-95fa-46b4-8529-08b0f777bd6b\"}}) {\n"
-        + "    name\n" + "  }\n" + "}";
+    var query = "{\n" + "  beerCollection(filter: {brewery: {ref: {identifier_brewery: {"
+        + "eq: \"d3654375-95fa-46b4-8529-08b0f777bd6b\"}}}}) {\n" + "    name\n" + "  }\n" + "}";
 
     var data = WebTestClientHelper.get(client, query);
 
@@ -156,7 +156,8 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withJoinTableFilterOnReferenceObject() {
-    var query = "{\n" + "  beerCollection(filter: {ingredient: {eq: \"CRM\"}}) {\n" + "    name\n" + "  }\n" + "}";
+    var query = "{\n" + "  beerCollection(filter: {ingredients: {refs: {code: {eq: \"CRM\"}}}}) {\n" + "    name\n"
+        + "  }\n" + "}";
 
     var data = WebTestClientHelper.get(client, query);
 

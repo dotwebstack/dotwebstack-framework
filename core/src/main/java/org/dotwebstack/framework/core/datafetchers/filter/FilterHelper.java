@@ -2,19 +2,15 @@ package org.dotwebstack.framework.core.datafetchers.filter;
 
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.SCALAR_LIST_FILTER_POSTFIX;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import java.util.Map;
 import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.model.ObjectType;
-import org.dotwebstack.framework.core.model.Schema;
 
 public final class FilterHelper {
 
@@ -28,7 +24,8 @@ public final class FilterHelper {
     return getTypeNameForFilter(fieldFilterMap, objectType, filter);
   }
 
-  private static String getTypeNameForFilter(Map<String, String> fieldFilterMap, ObjectType<?> objectType, FilterItem filterItem) {
+  private static String getTypeNameForFilter(Map<String, String> fieldFilterMap, ObjectType<?> objectType,
+      FilterItem filterItem) {
 
     var fieldName = filterItem.getField();
 
@@ -36,11 +33,13 @@ public final class FilterHelper {
     var targetType = objectField.getTargetType();
 
     if (targetType != null) {
-//      if(targetType.getFilters().isEmpty()){
-//        throw invalidConfigurationException("Filter object field '{}' doesn't have a filter",targetType.getName());
-//      }
+      // if(targetType.getFilters().isEmpty()){
+      // throw invalidConfigurationException("Filter object field '{}' doesn't have a
+      // filter",targetType.getName());
+      // }
 
-      return String.format("%sFilter",objectField.getTargetType().getName());
+      return String.format("%sFilter", objectField.getTargetType()
+          .getName());
     } else {
       var type = Optional.ofNullable(filterItem.getType())
           .filter(FilterType.PARTIAL::equals)

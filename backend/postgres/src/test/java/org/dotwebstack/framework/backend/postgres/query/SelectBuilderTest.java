@@ -748,7 +748,7 @@ class SelectBuilderTest {
     return ContextCriteria.builder()
         .name("History")
         .context(createContext())
-        .values(Map.of("fieldName", String.format("%s_value", "validFrom")))
+        .values(Map.of("validFrom", String.format("%s_value", "validFrom")))
         .build();
   }
 

@@ -45,17 +45,6 @@ queries:
 objectTypes:
   Beer:
     table: db.beer
-    filters:
-      name:
-        field: name
-      brewery:
-        field: brewery.ref.identifier_brewery
-      ingredient:
-        field: ingredients.refs.code
-    sortableBy:
-      name:
-        - field: name
-          direction: ASC
     fields:
       identifier_beer:
         type: ID
@@ -91,6 +80,15 @@ objectTypes:
         joinColumns:
           - name: predecessor
             referencedField: ref.identifier_beer
+    filters:
+      name:
+        field: name
+      brewery: {}
+      ingredients: {}
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
 
   BeerBeer:
     fields:
@@ -115,46 +113,18 @@ objectTypes:
       node:
         type: Brewery
         nullable: true
+    filters:
+      ref: {}
 
   BreweryRef:
     fields:
       identifier_brewery:
         type: String
+    filters:
+      identifier_brewery: {}
 
   Brewery:
     table: db.brewery
-    sortableBy:
-      name:
-        - field: name
-          direction: ASC
-      address:
-        - field: postalAddress.street
-          direction: ASC
-        - field: postalAddress.city
-          direction: ASC
-      historyAge:
-        - field: history.age
-          direction: ASC
-    filters:
-      name: { }
-      status: { }
-      geometry: { }
-      postalStreet:
-        field: postalAddress.street
-      postalCity:
-        field: postalAddress.city
-      visitStreet:
-        field: visitAddress.street
-      visitCity:
-        field: visitAddress.city
-      historyAge:
-        field: history.age
-      beerName:
-        field: beers.name
-      relatedToName:
-        field: relatedTo.name
-      relatedToStatus:
-        field: relatedTo.status
     fields:
       identifier_brewery:
         type: String
@@ -200,6 +170,27 @@ objectTypes:
           inverseJoinColumns:
             - name: brewery_related_to_identifier
               referencedField: identifier
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalAddress: { }
+      visitAddress: { }
+      history: { }
+      beers: { }
+      relatedTo: { }
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
+      address:
+        - field: postalAddress.street
+          direction: ASC
+        - field: postalAddress.city
+          direction: ASC
+      historyAge:
+        - field: history.age
+          direction: ASC
 
   BeerIngredient:
     fields:
@@ -209,16 +200,18 @@ objectTypes:
       nodes:
         type: Ingredient
         list: true
+    filters:
+      refs: {}
 
   IngredientRef:
     fields:
       code:
         type: String
+    filters:
+      code: {}
 
   Ingredient:
     table: db.ingredient
-    filters:
-      name: {}
     fields:
       identifier_ingredient:
         type: ID
@@ -228,6 +221,8 @@ objectTypes:
         type: String
       weight:
         type: Float
+    filters:
+      name: { }
 
   Address:
     table: db.address
@@ -238,6 +233,9 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      street: {}
+      city: {}
 
   History:
     fields:
@@ -247,6 +245,8 @@ objectTypes:
       history:
         type: String
         column: his_history
+    filters:
+      age: {}
 
 enumerations:
   Taste:

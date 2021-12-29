@@ -10,7 +10,6 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCon
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.*;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
@@ -24,6 +23,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator._EXISTS;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
