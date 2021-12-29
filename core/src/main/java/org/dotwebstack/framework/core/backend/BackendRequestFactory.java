@@ -31,17 +31,22 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterOperator;
 import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
+import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.MapHelper;
+import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -78,11 +83,11 @@ public class BackendRequestFactory {
     var objectType = getObjectType(unwrappedType);
 
     var filterCriteria =
-        createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME));
+        createFilterCriterias(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME), new ArrayList<>());
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriteria(filterCriteria.orElse(null))
+        .filterCriteria(filterCriteria.map(GroupFilterCriteria.class::cast).orElse(null))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
@@ -281,8 +286,9 @@ public class BackendRequestFactory {
             .build());
   }
 
-  private Optional<GroupFilterCriteria> createFilterCriteria(ObjectType<?> objectType,
-      Map<String, Object> filterArgument) {
+  private Optional<FilterCriteria> createFilterCriterias(ObjectType<?> objectType,
+                                                              Map<String, Object> filterArgument,
+                                                              List<ObjectField> parentFieldPath) {
     if (filterArgument == null) {
       return Optional.empty();
     }
@@ -290,12 +296,12 @@ public class BackendRequestFactory {
     var andCriterias = filterArgument.keySet()
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> !filterName.startsWith("_"))
-        .map(filterName -> createScalarFieldFilterCriteria(objectType, filterArgument, filterName))
+        .filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
+        .flatMap(filterName -> createFilterCriteria(objectType,Map.entry(filterName,filterArgument.get(filterName)),parentFieldPath).stream())
         .map(FilterCriteria.class::cast)
         .collect(Collectors.toList());
 
-    var andGroup = GroupFilterCriteria.builder()
+    FilterCriteria andGroup = GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.AND)
         .filterCriterias(andCriterias)
         .build();
@@ -305,9 +311,9 @@ public class BackendRequestFactory {
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
         .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
         .findFirst()
-        .flatMap(filterName -> createFilterCriteria(objectType, MapHelper.getNestedMap(filterArgument, filterName)));
+        .flatMap(filterName -> createFilterCriterias(objectType, MapHelper.getNestedMap(filterArgument, filterName), new ArrayList<>()));
 
-    return orGroup.map(groupFilterCriteria -> GroupFilterCriteria.builder()
+    return orGroup.map(groupFilterCriteria -> (FilterCriteria) GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.OR)
         .filterCriterias(List.of(andGroup, groupFilterCriteria))
         .build())
@@ -315,29 +321,48 @@ public class BackendRequestFactory {
 
   }
 
-  private ScalarFieldFilterCriteria createScalarFieldFilterCriteria(ObjectType<?> objectType,
-      Map<String, Object> filterArgument, String filterName) {
-    var filterConfiguration = objectType.getFilters()
-        .get(filterName);
+  private Optional<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map.Entry<String, Object> filterEntry, List<ObjectField> parentFieldPath) {
+      var filterName  = filterEntry.getKey();
 
-    var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
+      if (FilterOperator._EXISTS.toString().equalsIgnoreCase(filterName)){
+          return Optional.of(ScalarFieldFilterCriteria.builder()
+              .filterType(FilterType.EXACT)
+              .fieldPath(parentFieldPath)
+              .value(Map.of(filterEntry.getKey(),filterEntry.getValue()))
+              .build());
+      }
 
-    var filterValue = createFilterValue(filterArgument, filterName);
+      var filterConfiguration = objectType.getFilters().get(filterName);
 
-    return ScalarFieldFilterCriteria.builder()
+      var field = objectType.getField(filterConfiguration.getField());
+
+      var targetType = field.getTargetType();
+
+      var fieldPath = new ArrayList<>(parentFieldPath);
+      fieldPath.add(field);
+
+      if (targetType != null){
+        return createFilterCriterias(targetType, ObjectHelper.castToMap(filterEntry.getValue()),fieldPath);
+      }
+
+      var filterValue = createFilterValue(filterEntry);
+
+      return Optional.of(ScalarFieldFilterCriteria.builder()
         .filterType(filterConfiguration.getType())
         .fieldPath(fieldPath)
         .value(filterValue)
-        .build();
+        .build());
+
+
+
   }
 
-  private Map<String, Object> createFilterValue(Map<String, Object> arguments, String key) {
-    var value = arguments.get(key);
-    if (value instanceof Boolean) {
-      return Map.of(FilterConstants.EQ_FIELD, value);
+  private Map<String, Object> createFilterValue(Map.Entry<String, Object> entry) {
+    if (entry.getValue() instanceof Boolean) {
+      return Map.of(FilterConstants.EQ_FIELD, entry.getValue());
     }
 
-    return getNestedMap(arguments, key);
+    return ObjectHelper.castToMap(entry.getValue());
   }
 
   private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {

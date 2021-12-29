@@ -52,10 +52,12 @@ objectTypes:
         field: name
       taste:
         field: taste
-      breweryCity:
-        field: brewery.visitAddress.city
-      ingredientName:
-        field: ingredients.name
+      brewery: {}
+#      breweryCity:
+#        field: brewery.visitAddress.city
+      ingredients: {}
+#      ingredientName:
+#        field: ingredients.name
       retired: {}
     sortableBy:
       name:
@@ -138,22 +140,27 @@ objectTypes:
       name: { }
       status: { }
       geometry: { }
-      postalStreet:
-        field: postalAddress.street
-      postalCity:
-        field: postalAddress.city
-      visitStreet:
-        field: visitAddress.street
-      visitCity:
-        field: visitAddress.city
-      historyAge:
-        field: history.age
-      beerName:
-        field: beers.name
-      relatedToName:
-        field: relatedTo.name
-      relatedToStatus:
-        field: relatedTo.status
+      postalAddress: {}
+#      postalStreet:
+#        field: postalAddress.street
+#      postalCity:
+#        field: postalAddress.city
+      visitAddress: {}
+#      visitStreet:
+#        field: visitAddress.street
+#      visitCity:
+#        field: visitAddress.city
+      history: {}
+#      historyAge:
+#        field: history.age
+      beers: {}
+#      beerName:
+#        field: beers.name
+      relatedTo: {}
+#      relatedToName:
+#        field: relatedTo.name
+#      relatedToStatus:
+#        field: relatedTo.status
     fields:
       identifier:
         type: String
@@ -212,6 +219,8 @@ objectTypes:
 
   Ingredient:
     table: dbeerpedia.ingredients
+    filters:
+      name: {}
     fields:
       identifier:
         type: ID
@@ -226,6 +235,9 @@ objectTypes:
 
   Address:
     table: dbeerpedia.addresses
+    filters:
+      street: {}
+      city: {}
     fields:
       identifier:
         type: ID
@@ -235,6 +247,8 @@ objectTypes:
         type: String
 
   History:
+    filters:
+      age: {}
     fields:
       age:
         type: Int
