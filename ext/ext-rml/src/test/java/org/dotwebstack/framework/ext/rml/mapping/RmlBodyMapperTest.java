@@ -80,12 +80,16 @@ class RmlBodyMapperTest {
     var graphQl = TestResources.graphQl();
 
     return Stream.of(
-        Arguments.of(new Notation3RmlBodyMapper(graphQl, null, Map.of(), Set.of()), Notation3RmlBodyMapper.N3_MEDIA_TYPE),
+        Arguments.of(new Notation3RmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+            Notation3RmlBodyMapper.N3_MEDIA_TYPE),
         Arguments.of(new TurtleRmlBodyMapper(graphQl, null, Map.of(), Set.of()), TURTLE_MEDIA_TYPE),
-        Arguments.of(new RdfXmlRmlBodyMapper(graphQl, null, Map.of(), Set.of()), RdfXmlRmlBodyMapper.RDF_XML_MEDIA_TYPE),
-        Arguments.of(new JsonLdRmlBodyMapper(graphQl, null, Map.of(), Set.of()), JsonLdRmlBodyMapper.JSON_LD_MEDIA_TYPE),
+        Arguments.of(new RdfXmlRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+            RdfXmlRmlBodyMapper.RDF_XML_MEDIA_TYPE),
+        Arguments.of(new JsonLdRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+            JsonLdRmlBodyMapper.JSON_LD_MEDIA_TYPE),
         Arguments.of(new TrigRmlBodyMapper(graphQl, null, Map.of(), Set.of()), TrigRmlBodyMapper.TRIG_MEDIA_TYPE),
-        Arguments.of(new NQuadsRmlBodyMapper(graphQl, null, Map.of(), Set.of()), NQuadsRmlBodyMapper.N_QUADS_MEDIA_TYPE),
+        Arguments.of(new NQuadsRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+            NQuadsRmlBodyMapper.N_QUADS_MEDIA_TYPE),
         Arguments.of(new NTriplesRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
             NTriplesRmlBodyMapper.N_TRIPLES_MEDIA_TYPE));
   }
