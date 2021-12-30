@@ -9,6 +9,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
@@ -44,7 +45,6 @@ import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
@@ -327,8 +327,10 @@ public class BackendRequestFactory {
       List<ObjectField> parentFieldPath) {
     var filterName = filterEntry.getKey();
 
-    if (FilterOperator.EXISTS.toString()
-        .equalsIgnoreCase(filterName)) {
+    if (FilterConstants.EXISTS_FIELD.equalsIgnoreCase(filterName)) {
+      if (parentFieldPath.size() == 0) {
+        throw unsupportedOperationException("Filter operator '_exists' is only supported for nested objects!");
+      }
       return Optional.of(ScalarFieldFilterCriteria.builder()
           .filterType(FilterType.EXACT)
           .fieldPath(parentFieldPath)
@@ -358,9 +360,6 @@ public class BackendRequestFactory {
         .fieldPath(fieldPath)
         .value(filterValue)
         .build());
-
-
-
   }
 
   private Map<String, Object> createFilterValue(Map.Entry<String, Object> entry) {

@@ -1492,6 +1492,39 @@ class GraphQlPostgresIntegrationTest {
         hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("name"), equalTo("Beer 4")))));
   }
 
+  @Test
+  void getRequest_returnsBreweries_withNestedObjectExistsTrueFilter() {
+    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: true}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(data, hasEntry(equalTo("breweries"),
+        hasItems(hasEntry(equalTo("name"), equalTo("Brewery X")), hasEntry(equalTo("name"), equalTo("Brewery Y")))));
+  }
+
+  @Test
+  void getRequest_returnsBreweries_withNestedObjectExistsFalseFilter() {
+    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(data, hasEntry(equalTo("breweries"),
+        hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
+  }
+
+  @Test
+  void getRequest_returnsBreweries_withObjectExistsFilter() {
+    var query = "{\n" + "  breweries(filter: {_exists: false}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var response = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(response,
+        IsMapContaining.hasEntry(equalTo("errors"),
+            IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
+                "Exception while fetching data (/breweries) : Filter operator '_exists' "
+                    + "is only supported for nested objects!"))));
+  }
+
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> getNestedObjects(Map<String, Object> data, String name) {
     return (List<Map<String, Object>>) data.get(name);

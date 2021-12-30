@@ -51,4 +51,6 @@ public class FilterConstants {
   public static final String NOT_FIELD = "not";
 
   public static final String OR_FIELD = "_or";
+
+  public static final String EXISTS_FIELD = "_exists";
 }

@@ -19,6 +19,10 @@ public enum FilterOperator {
     if (FilterConstants.IN_FIELD.equals(name) && !isCaseSensitive) {
       return IN_IGNORE_CASE;
     }
+    if (FilterConstants.EXISTS_FIELD.equals(name)) {
+      return EXISTS;
+    }
+
     return EnumUtils.getEnumIgnoreCase(FilterOperator.class, name);
   }
 }
