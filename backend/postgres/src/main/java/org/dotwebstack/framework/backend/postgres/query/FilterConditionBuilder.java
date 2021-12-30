@@ -267,7 +267,8 @@ class FilterConditionBuilder {
             .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
             .map(filterOperator -> {
               if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-                return createGeometryCondition(objectField, filterOperator, entry.getValue()).stream();
+                return createGeometryCondition(objectField, filterOperator, entry.getValue(), getRequestedSrid(values))
+                    .stream();
               }
               if (NOT == filterOperator) {
                 return Stream.of(createNotCondition(objectField, filterCriteria, castToMap(entry.getValue())));
@@ -420,14 +421,12 @@ class FilterConditionBuilder {
   }
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
-      Object value) {
+      Object value, Integer requestedSrid) {
     if (SRID == operator) {
       return Optional.empty();
     }
 
     var mapValue = ObjectHelper.castToMap(value);
-
-    var requestedSrid = getRequestedSrid(mapValue);
 
     var columnName = getColumnName(objectField.getSpatial(), requestedSrid);
     var field = DSL.field(DSL.name(table.getName(), columnName));
