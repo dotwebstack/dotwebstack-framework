@@ -1522,7 +1522,7 @@ class GraphQlPostgresIntegrationTest {
         IsMapContaining.hasEntry(equalTo("errors"),
             IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
                 "Exception while fetching data (/breweries) : Filter operator '_exists' "
-                    + "is only supported for nested objects!"))));
+                    + "is only supported for nested objects"))));
   }
 
   @SuppressWarnings("unchecked")

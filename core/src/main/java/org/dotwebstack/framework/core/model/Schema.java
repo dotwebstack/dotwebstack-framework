@@ -13,7 +13,7 @@ import org.dotwebstack.framework.core.config.EnumerationConfiguration;
 public class Schema {
 
   @Valid
-  private Settings settings;
+  private Settings settings = new Settings();
 
   @Valid
   private Map<String, ObjectType<? extends ObjectField>> objectTypes;

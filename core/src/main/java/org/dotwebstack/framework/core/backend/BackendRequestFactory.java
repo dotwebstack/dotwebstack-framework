@@ -1,23 +1,21 @@
 package org.dotwebstack.framework.core.backend;
 
+import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
-import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
-import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
 import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
@@ -32,22 +30,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
-import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
-import org.dotwebstack.framework.core.backend.filter.GroupFilterOperator;
-import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
-import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -83,13 +74,18 @@ public class BackendRequestFactory {
     var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
 
-    var filterCriteria = createFilterCriterias(objectType,
-        executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME), new ArrayList<>(), 0);
+    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+
+    var filterCriteria = ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
+        .argument(argument)
+        .maxDepth(schema.getSettings()
+            .getMaxFilterDepth())
+        .build())
+        .map(GroupFilterCriteria.class::cast);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriteria(filterCriteria.map(GroupFilterCriteria.class::cast)
-            .orElse(null))
+        .filterCriteria(filterCriteria.orElse(null))
         .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
         .build();
   }
@@ -288,97 +284,6 @@ public class BackendRequestFactory {
             .build());
   }
 
-  private Optional<FilterCriteria> createFilterCriterias(ObjectType<?> objectType, Map<String, Object> filterArgument,
-      List<ObjectField> fieldPath, int depth) {
-    if (filterArgument == null) {
-      return Optional.empty();
-    }
-
-    if (depth > schema.getSettings().getMaxFilterDepth()){
-      throw unsupportedOperationException("Filter depth of '{}' is exceeeded!");
-    }
-
-    var andCriterias = filterArgument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
-        .flatMap(filterName -> createFilterCriteria(objectType, Map.entry(filterName, filterArgument.get(filterName)), fieldPath, depth).stream())
-        .map(FilterCriteria.class::cast)
-        .collect(Collectors.toList());
-
-    FilterCriteria andGroup = GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.AND)
-        .filterCriterias(andCriterias)
-        .build();
-
-    var orGroup = filterArgument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
-        .findFirst()
-        .flatMap(filterName -> createFilterCriterias(objectType, MapHelper.getNestedMap(filterArgument, filterName), new ArrayList<>(), depth));
-
-    return orGroup.map(groupFilterCriteria -> (FilterCriteria) GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.OR)
-        .filterCriterias(List.of(andGroup, groupFilterCriteria))
-        .build())
-        .or(() -> Optional.of(andGroup));
-
-  }
-
-  private Optional<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map.Entry<String, Object> filterEntry,
-      List<ObjectField> parentFieldPath, int depth) {
-    var filterName = filterEntry.getKey();
-
-    if (FilterConstants.EXISTS_FIELD.equalsIgnoreCase(filterName)) {
-      if (parentFieldPath.size() == 0) {
-        throw unsupportedOperationException("Filter operator '_exists' is only supported for nested objects!");
-      }
-      return Optional.of(ScalarFieldFilterCriteria.builder()
-          .filterType(FilterType.EXACT)
-          .fieldPath(parentFieldPath)
-          .value(Map.of(filterEntry.getKey(), filterEntry.getValue()))
-          .build());
-    }
-
-    var filterConfiguration = objectType.getFilters()
-        .get(filterName);
-
-    var field = objectType.getField(filterConfiguration.getField());
-
-    var targetType = field.getTargetType();
-
-    var fieldPath = new ArrayList<>(parentFieldPath);
-    fieldPath.add(field);
-
-    if (targetType != null) {
-      return createFilterCriterias(targetType, castToMap(filterEntry.getValue()), fieldPath, depth + 1);
-    }
-
-    var filterValue = createFilterValue(filterEntry);
-
-    return Optional.of(ScalarFieldFilterCriteria.builder()
-        .filterType(filterConfiguration.getType())
-        .isCaseSensitive(filterConfiguration.isCaseSensitive())
-        .fieldPath(fieldPath)
-        .value(filterValue)
-        .build());
-  }
-
-  private Map<String, Object> createFilterValue(Map.Entry<String, Object> entry) {
-    if (entry.getValue() instanceof Boolean) {
-      return Map.of(FilterConstants.EQ_FIELD, entry.getValue());
-    }
-
-    if (entry.getValue() instanceof Map) {
-      return resolveSuppliers(castToMap(entry.getValue()));
-    }
-
-    throw illegalArgumentException("Expected entry value of type 'java.util.Map' but got '{}'", entry.getValue()
-        .getClass()
-        .getName());
-  }
-
   private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {
     var sortableBy = objectType.getSortableBy();
 
@@ -412,12 +317,10 @@ public class BackendRequestFactory {
     var fieldPath = new ArrayList<ObjectField>();
 
     for (var segment : path.split("\\.")) {
-      var field = Optional.ofNullable(current)
-          .map(o -> o.getField(segment))
+      var field = ofNullable(current).map(o -> o.getField(segment))
           .orElseThrow();
 
-      current = Optional.ofNullable(field.getTargetType())
-          .orElse(null);
+      current = ofNullable(field.getTargetType()).orElse(null);
 
       fieldPath.add(field);
     }
