@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
@@ -367,7 +368,13 @@ public class BackendRequestFactory {
       return Map.of(FilterConstants.EQ_FIELD, entry.getValue());
     }
 
-    return resolveSuppliers(castToMap(entry.getValue()));
+    if (entry.getValue() instanceof Map) {
+      return resolveSuppliers(castToMap(entry.getValue()));
+    }
+
+    throw illegalArgumentException("Expected entry value of type 'java.util.Map' but got '{}'", entry.getValue()
+        .getClass()
+        .getName());
   }
 
   private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {
