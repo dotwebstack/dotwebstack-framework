@@ -33,11 +33,6 @@ public final class FilterHelper {
     var targetType = objectField.getTargetType();
 
     if (targetType != null) {
-      // if(targetType.getFilters().isEmpty()){
-      // throw invalidConfigurationException("Filter object field '{}' doesn't have a
-      // filter",targetType.getName());
-      // }
-
       return String.format("%sFilter", objectField.getTargetType()
           .getName());
     } else {

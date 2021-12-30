@@ -117,12 +117,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private void addFilterTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
     schema.getObjectTypes()
-        .forEach((name, objectType) -> {
-          // if (!objectType.getFilters()
-          // .isEmpty()) {
-          typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));
-          // }
-        });
+        .forEach((name, objectType) -> typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType)));
   }
 
   private void addSortTypes(TypeDefinitionRegistry typeDefinitionRegistry) {

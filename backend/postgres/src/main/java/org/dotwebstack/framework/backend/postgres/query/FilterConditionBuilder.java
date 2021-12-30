@@ -14,6 +14,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ_IGNORE_CASE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EXISTS;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN;
@@ -23,7 +24,6 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator._EXISTS;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.BooleanUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -347,9 +348,8 @@ class FilterConditionBuilder {
       return field.in(getFieldListValue(objectField, value));
     }
 
-    if (_EXISTS == operator) {
-      var booleanValue = (Boolean) value;
-      if (booleanValue) {
+    if (EXISTS == operator) {
+      if (BooleanUtils.isTrue((Boolean) value)) {
         return field.isNotNull();
       }
       return field.isNull();

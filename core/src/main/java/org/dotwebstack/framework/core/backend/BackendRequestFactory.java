@@ -326,7 +326,7 @@ public class BackendRequestFactory {
       List<ObjectField> parentFieldPath) {
     var filterName = filterEntry.getKey();
 
-    if (FilterOperator._EXISTS.toString()
+    if (FilterOperator.EXISTS.toString()
         .equalsIgnoreCase(filterName)) {
       return Optional.of(ScalarFieldFilterCriteria.builder()
           .filterType(FilterType.EXACT)
