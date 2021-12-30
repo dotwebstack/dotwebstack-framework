@@ -51,6 +51,8 @@ class FilterConditionBuilderTest {
     return Stream.of(
         arguments(Map.of("contains", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
+        arguments(Map.of("contains", Map.of("fromWKT", "POINT(1 2)"), "srid", 2),
+            "(ST_Contains(\"x1\".\"geometry_column2\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("within", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Within(cast('POINT (1 2)' as geometry), \"x1\".\"geometry_column\"))"),
         arguments(Map.of("intersects", Map.of("fromWKT", "POINT(1 2)")),
@@ -66,7 +68,7 @@ class FilterConditionBuilderTest {
 
     var spatial = PostgresSpatial.builder()
         .srid(1)
-        .spatialReferenceSystems(ImmutableBiMap.of(1, "geometry_column"))
+        .spatialReferenceSystems(ImmutableBiMap.of(1, "geometry_column", 2, "geometry_column2"))
         .build();
 
     objectField.setSpatial(spatial);
