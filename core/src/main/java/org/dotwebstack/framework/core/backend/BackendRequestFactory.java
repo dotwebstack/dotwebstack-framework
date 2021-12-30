@@ -46,6 +46,7 @@ import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -83,7 +84,7 @@ public class BackendRequestFactory {
     var objectType = getObjectType(unwrappedType);
 
     var filterCriteria = createFilterCriterias(objectType,
-        executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME), new ArrayList<>());
+        executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME), new ArrayList<>(), 0);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
@@ -288,17 +289,20 @@ public class BackendRequestFactory {
   }
 
   private Optional<FilterCriteria> createFilterCriterias(ObjectType<?> objectType, Map<String, Object> filterArgument,
-      List<ObjectField> parentFieldPath) {
+      List<ObjectField> fieldPath, int depth) {
     if (filterArgument == null) {
       return Optional.empty();
+    }
+
+    if (depth > schema.getSettings().getMaxFilterDepth()){
+      throw unsupportedOperationException("Filter depth of '{}' is exceeeded!");
     }
 
     var andCriterias = filterArgument.keySet()
         .stream()
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
         .filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
-        .flatMap(filterName -> createFilterCriteria(objectType, Map.entry(filterName, filterArgument.get(filterName)),
-            parentFieldPath).stream())
+        .flatMap(filterName -> createFilterCriteria(objectType, Map.entry(filterName, filterArgument.get(filterName)), fieldPath, depth).stream())
         .map(FilterCriteria.class::cast)
         .collect(Collectors.toList());
 
@@ -312,8 +316,7 @@ public class BackendRequestFactory {
         .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
         .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
         .findFirst()
-        .flatMap(filterName -> createFilterCriterias(objectType, MapHelper.getNestedMap(filterArgument, filterName),
-            new ArrayList<>()));
+        .flatMap(filterName -> createFilterCriterias(objectType, MapHelper.getNestedMap(filterArgument, filterName), new ArrayList<>(), depth));
 
     return orGroup.map(groupFilterCriteria -> (FilterCriteria) GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.OR)
@@ -324,7 +327,7 @@ public class BackendRequestFactory {
   }
 
   private Optional<FilterCriteria> createFilterCriteria(ObjectType<?> objectType, Map.Entry<String, Object> filterEntry,
-      List<ObjectField> parentFieldPath) {
+      List<ObjectField> parentFieldPath, int depth) {
     var filterName = filterEntry.getKey();
 
     if (FilterConstants.EXISTS_FIELD.equalsIgnoreCase(filterName)) {
@@ -349,7 +352,7 @@ public class BackendRequestFactory {
     fieldPath.add(field);
 
     if (targetType != null) {
-      return createFilterCriterias(targetType, castToMap(filterEntry.getValue()), fieldPath);
+      return createFilterCriterias(targetType, castToMap(filterEntry.getValue()), fieldPath, depth + 1);
     }
 
     var filterValue = createFilterValue(filterEntry);
