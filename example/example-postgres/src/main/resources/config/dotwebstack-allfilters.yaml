@@ -97,8 +97,7 @@ objectTypes:
     filters:
       name: { }
       status: { }
-      city:
-        field: visitAddress.city
+      visitAddress: {}
     fields:
       identifier:
         type: ID
@@ -150,8 +149,6 @@ objectTypes:
 
   Address:
     table: dbeerpedia.addresses
-    filters:
-      city: { }
     fields:
       identifier:
         type: ID
@@ -159,6 +156,8 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      city: { }
 
   History:
     fields:

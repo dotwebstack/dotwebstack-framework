@@ -189,7 +189,7 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
-#        pageable: true
+        pageable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery

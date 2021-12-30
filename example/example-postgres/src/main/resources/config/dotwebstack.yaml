@@ -53,11 +53,7 @@ objectTypes:
       taste:
         field: taste
       brewery: {}
-#      breweryCity:
-#        field: brewery.visitAddress.city
       ingredients: {}
-#      ingredientName:
-#        field: ingredients.name
       retired: {}
     sortableBy:
       name:
@@ -144,26 +140,10 @@ objectTypes:
       geometry:
         field: geometry
       postalAddress: {}
-#      postalStreet:
-#        field: postalAddress.street
-#      postalCity:
-#        field: postalAddress.city
       visitAddress: {}
-#      visitStreet:
-#        field: visitAddress.street
-#      visitCity:
-#        field: visitAddress.city
       history: {}
-#      historyAge:
-#        field: history.age
       beers: {}
-#      beerName:
-#        field: beers.name
       relatedTo: {}
-#      relatedToName:
-#        field: relatedTo.name
-#      relatedToStatus:
-#        field: relatedTo.status
     fields:
       identifier:
         type: String
