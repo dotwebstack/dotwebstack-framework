@@ -19,8 +19,7 @@ objectTypes:
     filters:
       name:
         field: name
-      city:
-        field: visitAddress.invalid
+      visitAddress: {}
 
   Address:
     fields:
@@ -30,3 +29,6 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      city:
+        field: invalid

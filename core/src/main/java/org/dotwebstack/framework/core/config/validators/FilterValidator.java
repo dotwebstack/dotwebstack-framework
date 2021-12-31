@@ -50,41 +50,38 @@ public class FilterValidator implements SchemaValidator {
 
   private void validateFilterField(Schema schema, String objectTypeName,
       Map.Entry<String, FilterConfiguration> filterEntry) {
-    String filterFieldPath = getFilterFieldPath(filterEntry);
-    String[] filterFieldPathArr = filterFieldPath.split("\\.");
+    String filterFieldName = getFilterField(filterEntry);
 
-    Optional<? extends ObjectField> optionalField = getField(schema, objectTypeName, filterFieldPathArr);
+    ObjectField objectField = schema.getObjectType(objectTypeName)
+        .filter(objectType -> objectType.getFields()
+            .containsKey(filterFieldName))
+        .map(objectType -> objectType.getField(filterFieldName))
+        .orElseThrow(() -> invalidConfigurationException("Filter field '{}' not found in object type '{}'.",
+            filterFieldName, objectTypeName));
 
-    if (optionalField.isEmpty()) {
-      throw invalidConfigurationException("Filter field '{}' not found in object type '{}'.", filterFieldPath,
-          objectTypeName);
-    }
     var filterConfiguration = filterEntry.getValue();
     if (!filterConfiguration.isCaseSensitive()) {
-      if (optionalField.filter(ObjectField::isEnumeration)
-          .isPresent()) {
+      if (objectField.isEnumeration()) {
         throw invalidConfigurationException(
             "Filter '{}' with property 'caseSensitive' is 'false' not valid for enumerations.", filterEntry.getKey());
       }
-      if (optionalField.map(ObjectField::getType)
-          .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
-          .isPresent()) {
+
+      if (!Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
         throw invalidConfigurationException(
             "Filter '{}' with property 'caseSensitive' is 'false' not valid for type '{}'.", filterEntry.getKey(),
-            optionalField.get()
-                .getType());
+            objectField.getType());
       }
     }
-    if (FilterType.PARTIAL.equals(filterConfiguration.getType()) && optionalField.map(ObjectField::getType)
-        .filter(type -> !Objects.equals(Scalars.GraphQLString.getName(), type))
-        .isPresent()) {
+
+    if (FilterType.PARTIAL.equals(filterConfiguration.getType())
+        && !Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
       throw invalidConfigurationException(
           "Filter '{}' of type 'Term' in object type '{}' doesn´t refer to a 'String' field type.",
           filterEntry.getKey(), objectTypeName);
     }
   }
 
-  private String getFilterFieldPath(Map.Entry<String, FilterConfiguration> filterEntry) {
+  private String getFilterField(Map.Entry<String, FilterConfiguration> filterEntry) {
     return Optional.ofNullable(filterEntry.getValue()
         .getField())
         .orElse(filterEntry.getKey());

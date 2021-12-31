@@ -43,7 +43,7 @@ class FilterValidatorTest {
 
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
-    assertThat(thrown.getMessage(), is("Filter field 'visitAddress.invalid' not found in object type 'Brewery'."));
+    assertThat(thrown.getMessage(), is("Filter field 'invalid' not found in object type 'Address'."));
   }
 
   @Test
@@ -101,7 +101,6 @@ class FilterValidatorTest {
     var identifierField = new TestObjectField();
     identifierField.setType(Scalars.GraphQLInt.getName());
 
-
     var objectType = new TestObjectType();
     objectType.setFields(Map.of("identifier", identifierField));
 
@@ -125,7 +124,7 @@ class FilterValidatorTest {
     identifierField.setType(Scalars.GraphQLInt.getName());
 
     var nameField = new TestObjectField();
-    identifierField.setType(Scalars.GraphQLInt.getName());
+    nameField.setType(Scalars.GraphQLString.getName());
 
     var objectType = new TestObjectType();
     objectType.setFields(Map.of("identifier", identifierField, "name", nameField));
