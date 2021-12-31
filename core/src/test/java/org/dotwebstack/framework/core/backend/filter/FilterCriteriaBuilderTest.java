@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.backend.filter;
 
 import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.OR_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,7 +45,7 @@ class FilterCriteriaBuilderTest {
 
     List<ObjectField> fieldPath = List.of();
 
-    Map<String, Object> arguments = Map.of("_exists", true);
+    Map<String, Object> arguments = Map.of(EXISTS_FIELD, true);
 
     var builder = newFilterCriteriaBuilder().objectType(objectType)
         .fieldPath(fieldPath)
@@ -63,7 +65,7 @@ class FilterCriteriaBuilderTest {
 
     List<ObjectField> fieldPath = List.of(objectField);
 
-    Map<String, Object> arguments = Map.of("_exists", true);
+    Map<String, Object> arguments = Map.of(EXISTS_FIELD, true);
 
     var filterCriteria = newFilterCriteriaBuilder().objectType(objectType)
         .fieldPath(fieldPath)
@@ -95,7 +97,7 @@ class FilterCriteriaBuilderTest {
     filterConfiguration.setField("child");
     parentType.setFilters(Map.of("childfilter", filterConfiguration));
 
-    Map<String, Object> arguments = Map.of("childfilter", Map.of("_exists", true));
+    Map<String, Object> arguments = Map.of("childfilter", Map.of(EXISTS_FIELD, true));
 
     var filterCriteria = newFilterCriteriaBuilder().objectType(parentType)
         .argument(arguments)
@@ -109,11 +111,64 @@ class FilterCriteriaBuilderTest {
             .filterCriterias(List.of(ScalarFieldFilterCriteria.builder()
                 .filterType(FilterType.EXACT)
                 .fieldPath(List.of(objectField))
-                .value(Map.of("_exists", true))
+                .value(Map.of(EXISTS_FIELD, true))
                 .build()))
             .build()))
         .build()));
-
   }
 
+  @Test
+  void build_returnsFilterCriteria_forOrFilter() {
+    var childType = new TestObjectType();
+
+    var streetObjectField = new TestObjectField();
+    streetObjectField.setName("street");
+    childType.setFields(Map.of("street", streetObjectField));
+
+    var streetFilterConfiguration = new FilterConfiguration();
+    streetFilterConfiguration.setField("street");
+    childType.setFilters(Map.of("street", streetFilterConfiguration));
+
+    var parentType = new TestObjectType();
+
+    var childObjectField = new TestObjectField();
+    childObjectField.setName("child");
+    childObjectField.setTargetType(childType);
+    parentType.setFields(Map.of("child", childObjectField));
+
+    var filterConfiguration = new FilterConfiguration();
+    filterConfiguration.setField("child");
+    parentType.setFilters(Map.of("childfilter", filterConfiguration));
+
+    Map<String, Object> arguments =
+        Map.of("childfilter", Map.of("street", Map.of("eq", "foo"), OR_FIELD, Map.of("street", Map.of("eq", "bar"))));
+
+    var filterCriteria = newFilterCriteriaBuilder().objectType(parentType)
+        .argument(arguments)
+        .maxDepth(1)
+        .build();
+
+    assertThat(filterCriteria, equalTo(GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.AND)
+        .filterCriterias(List.of(GroupFilterCriteria.builder()
+            .logicalOperator(GroupFilterOperator.OR)
+            .filterCriterias(List.of(GroupFilterCriteria.builder()
+                .logicalOperator(GroupFilterOperator.AND)
+                .filterCriterias(List.of(ScalarFieldFilterCriteria.builder()
+                    .filterType(FilterType.EXACT)
+                    .fieldPath(List.of(childObjectField, streetObjectField))
+                    .value(Map.of("eq", "foo"))
+                    .build()))
+                .build(),
+                GroupFilterCriteria.builder()
+                    .logicalOperator(GroupFilterOperator.AND)
+                    .filterCriterias(List.of(ScalarFieldFilterCriteria.builder()
+                        .filterType(FilterType.EXACT)
+                        .fieldPath(List.of(childObjectField, streetObjectField))
+                        .value(Map.of("eq", "bar"))
+                        .build()))
+                    .build()))
+            .build()))
+        .build()));
+  }
 }
