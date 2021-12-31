@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.backend.filter;
 
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
+import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
 
@@ -9,12 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
@@ -22,8 +26,10 @@ import org.dotwebstack.framework.core.model.ObjectType;
 @Accessors(fluent = true)
 public class FilterCriteriaBuilder {
 
+  @NonNull
   private ObjectType<?> objectType;
 
+  @NonNull
   private Map<String, Object> argument;
 
   private List<ObjectField> fieldPath = new ArrayList<>();
@@ -39,48 +45,16 @@ public class FilterCriteriaBuilder {
   }
 
   public FilterCriteria build() {
-    if (currentDepth > maxDepth) {
-      throw unsupportedOperationException("Max depth of '{}' is exceeded for filter path '{}'", maxDepth,
-          fieldPath.stream()
-              .map(ObjectField::getName)
-              .collect(Collectors.joining(".")));
-    }
+    checkDepth();
 
-    var andCriterias = argument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(argument.get(filterName)))
-        .filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
-        .map(this::build)
-        .map(FilterCriteria.class::cast)
-        .collect(Collectors.toList());
+    var andGroup = buildAndGroup();
 
-    FilterCriteria andGroup = GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.AND)
-        .filterCriterias(andCriterias)
-        .build();
-
-    var orGroup = argument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(argument.get(filterName)))
-        .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
-        .findFirst()
-        .map(filterName -> newFilterCriteriaBuilder().objectType(objectType)
-            .argument(MapHelper.getNestedMap(argument, filterName))
-            .fieldPath(fieldPath)
-            .currentDepth(currentDepth)
-            .maxDepth(maxDepth)
-            .build());
-
-    return orGroup.map(groupFilterCriteria -> (FilterCriteria) GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.OR)
-        .filterCriterias(List.of(andGroup, groupFilterCriteria))
-        .build())
-        .orElse(andGroup);
+    return buildOrGroup(andGroup).orElse(andGroup);
   }
 
   private FilterCriteria build(String filterName) {
-    if (FilterConstants.EXISTS_FIELD.equalsIgnoreCase(filterName)) {
-      if (fieldPath.size() == 0) {
+    if (EXISTS_FIELD.equalsIgnoreCase(filterName)) {
+      if (fieldPath.isEmpty()) {
         throw unsupportedOperationException("Filter operator '_exists' is only supported for nested objects");
       }
       return ScalarFieldFilterCriteria.builder()
@@ -99,8 +73,8 @@ public class FilterCriteriaBuilder {
 
     if (targetType != null) {
       return newFilterCriteriaBuilder().objectType(targetType)
-          .argument(MapHelper.getNestedMap(argument, filterName))
-          .fieldPath(createFieldPath(field))
+          .argument(getNestedMap(argument, filterName))
+          .fieldPath(buildFieldPath(field))
           .currentDepth(currentDepth + 1)
           .maxDepth(maxDepth)
           .build();
@@ -111,12 +85,40 @@ public class FilterCriteriaBuilder {
     return ScalarFieldFilterCriteria.builder()
         .filterType(filterConfiguration.getType())
         .isCaseSensitive(filterConfiguration.isCaseSensitive())
-        .fieldPath(createFieldPath(field))
+        .fieldPath(buildFieldPath(field))
         .value(filterValue)
         .build();
   }
 
-  private ArrayList<ObjectField> createFieldPath(ObjectField field) {
+  private Optional<FilterCriteria> buildOrGroup(FilterCriteria andGroup) {
+    var orGroup = getArgumentKeys().filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
+        .findFirst()
+        .map(filterName -> newFilterCriteriaBuilder().objectType(objectType)
+            .argument(getNestedMap(argument, filterName))
+            .fieldPath(fieldPath)
+            .currentDepth(currentDepth)
+            .maxDepth(maxDepth)
+            .build());
+
+    return orGroup.map(filterCriteria -> GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.OR)
+        .filterCriterias(List.of(andGroup, filterCriteria))
+        .build());
+  }
+
+  private FilterCriteria buildAndGroup() {
+    var criteria = getArgumentKeys().filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
+        .map(this::build)
+        .map(FilterCriteria.class::cast)
+        .collect(Collectors.toList());
+
+    return GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.AND)
+        .filterCriterias(criteria)
+        .build();
+  }
+
+  private List<ObjectField> buildFieldPath(ObjectField field) {
     var result = new ArrayList<>(fieldPath);
     result.add(field);
     return result;
@@ -133,6 +135,21 @@ public class FilterCriteriaBuilder {
 
     throw illegalArgumentException("Expected entry value of type 'java.util.Map' but got '{}'", rawValue.getClass()
         .getName());
+  }
+
+  private void checkDepth() {
+    if (currentDepth > maxDepth) {
+      throw unsupportedOperationException("Max depth of '{}' is exceeded for filter path '{}'", maxDepth,
+          fieldPath.stream()
+              .map(ObjectField::getName)
+              .collect(Collectors.joining(".")));
+    }
+  }
+
+  private Stream<String> getArgumentKeys() {
+    return argument.keySet()
+        .stream()
+        .filter(filterName -> Objects.nonNull(argument.get(filterName)));
   }
 
 }

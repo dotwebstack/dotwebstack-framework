@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.backend.filter;
 import java.util.List;
 import java.util.Map;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.config.FilterType;
@@ -10,6 +11,7 @@ import org.dotwebstack.framework.core.model.ObjectField;
 
 @Builder
 @Getter
+@EqualsAndHashCode
 public class ScalarFieldFilterCriteria implements FilterCriteria {
   @NonNull
   @Builder.Default
