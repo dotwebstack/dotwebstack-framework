@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import lombok.NonNull;
+import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.core.config.FilterType;
@@ -26,10 +26,10 @@ import org.dotwebstack.framework.core.model.ObjectType;
 @Accessors(fluent = true)
 public class FilterCriteriaBuilder {
 
-  @NonNull
+  @NotNull
   private ObjectType<?> objectType;
 
-  @NonNull
+  @NotNull
   private Map<String, Object> argument;
 
   private List<ObjectField> fieldPath = new ArrayList<>();

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class FilterCriteriaBuilderTest {
 
   @Test
-  public void build_throwsException_forMaxDepthIsReached() {
+  void build_throwsException_forMaxDepthIsReached() {
     var objectType = new TestObjectType();
 
     var objectField = new TestObjectField();
@@ -27,35 +27,35 @@ class FilterCriteriaBuilderTest {
 
     Map<String, Object> arguments = Map.of();
 
-    var throwed = assertThrows(UnsupportedOperationException.class,
-        () -> newFilterCriteriaBuilder().objectType(objectType)
-            .fieldPath(fieldPath)
-            .argument(arguments)
-            .currentDepth(1)
-            .build());
+    var builder = newFilterCriteriaBuilder().objectType(objectType)
+        .fieldPath(fieldPath)
+        .argument(arguments)
+        .currentDepth(1);
+
+    var throwed = assertThrows(UnsupportedOperationException.class, builder::build);
 
     assertThat(throwed.getMessage(), equalTo("Max depth of '0' is exceeded for filter path 'node'"));
   }
 
   @Test
-  public void build_throwsException_forExistsFilterOnTopLevel() {
+  void build_throwsException_forExistsFilterOnTopLevel() {
     var objectType = new TestObjectType();
 
     List<ObjectField> fieldPath = List.of();
 
     Map<String, Object> arguments = Map.of("_exists", true);
 
-    var throwed = assertThrows(UnsupportedOperationException.class,
-        () -> newFilterCriteriaBuilder().objectType(objectType)
-            .fieldPath(fieldPath)
-            .argument(arguments)
-            .build());
+    var builder = newFilterCriteriaBuilder().objectType(objectType)
+        .fieldPath(fieldPath)
+        .argument(arguments);
+
+    var throwed = assertThrows(UnsupportedOperationException.class, builder::build);
 
     assertThat(throwed.getMessage(), equalTo("Filter operator '_exists' is only supported for nested objects"));
   }
 
   @Test
-  public void build_returnsFilterCriteria_forExistsFilter() {
+  void build_returnsFilterCriteria_forExistsFilter() {
     var objectType = new TestObjectType();
 
     var objectField = new TestObjectField();
@@ -81,7 +81,7 @@ class FilterCriteriaBuilderTest {
   }
 
   @Test
-  public void build_returnsFilterCriteria_forNestedFilter() {
+  void build_returnsFilterCriteria_forNestedFilter() {
     var childType = new TestObjectType();
 
     var parentType = new TestObjectType();

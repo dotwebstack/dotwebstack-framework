@@ -312,6 +312,7 @@ class FilterConditionBuilder {
     throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
+  @SuppressWarnings("squid:S3776")
   private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
       Object value) {
     if (MATCH == operator) {
