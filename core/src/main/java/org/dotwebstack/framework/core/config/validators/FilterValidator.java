@@ -76,7 +76,7 @@ public class FilterValidator implements SchemaValidator {
     if (FilterType.PARTIAL.equals(filterConfiguration.getType())
         && !Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
       throw invalidConfigurationException(
-          "Filter '{}' of type 'Term' in object type '{}' doesn´t refer to a 'String' field type.",
+          "Filter '{}' of type 'Partial' in object type '{}' doesn´t refer to a 'String' field type.",
           filterEntry.getKey(), objectTypeName);
     }
   }

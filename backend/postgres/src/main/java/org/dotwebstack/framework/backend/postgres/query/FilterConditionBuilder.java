@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
@@ -40,7 +41,6 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.BooleanUtils;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -350,10 +350,7 @@ class FilterConditionBuilder {
     }
 
     if (EXISTS == operator) {
-      if (BooleanUtils.isTrue((Boolean) value)) {
-        return field.isNotNull();
-      }
-      return field.isNull();
+      return isTrue((Boolean) value) ? field.isNotNull() : field.isNull();
     }
 
     if (isInIgnoreCaseAndOfTypeString(operator, objectField)) {

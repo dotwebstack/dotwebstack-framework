@@ -97,7 +97,7 @@ class FilterValidatorTest {
   }
 
   @Test
-  void validate_throwsException_withInvalidTermFieldTypeConfiguration() {
+  void validate_throwsException_withInvalidPartialFieldTypeConfiguration() {
     var identifierField = new TestObjectField();
     identifierField.setType(Scalars.GraphQLInt.getName());
 
@@ -115,7 +115,7 @@ class FilterValidatorTest {
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
     assertThat(thrown.getMessage(), equalTo(
-        "Filter 'testFilter' of type 'Term' in object type 'testObject' doesn´t refer to a 'String' field type."));
+        "Filter 'testFilter' of type 'Partial' in object type 'testObject' doesn´t refer to a 'String' field type."));
   }
 
   @Test
