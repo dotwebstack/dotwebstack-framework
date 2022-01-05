@@ -56,9 +56,6 @@ queries:
 objectTypes:
   Beer:
     table: dbeerpedia.beers
-    filters:
-      breweryCity:
-        field: brewery.visitAddress.city
     sortableBy:
       name:
         - field: name
@@ -106,6 +103,8 @@ objectTypes:
       taste:
         type: Taste
         list: true
+    filters:
+      brewery: { }
 
   Brewery:
     table: dbeerpedia.breweries
@@ -121,20 +120,6 @@ objectTypes:
       historyAge:
         - field: history.age
           direction: ASC
-    filters:
-      name: { }
-      status: { }
-      geometry: { }
-      postalStreet:
-        field: postalAddress.street
-      postalCity:
-        field: postalAddress.city
-      visitStreet:
-        field: visitAddress.street
-      visitCity:
-        field: visitAddress.city
-      historyAge:
-        field: history.age
     fields:
       record_id:
         type: Int
@@ -171,6 +156,13 @@ objectTypes:
         type: History
         nullable: true
         presenceColumn: his_age
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalAddress: {}
+      visitAddress: {}
+      history: {}
 
 
   Ingredient:
@@ -192,6 +184,9 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      street: {}
+      city: {}
 
   History:
     fields:
@@ -201,6 +196,8 @@ objectTypes:
       history:
         type: String
         column: his_history
+    filters:
+      age: {}
 
 enumerations:
   Taste:

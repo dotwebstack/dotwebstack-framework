@@ -43,7 +43,7 @@ class FilterValidatorTest {
 
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
-    assertThat(thrown.getMessage(), is("Filter field 'visitAddress.invalid' not found in object type 'Brewery'."));
+    assertThat(thrown.getMessage(), is("Filter field 'invalid' not found in object type 'Address'."));
   }
 
   @Test
@@ -97,10 +97,9 @@ class FilterValidatorTest {
   }
 
   @Test
-  void validate_throwsException_withInvalidTermFieldTypeConfiguration() {
+  void validate_throwsException_withInvalidPartialFieldTypeConfiguration() {
     var identifierField = new TestObjectField();
     identifierField.setType(Scalars.GraphQLInt.getName());
-
 
     var objectType = new TestObjectType();
     objectType.setFields(Map.of("identifier", identifierField));
@@ -116,7 +115,7 @@ class FilterValidatorTest {
     var thrown = assertThrows(InvalidConfigurationException.class, () -> filterValidator.validate(schema));
 
     assertThat(thrown.getMessage(), equalTo(
-        "Filter 'testFilter' of type 'Term' in object type 'testObject' doesn´t refer to a 'String' field type."));
+        "Filter 'testFilter' of type 'Partial' in object type 'testObject' doesn´t refer to a 'String' field type."));
   }
 
   @Test
@@ -125,7 +124,7 @@ class FilterValidatorTest {
     identifierField.setType(Scalars.GraphQLInt.getName());
 
     var nameField = new TestObjectField();
-    identifierField.setType(Scalars.GraphQLInt.getName());
+    nameField.setType(Scalars.GraphQLString.getName());
 
     var objectType = new TestObjectType();
     objectType.setFields(Map.of("identifier", identifierField, "name", nameField));

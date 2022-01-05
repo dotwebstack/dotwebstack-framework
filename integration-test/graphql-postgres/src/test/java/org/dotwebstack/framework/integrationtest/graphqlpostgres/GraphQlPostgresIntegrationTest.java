@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
-import static graphql.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.equalToObject;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -13,9 +12,6 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapWithSize.aMapWithSize;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.LocalDate;
@@ -24,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.test.TestApplication;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -33,7 +28,7 @@ import org.hamcrest.collection.IsIn;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.collection.IsMapWithSize;
-import org.jooq.tools.StringUtils;
+import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,8 +41,6 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -84,8 +77,6 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String PART_OF = "partOf";
 
-  private static final String ERRORS = "errors";
-
   private static final String NAME = "name";
 
   private static final String STATUS = "status";
@@ -95,8 +86,6 @@ class GraphQlPostgresIntegrationTest {
 
   @Autowired
   private GraphQL graphQL;
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
   public static final GraphQlPostgresIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =
@@ -123,16 +112,13 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_returnsBeers_Default() {
     var query = "{beers{identifier_beer name since}}";
-    JsonNode json = executeGetRequestDefault(query);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
 
-    List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
+    var beers = getNestedObjects(data, BEERS);
     assertThat(beers.size(), is(6));
     assertThat(beers.get(0)
         .get(NAME), is("Beer 1"));
@@ -182,45 +168,31 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_returnsBeer_forIdentifier() {
     var query = "{beer(identifier_beer: \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\" ){name}}";
-    JsonNode json = executeGetRequestDefault(query);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
 
-    Map<String, Object> beer = getNestedObject(data, BEER);
+    var beer = getNestedObject(data, BEER);
     assertThat(beer.get(NAME), is("Beer 1"));
   }
 
   @Test
   void getRequest_returnsBeer_forIdentifier_NullIfNotExist() {
     var query = "{beer(identifier_beer: \"1111\" ){name}}";
-    JsonNode json = executeGetRequestDefault(query);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
-    assertThat(data.containsKey(BEER), is(true));
-    assertTrue(json.get("data")
-        .get(BEER)
-        .toString()
-        .startsWith("null"));
+    assertThat(data, IsMapContaining.hasEntry("beer", null));
   }
 
   @Test
   void getRequest_returnsBeerWithNestedObject_forIdentifier() {
     String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"){ name brewery { name }}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -236,11 +208,8 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_returnsBreweries_Default() {
     var query = "{breweries {name status}}";
-    JsonNode json = executeGetRequestDefault(query);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -258,11 +227,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBrewery_withNestedObject() {
     String query = "{breweries{name status history{age history}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -293,11 +258,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBreweriesWithMappedBy_default() {
     String query = "{breweries{name status beers{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -330,11 +291,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBreweries_forSingleMappedByJoinColumn() {
     String query = "{breweries{name status beer{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
 
@@ -350,11 +307,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBreweryWithMappedBy_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\"){name status beers{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -377,11 +330,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBreweryWithNoBeers_forIdentifier() {
     String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\"){name status beers{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -400,11 +349,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBeersWithIngredient_forQueryWithJoinTable() {
     String query = "{beers{name ingredient{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -432,11 +377,7 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBeersWithDeepNesting_default() {
     String query = "{beers{identifier_beer name brewery{name beers{name ingredients{name}}}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -469,11 +410,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry{type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -506,11 +443,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(srid: 7931){type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -545,11 +478,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -577,28 +506,21 @@ class GraphQlPostgresIntegrationTest {
     var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(type: POLYGON, srid: 7415, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
+    var response = WebTestClientHelper.get(client, query);
 
-    assertThat(json.has(ERRORS), is(true));
-
-    assertThat(json.get(ERRORS)
-        .get(0)
-        .get("message")
-        .textValue(),
-        is("Exception while fetching data (/brewery) : Type argument is not allowed "
-            + "when argument bbox is true (geometry)."));
+    Assert.assertThat(response,
+        IsMapContaining.hasEntry(equalTo("errors"),
+            IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
+                "Exception while fetching data (/brewery) : Type argument is not allowed "
+                    + "when argument bbox is true (geometry)."))));
   }
 
   @Test
-  void getRequest_ReturnsBreweryWithNestedGeometryAsBbox_forNonPersistedBbox() {
+  void getRequest_returnsBreweryWithNestedGeometryAsBbox_forNonPersistedBbox() {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(srid: 7931, bbox: true){type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -626,11 +548,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(srid: 9067){type srid asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -661,14 +579,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweryWithGeometryType_forGeometryType() {
-    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name geometry(type : MULTIPOLYGON){type asWKT asWKB asGeoJSON}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -697,15 +611,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweryWithAggregateType_forMultipleBeers() {
-    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -720,15 +630,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweryWithAggregateType_forSingleBeer() {
-    String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
+    var query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -743,17 +649,13 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweryWithAggregateType_forNoBeer() {
-    String query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
+    var query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\")"
         + "{name beerAgg{ totalSold : intSum( field : \"soldPerYear\" ) "
         + "totalCount : count( field : \"soldPerYear\" )"
         + "averageSold : intAvg( field : \"soldPerYear\" ) maxSold : intMax( field : \"soldPerYear\" ) "
         + "tastes: stringJoin( field: \"taste\" ) } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -769,16 +671,12 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeerWithAggregateType_forIngredients() {
-    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalWeight : floatSum( field : \"weight\" ) "
         + "averageWeight : floatAvg( field : \"weight\" ) maxWeight : floatMax( field : \"weight\" )"
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -794,15 +692,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeerWithAggregateType_forDuplicateAvg() {
-    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ avgA : floatAvg( field : \"weight\" ) " + "avgB : floatAvg( field : \"weight\" ) "
         + "avgC : floatAvg( field : \"weight\" )  } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -817,13 +711,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsTheIngredientAndTheBeersItIsPartOf_forJoinWithReferencedColumn() {
-    String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
+    var query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") {name partOf{name }}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(INGREDIENT), is(true));
@@ -839,10 +729,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsTheIngredientAndTheBeersItIsPartOf_withMappedByJoinTable() {
-    String query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") "
+    var query = "{ingredient(identifier_ingredient: \"cd79545c-5fbb-11eb-ae93-0242ac130002\") "
         + "{name partOfWithMappedBy{name }}}";
 
-    Map<String, Object> data = WebTestClientHelper.get(client, query);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, aMapWithSize(1));
     assertThat(data, hasEntry(equalTo("ingredient"), equalToObject(
@@ -852,16 +742,12 @@ class GraphQlPostgresIntegrationTest {
   @Test
   @Disabled("see story DHUB-288")
   void getRequest_returnsBeerWithAggregateType_forCountDistinct() {
-    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
         + "countWeightDef : count( field : \"weight\" ) "
         + "countWeight : count( field : \"weight\", distinct : false )  } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -876,15 +762,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeerWithStringJoinAggregateType_forString() {
-    String query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
+    var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ totalCount : count( field : \"weight\" )"
         + "names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -898,15 +780,11 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeerWithStringJoinAggregateType_forStringArray() {
-    String query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
+    var query = "{brewery (identifier_brewery : \"d3654375-95fa-46b4-8529-08b0f777bd6b\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true ) } } }";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -920,15 +798,12 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
-    String query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
+    var query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "
         + "tastes : stringJoin( field : \"taste\", distinct : true )} " + "name postalAddress { street city } "
         + " visitAddress {street city} } }";
-    JsonNode json = executeGetRequestDefault(query);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERY), is(true));
@@ -947,13 +822,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withStringFilter() {
-    String query = "{breweries(filter: {name: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
+    var query = "{breweries(filter: {name: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, equalTo(Map.of("breweries",
         List.of(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X")))));
@@ -961,13 +832,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withBooleanFilter() {
-    String query = "{breweries(filter: {multinational: { eq:true }}){ identifier_brewery name }}";
+    var query = "{breweries(filter: {multinational: { eq:true }}){ identifier_brewery name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BREWERIES), Matchers.instanceOf(List.class)));
     assertThat(data.size(), is(1));
@@ -980,13 +847,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withBooleanNullFilter() {
-    String query = "{breweries(filter: {multinational: { eq: null }}){ identifier_brewery name }}";
+    var query = "{breweries(filter: {multinational: { eq: null }}){ identifier_brewery name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BREWERIES), Matchers.instanceOf(List.class)));
     assertThat(data.size(), is(1));
@@ -1000,13 +863,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withEnumFilter() {
-    String query = "{breweries(filter: {status: {eq: \"inactive\"}}){ identifier_brewery name status }}";
+    var query = "{breweries(filter: {status: {eq: \"inactive\"}}){ identifier_brewery name status }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, equalTo(Map.of("breweries", List.of(Map.of("identifier_brewery",
         "28649f76-ddcf-417a-8c1d-8e5012c31959", "name", "Brewery Z", "status", "inactive")))));
@@ -1014,13 +873,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withCaseInsensitiveFilter() {
-    String query = "{breweries(filter: {name: {eq: \"BrEwErY z\"}}){ identifier_brewery name }}";
+    var query = "{breweries(filter: {name: {eq: \"BrEwErY z\"}}){ identifier_brewery name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, equalTo(Map.of("breweries",
         List.of(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c31959", "name", "Brewery Z")))));
@@ -1028,14 +883,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withNestedFilter() {
-    String query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
+    var query = "{breweries { identifier_brewery name beers(filter: {sinceDate: {gte: \"2016-01-01\"}}) "
         + "{ identifier_beer name} }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BREWERIES), Matchers.instanceOf(List.class)));
 
@@ -1061,13 +912,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withDateGreaterThenFilter() {
-    String query = "{beers(filter: {sinceDate: {gt: \"2016-01-01\"}}){ identifier_beer name }}";
+    var query = "{beers(filter: {sinceDate: {gt: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1083,13 +930,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withDateGreaterThenEqualsFilter() {
-    String query = "{beers(filter: {sinceDate: {gte: \"2016-01-01\"}}){ identifier_beer name }}";
+    var query = "{beers(filter: {sinceDate: {gte: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1106,13 +949,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withDateLowerThenFilter() {
-    String query = "{beers(filter: {sinceDate: {lt: \"2016-01-01\"}}){ identifier_beer name }}";
+    var query = "{beers(filter: {sinceDate: {lt: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1126,13 +965,9 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withDateLowerThenEqualsFilter() {
-    String query = "{beers(filter: {sinceDate: {lte: \"2016-01-01\"}}){ identifier_beer name }}";
+    var query = "{beers(filter: {sinceDate: {lte: \"2016-01-01\"}}){ identifier_beer name }}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1146,14 +981,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withDateTimeGreaterThenEqualsFilter() {
-    String query = "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\"}}){ identifier_beer name }}";
+  void postRequest_returnsBeers_withDateTimeGreaterThenEqualsFilter() {
+    var query = "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\"}}){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1165,16 +996,11 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withMultiOperandFilter() {
-    String query =
-        "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}})"
-            + "{ identifier_beer name }}";
+  void postRequest_returnsBeers_withMultiOperandFilter() {
+    var query = "{beers(filter: {lastBrewed: {gte: \"2020-08-11T10:15:30+01:00\", lt: \"2020-09-11T10:15:30+01:00\"}})"
+        + "{ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1185,14 +1011,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequestUsingContentTypeApplicationGraphql_returnsBeers_withNotFilter() {
-    String query = "{beers(filter: {lastBrewed: {not: {gte: \"2020-08-11T10:15:30+01:00\"}}}){ identifier_beer name }}";
+  void postRequest_returnsBeers_withNotFilter() {
+    var query = "{beers(filter: {lastBrewed: {not: {gte: \"2020-08-11T10:15:30+01:00\"}}}){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1207,14 +1029,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequest_returnsBeers_withNestedNotFilter() {
-    String query = "{beers(filter: {breweryPostalAdressCity: {not: {eq: \"Dublin\"}}}){ identifier_beer name }}";
+  void getRequest_returnsBeers_withNestedNotFilter() {
+    var query = "{beers(filter: {brewery: {postalAddress: {city: {not: {eq: \"Dublin\"}}}}}){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, hasEntry(equalTo(BEERS), Matchers.instanceOf(List.class)));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1227,10 +1045,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withOrFilter() {
-    String query = "{\n" + "  breweries(filter: {name: {eq: \"Brewery X\"}, status: {eq: \"active\"}, "
+    var query = "{\n" + "  breweries(filter: {name: {eq: \"Brewery X\"}, status: {eq: \"active\"}, "
         + "_or: {name: {eq: \"Brewery Z\"}}}) {\n" + "    name\n" + "  }\n" + "}";
 
-    Map<String, Object> data = WebTestClientHelper.get(client, query);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, aMapWithSize(1));
     Assert.assertThat(data, hasEntry(equalTo("breweries"), IsCollectionWithSize.hasSize(2)));
@@ -1242,12 +1060,8 @@ class GraphQlPostgresIntegrationTest {
   void getRequest_returnsBeers_forQueryStringWithMultipleQueriesAndOperationNameProvided() {
     var query =
         "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
-    var operationName = "beerCollection";
-    JsonNode json = executeGetRequestWithOperationName(query, operationName);
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query, "beerCollection");
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1261,13 +1075,10 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_returnsBeer_forParameterProvidedInVariables() {
     var query = "query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}";
-    var variables = "{\n" + "  \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "}";
 
-    JsonNode json = executeGetRequestWithVariables(query, variables);
+    Map<String, Object> variables = Map.of("identifier", "b0e7cf18-e3ce-439b-a63e-034c8452f59c");
 
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query, null, variables);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -1281,62 +1092,51 @@ class GraphQlPostgresIntegrationTest {
     var query =
         "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
 
-    JsonNode json = executeGetRequestDefault(query);
+    var response = WebTestClientHelper.get(client, query);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("Must provide operation name if query contains multiple operations."));
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response,
+        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
   void getRequest_returnsProblemJson_forQueryStringWithMultipleQueriesAndOperationNameIsEmptyString() {
     var query =
         "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
-    var operationName = "";
-    JsonNode json = executeGetRequestWithOperationName(query, operationName);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("Must provide operation name if query contains multiple operations."));
+    var response = WebTestClientHelper.get(client, query, "");
+
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response,
+        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
   void getRequest_returnsProblemJson_forEmptyQueryString() {
     var query = "";
-    JsonNode json = executeGetRequestDefault(query);
+    var response = WebTestClientHelper.get(client, query);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response,
+        IsMapContaining.hasEntry("detail", "400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
   }
 
   @Test
   void getRequest_returnsProblemJson_ifParameterNotProvidedInVariables() {
     var query = "query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}";
-    var variables = "{\n" + "  \"\": \"\"\n" + "}";
+    Map<String, Object> variables = Map.of();
 
-    JsonNode json = executeGetRequestWithVariables(query, variables);
+    var response = WebTestClientHelper.get(client, query, null, variables);
 
-    assertThat(json.has(ERRORS), is(true));
-
-    assertThat(json.get(ERRORS)
-        .get(0)
-        .get("message")
-        .textValue(), is("Variable 'identifier' has coerced Null value for NonNull type 'ID!'"));
+    Assert.assertThat(response, IsMapContaining.hasEntry(equalTo("errors"), IsIterableContaining.hasItems(
+        IsMapContaining.hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
   void postRequestUsingContentTypeApplicationJson_returnsBeers_default() {
     var body = "{\n" + "  \"query\": \"{beers{identifier_beer name}}\",\n" + "  \"variables\": {  }\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1353,11 +1153,7 @@ class GraphQlPostgresIntegrationTest {
         + "query breweryCollection{breweries{identifier_brewery name}}\",\n"
         + "  \"operationName\": \"beerCollection\",\n" + "  \"variables\": {  }\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1375,11 +1171,7 @@ class GraphQlPostgresIntegrationTest {
             + "  \"variables\": {\n" + "      \"identifier\": \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\"\n" + "      }\n"
             + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEER), is(true));
@@ -1394,14 +1186,10 @@ class GraphQlPostgresIntegrationTest {
         "{\n" + "  \"query\": \"query singleBeer($identifier: ID!) {beer(identifier_beer: $identifier ){name}}\",\n"
             + "  \"variables\": {\n" + "      \"otherVariableName\": \"otherVariableValue\"\n" + "      }\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+    var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(json.has(ERRORS), is(true));
-
-    assertThat(json.get(ERRORS)
-        .get(0)
-        .get("message")
-        .textValue(), is("Variable 'identifier' has coerced Null value for NonNull type 'ID!'"));
+    Assert.assertThat(response, IsMapContaining.hasEntry(equalTo("errors"), IsIterableContaining.hasItems(
+        IsMapContaining.hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
@@ -1409,47 +1197,38 @@ class GraphQlPostgresIntegrationTest {
     var body = "{\n" + "  \"query\": \"query beerCollection{beers{identifier_beer name}}"
         + " query breweryCollection{breweries{identifier_brewery name}}\",\n" + "  \"variables\": {}\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+    var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("Must provide operation name if query contains multiple operations."));
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response,
+        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
   void postRequest_returnsProblemJson_forEmptyQueryString() {
     var body = "{\n" + "  \"query\": \"\",\n" + "  \"operationName\": \"\",\n" + "  \"variables\": {}\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+    var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("Required parameter 'query' can not be empty."));
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response, IsMapContaining.hasEntry("detail", "Required parameter 'query' can not be empty."));
   }
 
   @Test
   void postRequest_returnsProblemJson_forMissingQueryString() {
     var body = "{\n" + "  \"operationName\": \"\",\n" + "  \"variables\": {}\n" + "}";
 
-    JsonNode json = executePostRequest(body, MediaType.APPLICATION_JSON_VALUE);
+    var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(json.get("status")
-        .asInt(), is(400));
-    assertThat(json.get("detail")
-        .textValue(), is("Required parameter 'query' is not present."));
+    assertThat(response, IsMapContaining.hasEntry("status", 400));
+    assertThat(response, IsMapContaining.hasEntry("detail", "Required parameter 'query' is not present."));
   }
 
   @Test
-  void postRequest_returnsBeers_forFilterQueryWithNestedFieldPath() {
-    String query = "{beers(filter: {breweryCity: {eq: \"Dublin\"}}){ identifier_beer name }}";
+  void getRequest_returnsBeers_forFilterQueryWithNestedFieldPath() {
+    String query = "{beers(filter: {brewery: {visitAddress: {city: {eq: \"Dublin\"}}}}){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1463,28 +1242,20 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
-    String query = "{breweries(filter: {beerBreweryName: {eq: \"Brewery X\"}}){ identifier_brewery name }}";
+  void getRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
+    var query = "{breweries(filter: {beers: {brewery: {name: {eq: \"Brewery X\"}}}}){ identifier_brewery name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     Assert.assertThat(data, hasEntry(equalTo("breweries"), iterableWithSize(1)));
     Assert.assertThat(data, hasEntry(equalTo("breweries"), hasItems(hasEntry(equalTo("name"), equalTo("Brewery X")))));
   }
 
   @Test
-  void graphQlQuery_returnsBeers_forSortNameDescQuery() {
-    String query = "{beers(sort: NAME_DESC){ identifier_beer name }}";
+  void getRequest_returnsBeers_forSortNameDescQuery() {
+    var query = "{beers(sort: NAME_DESC){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1501,14 +1272,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBeers_forSortQueryWithNestedFieldPath() {
-    String query = "{beers(sort: BREWERY_CITY){ identifier_beer name }}";
+  void getRequest_returnsBeers_forSortQueryWithNestedFieldPath() {
+    var query = "{beers(sort: BREWERY_CITY){ identifier_beer name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BEERS), is(true));
@@ -1525,14 +1292,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forNestedSortQuery() {
-    String query = "{breweries { identifier_brewery name beers(sort: NAME_DESC){ identifier_beer name }} }";
+  void getRequest_returnsBreweries_forNestedSortQuery() {
+    var query = "{breweries { identifier_brewery name beers(sort: NAME_DESC){ identifier_beer name }} }";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1552,15 +1315,12 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forNestedFilterQuery() {
-    String query = "{breweries { identifier_brewery name beers(filter: {breweryCity: {eq: \"Dublin\"}})"
-        + "{ identifier_beer name }} }";
+  void getRequest_returnsBreweries_forNestedFilterQuery() {
+    var query =
+        "{breweries { identifier_brewery name beers(filter: {brewery: {visitAddress: {city: {eq: \"Dublin\"}}}})"
+            + "{ identifier_beer name }} }";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1580,14 +1340,10 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forNestedObjectFilterQuery() {
-    String query = "{breweries(filter: {historyAge: {eq: 1988}}) { identifier_brewery name }}";
+  void getRequest_returnsBreweries_forNestedObjectFilterQuery() {
+    var query = "{breweries(filter: {history: {age: {eq: 1988}}}) { identifier_brewery name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1599,17 +1355,13 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkt() {
-    String query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
+  void getRequest_returnsBreweries_forGeometryFilterQueryWkt() {
+    var query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
         + "\"POLYGON((206387.0439 447771.0547, 206384.4262 447765.9768, 206389.6081 447763.4587, "
         + "206392.4175 447767.804, 206391.3745 447770.732, 206387.0439 447771.0547))\"}}})"
         + " { identifier_brewery name geometry { srid asWKT} }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1621,17 +1373,12 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forGeometryFilterQueryWkb() {
-    String query =
-        "{breweries(filter: {geometry: {intersects: {fromWKB: \"AQMAAAABAAAABgAAAEI+6FmYMQlB3EYDOGxUG0Gsi9togzE"
-            + "JQVtCPuhXVBtBZohj3awxCUHrc7XVTVQbQXE9ClfDMQlBqMZLN19UG0Ej2/n+ujEJQXNoke1qVBtBQj7oWZgxCUHcRgM4bFQbQQ"
-            + "==\"}}}) { identifier_brewery name }}";
+  void postRequest_returnsBreweries_forGeometryFilterQueryWkb() {
+    var query = "{breweries(filter: {geometry: {intersects: {fromWKB: \"AQMAAAABAAAABgAAAEI+6FmYMQlB3EYDOGxUG0Gsi9togzE"
+        + "JQVtCPuhXVBtBZohj3awxCUHrc7XVTVQbQXE9ClfDMQlBqMZLN19UG0Ej2/n+ujEJQXNoke1qVBtBQj7oWZgxCUHcRgM4bFQbQQ"
+        + "==\"}}}) { identifier_brewery name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1643,18 +1390,14 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forGeometryFilterQueryGeoJson() {
-    String query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
+  void postRequest_returnsBreweries_forGeometryFilterQueryGeoJson() {
+    var query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
         + "\\\"coordinates\\\": [[[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"
         + "[206392.4175,447767.804],[206391.3745,447770.732],[206387.0439,447771.0547]]],"
         + "\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
         + "{\\\"name\\\":\\\"EPSG:28992\\\"}}}\"}}}) { identifier_brewery name }}";
 
-    JsonNode json = executePostRequest(query, "application/graphql");
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.post(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERIES), is(true));
@@ -1666,20 +1409,21 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forStringPartialFilter() {
-    String query = "{breweries(filter: {postalAddressStreet: {match: \"Ch\"}}) { name }}";
+  void getRequest_returnsBreweries_forStringPartialFilter() {
+    var query = "{breweries(filter: {postalAddress: {streetPartial: {match: \"Ch\"}}}) { name }}";
 
-    Map<String, Object> data = WebTestClientHelper.get(client, query);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data, equalTo(Map.of("breweries", List.of(Map.of("name", "Brewery X")))));
   }
 
   @Test
-  void graphQlQuery_returnsBreweries_forEnumListFilter() {
-    String query =
+  void getRequest_returnsBreweries_forEnumListFilter() {
+    var query =
         "{\n" + "  beers(filter: {taste: {containsAllOf: [\"MEATY\", \"FRUITY\"]}}) {\n" + "    name\n" + "  }\n" + "}";
-    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data, equalTo(Map.of("beers", List.of(Map.of("name", "Beer 1"), Map.of("name", "Beer 2")))));
@@ -1687,14 +1431,10 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
-    String query = "{\n" + "  beers {\n" + "    identifier_beer\n" + "    name\n" + "    ingredients{\n"
+    var query = "{\n" + "  beers {\n" + "    identifier_beer\n" + "    name\n" + "    ingredients{\n"
         + "      identifier_ingredient\n" + "      name\n" + "    }\n" + "  }\n" + "}\n";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data,
@@ -1744,75 +1484,45 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_forQueryWithBreweryNestedFieldFilter() {
-    String query = "{\n" + "  beers(filter: {breweryHistoryAge: {eq: 1988}}) {\n" + "    name\n" + "  }\n" + "}";
+    var query = "{\n" + "  beers(filter: {brewery: {history: {age: {eq: 1988}}}}) {\n" + "    name\n" + "  }\n" + "}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    var data = WebTestClientHelper.get(client, query);
 
     Assert.assertThat(data, hasEntry(equalTo("beers"), hasItems(hasEntry(equalTo("name"), equalTo("Beer 1")),
         hasEntry(equalTo("name"), equalTo("Beer 2")), hasEntry(equalTo("name"), equalTo("Beer 4")))));
   }
 
-  private JsonNode executeGetRequestDefault(String query) {
-    return executeGetRequest(query, "", "");
+  @Test
+  void getRequest_returnsBreweries_withNestedObjectExistsTrueFilter() {
+    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: true}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(data, hasEntry(equalTo("breweries"),
+        hasItems(hasEntry(equalTo("name"), equalTo("Brewery X")), hasEntry(equalTo("name"), equalTo("Brewery Y")))));
   }
 
-  private JsonNode executeGetRequestWithOperationName(String query, String operationName) {
-    return executeGetRequest(query, operationName, "");
+  @Test
+  void getRequest_returnsBreweries_withNestedObjectExistsFalseFilter() {
+    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(data, hasEntry(equalTo("breweries"),
+        hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
   }
 
-  private JsonNode executeGetRequestWithVariables(String query, String variables) {
-    return executeGetRequest(query, "", variables);
-  }
+  @Test
+  void getRequest_returnsBreweries_withObjectExistsFilter() {
+    var query = "{\n" + "  breweries(filter: {_exists: false}) {\n" + "    name\n" + "  }\n" + "}";
 
-  private JsonNode executeGetRequest(String query, String operationName, String variables) {
-    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/");
+    var response = WebTestClientHelper.get(client, query);
 
-    if (!StringUtils.isBlank(query)) {
-      uriBuilder.queryParam("query", query);
-    }
-
-    if (!StringUtils.isBlank(operationName)) {
-      uriBuilder.queryParam("operationName", operationName);
-    }
-
-    if (!StringUtils.isBlank(variables)) {
-      uriBuilder.queryParam("variables", variables);
-    }
-
-    var result = client.get()
-        .uri(uriBuilder.build()
-            .toUri())
-        .exchange()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    return getJson(result);
-  }
-
-  private JsonNode executePostRequest(String body, String contentType) {
-    var result = client.post()
-        .uri("/")
-        .header("content-type", contentType)
-        .body(BodyInserters.fromValue(body))
-        .exchange()
-        .expectBody(String.class)
-        .returnResult()
-        .getResponseBody();
-
-    return getJson(result);
-  }
-
-  private JsonNode getJson(String result) {
-    try {
-      return mapper.readTree(result);
-    } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse string to json: %s", result));
-    }
+    Assert.assertThat(response,
+        IsMapContaining.hasEntry(equalTo("errors"),
+            IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
+                "Exception while fetching data (/breweries) : Filter operator '_exists' "
+                    + "is only supported for nested objects"))));
   }
 
   @SuppressWarnings("unchecked")
@@ -1825,13 +1535,4 @@ class GraphQlPostgresIntegrationTest {
     return (Map<String, Object>) data.get(name);
   }
 
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> getDataFromJsonNode(JsonNode json) {
-    try {
-      return mapper.readValue(json.get("data")
-          .toString(), Map.class);
-    } catch (JsonProcessingException exception) {
-      throw ExceptionHelper.illegalArgumentException(String.format("Failed to parse Json to Map: %s", json));
-    }
-  }
 }

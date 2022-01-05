@@ -16,6 +16,7 @@ import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.collection.IsCollectionWithSize;
@@ -127,11 +128,15 @@ class JoinHelperTest {
 
   @Test
   void createJoinConditions_returnsListCondition() {
+    var context = new Context();
+    context.setFields(Map.of("arg", mock(ContextField.class)));
+
     var contextCriteria = ContextCriteria.builder()
         .name("test")
-        .context(mock(Context.class))
+        .context(context)
         .values(Map.of("arg", "val"))
         .build();
+
     Table<Record> junctionTable = findTable("table1", contextCriteria);
     Table<Record> referencedTable = findTable("table2", contextCriteria);
     JoinColumn joinColumn = mock(JoinColumn.class);

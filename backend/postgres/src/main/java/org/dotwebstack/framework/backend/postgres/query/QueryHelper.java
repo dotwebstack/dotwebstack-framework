@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -76,16 +75,21 @@ class QueryHelper {
   private static Table<Record> createTable(String name, ContextCriteria contextCriteria) {
     AtomicInteger atomicInteger = new AtomicInteger(0);
 
-    String bindingKeys = contextCriteria.getValues()
-        .keySet()
-        .stream()
-        .map(key -> String.format("{%d}", atomicInteger.getAndIncrement()))
-        .collect(Collectors.joining(","));
+    var bindingKeys = new ArrayList<String>();
+    var bindingValues = new ArrayList<>();
 
-    Object[] bindingValues = new ArrayList<>(contextCriteria.getValues()
-        .values()).toArray(Object[]::new);
+    contextCriteria.getContext()
+        .getFields()
+        .forEach((fieldName, contextField) -> {
+          bindingKeys.add(String.format("{%d}", atomicInteger.getAndIncrement()));
+          bindingValues.add(contextCriteria.getValues()
+              .get(fieldName));
+        });
 
-    return DSL.table(String.format("%s_%s_ctx(%s)", name, contextCriteria.getName(), bindingKeys), bindingValues);
+    var joinedBindingKeys = String.join(",", bindingKeys);
+
+    return DSL.table(String.format("%s_%s_ctx(%s)", name, contextCriteria.getName(), joinedBindingKeys),
+        bindingValues.toArray(Object[]::new));
   }
 
   public static Function<String, Table<Record>> createTableCreator(SelectQuery<?> query,

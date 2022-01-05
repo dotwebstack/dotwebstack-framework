@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
@@ -14,6 +15,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ_IGNORE_CASE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EXISTS;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.IN;
@@ -311,6 +313,7 @@ class FilterConditionBuilder {
     throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
+  @SuppressWarnings("squid:S3776")
   private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
       Object value) {
     if (MATCH == operator) {
@@ -345,6 +348,10 @@ class FilterConditionBuilder {
 
     if (IN == operator) {
       return field.in(getFieldListValue(objectField, value));
+    }
+
+    if (EXISTS == operator) {
+      return isTrue((Boolean) value) ? field.isNotNull() : field.isNull();
     }
 
     if (isInIgnoreCaseAndOfTypeString(operator, objectField)) {
@@ -382,7 +389,7 @@ class FilterConditionBuilder {
 
   private Field<?> getValue(PostgresObjectField objectField, Object value) {
     if (value == null) {
-      DSL.param(createDataType(Boolean.class));
+      return DSL.param(createDataType(Boolean.class));
     }
 
     var field = DSL.val(value);

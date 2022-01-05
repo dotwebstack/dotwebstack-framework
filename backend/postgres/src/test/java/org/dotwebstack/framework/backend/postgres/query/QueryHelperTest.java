@@ -10,10 +10,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
@@ -25,16 +27,24 @@ class QueryHelperTest {
 
   @Test
   void findTable_returnsValue_forContextCriteria() {
+    var context = new Context();
+
+    var contextFields = new LinkedHashMap<String, ContextField>();
+    contextFields.put("arg1", mock(ContextField.class));
+    contextFields.put("arg2", mock(ContextField.class));
+
+    context.setFields(contextFields);
+
     var contextCriteria = ContextCriteria.builder()
         .name("test")
-        .context(mock(Context.class))
-        .values(Map.of("arg", "val"))
+        .context(context)
+        .values(Map.of("arg2", "val2", "arg1", "val1"))
         .build();
 
     Table<Record> result = findTable("table", contextCriteria);
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(), equalTo("table_test_ctx('val')"));
+    assertThat(result.toString(), equalTo("table_test_ctx('val1','val2')"));
   }
 
   @Test

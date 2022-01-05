@@ -201,7 +201,7 @@ class BackendRequestFactoryTest {
 
     var date = LocalDate.of(2021, 1, 1);
     Map<String, Object> data = new HashMap<>();
-    Map<String, Object> argument = Map.of("name", "name");
+    Map<String, Object> argument = Map.of("name", Map.of("eq", "name-value"));
     data.put("key", new DateSupplier(false, date));
     Map<String, Object> arguments = new HashMap<>();
     arguments.put("arg", Map.of("arg1", data));

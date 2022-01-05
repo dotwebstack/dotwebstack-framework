@@ -24,11 +24,6 @@ public class TestHelper {
     this.backendModule = backendModule;
   }
 
-  public void initObjecTypes(String pathToConfigFile) {
-    Schema schema = getSchema(pathToConfigFile);
-    backendModule.init(schema.getObjectTypes());
-  }
-
   public Schema getSchema(String pathToConfigFile) {
     var objectMapper = createObjectMapper();
 
