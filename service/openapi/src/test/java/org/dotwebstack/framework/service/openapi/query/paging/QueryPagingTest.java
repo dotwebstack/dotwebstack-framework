@@ -109,4 +109,24 @@ class QueryPagingTest {
     assertThat(arguments.get(FIRST_ARGUMENT_NAME), is(42));
     assertThat(arguments.get(OFFSET_FIELD_NAME), is(84));
   }
+
+  @Test
+  void toPagingArguments_throwsParameterValidationException_whenMaxFirstIsExceeded() {
+    Map<String, Object> parameters = Map.of("pageSize", 101, "page", 1);
+
+    ParameterValidationException parameterValidationException =
+        assertThrows(ParameterValidationException.class, () -> QueryPaging.toPagingArguments(paging, parameters));
+
+    assertThat(parameterValidationException.getMessage(), is("`pageSize` parameter value exceeds allowed value."));
+  }
+
+  @Test
+  void toPagingArguments_throwsParameterValidationException_whenMaxOffsetIsExceeded() {
+    Map<String, Object> parameters = Map.of("pageSize", 50, "page", 1001);
+
+    ParameterValidationException parameterValidationException =
+        assertThrows(ParameterValidationException.class, () -> QueryPaging.toPagingArguments(paging, parameters));
+
+    assertThat(parameterValidationException.getMessage(), is("`page` parameter value exceeds allowed value."));
+  }
 }
