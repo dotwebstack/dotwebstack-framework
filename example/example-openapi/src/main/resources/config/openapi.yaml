@@ -75,7 +75,13 @@ paths:
           in: query
           schema:
             type: integer
+            enum:
+              - 2
+              - 10
+              - 20
+              - 50
             default: 2
+
       #        - name: withAddressSubject
       #          in: query
       #          schema:
