@@ -65,8 +65,10 @@ class BackendRequestFactoryTest {
     var beerFieldDefinition = graphQlSchema.getObjectType("Brewery")
         .getFieldDefinition("beer");
 
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
     var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
         .fieldDefinition(breweryFieldDefinition)
+        .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
         .build();
 
@@ -75,26 +77,19 @@ class BackendRequestFactoryTest {
     var beerField = mock(SelectedField.class);
 
     when(beerField.getType()).thenReturn(beerFieldDefinition.getType());
-    when(beerField.getFieldDefinitions()).thenReturn(List.of(beerFieldDefinition));
     when(beerField.getSelectionSet()).thenReturn(beerSelectionSet);
     when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
     when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    when(executionStepInfo.getObjectType()
+        .getName()).thenReturn("Query");
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
 
     var objectFields = objectRequest.getObjectFields();
     assertThat(objectFields.size(), is(1));
-
-    var keyCriteria = objectFields.values()
-        .stream()
-        .findFirst()
-        .orElseThrow()
-        .getKeyCriteria();
-
-    assertThat(keyCriteria, notNullValue());
   }
 
   @Test
@@ -125,6 +120,10 @@ class BackendRequestFactoryTest {
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
+    when(executionStepInfo.getObjectType()).thenReturn(objectType);
+    when(executionStepInfo.getObjectType()
+        .getName()).thenReturn("Query");
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, is(notNullValue()));

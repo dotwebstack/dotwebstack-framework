@@ -191,8 +191,6 @@ objectTypes:
         type: Beer
         nullable: true
         mappedBy: brewery
-#        keys:
-#          - identifier
       beers:
         type: Beer
         list: true

@@ -12,7 +12,6 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJo
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
-import static org.dotwebstack.framework.backend.postgres.query.KeyHelper.addKeyFields;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
@@ -20,8 +19,9 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findT
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
-import static org.dotwebstack.framework.backend.postgres.query.SortHelper.addSortFields;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
+import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.ArrayList;
@@ -42,7 +42,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -144,8 +143,7 @@ class SelectBuilder {
 
     var dataQuery = dslContext.selectQuery(table);
 
-    if (Optional.ofNullable(objectRequest.getKeyCriteria())
-        .isPresent()) {
+    if (objectRequest.getKeyCriteria() != null) {
       addKeyFields(objectRequest);
     }
 
@@ -324,20 +322,25 @@ class SelectBuilder {
       return Optional.empty();
     }
 
-    var conditions = keyCriteria.getValues().entrySet().stream().map(entry -> {
-      var fieldPath = entry.getKey();
+    var conditions = keyCriteria.getValues()
+        .entrySet()
+        .stream()
+        .map(entry -> {
+          var fieldPath = entry.getKey();
 
-      Field<Object> sqlField;
-      if (fieldPath.size() > 1) {
-        var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
+          Field<Object> sqlField;
+          if (fieldPath.size() > 1) {
+            var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
-        sqlField = column(null, leafFieldMapper.getAlias());
-      } else {
-        sqlField = column(table,fieldPath.get(0).getName());
-      }
+            sqlField = column(null, leafFieldMapper.getAlias());
+          } else {
+            sqlField = column(table, fieldPath.get(0)
+                .getName());
+          }
 
-      return sqlField.equal(entry.getValue());
-    }).collect(Collectors.toList());
+          return sqlField.equal(entry.getValue());
+        })
+        .collect(Collectors.toList());
 
     return Optional.of(JoinHelper.andCondition(conditions));
   }

@@ -428,8 +428,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var beerFieldDefinition = fieldDefinitions.get(4);
     assertThat(beerFieldDefinition.getName(), is("beer"));
     assertType(beerFieldDefinition.getType(), "Beer");
-    assertThat(beerFieldDefinition.getInputValueDefinitions()
-        .size(), is(1));
 
     var beersFieldDefinition = fieldDefinitions.get(5);
     assertThat(beersFieldDefinition.getName(), is("beers"));

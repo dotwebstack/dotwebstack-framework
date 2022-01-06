@@ -1,18 +1,19 @@
-package org.dotwebstack.framework.backend.postgres.query;
+package org.dotwebstack.framework.core.helpers;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
-final class SortHelper {
+public class ObjectRequestHelper {
 
-  private SortHelper() {}
+  private ObjectRequestHelper() {}
 
-  static void addSortFields(CollectionRequest collectionRequest) {
+  public static void addSortFields(CollectionRequest collectionRequest) {
     collectionRequest.getSortCriterias()
         .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
   }
@@ -36,7 +37,28 @@ final class SortHelper {
     }
   }
 
-  public static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  public static void addKeyFields(ObjectRequest objectRequest) {
+    var keyCriteria = objectRequest.getKeyCriteria();
+
+    final AtomicReference<ObjectRequest> myObjectRequest = new AtomicReference<>(objectRequest);
+
+    keyCriteria.getValues()
+        .forEach((fieldPath, value) -> {
+          for (int index = 0; index < fieldPath.size(); index++) {
+            ObjectField sortField = fieldPath.get(index);
+
+            if (index == (fieldPath.size() - 1)) {
+              findOrAddScalarField(myObjectRequest.get(), sortField);
+            } else {
+              ObjectField nextSortField = fieldPath.get(index + 1);
+              myObjectRequest.set(findOrAddObjectRequest(myObjectRequest.get()
+                  .getObjectFields(), sortField, nextSortField));
+            }
+          }
+        });
+  }
+
+  private static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     return objectFields.entrySet()
         .stream()
@@ -48,7 +70,7 @@ final class SortHelper {
         .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
   }
 
-  public static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  private static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     ObjectRequest objectRequest = ObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())
@@ -60,7 +82,7 @@ final class SortHelper {
     return objectRequest;
   }
 
-  public static void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
+  private static void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
     Optional<FieldRequest> scalarField = objectRequest.getScalarFields()
         .stream()
         .filter(field -> field.getName()
