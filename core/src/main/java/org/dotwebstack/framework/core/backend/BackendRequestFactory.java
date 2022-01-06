@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
@@ -24,7 +25,6 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +43,6 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -58,6 +57,8 @@ import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 @Component
 @Conditional(OnLocalSchema.class)
@@ -101,8 +102,11 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(executionStepInfo.getFieldDefinition()
-            .getArguments(), executionStepInfo.getArguments()).orElse(null))
+        .keyCriteria(createKeyCriteria(objectType, getRequestStepInfo(executionStepInfo).getFieldDefinition()
+            .getName(),
+            executionStepInfo.getFieldDefinition()
+                .getArguments(),
+            executionStepInfo.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -120,7 +124,8 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(arguments, selectedField.getArguments()).orElse(null))
+        .keyCriteria(createKeyCriteria(objectType, getRequestStepInfo(executionStepInfo).getFieldDefinition()
+            .getName(), arguments, selectedField.getArguments()).orElse(null))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -265,14 +270,27 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Optional<KeyCriteria> createKeyCriteria(List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+  private Optional<KeyCriteria> createKeyCriteria(ObjectType<?> objectType, String query,
+      List<GraphQLArgument> arguments, Map<String, Object> argumentMap) {
+    var queryKeys = Optional.of(schema.getQueries()
+        .get(query))
+        .stream()
+        .flatMap(q -> q.getKeys()
+            .stream())
+        .collect(Collectors.toList());
+
     var keys = arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
         .filter(argument -> argumentMap.containsKey(argument.getName()))
-        .map(argument -> Map.entry(argument.getName(), argumentMap.get(argument.getName())))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (prev, next) -> next, HashMap::new));
+        .flatMap(argument -> queryKeys.stream()
+            .filter(queryKey -> queryKey.substring(queryKey.lastIndexOf(".") + 1)
+                .equals(argument.getName()))
+            .findFirst()
+            .map(queryKey -> Tuples.of(queryKey, argumentMap.get(argument.getName())))
+            .stream())
+            .collect(Collectors.toMap(x -> createFieldPath(objectType, x.getT1()), Tuple2::getT2));
 
     return Optional.of(keys)
         .filter(k -> k.size() > 0)
@@ -320,7 +338,7 @@ public class BackendRequestFactory {
     var filterConfiguration = objectType.getFilters()
         .get(filterName);
 
-    var fieldPath = createObjectFieldPath(objectType, filterConfiguration.getField());
+    var fieldPath = createFieldPath(objectType, filterConfiguration.getField());
 
     var filterValue = createFilterValue(filterArgument, filterName);
 
@@ -359,7 +377,7 @@ public class BackendRequestFactory {
 
     return sortableByConfig.stream()
         .map(config -> SortCriteria.builder()
-            .fieldPath(createObjectFieldPath(objectType, config.getField()))
+            .fieldPath(createFieldPath(objectType, config.getField()))
             .direction(config.getDirection())
             .build())
         .collect(Collectors.toList());
@@ -367,24 +385,6 @@ public class BackendRequestFactory {
 
   private String formatSortEnumName(String enumName) {
     return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, enumName);
-  }
-
-  private List<ObjectField> createObjectFieldPath(ObjectType<?> objectType, String path) {
-    var current = objectType;
-    var fieldPath = new ArrayList<ObjectField>();
-
-    for (var segment : path.split("\\.")) {
-      var field = Optional.ofNullable(current)
-          .map(o -> o.getField(segment))
-          .orElseThrow();
-
-      current = Optional.ofNullable(field.getTargetType())
-          .orElse(null);
-
-      fieldPath.add(field);
-    }
-
-    return fieldPath;
   }
 
   private ObjectType<?> getObjectType(GraphQLType type) {

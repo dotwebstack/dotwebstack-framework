@@ -86,7 +86,9 @@ class GraphPatternBuilder {
     return keyCriteria.getValues()
         .entrySet()
         .stream()
-        .flatMap(entry -> createPattern(entry.getKey(), entry.getValue()));
+        .flatMap(entry -> createPattern(entry.getKey()
+            .get(0)
+            .getName(), entry.getValue()));
   }
 
   private Stream<GraphPattern> createPattern(String name, Object value) {

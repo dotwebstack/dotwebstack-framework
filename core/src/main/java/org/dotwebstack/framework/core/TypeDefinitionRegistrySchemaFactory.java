@@ -33,6 +33,7 @@ import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -296,13 +297,6 @@ public class TypeDefinitionRegistrySchemaFactory {
       inputValueDefinitions.addAll(createGeometryArguments());
     }
 
-    schema.getObjectType(objectField.getType())
-        .ifPresent(objectType -> objectField.getKeys()
-            .stream()
-            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType,
-                Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
-            .forEach(inputValueDefinitions::add));
-
     objectField.getArguments()
         .stream()
         .map(this::createFieldInputValueDefinition)
@@ -543,10 +537,31 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType,
       Map<String, String> additionalData) {
+
+    if (keyField.contains(".")) {
+      var composedKeyMap = parseComposedKeyField(keyField);
+
+      keyField = composedKeyMap.get("keyField");
+      objectType = objectType.getField(composedKeyMap.get("objectType"))
+          .getTargetType();
+    }
+
     return newInputValueDefinition().name(keyField)
         .type(createType(keyField, objectType))
         .additionalData(additionalData)
         .build();
+  }
+
+  private Map<String, String> parseComposedKeyField(String composedKey) {
+    var splittedKey = Arrays.asList(composedKey.split("\\.", 2));
+    String objectType = splittedKey.get(0);
+    String keyField = splittedKey.get(1);
+
+    if (keyField.contains(".")) {
+      parseComposedKeyField(keyField);
+    }
+
+    return Map.of("keyField", keyField, "objectType", objectType);
   }
 
   private InputValueDefinition createFieldInputValueDefinition(FieldArgument fieldArgument) {

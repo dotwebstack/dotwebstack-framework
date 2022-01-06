@@ -20,7 +20,6 @@ import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
-
 class QueryHelper {
 
   private QueryHelper() {}

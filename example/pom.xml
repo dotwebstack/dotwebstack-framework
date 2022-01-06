@@ -18,5 +18,6 @@
     <module>example-rdf4j</module>
     <module>example-rml-proxy</module>
     <module>example-openapi</module>
+    <module>example-postgres-bag-nested-keys</module>
   </modules>
 </project>

@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJo
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
+import static org.dotwebstack.framework.backend.postgres.query.KeyHelper.addKeyFields;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
@@ -141,6 +142,11 @@ class SelectBuilder {
     var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
 
     var dataQuery = dslContext.selectQuery(table);
+
+    if (Optional.ofNullable(objectRequest.getKeyCriteria())
+        .isPresent()) {
+      addKeyFields(objectRequest);
+    }
 
     List<Condition> keyConditions = ofNullable(objectRequest.getKeyCriteria()).stream()
         .flatMap(keyCriteria -> createKeyCondition(keyCriteria, objectType, table).stream())
@@ -312,19 +318,36 @@ class SelectBuilder {
     }
   }
 
-  private Optional<Condition> createKeyCondition(KeyCriteria keyCriteria, PostgresObjectType objectType,
+  private Optional<Condition> createKeyCondition(KeyCriteria keyCriteria, PostgresObjectType postgresObjectType,
       Table<Record> table) {
     if (keyCriteria == null) {
       return Optional.empty();
     }
 
-    return Optional.of(DSL.and(keyCriteria.getValues()
-        .entrySet()
-        .stream()
-        .map(entry -> ofNullable(objectType.getField(entry.getKey())).map(PostgresObjectField::getColumn)
-            .map(column -> column(table, column).equal(entry.getValue()))
-            .orElseThrow())
-        .collect(Collectors.toList())));
+    return Optional.empty();
+
+    // return Optional.of(DSL.and(keyCriteria.getValues()
+    // .entrySet()
+    // .stream()
+    // .map(entry -> {
+    //
+    //// var key = entry.getKey();
+    //// var objectType = postgresObjectType;
+    ////
+    //// if (key.contains(".")) {
+    //// var composedKeyMap = KeyHelper.parseComposedKeyField(key);
+    ////
+    //// key = composedKeyMap.get("keyField");
+    //// objectType = (PostgresObjectType)
+    // objectType.getField(composedKeyMap.get("objectType")).getTargetType();
+    // }
+    //
+    // return ofNullable(objectType.getField(key))
+    // .map(PostgresObjectField::getColumn)
+    // .map(column -> column(table, column).equal(entry.getValue()))
+    // .orElseThrow();
+    // })
+    // .collect(Collectors.toList())));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,

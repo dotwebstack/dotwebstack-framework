@@ -43,6 +43,11 @@ queries:
   ingredientCollection:
     type: Ingredient
     list: true
+  breweryAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
 
 objectTypes:
   Beer:
@@ -186,8 +191,8 @@ objectTypes:
         type: Beer
         nullable: true
         mappedBy: brewery
-        keys:
-          - identifier
+#        keys:
+#          - identifier
       beers:
         type: Beer
         list: true
