@@ -36,7 +36,7 @@ final class SortHelper {
     }
   }
 
-  private static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  public static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     return objectFields.entrySet()
         .stream()
@@ -48,7 +48,7 @@ final class SortHelper {
         .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
   }
 
-  private static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  public static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     ObjectRequest objectRequest = ObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())
@@ -60,7 +60,7 @@ final class SortHelper {
     return objectRequest;
   }
 
-  private static void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
+  public static void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
     Optional<FieldRequest> scalarField = objectRequest.getScalarFields()
         .stream()
         .filter(field -> field.getName()

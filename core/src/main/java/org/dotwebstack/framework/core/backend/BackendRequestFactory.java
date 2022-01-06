@@ -284,13 +284,18 @@ public class BackendRequestFactory {
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
         .filter(argument -> argumentMap.containsKey(argument.getName()))
-        .flatMap(argument -> queryKeys.stream()
-            .filter(queryKey -> queryKey.substring(queryKey.lastIndexOf(".") + 1)
-                .equals(argument.getName()))
-            .findFirst()
-            .map(queryKey -> Tuples.of(queryKey, argumentMap.get(argument.getName())))
-            .stream())
-            .collect(Collectors.toMap(x -> createFieldPath(objectType, x.getT1()), Tuple2::getT2));
+        .map(argument -> {
+          var queryKey = queryKeys.stream()
+              .filter(qKey -> qKey.substring(qKey.lastIndexOf(".") + 1)
+                  .equals(argument.getName()))
+              .findFirst()
+              .orElseThrow();
+
+          var value = argumentMap.get(argument.getName());
+
+          return Tuples.of(queryKey, value);
+        })
+        .collect(Collectors.toMap(x -> createFieldPath(objectType, x.getT1()), Tuple2::getT2));
 
     return Optional.of(keys)
         .filter(k -> k.size() > 0)

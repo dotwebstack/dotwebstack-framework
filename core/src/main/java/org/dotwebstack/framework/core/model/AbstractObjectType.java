@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 
 @Data
+@EqualsAndHashCode(exclude = {"fields"})
 public abstract class AbstractObjectType<T extends ObjectField> implements ObjectType<T> {
 
   protected String name;
