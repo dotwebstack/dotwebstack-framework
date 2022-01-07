@@ -317,8 +317,12 @@ class FilterConditionBuilder {
   private Condition createCondition(PostgresObjectField objectField, Field<Object> field, FilterOperator operator,
       Object value) {
     if (MATCH == operator) {
+      var stringField = DSL.field(field.getQualifiedName(), String.class);
+
       var escapedValue = escapeMatchValue(Objects.toString(value));
-      return field.likeIgnoreCase(DSL.val(String.format("%%%s%%", escapedValue)))
+
+      return DSL.lower(stringField)
+          .like(DSL.lower(DSL.val(String.format("%%%s%%", escapedValue))))
           .escape(LIKE_ESCAPE_CHARACTER);
     }
 

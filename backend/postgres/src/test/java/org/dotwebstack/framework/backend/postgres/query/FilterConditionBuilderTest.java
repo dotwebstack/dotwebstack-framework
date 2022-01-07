@@ -94,9 +94,10 @@ class FilterConditionBuilderTest {
         arguments(FilterType.EXACT, Map.of("not", Map.of("eq", "foo")), "not (\"x1\".\"column\" = 'foo')"),
         arguments(FilterType.EXACT, Map.of("in", List.of("foo", "bar")),
             "\"x1\".\"column\" in (\n" + "  'foo', 'bar'\n" + ")"),
-        arguments(FilterType.PARTIAL, Map.of("match", "foo"), "\"x1\".\"column\" ilike '%foo%' escape '\\'"),
+        arguments(FilterType.PARTIAL, Map.of("match", "foo"),
+            "lower(\"x1\".\"column\") like lower('%foo%') escape '\\'"),
         arguments(FilterType.PARTIAL, Map.of("not", Map.of("match", "foo")),
-            "not (\"x1\".\"column\" ilike '%foo%' escape '\\')"));
+            "not (lower(\"x1\".\"column\") like lower('%foo%') escape '\\')"));
   }
 
   @ParameterizedTest
