@@ -136,10 +136,12 @@ class JoinHelperTest {
 
   @Test
   void getExistFieldForRelationObject_throwsException_forJoinColumnWithoutReferencedField() {
+    List<JoinColumn> joinColumns = List.of();
+
     var table = DSL.table("table");
 
     var thrown =
-        assertThrows(IllegalArgumentException.class, () -> getExistFieldForRelationObject(List.of(), table, "x1"));
+        assertThrows(IllegalArgumentException.class, () -> getExistFieldForRelationObject(joinColumns, table, "x1"));
 
     assertThat(thrown.getMessage(), equalTo("Expected a joinColumn with a referencedField but got nothing!"));
   }
