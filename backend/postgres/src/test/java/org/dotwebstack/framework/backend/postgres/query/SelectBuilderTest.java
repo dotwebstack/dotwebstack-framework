@@ -75,6 +75,20 @@ class SelectBuilderTest {
   }
 
   @Test
+  void build_returnsSelectQuery_forDistinctObjectRequest() {
+    ObjectRequest objectRequest = getObjectRequestWithNestedObject(null, true);
+
+    var result = selectBuilder.build(objectRequest);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo(
+            "select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+                + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
+                + "where \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  @Test
   void build_returnsSelectQuery_forObjectRequestWithPresenceColumn() {
     ObjectRequest objectRequest = getObjectRequestWithNestedObject("age_column");
 
@@ -88,7 +102,11 @@ class SelectBuilderTest {
   }
 
   private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
-    var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
+    return getObjectRequestWithNestedObject(presenceColumn, false);
+  }
+
+  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn, boolean distinct) {
+    var objectType = createObjectType("beer", distinct, "identifier", "name", "soldPerYear");
 
     var nestedObjectType = createObjectType(null, "age");
 
@@ -696,6 +714,10 @@ class SelectBuilderTest {
   }
 
   private PostgresObjectType createObjectType(String table, String... fields) {
+    return createObjectType(table, false, fields);
+  }
+
+  private PostgresObjectType createObjectType(String table, boolean distinct, String... fields) {
     var objectType = new PostgresObjectType();
     objectType.setTable(table);
 
@@ -703,6 +725,8 @@ class SelectBuilderTest {
         .collect(Collectors.toMap(field -> field, this::createObjectField));
 
     objectType.setFields(fieldMap);
+
+    objectType.setDistinct(distinct);
 
     return objectType;
   }

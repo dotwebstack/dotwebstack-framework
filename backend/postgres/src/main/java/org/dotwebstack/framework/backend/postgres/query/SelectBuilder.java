@@ -153,6 +153,10 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table);
     processObjectListFields(objectRequest, table, dataQuery);
 
+    if (objectType.isDistinct()) {
+      dataQuery.setDistinct(true);
+    }
+
     return dataQuery;
   }
 

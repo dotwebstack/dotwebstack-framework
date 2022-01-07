@@ -25,6 +25,16 @@
         mappedBy: brewery
 ```
 
+### Distinct
+
+The `distinct` objecttype configuration property can be used to fetch distinct values. Default is `false`
+
+```yaml
+  Beer:
+    table: dbeerpedia.beers
+    distinct: true
+```
+
 ### joinColumns
 
 The `joinColumns` field configuration property contains an array of `joinColumn` objects.
