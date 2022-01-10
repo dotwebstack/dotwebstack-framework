@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.joining;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.BOOLEAN_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATETIME_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATE_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
@@ -151,6 +152,10 @@ public class DefaultParamHandler implements ParamHandler {
         validateNumber(paramValue, parameter);
         validateEnum(paramValue, parameter);
         break;
+      case BOOLEAN_TYPE:
+        validateBoolean(paramValue, parameter);
+        validateEnum(paramValue, parameter);
+        break;
       default:
         if (hasEnum(parameter)) {
           throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[]",
@@ -223,6 +228,24 @@ public class DefaultParamHandler implements ParamHandler {
         Long.valueOf(String.valueOf(paramValue));
       }
     } catch (ClassCastException | NumberFormatException exception) {
+      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
+          parameter.getName(), paramValue, parameter.getSchema()
+              .getType());
+    }
+  }
+
+  private void validateBoolean(Object paramValue, Parameter parameter) {
+    try {
+      if (!(paramValue instanceof Boolean)) {
+        var stringValue = (String) paramValue;
+        if (!(stringValue.equalsIgnoreCase("true") || stringValue.equalsIgnoreCase("false"))) {
+          throw parameterValidationException(
+              "Boolean parameter '{}' has an invalid boolean string value: '{}' for type: '{}'", parameter.getName(),
+              paramValue, parameter.getSchema()
+                  .getType());
+        }
+      }
+    } catch (ClassCastException exception) {
       throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
           parameter.getName(), paramValue, parameter.getSchema()
               .getType());

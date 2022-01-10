@@ -53,6 +53,8 @@ class DefaultParamHandlerTest {
 
   private static final String TYPE_INTEGER = "integer";
 
+  private static final String TYPE_BOOLEAN = "boolean";
+
   private static final String TYPE_NUMBER = "number";
 
   private static final String FORMAT_DATE = "date";
@@ -250,6 +252,15 @@ class DefaultParamHandlerTest {
     Optional<Object> result = paramHandler.getValue(request, parameter);
 
     assertEquals(42, result.get());
+  }
+
+  @Test
+  void getValue_returnsValue_forTypeBoolean() {
+    mockParameterHeader("test_boolean", "false", TYPE_BOOLEAN, null, null, false, Parameter.StyleEnum.SIMPLE);
+
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    assertEquals(Boolean.FALSE, result.get());
   }
 
   @Test
