@@ -1,0 +1,34 @@
+queries:
+  breweryCollection:
+    type: Brewery
+    list: true
+  breweryAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.zipcode
+
+objectTypes:
+  Brewery:
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      postalAddress:
+        type: Address
+        objectField: true
+    filters:
+      name:
+        field: name
+
+  Address:
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
