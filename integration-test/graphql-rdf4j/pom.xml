@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>integration-test</artifactId>
-    <version>0.3.92-SNAPSHOT</version>
+    <version>0.3.92</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -18,4 +18,8 @@
       <version>${project.version}</version>
     </dependency>
   </dependencies>
+
+  <scm>
+    <tag>v0.3.92</tag>
+  </scm>
 </project>
