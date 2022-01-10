@@ -52,6 +52,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
 
+  private static final String INVALID_VALUE_MESSAGE = "Parameter '{}' has an invalid value: '{}' for type: '{}'";
+
   protected final OpenAPI openApi;
 
   public DefaultParamHandler(OpenAPI openApi) {
@@ -228,9 +230,8 @@ public class DefaultParamHandler implements ParamHandler {
         Long.valueOf(String.valueOf(paramValue));
       }
     } catch (ClassCastException | NumberFormatException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
-          parameter.getName(), paramValue, parameter.getSchema()
-              .getType());
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
     }
   }
 
@@ -246,9 +247,8 @@ public class DefaultParamHandler implements ParamHandler {
         }
       }
     } catch (ClassCastException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
-          parameter.getName(), paramValue, parameter.getSchema()
-              .getType());
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
     }
   }
 
@@ -258,9 +258,8 @@ public class DefaultParamHandler implements ParamHandler {
         new BigDecimal((String) paramValue);
       }
     } catch (ClassCastException | NumberFormatException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
-          parameter.getName(), paramValue, parameter.getSchema()
-              .getType());
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
     }
   }
 

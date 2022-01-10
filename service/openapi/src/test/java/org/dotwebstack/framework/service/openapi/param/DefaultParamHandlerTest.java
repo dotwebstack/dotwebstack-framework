@@ -255,12 +255,35 @@ class DefaultParamHandlerTest {
   }
 
   @Test
-  void getValue_returnsValue_forTypeBoolean() {
+  void getValue_returnsValue_forTypeBooleanWithStringValue() {
     mockParameterHeader("test_boolean", "false", TYPE_BOOLEAN, null, null, false, Parameter.StyleEnum.SIMPLE);
 
     Optional<Object> result = paramHandler.getValue(request, parameter);
 
     assertEquals(Boolean.FALSE, result.get());
+  }
+
+  @Test
+  void getValue_returnsValue_forTypeBoolean() {
+    mockParameterQuery("test_boolean", "true", TYPE_BOOLEAN, null, false, Parameter.StyleEnum.SIMPLE);
+
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    assertEquals(Boolean.TRUE, result.get());
+  }
+
+  @Test
+  void validateBoolean_throwExceptionForInvalidClass() {
+    mockParameter("test_boolean", TYPE_BOOLEAN, "dummy", null, false, Parameter.StyleEnum.SIMPLE);
+
+    assertThrows(ParameterValidationException.class, () -> paramHandler.validateValues(1, parameter));
+  }
+
+  @Test
+  void validateBoolean_throwExceptionForInvalidStringValue() {
+    mockParameter("test_boolean", TYPE_BOOLEAN, "dummy", null, false, Parameter.StyleEnum.SIMPLE);
+
+    assertThrows(ParameterValidationException.class, () -> paramHandler.validateValues("notaboolean", parameter));
   }
 
   @Test
