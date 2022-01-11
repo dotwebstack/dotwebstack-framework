@@ -17,6 +17,7 @@ import graphql.schema.GraphQLTypeUtil;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import lombok.NonNull;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
@@ -54,7 +56,8 @@ public class JsonBodyMapper implements BodyMapper {
   private final Map<String, TypeMapper> typeMappers;
 
   public JsonBodyMapper(@NonNull GraphQL graphQL, @NonNull JexlEngine jexlEngine,
-      @NonNull EnvironmentProperties environmentProperties, @NonNull Collection<TypeMapper> typeMappers) {
+                        @NonNull EnvironmentProperties environmentProperties,
+                        @NonNull Collection<TypeMapper> typeMappers) {
     this.graphQlSchema = graphQL.getGraphQLSchema();
     this.jexlHelper = new JexlHelper(jexlEngine);
     this.environmentProperties = environmentProperties;
@@ -76,7 +79,7 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   private Object mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
+                           JexlContext jexlContext) {
     if (data == null) {
       return emptyValue(schema);
     }
@@ -94,9 +97,9 @@ public class JsonBodyMapper implements BodyMapper {
     return evaluateScalarData(schema, data, newContext);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings( {"unchecked", "rawtypes"})
   private Object mapObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
+                                 JexlContext jexlContext) {
     if (MapperUtils.isEnvelope(schema)) {
       return mapEnvelopeObjectSchema(schema, fieldDefinition, data, jexlContext);
     }
@@ -139,9 +142,9 @@ public class JsonBodyMapper implements BodyMapper {
         }, HashMap::putAll);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings( {"unchecked", "rawtypes"})
   private Object mapEnvelopeObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
+                                         JexlContext jexlContext) {
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
     var envelopeValue = schema.getProperties()
@@ -161,7 +164,9 @@ public class JsonBodyMapper implements BodyMapper {
             }
 
             var dataMap = (Map<String, Object>) data;
-            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
+            var childData = dataMap.get(property);
+            addParentData(dataMap, childData);
+            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, childData, jexlContext);
           }
 
           if ((schema.getRequired() != null && schema.getRequired()
@@ -211,7 +216,7 @@ public class JsonBodyMapper implements BodyMapper {
   }
 
   private Object mapObjectSchemaProperty(String name, Schema<?> schema, GraphQLFieldDefinition parentFieldDefinition,
-      Map<String, Object> data, JexlContext jexlContext) {
+                                         Map<String, Object> data, JexlContext jexlContext) {
     if (!isMappable(schema)) {
       return mapSchema(schema, parentFieldDefinition, data, jexlContext);
     }
@@ -219,12 +224,29 @@ public class JsonBodyMapper implements BodyMapper {
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
     var fieldDefinition = rawType.getFieldDefinition(name);
 
-    return mapSchema(schema, fieldDefinition, data.get(name), jexlContext);
+    var childData = data.get(name);
+    addParentData(data, childData);
+    return mapSchema(schema, fieldDefinition, childData, jexlContext);
+  }
+
+  @SuppressWarnings( {"unchecked", "rawtypes"})
+  private void addParentData(Map<String, Object> data, Object childData) {
+    if (childData == null) {
+      return;
+    }
+    if (childData instanceof Map) {
+      ((Map<String, Object>) childData).put("_parent", data);
+    } else if (childData instanceof List) {
+      var childDataList = ((List) childData);
+      if (!childDataList.isEmpty() && childDataList.get(0) instanceof Map) {
+        childDataList.forEach(item -> ((Map) item).put("_parent", data));
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")
   private Collection<Object> mapArraySchema(ArraySchema schema, GraphQLFieldDefinition fieldDefinition, Object data,
-      JexlContext jexlContext) {
+                                            JexlContext jexlContext) {
 
     var rawType = GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
 
