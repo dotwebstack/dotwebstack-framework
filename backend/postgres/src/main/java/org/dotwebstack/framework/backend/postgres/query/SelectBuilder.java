@@ -20,6 +20,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -329,13 +330,13 @@ class SelectBuilder {
           var fieldPath = entry.getKey();
 
           Field<Object> sqlField;
-          if (fieldPath.size() > 1) {
+          if (fieldPath.size() > 1 && (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
+              .isNested())) {
             var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
             sqlField = column(null, leafFieldMapper.getAlias());
           } else {
-            sqlField = column(table, fieldPath.get(0)
-                .getName());
+            sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
           }
 
           return sqlField.equal(entry.getValue());

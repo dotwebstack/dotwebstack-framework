@@ -120,10 +120,6 @@ class BackendRequestFactoryTest {
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
 
     backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
-    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
-    when(executionStepInfo.getObjectType()).thenReturn(objectType);
-    when(executionStepInfo.getObjectType()
-        .getName()).thenReturn("Query");
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, is(notNullValue()));

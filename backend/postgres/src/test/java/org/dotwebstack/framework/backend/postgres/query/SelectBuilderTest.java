@@ -70,7 +70,7 @@ class SelectBuilderTest {
     assertThat(result.toString(),
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
             + "  \"x1\".\"identifier_column\" as \"x4\",\n" + "  \"x1\".\"age_column\" as \"x5\"\n"
-            + "from \"beer\" as \"x1\"\n" + "where \"x1\".\"identifier\" = 'id-1'"));
+            + "from \"beer\" as \"x1\"\n" + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test
@@ -84,7 +84,7 @@ class SelectBuilderTest {
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
             + "  \"x1\".\"identifier_column\" as \"x4\",\n" + "  (\"x1\".\"age_column\" is not null) as \"x5\",\n"
             + "  \"x1\".\"age_column\" as \"x6\"\n" + "from \"beer\" as \"x1\"\n"
-            + "where \"x1\".\"identifier\" = 'id-1'"));
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
@@ -154,7 +154,7 @@ class SelectBuilderTest {
     assertThat(result.toString(),
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
             + "  \"x1\".\"identifier_column\" as \"x4\"\n" + "from beer_History_ctx('validFrom_value') as \"x1\"\n"
-            + "where \"x1\".\"identifier\" = 'id-1'"));
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test

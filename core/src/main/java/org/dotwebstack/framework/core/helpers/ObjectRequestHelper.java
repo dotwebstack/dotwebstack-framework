@@ -37,22 +37,21 @@ public class ObjectRequestHelper {
     }
   }
 
-  public static void addKeyFields(ObjectRequest objectRequest) {
+  public static void addKeyFields(final ObjectRequest objectRequest) {
     var keyCriteria = objectRequest.getKeyCriteria();
-
-    final AtomicReference<ObjectRequest> myObjectRequest = new AtomicReference<>(objectRequest);
 
     keyCriteria.getValues()
         .forEach((fieldPath, value) -> {
-          for (int index = 0; index < fieldPath.size(); index++) {
-            ObjectField sortField = fieldPath.get(index);
+          final AtomicReference<ObjectRequest> current = new AtomicReference<>(objectRequest);
 
+          for (int index = 0; index < fieldPath.size(); index++) {
+            ObjectField keyField = fieldPath.get(index);
             if (index == (fieldPath.size() - 1)) {
-              findOrAddScalarField(myObjectRequest.get(), sortField);
+              findOrAddScalarField(current.get(), keyField);
             } else {
               ObjectField nextSortField = fieldPath.get(index + 1);
-              myObjectRequest.set(findOrAddObjectRequest(myObjectRequest.get()
-                  .getObjectFields(), sortField, nextSortField));
+              current.set(findOrAddObjectRequest(current.get()
+                  .getObjectFields(), keyField, nextSortField));
             }
           }
         });

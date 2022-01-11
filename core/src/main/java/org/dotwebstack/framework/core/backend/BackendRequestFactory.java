@@ -262,6 +262,13 @@ public class BackendRequestFactory {
   }
 
   private Optional<KeyCriteria> createKeyCriteria(ObjectType<?> objectType, ExecutionStepInfo executionStepInfo) {
+    if (TypeHelper.getTypeName(executionStepInfo.getFieldDefinition()
+        .getType())
+        .filter(typeName -> typeName.equals(objectType.getName()))
+        .isEmpty()) {
+      return Optional.empty();
+    }
+
     var queryName = getQueryName(executionStepInfo);
 
     var arguments = executionStepInfo.getFieldDefinition()
@@ -280,18 +287,7 @@ public class BackendRequestFactory {
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
-        .filter(argument -> {
-          if (objectType.getFields()
-              .containsKey(argument.getName())) {
-            var field = objectType.getField(argument.getName());
-            return argumentValues.containsKey(argument.getName()) && field.getObjectType()
-                .getName()
-                .equals(unwrapAll(executionStepInfo.getFieldDefinition()
-                    .getType()).getName());
-          }
-          return argumentValues.containsKey(argument.getName()) && objectType.getFields()
-              .containsKey(argument.getName());
-        })
+        .filter(argument -> argumentValues.containsKey(argument.getName()))
         .map(argument -> createKeyCriteriaEntry(objectType, argumentValues, queryKeys, argument))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

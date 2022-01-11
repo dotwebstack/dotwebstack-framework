@@ -26,4 +26,8 @@ public class FieldPathHelper {
 
     return fieldPath;
   }
+
+  public static ObjectField getLeaf(List<ObjectField> fieldPath) {
+    return fieldPath.get(fieldPath.size() - 1);
+  }
 }
