@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -110,21 +111,26 @@ class JsonBodyMapperTest {
 
     StepVerifier.create(bodyMapper.map(operationRequest, result))
         .assertNext(body -> {
-          removeParent((Map) body);
+          removeParent(body);
           assertThat(body, is(equalTo(TestResources.body(expectedBody))));
         })
         .verifyComplete();
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private void removeParent(Map<String, Object> data) {
-    data.remove("_parent");
-    data.forEach((key, value) -> {
+  private void removeParent(Object data) {
+    if (!(data instanceof HashMap)) {
+      return;
+    }
+
+    var dataMap = (Map) data;
+    dataMap.remove("_parent");
+    dataMap.forEach((key, value) -> {
       if (value instanceof Map) {
-        removeParent((Map<String, Object>) value);
+        removeParent(value);
       } else if (value instanceof List) {
         if (!((List<?>) value).isEmpty() && ((List<?>) value).get(0) instanceof Map) {
-          ((List<?>) value).forEach(entry -> removeParent((Map) entry));
+          ((List<?>) value).forEach(this::removeParent);
         }
       }
     });
