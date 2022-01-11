@@ -161,7 +161,9 @@ public class JsonBodyMapper implements BodyMapper {
             }
 
             var dataMap = (Map<String, Object>) data;
-            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
+            var childData = dataMap.get(property);
+            addParentData(dataMap, childData);
+            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, childData, jexlContext);
           }
 
           if ((schema.getRequired() != null && schema.getRequired()
@@ -219,7 +221,24 @@ public class JsonBodyMapper implements BodyMapper {
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
     var fieldDefinition = rawType.getFieldDefinition(name);
 
-    return mapSchema(schema, fieldDefinition, data.get(name), jexlContext);
+    var childData = data.get(name);
+    addParentData(data, childData);
+    return mapSchema(schema, fieldDefinition, childData, jexlContext);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void addParentData(Map<String, Object> data, Object childData) {
+    if (childData == null) {
+      return;
+    }
+    if (childData instanceof Map) {
+      ((Map<String, Object>) childData).put("_parent", data);
+    } else if (childData instanceof List) {
+      var childDataList = ((List) childData);
+      if (!childDataList.isEmpty() && childDataList.get(0) instanceof Map) {
+        childDataList.forEach(item -> ((Map) item).put("_parent", data));
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")
