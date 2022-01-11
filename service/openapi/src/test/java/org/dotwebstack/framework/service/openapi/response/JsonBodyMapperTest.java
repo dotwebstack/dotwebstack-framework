@@ -86,6 +86,7 @@ class JsonBodyMapperTest {
             "brewery", "brewery-json-schemaless-object"));
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @ParameterizedTest
   @MethodSource("arguments")
   void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String graphQlResult,
@@ -108,8 +109,25 @@ class JsonBodyMapperTest {
         .getField());
 
     StepVerifier.create(bodyMapper.map(operationRequest, result))
-        .assertNext(body -> assertThat(body, is(equalTo(TestResources.body(expectedBody)))))
+        .assertNext(body ->  {
+          removeParent((Map) body);
+          assertThat(body, is(equalTo(TestResources.body(expectedBody))));
+        })
         .verifyComplete();
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private void removeParent(Map<String, Object> data) {
+    data.remove("_parent");
+    data.forEach((key, value) -> {
+      if (value instanceof Map) {
+        removeParent((Map<String, Object>) value);
+      } else if (value instanceof List) {
+        if (!((List<?>) value).isEmpty() && ((List<?>) value).get(0) instanceof Map) {
+          ((List<?>) value).forEach(entry -> removeParent((Map) entry));
+        }
+      }
+    });
   }
 
   @Test
