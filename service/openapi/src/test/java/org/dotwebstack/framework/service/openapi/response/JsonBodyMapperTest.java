@@ -109,7 +109,7 @@ class JsonBodyMapperTest {
         .getField());
 
     StepVerifier.create(bodyMapper.map(operationRequest, result))
-        .assertNext(body ->  {
+        .assertNext(body -> {
           removeParent((Map) body);
           assertThat(body, is(equalTo(TestResources.body(expectedBody))));
         })
