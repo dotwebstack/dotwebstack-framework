@@ -19,7 +19,6 @@ objectTypes:
         type: String
       postalAddress:
         type: Address
-        nullable: true
         objectField: true
     filters:
       name:

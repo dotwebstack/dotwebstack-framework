@@ -154,7 +154,6 @@ objectTypes:
         type: Geometry
       postalAddress:
         type: Address
-        nullable: true
         joinColumns:
           - name: postal_address
             referencedColumn: identifier_address

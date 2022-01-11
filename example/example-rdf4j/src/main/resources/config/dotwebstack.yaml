@@ -57,7 +57,6 @@ objectTypes:
         nullable: true
       postalAddress:
         type: Address
-        nullable: true
       visitAddress:
         type: Address
         nullable: true

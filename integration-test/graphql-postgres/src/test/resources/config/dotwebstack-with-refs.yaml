@@ -167,7 +167,6 @@ objectTypes:
         nullable: true
       postalAddress:
         type: Address
-        nullable: true
         joinColumns:
           - name: postal_address
             referencedField: identifier
