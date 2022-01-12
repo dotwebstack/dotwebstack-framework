@@ -167,7 +167,8 @@ class FilterConditionBuilder {
 
       filterQuery.addConditions(joinConditions);
 
-      if (!childCriteria.getFieldPath().isEmpty()) {
+      if (!childCriteria.getFieldPath()
+          .isEmpty()) {
         var nestedCondition = newFiltering().aliasManager(aliasManager)
             .contextCriteria(contextCriteria)
             .table(filterTable)

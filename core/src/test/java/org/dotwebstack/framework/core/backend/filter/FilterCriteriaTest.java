@@ -54,9 +54,9 @@ class FilterCriteriaTest {
         .value(Map.of())
         .build();
 
-    var throwed = assertThrows(IllegalArgumentException.class, filterCriteria::asGroupFilter);
+    var thrown = assertThrows(IllegalArgumentException.class, filterCriteria::asGroupFilter);
 
-    assertThat(throwed.getMessage(), equalTo("Not a group filter!"));
+    assertThat(thrown.getMessage(), equalTo("Not a group filter!"));
   }
 
   @Test
@@ -101,9 +101,9 @@ class FilterCriteriaTest {
         .filterCriterias(List.of())
         .build();
 
-    var throwed = assertThrows(IllegalArgumentException.class, filterCriteria::asObjectFieldFilter);
+    var thrown = assertThrows(IllegalArgumentException.class, filterCriteria::asObjectFieldFilter);
 
-    assertThat(throwed.getMessage(), equalTo("Not a scalar field filter!"));
+    assertThat(thrown.getMessage(), equalTo("Not a scalar field filter!"));
   }
 
 }
