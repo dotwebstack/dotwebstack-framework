@@ -542,8 +542,9 @@ public class TypeDefinitionRegistrySchemaFactory {
       var composedKeyMap = parseComposedKeyField(keyField);
 
       keyField = composedKeyMap.get("keyField");
-      objectType = objectType.getField(composedKeyMap.get("objectType"))
-          .getTargetType();
+      objectType = schema.getObjectType(objectType.getField(composedKeyMap.get("objectType"))
+          .getType())
+          .orElseThrow();
     }
 
     return newInputValueDefinition().name(keyField)

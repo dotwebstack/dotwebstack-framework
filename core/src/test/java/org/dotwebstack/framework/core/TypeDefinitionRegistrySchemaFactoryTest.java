@@ -74,7 +74,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(queryTypeDefinition.getName(), is("Query"));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(2));
+    assertThat(fieldDefinitions.size(), is(3));
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
@@ -82,10 +82,24 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
-    var queryInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
+    var breweryQueryIdentifierInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
         .get(0);
-    assertThat(queryInputValueDefinition.getName(), is("identifier"));
-    assertNonNullType(queryInputValueDefinition.getType(), "ID");
+    assertThat(breweryQueryIdentifierInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(breweryQueryIdentifierInputValueDefinition.getType(), "ID");
+
+    var breweryCityFieldDefinition = fieldDefinitions.get(2);
+
+    assertThat(breweryCityFieldDefinition.getInputValueDefinitions()
+        .size(), is(2));
+    var breweryCityqueryIdentifierInputValueDefinition = breweryCityFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(breweryCityqueryIdentifierInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(breweryCityqueryIdentifierInputValueDefinition.getType(), "ID");
+
+    var breweryCityqueryCityInputValueDefinition = breweryCityFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(breweryCityqueryCityInputValueDefinition.getName(), is("city"));
+    assertNonNullType(breweryCityqueryCityInputValueDefinition.getType(), "String");
 
     var breweryCollectionFieldDefinition = fieldDefinitions.get(1);
     assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));

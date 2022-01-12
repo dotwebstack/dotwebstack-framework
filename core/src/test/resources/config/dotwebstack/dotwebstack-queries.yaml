@@ -6,6 +6,11 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
+  breweryCity:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
 
 objectTypes:
   Brewery:
@@ -15,4 +20,15 @@ objectTypes:
       name:
         type: String
       status:
+        type: String
+      postalAddress:
+        type: Address
+
+  Address:
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
         type: String
