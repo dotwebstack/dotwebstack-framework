@@ -8,43 +8,33 @@ import java.util.Optional;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.model.ObjectType;
-import org.dotwebstack.framework.core.model.Schema;
 
 public final class FilterHelper {
 
   private FilterHelper() {}
 
-  public static String getTypeNameForFilter(Schema schema, Map<String, String> fieldFilterMap, ObjectType<?> objectType,
+  public static String getTypeNameForFilter(Map<String, String> fieldFilterMap, ObjectType<?> objectType,
       String filterName, FilterConfiguration filterConfiguration) {
 
     var filter = createFilterItem(filterName, filterConfiguration);
 
-    return getTypeNameForFilter(schema, fieldFilterMap, objectType, filter);
+    return getTypeNameForFilter(fieldFilterMap, objectType, filter);
   }
 
-  private static String getTypeNameForFilter(Schema schema, Map<String, String> fieldFilterMap,
-      ObjectType<?> objectType, FilterItem filterItem) {
-    var nested = filterItem.getFieldPath()
-        .contains(".");
+  private static String getTypeNameForFilter(Map<String, String> fieldFilterMap, ObjectType<?> objectType,
+      FilterItem filterItem) {
 
-    var fieldName = StringUtils.substringBefore(filterItem.getFieldPath(), ".");
+    var fieldName = filterItem.getField();
 
     var objectField = objectType.getField(fieldName);
+    var targetType = objectField.getTargetType();
 
-    if (nested) {
-      var nestedObjectType = schema.getObjectType(objectField.getType())
-          .orElseThrow();
-      var nestedFilter = FilterItem.builder()
-          .type(filterItem.getType())
-          .fieldPath(StringUtils.substringAfter(filterItem.getFieldPath(), "."))
-          .build();
-
-      return getTypeNameForFilter(schema, fieldFilterMap, nestedObjectType, nestedFilter);
-
+    if (targetType != null) {
+      return String.format("%sFilter", objectField.getTargetType()
+          .getName());
     } else {
       var type = Optional.ofNullable(filterItem.getType())
           .filter(FilterType.PARTIAL::equals)
@@ -70,12 +60,12 @@ public final class FilterHelper {
     if (filterConfiguration.getField() != null) {
       return FilterItem.builder()
           .type(filterConfiguration.getType())
-          .fieldPath(filterConfiguration.getField())
+          .field(filterConfiguration.getField())
           .build();
     }
 
     return FilterItem.builder()
-        .fieldPath(filterName)
+        .field(filterName)
         .build();
   }
 
@@ -85,6 +75,6 @@ public final class FilterHelper {
     private FilterType type;
 
     @NonNull
-    private String fieldPath;
+    private String field;
   }
 }

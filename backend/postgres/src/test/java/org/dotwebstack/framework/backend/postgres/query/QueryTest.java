@@ -12,7 +12,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
@@ -73,16 +72,9 @@ class QueryTest {
     when(objectType.getTable()).thenReturn("anyTable");
     Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
-    Map<String, Object> mapValues = Map.of("a", "b");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
-
-
     return ObjectRequest.builder()
         .objectType(objectType)
         .objectFields(objectFields)
-        .contextCriteria(contextCriteria)
         .build();
   }
 

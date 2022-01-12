@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>templating</artifactId>
-    <version>0.3.88-SNAPSHOT</version>
+    <version>0.3.95-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -32,5 +32,4 @@
       <artifactId>pebble</artifactId>
     </dependency>
   </dependencies>
-
 </project>

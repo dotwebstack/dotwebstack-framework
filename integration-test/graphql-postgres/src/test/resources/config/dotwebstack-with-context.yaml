@@ -75,8 +75,7 @@ objectTypes:
       sinceDate:
         field: since
       lastBrewed: {}
-      breweryCity:
-        field: brewery.visitAddress.city
+      brewery: {}
     sortableBy:
       name:
         - field: name
@@ -128,10 +127,9 @@ objectTypes:
       multinational:
         field: multinational
       geometry: {}
-      historyAge:
-        field: history.age
-      beerBreweryName:
-        field: beers.brewery.name
+      history: {}
+      beers: {}
+      visitAddress: {}
     sortableBy:
       name:
         - field: name
@@ -144,6 +142,9 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      street: {}
+      city: {}
 
   History:
     fields:
@@ -153,6 +154,8 @@ objectTypes:
       history:
         type: String
         column: his_history
+    filters:
+      age: {}
 
 enumerations:
   Taste:

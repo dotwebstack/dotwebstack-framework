@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +38,6 @@ class GraphQlPostgresWithPagingIntegrationTest {
 
   @Autowired
   private GraphQL graphQL;
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
   static final GraphQlPostgresWithPagingIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =

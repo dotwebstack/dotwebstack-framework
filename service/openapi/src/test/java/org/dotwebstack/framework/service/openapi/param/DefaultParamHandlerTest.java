@@ -6,6 +6,8 @@ import static org.dotwebstack.framework.service.openapi.helper.OasConstants.OBJE
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_HEADER_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_PATH_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.PARAM_QUERY_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,6 +52,8 @@ class DefaultParamHandlerTest {
   private static final String TYPE_STRING = "string";
 
   private static final String TYPE_INTEGER = "integer";
+
+  private static final String TYPE_BOOLEAN = "boolean";
 
   private static final String TYPE_NUMBER = "number";
 
@@ -251,6 +255,38 @@ class DefaultParamHandlerTest {
   }
 
   @Test
+  void getValue_returnsValue_forTypeBooleanWithStringValue() {
+    mockParameterHeader("test_boolean", "false", TYPE_BOOLEAN, null, null, false, Parameter.StyleEnum.SIMPLE);
+
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    assertEquals(Boolean.FALSE, result.get());
+  }
+
+  @Test
+  void getValue_returnsValue_forTypeBoolean() {
+    mockParameterQuery("test_boolean", "true", TYPE_BOOLEAN, null, false, Parameter.StyleEnum.SIMPLE);
+
+    Optional<Object> result = paramHandler.getValue(request, parameter);
+
+    assertEquals(Boolean.TRUE, result.get());
+  }
+
+  @Test
+  void validateBoolean_throwExceptionForInvalidClass() {
+    mockParameter("test_boolean", TYPE_BOOLEAN, "dummy", null, false, Parameter.StyleEnum.SIMPLE);
+
+    assertThrows(ParameterValidationException.class, () -> paramHandler.validateValues(1, parameter));
+  }
+
+  @Test
+  void validateBoolean_throwExceptionForInvalidStringValue() {
+    mockParameter("test_boolean", TYPE_BOOLEAN, "dummy", null, false, Parameter.StyleEnum.SIMPLE);
+
+    assertThrows(ParameterValidationException.class, () -> paramHandler.validateValues("notaboolean", parameter));
+  }
+
+  @Test
   void getValue_returnsValue_forTypeBigInteger() {
     mockParameterHeader("test_integer", "42", TYPE_INTEGER, null, null, false, Parameter.StyleEnum.SIMPLE);
 
@@ -271,6 +307,18 @@ class DefaultParamHandlerTest {
     mockParameterQuery("test_integer", "string", TYPE_INTEGER, null, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+  @Test
+  void getValue_throwsException_forTypeValidationInteger_notInEnum() {
+    mockParameterQuery("test_integer", "4", TYPE_INTEGER, null, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockEnum(asList(1, 2, 3));
+
+    var parameterValidationException =
+        assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+
+    assertThat(parameterValidationException.getMessage(),
+        is("Parameter 'test_integer' has (an) invalid value(s): '4', should be one of: '1, 2, 3'"));
   }
 
   @Test
@@ -296,6 +344,18 @@ class DefaultParamHandlerTest {
     mockParameterPath("test_number", "string", TYPE_NUMBER, null, false, Parameter.StyleEnum.SIMPLE);
 
     assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+  }
+
+  @Test
+  void getValue_throwsException_forTypeValidationNumber_notInEnum() {
+    mockParameterQuery("test_number", "4.0", TYPE_NUMBER, null, false, Parameter.StyleEnum.PIPEDELIMITED);
+    mockEnum(asList(1.0, 2.0, 3.0));
+
+    var parameterValidationException =
+        assertThrows(ParameterValidationException.class, () -> paramHandler.getValue(request, parameter));
+
+    assertThat(parameterValidationException.getMessage(),
+        is("Parameter 'test_number' has (an) invalid value(s): '4.0', should be one of: '1.0, 2.0, 3.0'"));
   }
 
   @Test
@@ -489,6 +549,11 @@ class DefaultParamHandlerTest {
   private void mockArrayEnum(List<String> value) {
     Schema itemSchema = ((ArraySchema) parameter.getSchema()).getItems();
     when(itemSchema.getEnum()).thenReturn(value);
+  }
+
+  private void mockEnum(List<?> value) {
+    var schema = parameter.getSchema();
+    when(schema.getEnum()).thenReturn(value);
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})

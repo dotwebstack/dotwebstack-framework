@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.getExistFieldForRelationObject;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
@@ -158,6 +159,10 @@ class SelectBuilder {
         .collect(Collectors.toList());
 
     dataQuery.addConditions(keyConditions);
+
+    if (objectType.isDistinct()) {
+      dataQuery.setDistinct(true);
+    }
 
     return dataQuery;
   }
@@ -480,14 +485,11 @@ class SelectBuilder {
 
     List<SelectResult> selectResults = new ArrayList<>();
 
-    // select the first joincolumn value for object exist check
-    joinColumns.stream()
-        .findFirst()
-        .filter(joinColumn -> Objects.nonNull(joinColumn.getReferencedField()))
-        .ifPresent(firstJoinColumn -> selectResults.add(SelectResult.builder()
-            .selectFieldOrAsterisk(DSL.field(DSL.name(table.getName(), firstJoinColumn.getName()))
-                .as(objectMapper.getAlias()))
-            .build()));
+    Field<Object> existField = getExistFieldForRelationObject(joinColumns, table, objectMapper.getAlias());
+
+    selectResults.add(SelectResult.builder()
+        .selectFieldOrAsterisk(existField)
+        .build());
 
     objectRequest.getObjectFields()
         .keySet()

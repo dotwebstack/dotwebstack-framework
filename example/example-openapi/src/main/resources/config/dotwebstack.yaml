@@ -58,10 +58,8 @@ objectTypes:
     filters:
       name:
         field: name
-      breweryCity:
-        field: brewery.visitAddress.city
-      ingredientName:
-        field: ingredients.name
+      brewery: {}
+      ingredients: {}
       retired: {}
     sortableBy:
       name:
@@ -140,22 +138,11 @@ objectTypes:
       name: { }
       status: { }
       geometry: { }
-      postalStreet:
-        field: postalAddress.street
-      postalCity:
-        field: postalAddress.city
-      visitStreet:
-        field: visitAddress.street
-      visitCity:
-        field: visitAddress.city
-      historyAge:
-        field: history.age
-      beerName:
-        field: beers.name
-      relatedToName:
-        field: relatedTo.name
-      relatedToStatus:
-        field: relatedTo.status
+      postalAddress: {}
+      visitAddress: {}
+      history: {}
+      beers: {}
+      relatedTo: {}
     fields:
       identifier:
         type: String
@@ -188,7 +175,7 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
-#        pageable: true
+        pageable: true
       beerAgg:
         aggregationOf: Beer
         mappedBy: brewery
@@ -215,6 +202,8 @@ objectTypes:
         type: String
       weight:
         type: Float
+    filters:
+      name: {}
 
   Address:
     table: dbeerpedia.addresses
@@ -225,6 +214,9 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      street: {}
+      city: {}
 
   History:
     fields:
@@ -234,6 +226,8 @@ objectTypes:
       history:
         type: String
         column: his_history
+    filters:
+      age: {}
 
 enumerations:
   Taste:

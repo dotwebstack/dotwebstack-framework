@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.backend;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapAll;
+import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateScalarType;
@@ -29,20 +31,15 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
-import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
-import org.dotwebstack.framework.core.backend.filter.GroupFilterOperator;
-import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
-import org.dotwebstack.framework.core.helpers.MapHelper;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -78,8 +75,14 @@ public class BackendRequestFactory {
     var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
 
-    var filterCriteria =
-        createFilterCriteria(objectType, executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME));
+    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+
+    var filterCriteria = ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
+        .argument(argument)
+        .maxDepth(schema.getSettings()
+            .getMaxFilterDepth())
+        .build())
+        .map(GroupFilterCriteria.class::cast);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))

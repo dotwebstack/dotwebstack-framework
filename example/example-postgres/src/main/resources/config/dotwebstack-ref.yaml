@@ -113,27 +113,6 @@ objectTypes:
       historyAge:
         - field: history.age
           direction: ASC
-    filters:
-      name: { }
-      status: { }
-      geometry: { }
-      postalStreet:
-        type: Partial
-        field: postalAddress.street
-      postalCity:
-        field: postalAddress.city
-      visitStreet:
-        field: visitAddress.street
-      visitCity:
-        field: visitAddress.city
-      historyAge:
-        field: history.age
-      beerName:
-        field: beers.name
-      relatedToName:
-        field: relatedTo.name
-      relatedToStatus:
-        field: relatedTo.status
     fields:
       record_id:
         type: Int
@@ -184,6 +163,15 @@ objectTypes:
           inverseJoinColumns:
             - name: brewery_related_to_identifier
               referencedField: identifier
+      filters:
+        name: { }
+        status: { }
+        geometry: { }
+        postalAddress: { }
+        visitAddress: { }
+        history: { }
+        relatedTo: { }
+        beers: { }
 
   BeerIngredient:
     fields:
@@ -220,6 +208,12 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      street: {}
+      streetPartial:
+        type: partial
+        field: street
+      city: {}
 
   History:
     fields:
@@ -229,6 +223,8 @@ objectTypes:
       history:
         type: String
         column: his_history
+    filters:
+      age: {}
 
 enumerations:
   Taste:

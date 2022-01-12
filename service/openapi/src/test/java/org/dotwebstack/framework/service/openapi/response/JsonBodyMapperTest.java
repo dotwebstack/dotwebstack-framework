@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -86,6 +87,7 @@ class JsonBodyMapperTest {
             "brewery", "brewery-json-schemaless-object"));
   }
 
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @ParameterizedTest
   @MethodSource("arguments")
   void map(String path, MediaType preferredMediaType, Map<String, Object> parameters, String graphQlResult,
@@ -108,8 +110,30 @@ class JsonBodyMapperTest {
         .getField());
 
     StepVerifier.create(bodyMapper.map(operationRequest, result))
-        .assertNext(body -> assertThat(body, is(equalTo(TestResources.body(expectedBody)))))
+        .assertNext(body -> {
+          removeParent(body);
+          assertThat(body, is(equalTo(TestResources.body(expectedBody))));
+        })
         .verifyComplete();
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private void removeParent(Object data) {
+    if (!(data instanceof HashMap)) {
+      return;
+    }
+
+    var dataMap = (Map) data;
+    dataMap.remove("_parent");
+    dataMap.forEach((key, value) -> {
+      if (value instanceof Map) {
+        removeParent(value);
+      } else if (value instanceof List) {
+        if (!((List<?>) value).isEmpty() && ((List<?>) value).get(0) instanceof Map) {
+          ((List<?>) value).forEach(this::removeParent);
+        }
+      }
+    });
   }
 
   @Test

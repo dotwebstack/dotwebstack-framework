@@ -9,7 +9,6 @@ import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.core.IsIterableContaining.hasItems;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import graphql.GraphQL;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -40,15 +39,11 @@ import org.testcontainers.utility.DockerImageName;
 @Testcontainers
 class GraphQlPostgresWithContextIntegrationTest {
 
-  private static final String ERRORS = "errors";
-
   @Autowired
   private WebTestClient client;
 
   @Autowired
   private GraphQL graphQL;
-
-  private final ObjectMapper mapper = new ObjectMapper();
 
   @Container
   static final GraphQlPostgresWithContextIntegrationTest.TestPostgreSqlContainer postgreSqlContainer =
@@ -160,7 +155,8 @@ class GraphQlPostgresWithContextIntegrationTest {
 
   @Test
   void postRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
-    String query = "{breweries(context: {}, filter: {beerBreweryName: {eq: \"Brewery X\"}}){ nodes { name } }}";
+    String query =
+        "{breweries(context: {}, filter: {beers: {brewery: {name: {eq: \"Brewery X\"}}}}){ nodes { name } }}";
 
     Map<String, Object> data = WebTestClientHelper.get(client, query);
 

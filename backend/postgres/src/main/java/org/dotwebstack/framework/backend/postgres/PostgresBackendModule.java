@@ -134,6 +134,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     columnPrefixedObjectType.setName(objectType.getName());
     columnPrefixedObjectType
         .setFields(createScalarFieldsWithColumnPrefix(parentField.getColumnPrefix(), objectType.getFields()));
+    columnPrefixedObjectType.setFilters(objectType.getFilters());
     parentField.setTargetType(columnPrefixedObjectType);
   }
 

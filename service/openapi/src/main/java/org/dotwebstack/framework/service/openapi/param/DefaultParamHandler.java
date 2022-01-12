@@ -4,9 +4,11 @@ import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.FORM;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.PIPEDELIMITED;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SIMPLE;
 import static io.swagger.v3.oas.models.parameters.Parameter.StyleEnum.SPACEDELIMITED;
+import static java.util.stream.Collectors.joining;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.ARRAY_TYPE;
+import static org.dotwebstack.framework.service.openapi.helper.OasConstants.BOOLEAN_TYPE;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATETIME_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.DATE_FORMAT;
 import static org.dotwebstack.framework.service.openapi.helper.OasConstants.INTEGER_TYPE;
@@ -26,8 +28,8 @@ import static org.dotwebstack.framework.service.openapi.param.ParamValueCaster.c
 import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,6 +51,8 @@ import org.dotwebstack.framework.service.openapi.helper.SchemaResolver;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class DefaultParamHandler implements ParamHandler {
+
+  private static final String INVALID_VALUE_MESSAGE = "Parameter '{}' has an invalid value: '{}' for type: '{}'";
 
   protected final OpenAPI openApi;
 
@@ -144,9 +148,15 @@ public class DefaultParamHandler implements ParamHandler {
         break;
       case INTEGER_TYPE:
         validateInteger(paramValue, parameter);
+        validateEnum(paramValue, parameter);
         break;
       case NUMBER_TYPE:
         validateNumber(paramValue, parameter);
+        validateEnum(paramValue, parameter);
+        break;
+      case BOOLEAN_TYPE:
+        validateBoolean(paramValue, parameter);
+        validateEnum(paramValue, parameter);
         break;
       default:
         if (hasEnum(parameter)) {
@@ -158,12 +168,17 @@ public class DefaultParamHandler implements ParamHandler {
 
   @SuppressWarnings("unchecked")
   private void validateEnum(Object paramValue, Parameter parameter) {
-    if (hasEnum(parameter) && !parameter.getSchema()
+    if (hasEnum(parameter) && !((List<Object>) parameter.getSchema()
         .getEnum()
-        .contains(paramValue)) {
+        .stream()
+        .map(Object::toString)
+        .collect(Collectors.toList())).contains(paramValue.toString())) {
       throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
-          parameter.getName(), paramValue, String.join(", ", parameter.getSchema()
-              .getEnum()));
+          parameter.getName(), paramValue, parameter.getSchema()
+              .getEnum()
+              .stream()
+              .map(Object::toString)
+              .collect(joining(", ")));
     }
   }
 
@@ -215,9 +230,25 @@ public class DefaultParamHandler implements ParamHandler {
         Long.valueOf(String.valueOf(paramValue));
       }
     } catch (ClassCastException | NumberFormatException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
-          parameter.getName(), paramValue, parameter.getSchema()
-              .getType());
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
+    }
+  }
+
+  private void validateBoolean(Object paramValue, Parameter parameter) {
+    try {
+      if (!(paramValue instanceof Boolean)) {
+        var stringValue = (String) paramValue;
+        if (!(stringValue.equalsIgnoreCase("true") || stringValue.equalsIgnoreCase("false"))) {
+          throw parameterValidationException(
+              "Boolean parameter '{}' has an invalid boolean string value: '{}' for type: '{}'", parameter.getName(),
+              paramValue, parameter.getSchema()
+                  .getType());
+        }
+      }
+    } catch (ClassCastException exception) {
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
     }
   }
 
@@ -227,9 +258,8 @@ public class DefaultParamHandler implements ParamHandler {
         new BigDecimal((String) paramValue);
       }
     } catch (ClassCastException | NumberFormatException exception) {
-      throw parameterValidationException("Parameter '{}' has an invalid value: '{}' for type: '{}'",
-          parameter.getName(), paramValue, parameter.getSchema()
-              .getType());
+      throw parameterValidationException(INVALID_VALUE_MESSAGE, parameter.getName(), paramValue, parameter.getSchema()
+          .getType());
     }
   }
 
@@ -399,7 +429,7 @@ public class DefaultParamHandler implements ParamHandler {
           && !arraySchema.getItems()
               .getEnum()
               .isEmpty();
-    } else if (parameter.getSchema() instanceof StringSchema) {
+    } else if (!(parameter.getSchema() instanceof ObjectSchema)) {
       return Objects.nonNull(parameter.getSchema()
           .getEnum())
           && !parameter.getSchema()

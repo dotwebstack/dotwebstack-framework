@@ -20,8 +20,7 @@ objectTypes:
       name:
         field: name
       status: {}
-      city:
-        field: visitAddress.city
+      visitAddress: {}
 
   Address:
     fields:
@@ -31,3 +30,5 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      city: {}

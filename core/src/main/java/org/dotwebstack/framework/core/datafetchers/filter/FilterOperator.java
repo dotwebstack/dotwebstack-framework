@@ -4,7 +4,7 @@ import org.apache.commons.lang3.EnumUtils;
 
 public enum FilterOperator {
   @SuppressWarnings("checkstyle:linelength")
-  EQ, EQ_IGNORE_CASE, IN, IN_IGNORE_CASE, LT, LTE, GT, GTE, CONTAINS_ALL_OF, CONTAINS_ANY_OF, NOT, CONTAINS, WITHIN, INTERSECTS, MATCH, SRID;
+  EQ, EQ_IGNORE_CASE, IN, IN_IGNORE_CASE, LT, LTE, GT, GTE, CONTAINS_ALL_OF, CONTAINS_ANY_OF, NOT, CONTAINS, WITHIN, INTERSECTS, MATCH, SRID, EXISTS;
 
   public static FilterOperator getFilterOperator(String name, boolean isCaseSensitive) {
     if (FilterConstants.CONTAINS_ALL_OF_FIELD.equals(name)) {
@@ -19,6 +19,10 @@ public enum FilterOperator {
     if (FilterConstants.IN_FIELD.equals(name) && !isCaseSensitive) {
       return IN_IGNORE_CASE;
     }
+    if (FilterConstants.EXISTS_FIELD.equals(name)) {
+      return EXISTS;
+    }
+
     return EnumUtils.getEnumIgnoreCase(FilterOperator.class, name);
   }
 }

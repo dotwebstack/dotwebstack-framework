@@ -191,17 +191,19 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     assertThat(filterTypeDefinition, notNullValue());
     assertThat(filterTypeDefinition.getInputValueDefinitions()
-        .size(), is(4));
+        .size(), is(5));
     assertThat(filterTypeDefinition.getInputValueDefinitions()
         .stream()
         .map(InputValueDefinition::getName)
-        .collect(Collectors.toList()), equalTo(List.of("name", "abv", "inceptionYear", FilterConstants.OR_FIELD)));
+        .collect(Collectors.toList()),
+        equalTo(List.of("_exists", "name", "abv", "inceptionYear", FilterConstants.OR_FIELD)));
     assertThat(filterTypeDefinition.getInputValueDefinitions()
         .stream()
         .map(InputValueDefinition::getType)
         .map(TypeName.class::cast)
         .map(TypeName::getName)
-        .collect(Collectors.toList()), equalTo(List.of("StringFilter", "FloatFilter", "IntFilter", "BreweryFilter")));
+        .collect(Collectors.toList()),
+        equalTo(List.of("Boolean", "StringFilter", "FloatFilter", "IntFilter", "BreweryFilter")));
   }
 
   @Test

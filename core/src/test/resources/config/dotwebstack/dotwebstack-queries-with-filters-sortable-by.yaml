@@ -10,13 +10,6 @@ queries:
 objectTypes:
   Beer:
     table: dbeerpedia.beers
-    filters:
-      name:
-        field: name
-      breweryCity:
-        field: brewery.visitAddress.city
-      ingredientName:
-        field: ingredients.name
     sortableBy:
       name:
         - field: name
@@ -65,6 +58,9 @@ objectTypes:
       taste:
         type: Taste
         list: true
+    filters:
+      name:
+        field: name
 
   Brewery:
     fields:

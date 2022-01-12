@@ -2,16 +2,14 @@ package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsMapContaining.hasKey;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import org.jooq.tools.StringUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.util.UriComponentsBuilder;
 
 class WebTestClientHelper {
@@ -23,18 +21,28 @@ class WebTestClientHelper {
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
   public static Map<String, Object> get(WebTestClient client, String query) {
+    return get(client, query, "", Map.of());
+  }
+
+  public static Map<String, Object> get(WebTestClient client, String query, String operationName) {
+    return get(client, query, operationName, Map.of());
+  }
+
+  public static Map<String, Object> get(WebTestClient client, String query, String operationName,
+      Map<String, Object> variables) {
     UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("/");
 
     if (!StringUtils.isBlank(query)) {
       uriBuilder.queryParam("query", query);
     }
 
-    if (!StringUtils.isBlank("")) {
-      uriBuilder.queryParam("operationName", "");
+    if (!StringUtils.isBlank(operationName)) {
+      uriBuilder.queryParam("operationName", operationName);
     }
 
-    if (!StringUtils.isBlank("")) {
-      uriBuilder.queryParam("variables", "");
+    if (!variables.isEmpty()) {
+      JsonNode variableNode = objectMapper.convertValue(variables, JsonNode.class);
+      uriBuilder.queryParam("variables", variableNode.toString());
     }
 
     var result = client.get()
@@ -45,12 +53,36 @@ class WebTestClientHelper {
         .returnResult()
         .getResponseBody();
 
+    return parseResult(result);
+  }
+
+  public static Map<String, Object> post(WebTestClient client, String body) {
+    return post(client, body, "application/graphql");
+  }
+
+  public static Map<String, Object> post(WebTestClient client, String body, String contentType) {
+    var result = client.post()
+        .uri("/")
+        .header("content-type", contentType)
+        .body(BodyInserters.fromValue(body))
+        .exchange()
+        .expectBody(String.class)
+        .returnResult()
+        .getResponseBody();
+
+    return parseResult(result);
+  }
+
+  private static Map<String, Object> parseResult(String result) {
     var mapResult = readMap(result);
 
-    assertThat(mapResult.containsKey(ERRORS), is(false));
-    assertThat(mapResult, hasKey(equalTo(DATA)));
+    var error = mapResult.containsKey(ERRORS);
 
-    return getNestedMap(mapResult, DATA);
+    if (!error && mapResult.containsKey(DATA)) {
+      return getNestedMap(mapResult, DATA);
+    }
+
+    return mapResult;
   }
 
   @SuppressWarnings("unchecked")

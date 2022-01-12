@@ -20,10 +20,11 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterOperator;
-import org.dotwebstack.framework.core.backend.filter.ScalarFieldFilterCriteria;
+import org.dotwebstack.framework.core.backend.filter.ObjectFieldFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.Record;
@@ -73,7 +74,7 @@ class FilterConditionBuilderTest {
 
     objectField.setSpatial(spatial);
 
-    var filterCriteria = ScalarFieldFilterCriteria.builder()
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(objectField))
         .value(value)
@@ -94,16 +95,17 @@ class FilterConditionBuilderTest {
         arguments(FilterType.EXACT, Map.of("not", Map.of("eq", "foo")), "not (\"x1\".\"column\" = 'foo')"),
         arguments(FilterType.EXACT, Map.of("in", List.of("foo", "bar")),
             "\"x1\".\"column\" in (\n" + "  'foo', 'bar'\n" + ")"),
-        arguments(FilterType.PARTIAL, Map.of("match", "foo"), "\"x1\".\"column\" ilike '%foo%' escape '\\'"),
+        arguments(FilterType.PARTIAL, Map.of("match", "foo"),
+            "lower(\"x1\".\"column\") like lower('%foo%') escape '\\'"),
         arguments(FilterType.PARTIAL, Map.of("not", Map.of("match", "foo")),
-            "not (\"x1\".\"column\" ilike '%foo%' escape '\\')"));
+            "not (lower(\"x1\".\"column\") like lower('%foo%') escape '\\')"));
   }
 
   @ParameterizedTest
   @MethodSource("getScalarFieldArguments")
   void build_returnsConditions_forScalarFieldFilterCriterias(FilterType filterType, Map<String, Object> values,
       String expected) {
-    var filterCriteria = createScalarFieldFilterCriteria(filterType, values);
+    var filterCriteria = createObjectFieldFilterCriteria(filterType, values);
 
     var condition = build(filterCriteria);
 
@@ -124,7 +126,7 @@ class FilterConditionBuilderTest {
   @MethodSource("getCaseInsensitiveScalarFieldArguments")
   void build_returnsConditions_forCaseInsensitiveFilterCriterias(FilterType filterType, Map<String, Object> values,
       String expected) {
-    var filterCriteria = createScalarFieldFilterCriteria(filterType, values, "String", false);
+    var filterCriteria = createObjectFieldFilterCriteria(filterType, values, false);
 
     var condition = build(filterCriteria);
 
@@ -141,7 +143,7 @@ class FilterConditionBuilderTest {
   @MethodSource("getUnknownArguments")
   void build_throwsException_forUnknownFilterCriteria(FilterType filterType, Map<String, Object> values,
       String expected) {
-    var filterCriteria = createScalarFieldFilterCriteria(filterType, values);
+    var filterCriteria = createObjectFieldFilterCriteria(filterType, values);
 
     var thrown = assertThrows(IllegalArgumentException.class, () -> build(filterCriteria));
 
@@ -174,7 +176,7 @@ class FilterConditionBuilderTest {
     objectField.setList(true);
     objectField.setType(type);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
+    var filterCriteria = createObjectFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -202,7 +204,7 @@ class FilterConditionBuilderTest {
     enumConfiguration.setType("fooType");
     objectField.setEnumeration(enumConfiguration);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
+    var filterCriteria = createObjectFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -231,7 +233,7 @@ class FilterConditionBuilderTest {
     enumConfiguration.setType("fooType");
     objectField.setEnumeration(enumConfiguration);
 
-    var filterCriteria = createScalarFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
+    var filterCriteria = createObjectFieldFilterCriteria(FilterType.EXACT, values, objectField, true);
 
     var condition = build(filterCriteria);
 
@@ -261,7 +263,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "foo");
 
-    var filterCriteria = ScalarFieldFilterCriteria.builder()
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(parentField, childField))
         .value(values)
@@ -304,7 +306,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "123");
 
-    var filterCriteria = ScalarFieldFilterCriteria.builder()
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(childField, refField, identifierField))
         .value(values)
@@ -362,7 +364,7 @@ class FilterConditionBuilderTest {
 
     Map<String, Object> values = Map.of("eq", "123");
 
-    var filterCriteria = ScalarFieldFilterCriteria.builder()
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of(childField, refsField, identifierField))
         .value(values)
@@ -381,13 +383,13 @@ class FilterConditionBuilderTest {
   void build_returnsCondition_forGroupFilterCriteria() {
     var childAndGroup1 = GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.AND)
-        .filterCriterias(List.of(createScalarFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "foo")),
-            createScalarFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "bar"))))
+        .filterCriterias(List.of(createObjectFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "foo")),
+            createObjectFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "bar"))))
         .build();
 
     var childAndGroup2 = GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.AND)
-        .filterCriterias(List.of(createScalarFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "foobar"))))
+        .filterCriterias(List.of(createObjectFieldFilterCriteria(FilterType.EXACT, Map.of("eq", "foobar"))))
         .build();
 
     var orGroup = GroupFilterCriteria.builder()
@@ -402,6 +404,41 @@ class FilterConditionBuilderTest {
         + "    and \"x1\".\"column\" = 'bar'\n" + "  )\n" + "  or \"x1\".\"column\" = 'foobar'\n" + ")"));
   }
 
+  @Test
+  void build_returnsCondition_forExistsFilter() {
+    var objectType = new PostgresObjectType();
+    objectType.setTable("parent");
+
+    var targetType = new PostgresObjectType();
+    targetType.setTable("childtable");
+
+    var objectField = new PostgresObjectField();
+    objectField.setName("child");
+    objectField.setObjectType(objectType);
+    objectField.setTargetType(targetType);
+
+    var joinColumns = new ArrayList<JoinColumn>();
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("fk_child_id");
+    joinColumn.setReferencedColumn("child_id");
+    joinColumns.add(joinColumn);
+
+    objectField.setJoinColumns(joinColumns);
+
+    Map<String, Object> values = Map.of(FilterConstants.EXISTS_FIELD, false);
+
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
+        .fieldPath(List.of(objectField))
+        .value(values)
+        .build();
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo("not (exists (\n" + "  select 1\n" + "  from \"childtable\" \"x1\"\n"
+        + "  where \"x1\".\"fk_child_id\" = \"x1\".\"child_id\"\n" + "))"));
+  }
+
   private Condition build(FilterCriteria filterCriteria) {
     return newFiltering().filterCriteria(filterCriteria)
         .aliasManager(aliasManager)
@@ -409,22 +446,22 @@ class FilterConditionBuilderTest {
         .build();
   }
 
-  private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values) {
-    return createScalarFieldFilterCriteria(filterType, values, "String", true);
+  private FilterCriteria createObjectFieldFilterCriteria(FilterType filterType, Map<String, Object> values) {
+    return createObjectFieldFilterCriteria(filterType, values, true);
   }
 
-  private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values, String type,
+  private FilterCriteria createObjectFieldFilterCriteria(FilterType filterType, Map<String, Object> values,
       boolean caseSensitive) {
     var objectField = new PostgresObjectField();
     objectField.setColumn("column");
-    objectField.setType(type);
+    objectField.setType("String");
 
-    return createScalarFieldFilterCriteria(filterType, values, objectField, caseSensitive);
+    return createObjectFieldFilterCriteria(filterType, values, objectField, caseSensitive);
   }
 
-  private FilterCriteria createScalarFieldFilterCriteria(FilterType filterType, Map<String, Object> values,
+  private FilterCriteria createObjectFieldFilterCriteria(FilterType filterType, Map<String, Object> values,
       PostgresObjectField objectField, boolean caseSensitive) {
-    return ScalarFieldFilterCriteria.builder()
+    return ObjectFieldFilterCriteria.builder()
         .filterType(filterType)
         .isCaseSensitive(caseSensitive)
         .fieldPath(List.of(objectField))

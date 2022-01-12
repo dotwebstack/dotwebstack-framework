@@ -8,4 +8,6 @@ public class Settings {
 
   @Valid
   private GraphQlSettings graphql;
+
+  private int maxFilterDepth = 2;
 }

@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>service</artifactId>
-    <version>0.3.88-SNAPSHOT</version>
+    <version>0.3.95-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -40,5 +40,4 @@
       <artifactId>reactor-test</artifactId>
     </dependency>
   </dependencies>
-
 </project>

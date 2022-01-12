@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.service.openapi.query.paging;
 
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_MAX_VALUE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
@@ -38,10 +40,20 @@ public class QueryPaging {
         throw parameterValidationException("`pageSize` parameter value should be 1 or higher, but was {}.", pageSize);
       }
 
+      if (pageSize > FIRST_MAX_VALUE) {
+        throw parameterValidationException("`pageSize` parameter value exceeds allowed value.");
+      }
+
       var page = getIntValueForArgument(pageValue, PAGE);
 
+      var offset = getOffsetValue(page, pageSize);
+
+      if (offset > OFFSET_MAX_VALUE) {
+        throw parameterValidationException("`page` parameter value exceeds allowed value.");
+      }
+
       pagingArguments.put(FIRST_ARGUMENT_NAME, pageSize);
-      pagingArguments.put(OFFSET_FIELD_NAME, getOffsetValue(page, pageSize));
+      pagingArguments.put(OFFSET_FIELD_NAME, offset);
     }
 
     return pagingArguments;

@@ -25,6 +25,9 @@ paths:
         filters:
           name:
             in: args.name
+          postalAddress:
+            city:
+              eq: args.city
         sort: args.sort
       parameters:
         - name: status
@@ -49,6 +52,12 @@ paths:
             type: array
             items:
               type: string
+        - name: city
+          in: query
+          explode: false
+          required: false
+          schema:
+            type: string
         #        - name: foundedAfter
         #          in: query
         #          required: false
@@ -75,7 +84,13 @@ paths:
           in: query
           schema:
             type: integer
+            enum:
+              - 2
+              - 10
+              - 20
+              - 50
             default: 2
+
       #        - name: withAddressSubject
       #          in: query
       #          schema:

@@ -11,6 +11,8 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
 
   private String table;
 
+  private boolean distinct;
+
   @Override
   public boolean isNested() {
     return StringUtils.isBlank(table);

@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -164,5 +166,15 @@ public class JoinHelper {
     }
 
     throw illegalArgumentException("And condition called for empty condition list!");
+  }
+
+  public static Field<Object> getExistFieldForRelationObject(List<JoinColumn> joinColumns, Table<Record> table,
+      String alias) {
+    return joinColumns.stream()
+        .filter(joinColumn -> Objects.nonNull(joinColumn.getReferencedField()))
+        .findFirst()
+        .map(joinColumn -> DSL.field(DSL.name(table.getName(), joinColumn.getName()))
+            .as(alias))
+        .orElseThrow(() -> illegalArgumentException("Expected a joinColumn with a referencedField but got nothing!"));
   }
 }

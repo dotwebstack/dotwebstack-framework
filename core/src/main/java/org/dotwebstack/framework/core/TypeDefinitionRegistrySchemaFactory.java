@@ -118,12 +118,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private void addFilterTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
     schema.getObjectTypes()
-        .forEach((name, objectType) -> {
-          if (!objectType.getFilters()
-              .isEmpty()) {
-            typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType));
-          }
-        });
+        .forEach((name, objectType) -> typeDefinitionRegistry.add(createFilterObjectTypeDefinition(name, objectType)));
   }
 
   private void addSortTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
@@ -188,14 +183,20 @@ public class TypeDefinitionRegistrySchemaFactory {
   private InputObjectTypeDefinition createFilterObjectTypeDefinition(String objectTypeName, ObjectType<?> objectType) {
     var filterName = createFilterName(objectTypeName);
 
-    List<InputValueDefinition> inputValueDefinitions = objectType.getFilters()
+    List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+
+    inputValueDefinitions.add(newInputValueDefinition().name("_exists")
+        .type(newType("Boolean"))
+        .build());
+
+    inputValueDefinitions.addAll(objectType.getFilters()
         .entrySet()
         .stream()
         .map(entry -> newInputValueDefinition().name(entry.getKey())
-            .type(newType(FilterHelper.getTypeNameForFilter(schema, fieldFilterMap, objectType, entry.getKey(),
-                entry.getValue())))
+            .type(newType(
+                FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
             .build())
-        .collect(Collectors.toList());
+        .collect(Collectors.toList()));
 
     inputValueDefinitions.add(newInputValueDefinition().name(FilterConstants.OR_FIELD)
         .type(newType(filterName))

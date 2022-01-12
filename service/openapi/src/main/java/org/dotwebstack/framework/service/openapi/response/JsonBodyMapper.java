@@ -128,13 +128,14 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = resolveDwsName(entry.getValue(), entry.getKey());
+          var property = entry.getKey();
+          var dwsProperty = resolveDwsName(entry.getValue(), property);
           var nestedSchema = entry.getValue();
-          var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
+          var value = mapObjectSchemaProperty(dwsProperty, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
           if ((schema.getRequired() != null && schema.getRequired()
               .contains(property)) || !valueIsEmpty(value)) {
-            acc.put(entry.getKey(), value);
+            acc.put(property, value);
           }
         }, HashMap::putAll);
   }
@@ -148,9 +149,10 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = resolveDwsName(entry.getValue(), entry.getKey());
+          var property = entry.getKey();
+          var dwsProperty = resolveDwsName(entry.getValue(), property);
           var nestedSchema = entry.getValue();
-          var nestedFieldDefinition = rawType.getFieldDefinition(property);
+          var nestedFieldDefinition = rawType.getFieldDefinition(dwsProperty);
           Object nestedValue;
 
           if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
@@ -161,12 +163,14 @@ public class JsonBodyMapper implements BodyMapper {
             }
 
             var dataMap = (Map<String, Object>) data;
-            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, dataMap.get(property), jexlContext);
+            var childData = dataMap.get(dwsProperty);
+            addParentData(dataMap, childData);
+            nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, childData, jexlContext);
           }
 
           if ((schema.getRequired() != null && schema.getRequired()
               .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
-            acc.put(entry.getKey(), nestedValue);
+            acc.put(property, nestedValue);
           }
         }, HashMap::putAll);
 
@@ -219,7 +223,24 @@ public class JsonBodyMapper implements BodyMapper {
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(parentFieldDefinition.getType());
     var fieldDefinition = rawType.getFieldDefinition(name);
 
-    return mapSchema(schema, fieldDefinition, data.get(name), jexlContext);
+    var childData = data.get(name);
+    addParentData(data, childData);
+    return mapSchema(schema, fieldDefinition, childData, jexlContext);
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void addParentData(Map<String, Object> data, Object childData) {
+    if (childData == null) {
+      return;
+    }
+    if (childData instanceof Map) {
+      ((Map<String, Object>) childData).put("_parent", data);
+    } else if (childData instanceof List) {
+      var childDataList = ((List) childData);
+      if (!childDataList.isEmpty() && childDataList.get(0) instanceof Map) {
+        childDataList.forEach(item -> ((Map) item).put("_parent", data));
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")

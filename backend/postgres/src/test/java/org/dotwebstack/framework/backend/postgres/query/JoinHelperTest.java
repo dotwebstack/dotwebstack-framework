@@ -1,9 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.getExistFieldForRelationObject;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,11 +20,13 @@ import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.jooq.Record;
 import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
 class JoinHelperTest {
@@ -46,9 +52,9 @@ class JoinHelperTest {
 
     assertThat(result, IsCollectionWithSize.hasSize(1));
     assertThat(result.get(0)
-        .getName(), CoreMatchers.equalTo("field_name_right"));
+        .getName(), equalTo("field_name_right"));
     assertThat(result.get(0)
-        .getReferencedColumn(), CoreMatchers.equalTo("columnNameLeft"));
+        .getReferencedColumn(), equalTo("columnNameLeft"));
     assertThat(result.get(0)
         .getReferencedField(), CoreMatchers.nullValue());
   }
@@ -64,7 +70,7 @@ class JoinHelperTest {
 
     var result = JoinHelper.hasNestedReference(objectField);
 
-    assertThat(result, CoreMatchers.equalTo(Boolean.TRUE));
+    assertThat(result, equalTo(Boolean.TRUE));
   }
 
   @Test
@@ -77,7 +83,7 @@ class JoinHelperTest {
 
     var result = JoinHelper.hasNestedReference(objectField);
 
-    assertThat(result, CoreMatchers.equalTo(Boolean.FALSE));
+    assertThat(result, equalTo(Boolean.FALSE));
   }
 
   @Test
@@ -92,18 +98,52 @@ class JoinHelperTest {
 
     var result = JoinHelper.resolveJoinTable(objectType, joinTable);
 
-    assertThat(result, CoreMatchers.notNullValue());
+    assertThat(result, notNullValue());
     assertThat(result.getJoinColumns(), IsCollectionWithSize.hasSize(1));
     assertThat(result.getJoinColumns()
         .get(0)
-        .getReferencedColumn(), CoreMatchers.equalTo("fieldrefcolumn"));
+        .getReferencedColumn(), equalTo("fieldrefcolumn"));
     assertThat(result.getJoinColumns()
         .get(0)
         .getReferencedField(), CoreMatchers.nullValue());
     assertThat(result.getInverseJoinColumns(), IsCollectionWithSize.hasSize(1));
     assertThat(result.getInverseJoinColumns()
         .get(0)
-        .getReferencedField(), CoreMatchers.equalTo("bar"));
+        .getReferencedField(), equalTo("bar"));
+  }
+
+  @Test
+  void getExistFieldForRelationObject_returnsExistsField_forJoinColumnWithReferencedField() {
+    List<JoinColumn> joinColumns = new ArrayList<>();
+
+    var first = new JoinColumn();
+    first.setName("scope");
+    first.setReferencedColumn("scope_column");
+    joinColumns.add(first);
+
+    var second = new JoinColumn();
+    second.setName("id");
+    second.setReferencedField("ref.id");
+    joinColumns.add(second);
+
+    var table = DSL.table("table");
+
+    var result = getExistFieldForRelationObject(joinColumns, table, "x1");
+
+    assertThat(result, notNullValue());
+    assertThat(result.getName(), equalTo("x1"));
+  }
+
+  @Test
+  void getExistFieldForRelationObject_throwsException_forJoinColumnWithoutReferencedField() {
+    List<JoinColumn> joinColumns = List.of();
+
+    var table = DSL.table("table");
+
+    var thrown =
+        assertThrows(IllegalArgumentException.class, () -> getExistFieldForRelationObject(joinColumns, table, "x1"));
+
+    assertThat(thrown.getMessage(), equalTo("Expected a joinColumn with a referencedField but got nothing!"));
   }
 
   private JoinTable createJoinTable() {
@@ -127,11 +167,15 @@ class JoinHelperTest {
 
   @Test
   void createJoinConditions_returnsListCondition() {
+    var context = new Context();
+    context.setFields(Map.of("arg", mock(ContextField.class)));
+
     var contextCriteria = ContextCriteria.builder()
         .name("test")
-        .context(mock(Context.class))
+        .context(context)
         .values(Map.of("arg", "val"))
         .build();
+
     Table<Record> junctionTable = findTable("table1", contextCriteria);
     Table<Record> referencedTable = findTable("table2", contextCriteria);
     JoinColumn joinColumn = mock(JoinColumn.class);
@@ -145,7 +189,7 @@ class JoinHelperTest {
 
     var result = createJoinConditions(junctionTable, referencedTable, joinColumns, objectType);
 
-    assertThat(result, CoreMatchers.notNullValue());
+    assertThat(result, notNullValue());
     assertThat(result.toString(), is("\"table1_test_ctx({0})\".\"arg\" = \"table2_test_ctx({0})\".\"arg\""));
   }
 

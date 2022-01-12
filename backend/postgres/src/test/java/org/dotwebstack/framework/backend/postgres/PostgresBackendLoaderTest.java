@@ -16,6 +16,8 @@ import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -143,12 +145,18 @@ class PostgresBackendLoaderTest {
   private ObjectRequest initObjectRequest() {
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     Map<String, Object> mapValues = Map.of("a", "bbb");
     ContextCriteria contextCriteria = mock(ContextCriteria.class);
+
+    Context context = mock(Context.class);
+    when(context.getFields()).thenReturn(Map.of("a", mock(ContextField.class)));
+
+    when(contextCriteria.getContext()).thenReturn(context);
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
+
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     return ObjectRequest.builder()
         .objectType(objectType)
