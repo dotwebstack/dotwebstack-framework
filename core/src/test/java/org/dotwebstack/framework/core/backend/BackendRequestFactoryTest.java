@@ -93,6 +93,61 @@ class BackendRequestFactoryTest {
   }
 
   @Test
+  void createObjectRequest_returnsObjectRequestWithKeyCriteria_forBreweryWithKey() {
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var graphQlSchema = TestHelper.schemaToGraphQl(schema);
+
+    var breweryFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("brewery");
+
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
+    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
+        .fieldDefinition(breweryFieldDefinition)
+        .fieldContainer(objectType)
+        .type(breweryFieldDefinition.getType())
+        .arguments(Map.of("identifier", "id-1"))
+        .build();
+
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    when(executionStepInfo.getObjectType()
+        .getName()).thenReturn("Query");
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+    assertThat(objectRequest.getKeyCriteria(), is(notNullValue()));
+
+    var keyCriteria = objectRequest.getKeyCriteria();
+    assertThat(keyCriteria.getValues()
+        .size(), is(1));
+    assertThat(keyCriteria.getValues()
+        .keySet()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .size(), is(1));
+    assertThat(keyCriteria.getValues()
+        .keySet()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .get(0)
+        .getName(), is("identifier"));
+    assertThat(keyCriteria.getValues()
+        .keySet()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .get(0)
+        .getObjectType()
+        .getName(), is("Brewery"));
+    assertThat(keyCriteria.getValues()
+        .values()
+        .stream()
+        .findFirst()
+        .orElseThrow(), is("id-1"));
+  }
+
+  @Test
   void createCollectionRequest_returnsCollectionRequest_Brewery() {
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-queries-with-filters-sortable-by.yaml");
 
