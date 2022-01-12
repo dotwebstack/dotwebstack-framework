@@ -57,7 +57,7 @@ public class FilterCriteriaBuilder {
       if (fieldPath.isEmpty()) {
         throw unsupportedOperationException("Filter operator '_exists' is only supported for nested objects");
       }
-      return ScalarFieldFilterCriteria.builder()
+      return ObjectFieldFilterCriteria.builder()
           .filterType(FilterType.EXACT)
           .fieldPath(fieldPath)
           .value(Map.of(filterName, argument.get(filterName)))
@@ -82,7 +82,7 @@ public class FilterCriteriaBuilder {
 
     var filterValue = buildValue(argument.get(filterName));
 
-    return ScalarFieldFilterCriteria.builder()
+    return ObjectFieldFilterCriteria.builder()
         .filterType(filterConfiguration.getType())
         .isCaseSensitive(filterConfiguration.isCaseSensitive())
         .fieldPath(buildFieldPath(field))

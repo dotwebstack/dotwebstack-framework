@@ -11,7 +11,7 @@ import java.util.Map;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.junit.jupiter.api.Test;
 
-class ScalarFieldFilterCriteriaTest {
+class ObjectFieldFilterCriteriaTest {
 
   @Test
   void build_returnsObject_forInit() {
@@ -20,7 +20,7 @@ class ScalarFieldFilterCriteriaTest {
     Map<String, Object> value = new HashMap<>();
     value.put("a", "bbb");
 
-    var result = ScalarFieldFilterCriteria.builder()
+    var result = ObjectFieldFilterCriteria.builder()
         .fieldPath(fieldPath)
         .value(value)
         .build();
