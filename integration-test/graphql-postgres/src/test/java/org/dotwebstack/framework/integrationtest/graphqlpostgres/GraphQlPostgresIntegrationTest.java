@@ -352,11 +352,7 @@ class GraphQlPostgresIntegrationTest {
     String query = "{breweryCity (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\", city: \"Sydney\")"
         + "{name status beers{name}}}";
 
-    JsonNode json = executeGetRequestDefault(query);
-
-    assertThat(json.has(ERRORS), is(false));
-
-    Map<String, Object> data = getDataFromJsonNode(json);
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
     assertThat(data.containsKey(BREWERYCITY), is(true));
@@ -1532,12 +1528,12 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withNestedObjectExistsFalseFilter() {
-    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
+    var query = "{\n" + "  breweries(filter: {visitAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
 
     var data = WebTestClientHelper.get(client, query);
 
-    Assert.assertThat(data, hasEntry(equalTo("breweries"),
-        hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
+    Assert.assertThat(data, hasEntry(equalTo("breweries"), hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")),
+        hasEntry(equalTo("name"), equalTo("Brewery Y")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
   }
 
   @Test

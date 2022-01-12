@@ -81,10 +81,10 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo(
-            "select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-                + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
-                + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+            + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n" + "  \"x1\".\"identifier_column\" as \"x4\",\n"
+            + "  \"x1\".\"age_column\" as \"x5\"\n" + "from \"beer\" as \"x1\"\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test

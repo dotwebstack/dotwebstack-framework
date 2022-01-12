@@ -315,57 +315,6 @@ public class BackendRequestFactory {
     return Map.entry(fieldPath, value);
   }
 
-  private Optional<GroupFilterCriteria> createFilterCriteria(ObjectType<?> objectType,
-      Map<String, Object> filterArgument) {
-    if (filterArgument == null) {
-      return Optional.empty();
-    }
-
-    var andCriterias = filterArgument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> !filterName.startsWith("_"))
-        .map(filterName -> createScalarFieldFilterCriteria(objectType, filterArgument, filterName))
-        .map(FilterCriteria.class::cast)
-        .collect(Collectors.toList());
-
-    var andGroup = GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.AND)
-        .filterCriterias(andCriterias)
-        .build();
-
-    var orGroup = filterArgument.keySet()
-        .stream()
-        .filter(filterName -> Objects.nonNull(filterArgument.get(filterName)))
-        .filter(filterName -> Objects.equals(filterName, FilterConstants.OR_FIELD))
-        .findFirst()
-        .flatMap(filterName -> createFilterCriteria(objectType, MapHelper.getNestedMap(filterArgument, filterName)));
-
-    return orGroup.map(groupFilterCriteria -> GroupFilterCriteria.builder()
-        .logicalOperator(GroupFilterOperator.OR)
-        .filterCriterias(List.of(andGroup, groupFilterCriteria))
-        .build())
-        .or(() -> Optional.of(andGroup));
-
-  }
-
-  private ScalarFieldFilterCriteria createScalarFieldFilterCriteria(ObjectType<?> objectType,
-      Map<String, Object> filterArgument, String filterName) {
-    var filterConfiguration = objectType.getFilters()
-        .get(filterName);
-
-    var fieldPath = createFieldPath(objectType, filterConfiguration.getField());
-
-    var filterValue = createFilterValue(filterArgument, filterName);
-
-    return ScalarFieldFilterCriteria.builder()
-        .filterType(filterConfiguration.getType())
-        .isCaseSensitive(filterConfiguration.isCaseSensitive())
-        .fieldPath(fieldPath)
-        .value(filterValue)
-        .build();
-  }
-
   private Map<String, Object> createFilterValue(Map<String, Object> arguments, String key) {
     var value = arguments.get(key);
     if (value instanceof Boolean) {
