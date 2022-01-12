@@ -128,13 +128,14 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = resolveDwsName(entry.getValue(), entry.getKey());
+          var property = entry.getKey();
+          var dwsProperty = resolveDwsName(entry.getValue(), property);
           var nestedSchema = entry.getValue();
-          var value = mapObjectSchemaProperty(property, nestedSchema, fieldDefinition, dataMap, jexlContext);
+          var value = mapObjectSchemaProperty(dwsProperty, nestedSchema, fieldDefinition, dataMap, jexlContext);
 
           if ((schema.getRequired() != null && schema.getRequired()
               .contains(property)) || !valueIsEmpty(value)) {
-            acc.put(entry.getKey(), value);
+            acc.put(property, value);
           }
         }, HashMap::putAll);
   }
@@ -148,9 +149,10 @@ public class JsonBodyMapper implements BodyMapper {
         .entrySet()
         .stream()
         .collect(HashMap::new, (acc, entry) -> {
-          var property = resolveDwsName(entry.getValue(), entry.getKey());
+          var property = entry.getKey();
+          var dwsProperty = resolveDwsName(entry.getValue(), property);
           var nestedSchema = entry.getValue();
-          var nestedFieldDefinition = rawType.getFieldDefinition(property);
+          var nestedFieldDefinition = rawType.getFieldDefinition(dwsProperty);
           Object nestedValue;
 
           if (nestedFieldDefinition == null || isEnvelope(nestedSchema)) {
@@ -161,14 +163,14 @@ public class JsonBodyMapper implements BodyMapper {
             }
 
             var dataMap = (Map<String, Object>) data;
-            var childData = dataMap.get(property);
+            var childData = dataMap.get(dwsProperty);
             addParentData(dataMap, childData);
             nestedValue = mapSchema(nestedSchema, nestedFieldDefinition, childData, jexlContext);
           }
 
           if ((schema.getRequired() != null && schema.getRequired()
               .contains(property)) || !valueInEnvelopeIsEmpty(nestedValue)) {
-            acc.put(entry.getKey(), nestedValue);
+            acc.put(property, nestedValue);
           }
         }, HashMap::putAll);
 
