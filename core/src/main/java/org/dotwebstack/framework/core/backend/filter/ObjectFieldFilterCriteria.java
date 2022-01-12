@@ -12,7 +12,7 @@ import org.dotwebstack.framework.core.model.ObjectField;
 @Builder
 @Getter
 @EqualsAndHashCode
-public class ScalarFieldFilterCriteria implements FilterCriteria {
+public class ObjectFieldFilterCriteria implements FilterCriteria {
   @NonNull
   @Builder.Default
   private final FilterType filterType = FilterType.EXACT;

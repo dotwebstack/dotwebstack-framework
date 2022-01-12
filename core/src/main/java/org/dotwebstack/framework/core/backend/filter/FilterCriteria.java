@@ -17,13 +17,13 @@ public interface FilterCriteria {
     throw illegalArgumentException("Not a group filter!");
   }
 
-  default boolean isScalarFieldFilter() {
-    return this instanceof ScalarFieldFilterCriteria;
+  default boolean isObjectFieldFilter() {
+    return this instanceof ObjectFieldFilterCriteria;
   }
 
-  default ScalarFieldFilterCriteria asScalarFieldFilter() {
-    if (isScalarFieldFilter()) {
-      return (ScalarFieldFilterCriteria) this;
+  default ObjectFieldFilterCriteria asObjectFieldFilter() {
+    if (isObjectFieldFilter()) {
+      return (ObjectFieldFilterCriteria) this;
     }
 
     throw illegalArgumentException("Not a scalar field filter!");

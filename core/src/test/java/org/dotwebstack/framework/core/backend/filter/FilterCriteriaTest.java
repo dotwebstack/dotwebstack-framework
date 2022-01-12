@@ -48,7 +48,7 @@ class FilterCriteriaTest {
 
   @Test
   void asGroupFilter_throwsException_forNonGroupFilter() {
-    var filterCriteria = (FilterCriteria) ScalarFieldFilterCriteria.builder()
+    var filterCriteria = (FilterCriteria) ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of())
         .value(Map.of())
@@ -61,13 +61,13 @@ class FilterCriteriaTest {
 
   @Test
   void isScalarFieldFilter_returnsTrue_forScalarFieldFilter() {
-    var filterCriteria = ScalarFieldFilterCriteria.builder()
+    var filterCriteria = ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of())
         .value(Map.of())
         .build();
 
-    var result = filterCriteria.isScalarFieldFilter();
+    var result = filterCriteria.isObjectFieldFilter();
 
     assertThat(result, equalTo(true));
   }
@@ -76,22 +76,22 @@ class FilterCriteriaTest {
   void isScalarFieldFilter_returnsFalse_forNonScalarFieldFilter() {
     var filterCriteria = mock(FilterCriteria.class);
 
-    var result = filterCriteria.isScalarFieldFilter();
+    var result = filterCriteria.isObjectFieldFilter();
 
     assertThat(result, equalTo(false));
   }
 
   @Test
   void asScalarFieldFilter_returnsScalarFieldFilter_forScalarFieldFilter() {
-    var filterCriteria = (FilterCriteria) ScalarFieldFilterCriteria.builder()
+    var filterCriteria = (FilterCriteria) ObjectFieldFilterCriteria.builder()
         .filterType(FilterType.EXACT)
         .fieldPath(List.of())
         .value(Map.of())
         .build();
 
-    var result = filterCriteria.asScalarFieldFilter();
+    var result = filterCriteria.asObjectFieldFilter();
 
-    assertThat(result, instanceOf(ScalarFieldFilterCriteria.class));
+    assertThat(result, instanceOf(ObjectFieldFilterCriteria.class));
   }
 
   @Test
@@ -101,7 +101,7 @@ class FilterCriteriaTest {
         .filterCriterias(List.of())
         .build();
 
-    var throwed = assertThrows(IllegalArgumentException.class, filterCriteria::asScalarFieldFilter);
+    var throwed = assertThrows(IllegalArgumentException.class, filterCriteria::asObjectFieldFilter);
 
     assertThat(throwed.getMessage(), equalTo("Not a scalar field filter!"));
   }
