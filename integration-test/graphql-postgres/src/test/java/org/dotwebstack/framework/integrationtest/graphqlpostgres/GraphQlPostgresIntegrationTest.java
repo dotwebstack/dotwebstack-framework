@@ -66,6 +66,8 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String BREWERY = "brewery";
 
+  private static final String BREWERYCITY = "breweryCity";
+
   private static final String BEERS = "beers";
 
   private static final String BEER = "beer";
@@ -387,6 +389,30 @@ class GraphQlPostgresIntegrationTest {
     assertThat(data.containsKey(BREWERY), is(true));
 
     Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.size(), is(3));
+    assertThat(brewery.get(NAME), is("Brewery Z"));
+    assertThat(brewery.get(STATUS), is("inactive"));
+
+    List<Map<String, Object>> beers = getNestedObjects(brewery, BEERS);
+    assertThat(beers, is(notNullValue()));
+    assertThat(beers.size(), is(0));
+  }
+
+  @Test
+  void getRequest_returnsBrewery_forIdentifierAndObjectFieldKey() {
+    String query = "{breweryCity (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\", city: \"Sydney\")"
+        + "{name status beers{name}}}";
+
+    JsonNode json = executeGetRequestDefault(query);
+
+    assertThat(json.has(ERRORS), is(false));
+
+    Map<String, Object> data = getDataFromJsonNode(json);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERYCITY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERYCITY);
     assertThat(brewery.size(), is(3));
     assertThat(brewery.get(NAME), is("Brewery Z"));
     assertThat(brewery.get(STATUS), is("inactive"));

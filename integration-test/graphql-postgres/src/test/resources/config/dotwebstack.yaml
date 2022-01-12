@@ -34,6 +34,11 @@ queries:
     type: Brewery
     keys:
       - identifier_brewery
+  breweryCity:
+    type: Brewery
+    keys:
+      - identifier_brewery
+      - postalAddress.city
   ingredient:
     type: Ingredient
     keys:
