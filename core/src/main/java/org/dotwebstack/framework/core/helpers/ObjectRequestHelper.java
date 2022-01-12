@@ -49,9 +49,9 @@ public class ObjectRequestHelper {
             if (index == (fieldPath.size() - 1)) {
               findOrAddScalarField(current.get(), keyField);
             } else {
-              ObjectField nextSortField = fieldPath.get(index + 1);
+              ObjectField nextKeyField = fieldPath.get(index + 1);
               current.set(findOrAddObjectRequest(current.get()
-                  .getObjectFields(), keyField, nextSortField));
+                  .getObjectFields(), keyField, nextKeyField));
             }
           }
         });
