@@ -75,7 +75,8 @@ class OrchestrateConfiguration {
     Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(subschemaProperties.getBearerAuth())
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
-    var webClient = webClientBuilder.defaultHeaders(headerBuilder)
+    var webClient = webClientBuilder.clone()
+        .defaultHeaders(headerBuilder)
         .exchangeStrategies(ExchangeStrategies.builder()
             .codecs(configurer -> configurer.defaultCodecs()
                 .maxInMemorySize(5 * 1024 * 1024))
