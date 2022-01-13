@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.isRequestedBbox;
@@ -145,7 +144,8 @@ class SelectBuilder {
 
     var dataQuery = dslContext.selectQuery(table);
 
-    if (objectRequest.getKeyCriteria() != null) {
+    if (!objectRequest.getKeyCriterias()
+        .isEmpty()) {
       addKeyFields(objectRequest);
     }
 
@@ -154,7 +154,8 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table);
     processObjectListFields(objectRequest, table, dataQuery);
 
-    List<Condition> keyConditions = ofNullable(objectRequest.getKeyCriteria()).stream()
+    List<Condition> keyConditions = objectRequest.getKeyCriterias()
+        .stream()
         .flatMap(keyCriteria -> createKeyCondition(keyCriteria, table).stream())
         .collect(Collectors.toList());
 
@@ -328,27 +329,20 @@ class SelectBuilder {
       return Optional.empty();
     }
 
-    var conditions = keyCriteria.getValues()
-        .entrySet()
-        .stream()
-        .map(entry -> {
-          var fieldPath = entry.getKey();
+    var fieldPath = keyCriteria.getFieldPath();
+    Field<Object> sqlField;
+    if (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
+        .isNested()) {
+      var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
-          Field<Object> sqlField;
-          if (fieldPath.size() > 1 && (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
-              .isNested())) {
-            var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
+      sqlField = column(null, leafFieldMapper.getAlias());
+    } else {
+      sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
+    }
 
-            sqlField = column(null, leafFieldMapper.getAlias());
-          } else {
-            sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
-          }
+    var condition = sqlField.equal(keyCriteria.getValue());
 
-          return sqlField.equal(entry.getValue());
-        })
-        .collect(Collectors.toList());
-
-    return Optional.of(JoinHelper.andCondition(conditions));
+    return Optional.of(JoinHelper.andCondition(List.of(condition)));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,

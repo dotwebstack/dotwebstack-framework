@@ -30,4 +30,9 @@ public class FieldPathHelper {
   public static ObjectField getLeaf(List<ObjectField> fieldPath) {
     return fieldPath.get(fieldPath.size() - 1);
   }
+
+  public static boolean isNestedFieldPath(String path) {
+    return path.contains(".");
+  }
+
 }

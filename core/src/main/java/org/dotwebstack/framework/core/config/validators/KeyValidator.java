@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.config.validators;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Conditional(OnLocalSchema.class)
 public class KeyValidator implements SchemaValidator {
 
-  private Set<String> keyNames = new HashSet<>();
+  private final Set<String> keyNames = new HashSet<>();
 
   @Override
   public void validate(Schema schema) {
@@ -28,31 +29,35 @@ public class KeyValidator implements SchemaValidator {
   }
 
   private void validateKeyFieldPath(String queryName, String keyPath, String objectTypeName, Schema schema) {
-    Optional<ObjectType<?>> objectType = schema.getObjectType(objectTypeName);
-
-    if (objectType.isEmpty()) {
+    ObjectType<?> objectType;
+    if (schema.getObjectType(objectTypeName)
+        .isEmpty()) {
       throw invalidConfigurationException("The type '{}', of query: '{}', doesn't exist in the configuration.",
           objectTypeName, queryName);
+    } else {
+      objectType = schema.getObjectType(objectTypeName)
+          .orElseThrow();
     }
 
-    if (keyPath.contains(".")) {
-      var splittedKey = Arrays.asList(keyPath.split("\\.", 2));
-      var nestedFieldName = splittedKey.get(0);
-      var nestedFieldTypeName = objectType.get()
-          .getField(nestedFieldName)
-          .getType();
-
-      validateObjectField(objectType.get(), nestedFieldName);
-
-      var key = splittedKey.get(1);
-      validateKeyFieldPath(queryName, key, nestedFieldTypeName, schema);
+    if (isNestedFieldPath(keyPath)) {
+      validateComposedKeyField(queryName, keyPath, objectType, schema);
     } else {
-      validateKey(schema, objectType.get()
-          .getName(), keyPath);
+      validateKey(schema, objectType.getName(), keyPath);
       keyNames.add(keyPath);
     }
   }
 
+  private void validateComposedKeyField(String queryName, String composedKey, ObjectType<?> objectType, Schema schema) {
+    var splittedKey = Arrays.asList(composedKey.split("\\.", 2));
+    var nestedFieldName = splittedKey.get(0);
+    var nestedFieldTypeName = objectType.getField(nestedFieldName)
+        .getType();
+
+    validateObjectField(objectType, nestedFieldName);
+
+    var key = splittedKey.get(1);
+    validateKeyFieldPath(queryName, key, nestedFieldTypeName, schema);
+  }
 
   private void validateObjectField(ObjectType<?> objectType, String objectFieldName) {
     var objectField = objectType.getField(objectFieldName);
@@ -75,11 +80,13 @@ public class KeyValidator implements SchemaValidator {
 
   private void validateField(ObjectField objectField) {
     if (objectField.isNullable()) {
-      throw invalidConfigurationException("A key can't contain fields that are nullable.");
+      throw invalidConfigurationException("A key can't contain fields that are nullable, for field: '{}'.",
+          objectField.getName());
     }
 
     if (objectField.isList()) {
-      throw invalidConfigurationException("A key can't contain fields that are a list.");
+      throw invalidConfigurationException("A key can't contain fields that are a list, for field: '{}'.",
+          objectField.getName());
     }
   }
 }

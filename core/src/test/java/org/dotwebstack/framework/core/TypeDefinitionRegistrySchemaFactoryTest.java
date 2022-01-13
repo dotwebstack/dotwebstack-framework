@@ -46,6 +46,8 @@ import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
 
+  private static final String QUERY_TYPE_NAME = "Query";
+
   private SchemaReader schemaReader;
 
   private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
@@ -67,11 +69,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(3));
@@ -115,11 +117,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(2));
@@ -152,11 +154,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(2));
@@ -214,11 +216,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(1));
@@ -259,11 +261,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(1));
@@ -498,10 +500,10 @@ class TypeDefinitionRegistrySchemaFactoryTest {
             .build()
             .toString()));
 
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
 
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
 
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();

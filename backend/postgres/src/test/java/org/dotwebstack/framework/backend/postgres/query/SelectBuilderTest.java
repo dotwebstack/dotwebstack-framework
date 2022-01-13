@@ -138,9 +138,10 @@ class SelectBuilderTest {
         .objectFields(Map.of(FieldRequest.builder()
             .name("history")
             .build(), nestedObject))
-        .keyCriteria(KeyCriteria.builder()
-            .values(Map.of(List.of(identifierObjectField), "id-1"))
-            .build())
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(List.of(identifierObjectField))
+            .value("id-1")
+            .build()))
         .build();
   }
 
@@ -161,9 +162,10 @@ class SelectBuilderTest {
             FieldRequest.builder()
                 .name("soldPerYear")
                 .build())))
-        .keyCriteria(KeyCriteria.builder()
-            .values(Map.of(List.of(identifierObjectField), "id-1"))
-            .build())
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(List.of(identifierObjectField))
+            .value("id-1")
+            .build()))
         .build();
 
     var result = selectBuilder.build(objectRequest);

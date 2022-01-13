@@ -24,9 +24,12 @@ class KeyValidatorTest {
   @ParameterizedTest
   @CsvSource(
       value = {
-          "dotwebstack-with-invalid-nullable-objectfield-for-key.yaml | A key can't contain fields that are nullable.",
-          "dotwebstack-with-invalid-list-objectfield-for-key.yaml | A key can't contain fields that are a list.",
-          "dotwebstack-with-invalid-nullable-keyfield.yaml | A key can't contain fields that are nullable.",
+          "dotwebstack-with-invalid-nullable-objectfield-for-key.yaml | "
+              + "A key can't contain fields that are nullable, for field: 'postalAddress'.",
+          "dotwebstack-with-invalid-list-objectfield-for-key.yaml | "
+              + "A key can't contain fields that are a list, for field: 'postalAddress'.",
+          "dotwebstack-with-invalid-nullable-keyfield.yaml | "
+              + "A key can't contain fields that are nullable, for field: 'city'.",
           "dotwebstack-with-invalid-key.yaml | "
               + "Key field 'zipcode' in object type 'Address' can't be resolved to a single scalar type.",
           "dotwebstack-with-invalid-type-for-key.yaml | "

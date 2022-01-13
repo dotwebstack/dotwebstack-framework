@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -36,6 +37,16 @@ class FieldPathHelperTest {
         .getName(), is("bar"));
     assertThat(result.get(1)
         .getName(), is("baz"));
+  }
+
+  @Test
+  void isNestedFieldPath_returnsTrue_forNestedFieldPath() {
+    assertThat(isNestedFieldPath("test.character"), is(true));
+  }
+
+  @Test
+  void isNestedFieldPath_returnsFalse_forNonNestedFieldPath() {
+    assertThat(isNestedFieldPath("test"), is(false));
   }
 
   private TestObjectType createFooObjectType() {

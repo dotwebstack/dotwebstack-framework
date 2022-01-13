@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_SUFFIX;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import com.google.common.base.CaseFormat;
 import graphql.Scalars;
@@ -76,6 +77,8 @@ public class TypeDefinitionRegistrySchemaFactory {
   private static final String GEOMETRY_BBOX_ARGUMENT_NAME = "bbox";
 
   private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
+
+  public static final String OBJECT_TYPE = "objectType";
 
   private final Schema schema;
 
@@ -539,31 +542,19 @@ public class TypeDefinitionRegistrySchemaFactory {
   private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType,
       Map<String, String> additionalData) {
 
-    if (keyField.contains(".")) {
-      var composedKeyMap = parseComposedKeyField(keyField);
+    if (isNestedFieldPath(keyField)) {
+      var splittedKeys = Arrays.asList(keyField.split("\\.", 2));
 
-      keyField = composedKeyMap.get("keyField");
-      objectType = schema.getObjectType(objectType.getField(composedKeyMap.get("objectType"))
+      objectType = schema.getObjectType(objectType.getField(splittedKeys.get(0))
           .getType())
           .orElseThrow();
+      keyField = splittedKeys.get(1);
     }
 
     return newInputValueDefinition().name(keyField)
         .type(createType(keyField, objectType))
         .additionalData(additionalData)
         .build();
-  }
-
-  private Map<String, String> parseComposedKeyField(String composedKey) {
-    var splittedKey = Arrays.asList(composedKey.split("\\.", 2));
-    String objectType = splittedKey.get(0);
-    String keyField = splittedKey.get(1);
-
-    if (keyField.contains(".")) {
-      parseComposedKeyField(keyField);
-    }
-
-    return Map.of("keyField", keyField, "objectType", objectType);
   }
 
   private InputValueDefinition createFieldInputValueDefinition(FieldArgument fieldArgument) {

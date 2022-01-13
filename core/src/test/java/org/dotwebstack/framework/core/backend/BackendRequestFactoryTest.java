@@ -114,37 +114,21 @@ class BackendRequestFactoryTest {
     when(executionStepInfo.getObjectType()
         .getName()).thenReturn("Query");
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
-    assertThat(objectRequest.getKeyCriteria(), is(notNullValue()));
+    assertThat(objectRequest.getKeyCriterias(), is(notNullValue()));
 
-    var keyCriteria = objectRequest.getKeyCriteria();
-    assertThat(keyCriteria.getValues()
-        .size(), is(1));
-    assertThat(keyCriteria.getValues()
-        .keySet()
-        .stream()
-        .findFirst()
-        .orElseThrow()
-        .size(), is(1));
-    assertThat(keyCriteria.getValues()
-        .keySet()
-        .stream()
-        .findFirst()
-        .orElseThrow()
-        .get(0)
+    var keyCriteria = objectRequest.getKeyCriterias();
+    assertThat(keyCriteria.size(), is(1));
+
+    var fieldPath = keyCriteria.get(0)
+        .getFieldPath();
+    assertThat(fieldPath.size(), is(1));
+    assertThat(fieldPath.get(0)
         .getName(), is("identifier"));
-    assertThat(keyCriteria.getValues()
-        .keySet()
-        .stream()
-        .findFirst()
-        .orElseThrow()
-        .get(0)
+    assertThat(fieldPath.get(0)
         .getObjectType()
         .getName(), is("Brewery"));
-    assertThat(keyCriteria.getValues()
-        .values()
-        .stream()
-        .findFirst()
-        .orElseThrow(), is("id-1"));
+    assertThat(keyCriteria.get(0)
+        .getValue(), is("id-1"));
   }
 
   @Test

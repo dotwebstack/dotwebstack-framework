@@ -8,7 +8,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -147,17 +146,17 @@ class ObjectRequestHelperTest {
 
   @Test
   void addKeyFields_doesNotModifyCollectionRequest_forExistingScalarField() {
-    Map<List<ObjectField>, Object> keyCriteriaMap = new HashMap<>();
+    List<KeyCriteria> keyCriterias = new ArrayList<>();
 
     var identifierObjectField = new TestObjectField();
     identifierObjectField.setName("identifier");
-    keyCriteriaMap.put(List.of(identifierObjectField), "id-1");
-    var keyCriteria = KeyCriteria.builder()
-        .values(keyCriteriaMap)
-        .build();
+    keyCriterias.add(KeyCriteria.builder()
+        .fieldPath(List.of(identifierObjectField))
+        .value("id-1")
+        .build());
 
-    var objectRequest = getObjectRequest(keyCriteria);
-    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriteria);
+    var objectRequest = getObjectRequest(keyCriterias);
+    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias);
 
     addKeyFields(objectRequest);
 
@@ -169,17 +168,17 @@ class ObjectRequestHelperTest {
 
   @Test
   void addKeyFields_addsScalarFieldToObjectRequest_forNonExistingScalarField() {
-    Map<List<ObjectField>, Object> keyCriteriaMap = new HashMap<>();
+    List<KeyCriteria> keyCriterias = new ArrayList<>();
 
     var identifierObjectField = new TestObjectField();
     identifierObjectField.setName("id");
-    keyCriteriaMap.put(List.of(identifierObjectField), "id-1");
-    var keyCriteria = KeyCriteria.builder()
-        .values(keyCriteriaMap)
-        .build();
+    keyCriterias.add(KeyCriteria.builder()
+        .fieldPath(List.of(identifierObjectField))
+        .value("id-1")
+        .build());
 
-    var objectRequest = getObjectRequest(keyCriteria);
-    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriteria);
+    var objectRequest = getObjectRequest(keyCriterias);
+    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias);
 
     addKeyFields(objectRequest);
 
@@ -216,16 +215,14 @@ class ObjectRequestHelperTest {
 
     idObjectField.setObjectType(breweryObjectType);
 
-    Map<List<ObjectField>, Object> keyCriteriaMap = new HashMap<>();
+    List<KeyCriteria> keyCriterias = new ArrayList<>();
+    keyCriterias.add(KeyCriteria.builder()
+        .fieldPath(List.of(breweryObjectField, idObjectField))
+        .value("id-1")
+        .build());
 
-    keyCriteriaMap.put(List.of(breweryObjectField, idObjectField), "id-1");
-
-    var keyCriteria = KeyCriteria.builder()
-        .values(keyCriteriaMap)
-        .build();
-
-    var objectRequest = getObjectRequest(keyCriteria);
-    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriteria);
+    var objectRequest = getObjectRequest(keyCriterias);
+    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias);
 
     addKeyFields(objectRequest);
 
@@ -279,15 +276,14 @@ class ObjectRequestHelperTest {
 
     versieObjectField.setObjectType(historyObjectType);
 
+    List<KeyCriteria> keyCriterias = new ArrayList<>();
+    keyCriterias.add(KeyCriteria.builder()
+        .fieldPath(List.of(historyObjectField, versieObjectField))
+        .value("1")
+        .build());
 
-    Map<List<ObjectField>, Object> keyCriteriaMap = new HashMap<>();
-    keyCriteriaMap.put(List.of(historyObjectField, versieObjectField), "1");
-    var keyCriteria = KeyCriteria.builder()
-        .values(keyCriteriaMap)
-        .build();
-
-    var objectRequest = getObjectRequest(keyCriteria);
-    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriteria);
+    var objectRequest = getObjectRequest(keyCriterias);
+    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias);
 
     addKeyFields(objectRequest);
 
@@ -333,7 +329,7 @@ class ObjectRequestHelperTest {
         .build();
   }
 
-  private ObjectRequest getObjectRequest(KeyCriteria keyCriteria) {
+  private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias) {
     var objectType = mock(ObjectType.class);
 
     return ObjectRequest.builder()
@@ -347,7 +343,7 @@ class ObjectRequestHelperTest {
             FieldRequest.builder()
                 .name("soldPerYear")
                 .build())))
-        .keyCriteria(keyCriteria)
+        .keyCriterias(keyCriterias)
         .build();
   }
 }

@@ -31,7 +31,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
@@ -41,8 +40,8 @@ import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -105,7 +104,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(objectType, executionStepInfo).orElse(null))
+        .keyCriterias(createKeyCriterias(objectType, executionStepInfo))
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -119,7 +118,7 @@ public class BackendRequestFactory {
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriteria(createKeyCriteria(objectType, executionStepInfo).orElse(null))
+        .keyCriterias(createKeyCriterias(objectType, executionStepInfo))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -264,12 +263,12 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Optional<KeyCriteria> createKeyCriteria(ObjectType<?> objectType, ExecutionStepInfo executionStepInfo) {
+  private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, ExecutionStepInfo executionStepInfo) {
     if (TypeHelper.getTypeName(executionStepInfo.getFieldDefinition()
         .getType())
         .filter(typeName -> typeName.equals(objectType.getName()))
         .isEmpty()) {
-      return Optional.empty();
+      return List.of();
     }
 
     var queryName = getQueryName(executionStepInfo);
@@ -282,27 +281,21 @@ public class BackendRequestFactory {
     var queryKeys = queryName.map(name -> schema.getQueries()
         .get(name))
         .stream()
-        .flatMap(q -> q.getKeys()
-            .stream())
+        .map(Query::getKeys)
+        .flatMap(List::stream)
         .collect(Collectors.toList());
 
-    var keys = arguments.stream()
+    return arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.IS_KEY_ARGUMENT))
         .filter(argument -> argumentValues.containsKey(argument.getName()))
-        .map(argument -> createKeyCriteriaEntry(objectType, argumentValues, queryKeys, argument))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    return Optional.of(keys)
-        .filter(k -> k.size() > 0)
-        .map(k -> KeyCriteria.builder()
-            .values(k)
-            .build());
+        .map(argument -> createKeyCriteria(objectType, argumentValues, queryKeys, argument))
+        .collect(Collectors.toList());
   }
 
-  private Map.Entry<List<ObjectField>, Object> createKeyCriteriaEntry(ObjectType<?> objectType,
-      Map<String, Object> argumentMap, List<String> queryKeys, GraphQLArgument argument) {
+  private KeyCriteria createKeyCriteria(ObjectType<?> objectType, Map<String, Object> argumentMap,
+      List<String> queryKeys, GraphQLArgument argument) {
     var queryKey = queryKeys.stream()
         .filter(key -> key.substring(key.lastIndexOf(".") + 1)
             .equals(argument.getName()))
@@ -312,16 +305,10 @@ public class BackendRequestFactory {
     var fieldPath = createFieldPath(objectType, queryKey);
     var value = argumentMap.get(argument.getName());
 
-    return Map.entry(fieldPath, value);
-  }
-
-  private Map<String, Object> createFilterValue(Map<String, Object> arguments, String key) {
-    var value = arguments.get(key);
-    if (value instanceof Boolean) {
-      return Map.of(FilterConstants.EQ_FIELD, value);
-    }
-
-    return getNestedMap(arguments, key);
+    return KeyCriteria.builder()
+        .fieldPath(fieldPath)
+        .value(value)
+        .build();
   }
 
   private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {

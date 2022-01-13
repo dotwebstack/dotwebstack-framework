@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.StringHelper.toSnakeCase;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -15,11 +16,11 @@ class StringHelperTest {
       "fooBARBaz, foo_bar_baz", "fooBBaz, foo_b_baz", "FOOBarBaz, foo_bar_baz", "foo3D, foo_3d", "foo33D, foo_33d",
       "foo3DBarBaz, foo_3d_bar_baz"})
   void toSnakeCase_returnsSnakeCase_forString(String str, String expectedResult) {
-    assertThat(StringHelper.toSnakeCase(str), is(expectedResult));
+    assertThat(toSnakeCase(str), is(expectedResult));
   }
 
   @Test
   void toSnakeCase_returnsNull_forNullString() {
-    assertThat(StringHelper.toSnakeCase(null), is(nullValue()));
+    assertThat(toSnakeCase(null), is(nullValue()));
   }
 }
