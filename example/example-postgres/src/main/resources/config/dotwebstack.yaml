@@ -46,6 +46,11 @@ queries:
   ingredientCollection:
     type: Ingredient
     list: true
+  breweryAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
 
 objectTypes:
   Beer:
@@ -162,7 +167,6 @@ objectTypes:
         nullable: true
       postalAddress:
         type: Address
-        nullable: true
         joinColumns:
           - name: postal_address
             referencedField: identifier
@@ -176,8 +180,6 @@ objectTypes:
         type: Beer
         nullable: true
         mappedBy: brewery
-        keys:
-          - identifier
       beers:
         type: Beer
         list: true

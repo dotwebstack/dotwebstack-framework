@@ -13,13 +13,13 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.helpers.FieldPathHelper;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-
 
 public class JoinHelper {
 
@@ -94,7 +94,7 @@ public class JoinHelper {
   private static boolean hasNestedReference(JoinColumn joinColumn) {
     return Optional.of(joinColumn)
         .map(JoinColumn::getReferencedField)
-        .filter(field -> field.contains("."))
+        .filter(FieldPathHelper::isNestedFieldPath)
         .isPresent();
   }
 

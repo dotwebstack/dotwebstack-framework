@@ -25,7 +25,7 @@ CREATE TABLE db.brewery_v (
   identifier_brewery character varying REFERENCES db.brewery_i (identifier_brewery),
   name character varying NOT NULL,
   status db.brewery_status NOT NULL,
-  postal_address character varying REFERENCES db.address_i (identifier_address),
+  postal_address character varying REFERENCES db.address_i (identifier_address) NOT NULL,
   visit_address character varying REFERENCES db.address_i (identifier_address),
   geometry geometry(GeometryZ, 7415) NOT NULL,
   geometry_bbox geometry(Geometry, 7415) NOT NULL,

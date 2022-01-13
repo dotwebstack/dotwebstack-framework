@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_SUFFIX;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import com.google.common.base.CaseFormat;
 import graphql.Scalars;
@@ -33,6 +34,7 @@ import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +77,8 @@ public class TypeDefinitionRegistrySchemaFactory {
   private static final String GEOMETRY_BBOX_ARGUMENT_NAME = "bbox";
 
   private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
+
+  public static final String OBJECT_TYPE = "objectType";
 
   private final Schema schema;
 
@@ -296,13 +300,6 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (GEOMETRY_TYPE.equals(objectField.getType())) {
       inputValueDefinitions.addAll(createGeometryArguments());
     }
-
-    schema.getObjectType(objectField.getType())
-        .ifPresent(objectType -> objectField.getKeys()
-            .stream()
-            .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType,
-                Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
-            .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
         .stream()
@@ -544,6 +541,16 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType,
       Map<String, String> additionalData) {
+
+    if (isNestedFieldPath(keyField)) {
+      var splittedKeys = Arrays.asList(keyField.split("\\.", 2));
+
+      objectType = schema.getObjectType(objectType.getField(splittedKeys.get(0))
+          .getType())
+          .orElseThrow();
+      keyField = splittedKeys.get(1);
+    }
+
     return newInputValueDefinition().name(keyField)
         .type(createType(keyField, objectType))
         .additionalData(additionalData)

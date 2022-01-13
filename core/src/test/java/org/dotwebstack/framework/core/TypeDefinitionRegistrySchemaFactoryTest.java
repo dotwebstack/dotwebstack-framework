@@ -46,6 +46,8 @@ import org.junit.jupiter.api.Test;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
 
+  private static final String QUERY_TYPE_NAME = "Query";
+
   private SchemaReader schemaReader;
 
   private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
@@ -67,14 +69,14 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(2));
+    assertThat(fieldDefinitions.size(), is(3));
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
@@ -82,10 +84,24 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
-    var queryInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
+    var breweryQueryIdentifierInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
         .get(0);
-    assertThat(queryInputValueDefinition.getName(), is("identifier"));
-    assertNonNullType(queryInputValueDefinition.getType(), "ID");
+    assertThat(breweryQueryIdentifierInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(breweryQueryIdentifierInputValueDefinition.getType(), "ID");
+
+    var breweryCityFieldDefinition = fieldDefinitions.get(2);
+
+    assertThat(breweryCityFieldDefinition.getInputValueDefinitions()
+        .size(), is(2));
+    var breweryCityqueryIdentifierInputValueDefinition = breweryCityFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(breweryCityqueryIdentifierInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(breweryCityqueryIdentifierInputValueDefinition.getType(), "ID");
+
+    var breweryCityqueryCityInputValueDefinition = breweryCityFieldDefinition.getInputValueDefinitions()
+        .get(1);
+    assertThat(breweryCityqueryCityInputValueDefinition.getName(), is("city"));
+    assertNonNullType(breweryCityqueryCityInputValueDefinition.getType(), "String");
 
     var breweryCollectionFieldDefinition = fieldDefinitions.get(1);
     assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
@@ -101,11 +117,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(2));
@@ -138,11 +154,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(2));
@@ -200,11 +216,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(1));
@@ -245,11 +261,11 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Query")
+    assertThat(registry.getType(QUERY_TYPE_NAME)
         .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
     assertThat(fieldDefinitions.size(), is(1));
@@ -430,8 +446,6 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var beerFieldDefinition = fieldDefinitions.get(4);
     assertThat(beerFieldDefinition.getName(), is("beer"));
     assertType(beerFieldDefinition.getType(), "Beer");
-    assertThat(beerFieldDefinition.getInputValueDefinitions()
-        .size(), is(1));
 
     var beersFieldDefinition = fieldDefinitions.get(5);
     assertThat(beersFieldDefinition.getName(), is("beers"));
@@ -486,10 +500,10 @@ class TypeDefinitionRegistrySchemaFactoryTest {
             .build()
             .toString()));
 
-    var queryTypeDefinition = registry.getType("Query")
+    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
         .orElseThrow();
 
-    assertThat(queryTypeDefinition.getName(), is("Query"));
+    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
 
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();

@@ -15,8 +15,6 @@ public interface ObjectField {
 
   String getType();
 
-  List<String> getKeys();
-
   boolean isList();
 
   boolean isNullable();

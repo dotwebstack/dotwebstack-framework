@@ -1,18 +1,19 @@
-package org.dotwebstack.framework.backend.postgres.query;
+package org.dotwebstack.framework.core.helpers;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
-final class SortHelper {
+public class ObjectRequestHelper {
 
-  private SortHelper() {}
+  private ObjectRequestHelper() {}
 
-  static void addSortFields(CollectionRequest collectionRequest) {
+  public static void addSortFields(CollectionRequest collectionRequest) {
     collectionRequest.getSortCriterias()
         .forEach(sortCriteria -> addSortFields(collectionRequest, sortCriteria));
   }
@@ -34,6 +35,27 @@ final class SortHelper {
         objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
     }
+  }
+
+  public static void addKeyFields(final ObjectRequest objectRequest) {
+    var keyCriterias = objectRequest.getKeyCriterias();
+
+    keyCriterias.forEach(keyCriteria -> {
+      final AtomicReference<ObjectRequest> current = new AtomicReference<>(objectRequest);
+
+      var fieldPath = keyCriteria.getFieldPath();
+
+      for (int index = 0; index < fieldPath.size(); index++) {
+        ObjectField keyField = fieldPath.get(index);
+        if (index == (fieldPath.size() - 1)) {
+          findOrAddScalarField(current.get(), keyField);
+        } else {
+          ObjectField nextKeyField = fieldPath.get(index + 1);
+          current.set(findOrAddObjectRequest(current.get()
+              .getObjectFields(), keyField, nextKeyField));
+        }
+      }
+    });
   }
 
   private static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,

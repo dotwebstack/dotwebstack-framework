@@ -65,8 +65,10 @@ class BackendRequestFactoryTest {
     var beerFieldDefinition = graphQlSchema.getObjectType("Brewery")
         .getFieldDefinition("beer");
 
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
     var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
         .fieldDefinition(breweryFieldDefinition)
+        .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
         .build();
 
@@ -75,26 +77,58 @@ class BackendRequestFactoryTest {
     var beerField = mock(SelectedField.class);
 
     when(beerField.getType()).thenReturn(beerFieldDefinition.getType());
-    when(beerField.getFieldDefinitions()).thenReturn(List.of(beerFieldDefinition));
     when(beerField.getSelectionSet()).thenReturn(beerSelectionSet);
     when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
     when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    when(executionStepInfo.getObjectType()
+        .getName()).thenReturn("Query");
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
 
     var objectFields = objectRequest.getObjectFields();
     assertThat(objectFields.size(), is(1));
+  }
 
-    var keyCriteria = objectFields.values()
-        .stream()
-        .findFirst()
-        .orElseThrow()
-        .getKeyCriteria();
+  @Test
+  void createObjectRequest_returnsObjectRequestWithKeyCriteria_forBreweryWithKey() {
+    var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
+    var graphQlSchema = TestHelper.schemaToGraphQl(schema);
 
-    assertThat(keyCriteria, notNullValue());
+    var breweryFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("brewery");
+
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
+    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
+        .fieldDefinition(breweryFieldDefinition)
+        .fieldContainer(objectType)
+        .type(breweryFieldDefinition.getType())
+        .arguments(Map.of("identifier", "id-1"))
+        .build();
+
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    when(executionStepInfo.getObjectType()
+        .getName()).thenReturn("Query");
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+    assertThat(objectRequest.getKeyCriterias(), is(notNullValue()));
+
+    var keyCriteria = objectRequest.getKeyCriterias();
+    assertThat(keyCriteria.size(), is(1));
+
+    var fieldPath = keyCriteria.get(0)
+        .getFieldPath();
+    assertThat(fieldPath.size(), is(1));
+    assertThat(fieldPath.get(0)
+        .getName(), is("identifier"));
+    assertThat(fieldPath.get(0)
+        .getObjectType()
+        .getName(), is("Brewery"));
+    assertThat(keyCriteria.get(0)
+        .getValue(), is("id-1"));
   }
 
   @Test

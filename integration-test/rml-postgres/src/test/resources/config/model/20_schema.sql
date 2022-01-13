@@ -14,7 +14,7 @@ CREATE TABLE db.brewery (
   identifier character varying NOT NULL PRIMARY KEY,
   name character varying NOT NULL,
   status db.brewery_status NOT NULL,
-  postal_address character varying REFERENCES db.address (identifier),
+  postal_address character varying REFERENCES db.address (identifier) NOT NULL,
   visit_address character varying REFERENCES db.address (identifier),
   geometry geometry NOT NULL,
   his_age INT NOT NULL,

@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -69,9 +68,9 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-            + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
-            + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"identifier_column\" as \"x4\",\n" + "  \"x1\".\"age_column\" as \"x5\"\n"
+            + "from \"beer\" as \"x1\"\n" + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test
@@ -82,10 +81,10 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo(
-            "select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-                + "  \"x1\".\"age_column\" as \"x4\"\n" + "from \"beer\" as \"x1\"\n"
-                + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
+            + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n" + "  \"x1\".\"identifier_column\" as \"x4\",\n"
+            + "  \"x1\".\"age_column\" as \"x5\"\n" + "from \"beer\" as \"x1\"\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test
@@ -96,9 +95,10 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-            + "  (\"x1\".\"age_column\" is not null) as \"x4\",\n  \"x1\".\"age_column\" as \"x5\"\n"
-            + "from \"beer\" as \"x1\"\nwhere \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"identifier_column\" as \"x4\",\n" + "  (\"x1\".\"age_column\" is not null) as \"x5\",\n"
+            + "  \"x1\".\"age_column\" as \"x6\"\n" + "from \"beer\" as \"x1\"\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
@@ -110,33 +110,38 @@ class SelectBuilderTest {
 
     var nestedObjectType = createObjectType(null, "age");
 
-    var nestedObjectField = createObjectField("history");
-    nestedObjectField.setTargetType(nestedObjectType);
-    nestedObjectField.setPresenceColumn(presenceColumn);
+    var historyObjectField = createObjectField("history");
+    historyObjectField.setTargetType(nestedObjectType);
+    historyObjectField.setPresenceColumn(presenceColumn);
     objectType.getFields()
-        .put("history", nestedObjectField);
+        .put("history", historyObjectField);
+
+    var identifierObjectField = createObjectField("identifier");
+    objectType.getFields()
+        .put("identifier", identifierObjectField);
 
     var nestedObject = ObjectRequest.builder()
         .objectType(nestedObjectType)
-        .scalarFields(List.of(FieldRequest.builder()
+        .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("age")
-            .build()))
+            .build())))
         .build();
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .scalarFields(List.of(FieldRequest.builder()
+        .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
-                .build()))
+                .build())))
         .objectFields(Map.of(FieldRequest.builder()
             .name("history")
             .build(), nestedObject))
-        .keyCriteria(KeyCriteria.builder()
-            .values(Map.of("identifier", "id-1"))
-            .build())
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(List.of(identifierObjectField))
+            .value("id-1")
+            .build()))
         .build();
   }
 
@@ -144,26 +149,32 @@ class SelectBuilderTest {
   void build_returnsSelectQuery_forObjectRequestWithContextCriteria() {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
+    var identifierObjectField = createObjectField("identifier");
+    objectType.getFields()
+        .put("identifier", identifierObjectField);
+
     var objectRequest = ObjectRequest.builder()
         .objectType(objectType)
         .contextCriteria(createContextCriteria())
-        .scalarFields(List.of(FieldRequest.builder()
+        .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
-                .build()))
-        .keyCriteria(KeyCriteria.builder()
-            .values(Map.of("identifier", "id-1"))
-            .build())
+                .build())))
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(List.of(identifierObjectField))
+            .value("id-1")
+            .build()))
         .build();
 
     var result = selectBuilder.build(objectRequest);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\"\n"
-            + "from beer_History_ctx('validFrom_value') as \"x1\"\n" + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
+            + "  \"x1\".\"identifier_column\" as \"x4\"\n" + "from beer_History_ctx('validFrom_value') as \"x1\"\n"
+            + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
   @Test
@@ -594,24 +605,10 @@ class SelectBuilderTest {
     var fieldMapperResult = fieldMapper.apply(Map.of("x2", "my brewery", "x3", "id-brewery-1"));
 
     assertThat(fieldMapperResult, notNullValue());
-    assertThat(fieldMapperResult, not(hasKey(equalTo("identifier"))));
     assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
         .key(Map.of("identifier", "id-brewery-1"))
         .build())));
     assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("my brewery")));
-
-    Map<String, Object> row = new HashMap<>();
-    row.put("x2", null);
-    row.put("x3", null);
-
-    fieldMapperResult = fieldMapper.apply(row);
-
-    assertThat(fieldMapperResult, notNullValue());
-    assertThat(fieldMapperResult, not(hasKey(equalTo("identifier"))));
-
-    assertThat(fieldMapperResult, hasEntry(equalTo("$join:beers"), equalTo(PostgresJoinCondition.builder()
-        .key(Map.of())
-        .build())));
   }
 
   @Test

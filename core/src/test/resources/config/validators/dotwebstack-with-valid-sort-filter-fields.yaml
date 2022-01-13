@@ -21,7 +21,6 @@ objectTypes:
       postalAddress:
         type: Address
         nestedObjectField: true
-        nullable: true
       beers:
         type: Beer
         mappedBy: brewery

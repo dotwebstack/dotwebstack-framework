@@ -59,6 +59,8 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String BREWERY = "brewery";
 
+  private static final String BREWERYCITY = "breweryCity";
+
   private static final String BEERS = "beers";
 
   private static final String BEER = "beer";
@@ -336,6 +338,26 @@ class GraphQlPostgresIntegrationTest {
     assertThat(data.containsKey(BREWERY), is(true));
 
     Map<String, Object> brewery = getNestedObject(data, BREWERY);
+    assertThat(brewery.size(), is(3));
+    assertThat(brewery.get(NAME), is("Brewery Z"));
+    assertThat(brewery.get(STATUS), is("inactive"));
+
+    List<Map<String, Object>> beers = getNestedObjects(brewery, BEERS);
+    assertThat(beers, is(notNullValue()));
+    assertThat(beers.size(), is(0));
+  }
+
+  @Test
+  void getRequest_returnsBrewery_forIdentifierAndObjectFieldKey() {
+    String query = "{breweryCity (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c31959\", city: \"Sydney\")"
+        + "{name status beers{name}}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERYCITY), is(true));
+
+    Map<String, Object> brewery = getNestedObject(data, BREWERYCITY);
     assertThat(brewery.size(), is(3));
     assertThat(brewery.get(NAME), is("Brewery Z"));
     assertThat(brewery.get(STATUS), is("inactive"));
@@ -1038,9 +1060,11 @@ class GraphQlPostgresIntegrationTest {
     assertThat(data.containsKey(BEERS), is(true));
 
     List<Map<String, Object>> beers = getNestedObjects(data, BEERS);
-    assertThat(beers.size(), is(2));
-    assertThat(beers, is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
-        Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"))));
+    assertThat(beers.size(), is(3));
+    assertThat(beers,
+        is(List.of(Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f0ed", "name", "Beer 5"),
+            Map.of("identifier_beer", "766883b5-3482-41cf-a66d-a81e79a4f666", "name", "Beer 6"))));
   }
 
   @Test
@@ -1504,12 +1528,12 @@ class GraphQlPostgresIntegrationTest {
 
   @Test
   void getRequest_returnsBreweries_withNestedObjectExistsFalseFilter() {
-    var query = "{\n" + "  breweries(filter: {postalAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
+    var query = "{\n" + "  breweries(filter: {visitAddress: {_exists: false}}) {\n" + "    name\n" + "  }\n" + "}";
 
     var data = WebTestClientHelper.get(client, query);
 
-    Assert.assertThat(data, hasEntry(equalTo("breweries"),
-        hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
+    Assert.assertThat(data, hasEntry(equalTo("breweries"), hasItems(hasEntry(equalTo("name"), equalTo("Brewery S")),
+        hasEntry(equalTo("name"), equalTo("Brewery Y")), hasEntry(equalTo("name"), equalTo("Brewery Z")))));
   }
 
   @Test

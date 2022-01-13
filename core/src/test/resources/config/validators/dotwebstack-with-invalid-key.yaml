@@ -1,16 +1,12 @@
 queries:
-  brewery:
-    type: Brewery
-    keys:
-      - identifier
   breweryCollection:
     type: Brewery
     list: true
-  breweryCity:
+  breweryAddress:
     type: Brewery
     keys:
       - identifier
-      - postalAddress.city
+      - postalAddress.zipcode
 
 objectTypes:
   Brewery:
@@ -23,6 +19,10 @@ objectTypes:
         type: String
       postalAddress:
         type: Address
+        objectField: true
+    filters:
+      name:
+        field: name
 
   Address:
     fields:
