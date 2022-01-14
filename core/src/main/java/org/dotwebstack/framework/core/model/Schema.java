@@ -16,7 +16,7 @@ public class Schema {
   private Settings settings = new Settings();
 
   @Valid
-  private Map<String, ObjectType<? extends ObjectField>> objectTypes;
+  private Map<String, ObjectType<? extends ObjectField>> objectTypes = new HashMap<>();
 
   @Valid
   private Map<String, Context> contexts = new HashMap<>();
