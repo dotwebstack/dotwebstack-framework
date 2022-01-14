@@ -15,6 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,13 +34,18 @@ import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.model.Query;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
+import org.dotwebstack.framework.core.testhelpers.TestObjectField;
+import org.dotwebstack.framework.core.testhelpers.TestObjectType;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -520,6 +526,67 @@ class TypeDefinitionRegistrySchemaFactoryTest {
                 .build())
             .build()
             .toString()));
+  }
+
+  @Test
+  void typeDefinitionRegistry_addNestedKeyArguments_whenKeysAreConfigured() {
+    var childTypeName = "Child";
+
+    var childObjectType = new TestObjectType();
+    childObjectType.setName(childTypeName);
+
+    var childIdentifier = new TestObjectField();
+    childIdentifier.setName("childIdentifier");
+    childIdentifier.setType("String");
+    childObjectType.setFields(Map.of("childIdentifier", childIdentifier));
+
+    var parentTypeName = "Parent";
+    var parentObjectType = new TestObjectType();
+    parentObjectType.setName(parentTypeName);
+
+    var childObjectField = new TestObjectField();
+    childObjectField.setName("child");
+    childObjectField.setType(childTypeName);
+    childObjectField.setKeys(List.of("childIdentifier"));
+
+    var parentIdentifier = new TestObjectField();
+    parentIdentifier.setName("parentIdentifier");
+    parentObjectType.setFields(Map.of("parentIdentifier", parentIdentifier, "child", childObjectField));
+
+    var schema = new Schema();
+
+    schema.getObjectTypes()
+        .put(parentTypeName, parentObjectType);
+    schema.getObjectTypes()
+        .put(childTypeName, childObjectType);
+
+    var query = new Query();
+    query.setType(parentTypeName);
+    query.setKeys(List.of("parentIdentifier"));
+
+    schema.getQueries()
+        .put("queryParent", query);
+
+    var schemaFactory = new TypeDefinitionRegistrySchemaFactory(schema, List.of());
+
+    var typeDefinitionRegistry = schemaFactory.createTypeDefinitionRegistry();
+
+    assertThat(typeDefinitionRegistry, notNullValue());
+
+    var actualParent = typeDefinitionRegistry.getType(parentTypeName)
+        .orElse(null);
+    assertThat(actualParent, notNullValue());
+    assertThat(actualParent, instanceOf(ObjectTypeDefinition.class));
+    assertThat(((ObjectTypeDefinition) actualParent).getFieldDefinitions(),
+        hasItem(hasProperty("name", equalTo("child"))));
+
+    var actualChild = ((ObjectTypeDefinition) actualParent).getFieldDefinitions()
+        .stream()
+        .filter(fieldDefinition -> fieldDefinition.getName()
+            .equals("child"))
+        .findFirst()
+        .orElseThrow();
+    assertThat(actualChild.getInputValueDefinitions(), hasItem(hasProperty("name", equalTo("childIdentifier"))));
   }
 
   private static void assertFieldDefinition(FieldDefinition fieldDefinition, String name, String type,

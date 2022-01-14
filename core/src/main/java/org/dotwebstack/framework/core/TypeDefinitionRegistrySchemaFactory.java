@@ -78,8 +78,6 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
 
-  public static final String OBJECT_TYPE = "objectType";
-
   private final Schema schema;
 
   private final Map<String, String> fieldFilterMap = new HashMap<>();
@@ -301,6 +299,13 @@ public class TypeDefinitionRegistrySchemaFactory {
       inputValueDefinitions.addAll(createGeometryArguments());
     }
 
+    schema.getObjectType(objectField.getType())
+        .ifPresent(objectType -> objectField.getKeys()
+            .stream()
+            .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType,
+                Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
+            .forEach(inputValueDefinitions::add));
+
     objectField.getArguments()
         .stream()
         .map(this::createFieldInputValueDefinition)
@@ -380,7 +385,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       ObjectType<?> objectType) {
     var inputValueDefinitions = subscription.getKeys()
         .stream()
-        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType))
+        .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType))
         .collect(Collectors.toList());
 
     createInputValueDefinitionForFilteredObject(subscription.getType(), objectType)
@@ -426,7 +431,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       List<InputValueDefinition> inputValueDefinitions) {
     query.getKeys()
         .stream()
-        .map(keyConfiguration -> createQueryInputValueDefinition(keyConfiguration, objectType,
+        .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType,
             Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
         .forEach(inputValueDefinitions::add);
   }
@@ -535,11 +540,11 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build());
   }
 
-  private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType) {
-    return createQueryInputValueDefinition(keyField, objectType, Map.of());
+  private InputValueDefinition createInputValueDefinition(String keyField, ObjectType<?> objectType) {
+    return createInputValueDefinition(keyField, objectType, Map.of());
   }
 
-  private InputValueDefinition createQueryInputValueDefinition(String keyField, ObjectType<?> objectType,
+  private InputValueDefinition createInputValueDefinition(String keyField, ObjectType<?> objectType,
       Map<String, String> additionalData) {
 
     if (isNestedFieldPath(keyField)) {
