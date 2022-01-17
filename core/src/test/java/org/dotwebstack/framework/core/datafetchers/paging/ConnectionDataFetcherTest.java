@@ -82,7 +82,7 @@ class ConnectionDataFetcherTest {
 
     IllegalArgumentException exception =
         assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
-    assertThat(exception.getMessage(), is("Argument first can't be bigger then 100."));
+    assertThat(exception.getMessage(), is("Argument 'first' is not allowed to be higher than 100."));
   }
 
   @Test
@@ -92,6 +92,6 @@ class ConnectionDataFetcherTest {
 
     IllegalArgumentException exception =
         assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
-    assertThat(exception.getMessage(), is("Argument offset can't be bigger then 10000."));
+    assertThat(exception.getMessage(), is("Argument 'offset' is not allowed to be higher than 10000."));
   }
 }
