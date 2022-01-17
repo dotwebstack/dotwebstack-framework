@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
@@ -21,6 +22,8 @@ import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 class BackendDataFetcher implements DataFetcher<Object> {
+
+  private static final int MAX_BATCH_SIZE = 250;
 
   private final BackendLoader backendLoader;
 
@@ -124,6 +127,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     };
 
-    return newMappedDataLoader(batchLoader);
+    return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
+        .setMaxBatchSize(MAX_BATCH_SIZE));
   }
 }
