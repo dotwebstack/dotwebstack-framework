@@ -10,7 +10,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.zalando.problem.jackson.ProblemModule;
 
 @Configuration
-public class OpenapiJacksonConfiguration {
+public class OpenApiJacksonConfiguration {
 
   @Bean
   public Module javaTimeModule() {
