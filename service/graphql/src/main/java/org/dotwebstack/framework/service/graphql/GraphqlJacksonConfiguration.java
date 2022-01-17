@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.service.openapi;
+package org.dotwebstack.framework.service.graphql;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -10,7 +10,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.zalando.problem.jackson.ProblemModule;
 
 @Configuration
-public class JacksonConfiguration {
+public class GraphqlJacksonConfiguration {
 
   @Bean
   public Module javaTimeModule() {
@@ -25,6 +25,7 @@ public class JacksonConfiguration {
   @Bean
   public Jackson2ObjectMapperBuilder objectMapperBuilder(List<Module> modules) {
     var builder = new Jackson2ObjectMapperBuilder();
+
     builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT)
         .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         .modules(modules);
