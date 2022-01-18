@@ -7,6 +7,5 @@ public interface SpatialBackendModule<T extends SpatialReferenceSystem> {
 
   Class<T> getSpatialReferenceSystemClass();
 
-  void init(Spatial spatial);
-
+  default void init(Spatial spatial) {}
 }
