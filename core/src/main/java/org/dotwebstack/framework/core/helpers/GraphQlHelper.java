@@ -13,7 +13,6 @@ import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
@@ -21,15 +20,12 @@ import graphql.schema.SelectedField;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 
 public class GraphQlHelper {
-
-  private static final String QUERY_TYPE_NAME = "Query";
 
   private GraphQlHelper() {}
 
@@ -104,15 +100,5 @@ public class GraphQlHelper {
       return getRequestStepInfo(executionStepInfo.getParent());
     }
     return executionStepInfo;
-  }
-
-  public static Optional<String> getQueryName(ExecutionStepInfo executionStepInfo) {
-    return Optional.of(executionStepInfo)
-        .map(GraphQlHelper::getRequestStepInfo)
-        .filter(requestStepInfo -> requestStepInfo.getObjectType()
-            .getName()
-            .equals(QUERY_TYPE_NAME))
-        .map(ExecutionStepInfo::getFieldDefinition)
-        .map(GraphQLFieldDefinition::getName);
   }
 }
