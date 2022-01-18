@@ -302,8 +302,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getObjectType(objectField.getType())
         .ifPresent(objectType -> objectField.getKeys()
             .stream()
-            .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType,
-                Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
+            .map(keyField -> createInputValueDefinition(keyField, objectType,
+                Map.of(GraphQlConstants.KEY_FIELD, keyField)))
             .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
@@ -317,11 +317,9 @@ public class TypeDefinitionRegistrySchemaFactory {
       var objectType = schema.getObjectType(objectField.getType())
           .orElseThrow();
 
-      createInputValueDefinitionForFilteredObject(objectField.getType(), objectType)
-          .ifPresent(inputValueDefinitions::add);
+      createFilterArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
 
-      createInputValueDefinitionForSortableByObject(objectField.getType(), objectType)
-          .ifPresent(inputValueDefinitions::add);
+      createSortArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
 
       if (objectField.isPageable() && objectField.isList()) {
         createFirstArgument().ifPresent(inputValueDefinitions::add);
@@ -388,10 +386,9 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType))
         .collect(Collectors.toList());
 
-    createInputValueDefinitionForFilteredObject(subscription.getType(), objectType)
-        .ifPresent(inputValueDefinitions::add);
+    createFilterArgument(subscription.getType(), objectType).ifPresent(inputValueDefinitions::add);
 
-    addOptionalSortableByObject(subscription, objectType, inputValueDefinitions);
+    createSortArgument(subscription, objectType).ifPresent(inputValueDefinitions::add);
 
     if (StringUtils.isNotBlank(subscription.getContext())) {
       addOptionalContext(subscription.getContext(), inputValueDefinitions);
@@ -409,13 +406,10 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
-    addQueryArgumentsForKeys(query, objectType, inputValueDefinitions);
-
+    inputValueDefinitions.addAll(createKeyArguments(query, objectType));
     inputValueDefinitions.addAll(createPagingArguments(query));
-
-    addOptionalFilterObject(query, objectType, inputValueDefinitions);
-
-    addOptionalSortableByObject(query, objectType, inputValueDefinitions);
+    createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
+    createSortArgument(query, objectType).ifPresent(inputValueDefinitions::add);
 
     if (StringUtils.isNotBlank(query.getContext())) {
       addOptionalContext(query.getContext(), inputValueDefinitions);
@@ -427,24 +421,22 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private void addQueryArgumentsForKeys(Query query, ObjectType<?> objectType,
-      List<InputValueDefinition> inputValueDefinitions) {
-    query.getKeys()
+  private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
+    return query.getKeys()
         .stream()
-        .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType,
-            Map.of(GraphQlConstants.IS_KEY_ARGUMENT, Boolean.TRUE.toString())))
-        .forEach(inputValueDefinitions::add);
+        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(GraphQlConstants.KEY_FIELD, keyField)))
+        .collect(Collectors.toList());
   }
 
-  private void addOptionalFilterObject(Query query, ObjectType<?> objectType,
-      List<InputValueDefinition> inputValueDefinitions) {
+
+  private Optional<InputValueDefinition> createFilterArgument(Query query, ObjectType<?> objectType) {
     if (query.isList()) {
-      createInputValueDefinitionForFilteredObject(query.getType(), objectType).ifPresent(inputValueDefinitions::add);
+      return createFilterArgument(query.getType(), objectType);
     }
+    return Optional.empty();
   }
 
-  private Optional<InputValueDefinition> createInputValueDefinitionForFilteredObject(String typeName,
-      ObjectType<?> objectType) {
+  private Optional<InputValueDefinition> createFilterArgument(String typeName, ObjectType<?> objectType) {
     if (!objectType.getFilters()
         .isEmpty()) {
       var filterName = createFilterName(typeName);
@@ -459,26 +451,23 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
-  private void addOptionalSortableByObject(Query query, ObjectType<?> objectType,
-      List<InputValueDefinition> inputValueDefinitions) {
+  private Optional<InputValueDefinition> createSortArgument(Query query, ObjectType<?> objectType) {
     if (query.isList()) {
-      createInputValueDefinitionForSortableByObject(query.getType(), objectType).ifPresent(inputValueDefinitions::add);
+      return createSortArgument(query.getType(), objectType);
     }
+    return Optional.empty();
   }
 
-  private void addOptionalSortableByObject(Subscription subscription, ObjectType<?> objectType,
-      List<InputValueDefinition> inputValueDefinitions) {
-    createInputValueDefinitionForSortableByObject(subscription.getType(), objectType)
-        .ifPresent(inputValueDefinitions::add);
+  private Optional<InputValueDefinition> createSortArgument(Subscription subscription, ObjectType<?> objectType) {
+    return createSortArgument(subscription.getType(), objectType);
   }
 
-  private Optional<InputValueDefinition> createInputValueDefinitionForSortableByObject(String typeName,
-      ObjectType<?> objectType) {
+  private Optional<InputValueDefinition> createSortArgument(String typeName, ObjectType<?> objectType) {
     if (!objectType.getSortableBy()
         .isEmpty()) {
       var orderName = createOrderName(typeName);
 
-      var firstSortableByArgument = objectType.getSortableBy()
+      var firstArgument = objectType.getSortableBy()
           .keySet()
           .stream()
           .findFirst()
@@ -487,7 +476,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
       var inputValueDefinition = newInputValueDefinition().name(SORT_ARGUMENT_NAME)
           .type(newType(orderName))
-          .defaultValue(EnumValue.newEnumValue(firstSortableByArgument)
+          .defaultValue(EnumValue.newEnumValue(firstArgument)
               .build())
           .build();
 

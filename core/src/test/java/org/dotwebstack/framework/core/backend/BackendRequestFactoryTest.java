@@ -77,13 +77,12 @@ class BackendRequestFactoryTest {
     var beerField = mock(SelectedField.class);
 
     when(beerField.getType()).thenReturn(beerFieldDefinition.getType());
+    when(beerField.getFieldDefinitions()).thenReturn(List.of(beerFieldDefinition));
     when(beerField.getSelectionSet()).thenReturn(beerSelectionSet);
     when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
     when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
-    when(executionStepInfo.getObjectType()
-        .getName()).thenReturn("Query");
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
@@ -111,8 +110,7 @@ class BackendRequestFactoryTest {
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
-    when(executionStepInfo.getObjectType()
-        .getName()).thenReturn("Query");
+
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
     assertThat(objectRequest.getKeyCriterias(), is(notNullValue()));
 
