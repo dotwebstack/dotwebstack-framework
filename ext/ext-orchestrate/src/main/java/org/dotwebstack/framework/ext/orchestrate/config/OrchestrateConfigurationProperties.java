@@ -3,7 +3,6 @@ package org.dotwebstack.framework.ext.orchestrate.config;
 import java.net.URI;
 import java.util.Map;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Data;
@@ -18,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "dotwebstack.orchestrate")
 class OrchestrateConfigurationProperties {
 
-  @NotBlank
   private String root;
 
   @Valid

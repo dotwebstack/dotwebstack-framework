@@ -10,5 +10,5 @@ public interface BackendModule<T extends ObjectType<?>> {
 
   BackendLoaderFactory getBackendLoaderFactory();
 
-  void init(Map<String, ObjectType<? extends ObjectField>> objectTypes);
+  default void init(Map<String, ObjectType<? extends ObjectField>> objectTypes) {}
 }

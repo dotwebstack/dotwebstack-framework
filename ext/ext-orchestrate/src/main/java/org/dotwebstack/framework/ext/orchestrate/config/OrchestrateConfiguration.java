@@ -19,6 +19,7 @@ import org.dotwebstack.graphql.orchestrate.schema.SchemaIntrospector;
 import org.dotwebstack.graphql.orchestrate.schema.Subschema;
 import org.dotwebstack.graphql.orchestrate.transform.TransformUtils;
 import org.dotwebstack.graphql.orchestrate.wrap.SchemaWrapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -44,6 +45,7 @@ class OrchestrateConfiguration {
 
   @Bean
   @Primary
+  @ConditionalOnProperty(prefix = "dotwebstack.orchestrate", name = "root")
   public GraphQLSchema graphQlSchema(Map<String, Subschema> subschemas) {
     return SchemaWrapper.wrap(subschemas.get(configurationProperties.getRoot()));
   }

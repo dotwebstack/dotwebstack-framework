@@ -8,6 +8,10 @@ class RootSubschemaExistsValidator
 
   @Override
   public boolean isValid(OrchestrateConfigurationProperties value, ConstraintValidatorContext context) {
+    if (value.getRoot() == null) {
+      return true;
+    }
+
     return value.getSubschemas()
         .containsKey(value.getRoot());
   }
