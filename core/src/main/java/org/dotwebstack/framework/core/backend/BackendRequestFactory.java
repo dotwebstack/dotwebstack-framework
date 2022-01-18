@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
@@ -38,7 +39,6 @@ import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -271,7 +271,7 @@ public class BackendRequestFactory {
     return arguments.stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
-            .containsKey(GraphQlConstants.KEY_FIELD))
+            .containsKey(KEY_FIELD))
         .filter(argument -> argumentMap.containsKey(argument.getName()))
         .map(argument -> createKeyCriteria(objectType, argumentMap, argument))
         .collect(Collectors.toList());
@@ -281,7 +281,7 @@ public class BackendRequestFactory {
       GraphQLArgument argument) {
     var keyField = argument.getDefinition()
         .getAdditionalData()
-        .get(GraphQlConstants.KEY_FIELD);
+        .get(KEY_FIELD);
     var fieldPath = createFieldPath(objectType, keyField);
     var value = argumentMap.get(argument.getName());
 

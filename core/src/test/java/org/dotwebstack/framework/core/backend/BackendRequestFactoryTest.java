@@ -89,6 +89,22 @@ class BackendRequestFactoryTest {
 
     var objectFields = objectRequest.getObjectFields();
     assertThat(objectFields.size(), is(1));
+
+    var beerObjectRequest = objectFields.values()
+        .stream()
+        .findFirst()
+        .orElseThrow();
+
+    var keyCriteria = beerObjectRequest.getKeyCriterias();
+    assertThat(keyCriteria.size(), is(1));
+
+    var fieldPath = keyCriteria.get(0)
+        .getFieldPath();
+    assertThat(fieldPath.size(), is(1));
+    assertThat(fieldPath.get(0)
+        .getName(), is("identifier"));
+    assertThat(keyCriteria.get(0)
+        .getValue(), is("foo"));
   }
 
   @Test

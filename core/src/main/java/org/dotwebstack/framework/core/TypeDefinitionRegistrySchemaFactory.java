@@ -15,6 +15,12 @@ import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_SUFFIX;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import com.google.common.base.CaseFormat;
@@ -49,7 +55,6 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -110,7 +115,7 @@ public class TypeDefinitionRegistrySchemaFactory {
               .fieldDefinitions(createFieldDefinitions(objectType));
 
           if (objectType.isNested()) {
-            objectTypeDefinition.additionalData(GraphQlConstants.IS_NESTED, Boolean.TRUE.toString());
+            objectTypeDefinition.additionalData(IS_NESTED, Boolean.TRUE.toString());
           }
 
           typeDefinitionRegistry.add(objectTypeDefinition.build());
@@ -170,14 +175,14 @@ public class TypeDefinitionRegistrySchemaFactory {
     var connectionName = createConnectionName(objectType.getName());
 
     return newObjectTypeDefinition().name(connectionName)
-        .fieldDefinition(newFieldDefinition().name(PagingConstants.NODES_FIELD_NAME)
+        .fieldDefinition(newFieldDefinition().name(NODES_FIELD_NAME)
             .type(newNonNullableListType(objectType.getName()))
-            .additionalData(GraphQlConstants.IS_PAGING_NODE, Boolean.TRUE.toString())
+            .additionalData(IS_PAGING_NODE, Boolean.TRUE.toString())
             .build())
-        .fieldDefinition(newFieldDefinition().name(PagingConstants.OFFSET_FIELD_NAME)
+        .fieldDefinition(newFieldDefinition().name(OFFSET_FIELD_NAME)
             .type(newNonNullableType(Scalars.GraphQLInt.getName()))
             .build())
-        .additionalData(Map.of(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
+        .additionalData(Map.of(IS_CONNECTION_TYPE, Boolean.TRUE.toString()))
         .build();
   }
 
@@ -280,8 +285,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   private Type<?> createListType(String type, boolean pageable, boolean nullable) {
     if (pageable) {
       var connectionTypeName = createConnectionName(type);
-      return newNonNullType(newType(connectionTypeName))
-          .additionalData(GraphQlConstants.IS_CONNECTION_TYPE, Boolean.TRUE.toString())
+      return newNonNullType(newType(connectionTypeName)).additionalData(IS_CONNECTION_TYPE, Boolean.TRUE.toString())
           .build();
     } else {
       if (nullable) {
@@ -302,8 +306,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getObjectType(objectField.getType())
         .ifPresent(objectType -> objectField.getKeys()
             .stream()
-            .map(keyField -> createInputValueDefinition(keyField, objectType,
-                Map.of(GraphQlConstants.KEY_FIELD, keyField)))
+            .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField)))
             .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
@@ -424,7 +427,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
     return query.getKeys()
         .stream()
-        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(GraphQlConstants.KEY_FIELD, keyField)))
+        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField)))
         .collect(Collectors.toList());
   }
 
