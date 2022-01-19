@@ -29,6 +29,12 @@ public class ExceptionRuleHelper {
           .detail(true)
           .build(),
       ExceptionRule.builder()
+          .exception(IllegalArgumentException.class)
+          .responseStatus(BAD_REQUEST)
+          .title("Error while processing request")
+          .detail(true)
+          .build(),
+      ExceptionRule.builder()
           .exception(MappingException.class)
           .responseStatus(INTERNAL_SERVER_ERROR)
           .title("Internal server error")

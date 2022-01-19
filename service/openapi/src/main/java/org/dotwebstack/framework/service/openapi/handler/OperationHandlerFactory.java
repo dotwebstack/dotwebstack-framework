@@ -156,6 +156,12 @@ public class OperationHandlerFactory {
         .filter(ExceptionWhileDataFetching.class::isInstance)
         .map(ExceptionWhileDataFetching.class::cast)
         .map(ExceptionWhileDataFetching::getException)
+        .map(e -> {
+          if (IllegalArgumentException.class.isInstance(e)) {
+            throw (IllegalArgumentException) e;
+          }
+          return e;
+        })
         .filter(ThrowableProblem.class::isInstance)
         .map(ThrowableProblem.class::cast)
         .ifPresent(throwableProblem -> {
