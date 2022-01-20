@@ -14,6 +14,7 @@ import graphql.GraphQL;
 import graphql.GraphQLError;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -121,7 +122,7 @@ public class OperationHandlerFactory {
         return bodyMapperMap.get(operationRequest.getPreferredMediaType())
             .map(operationRequest, queryResult)
             .flatMap(content -> ServerResponse.status(operationContext.getHttpStatus())
-                .contentType(operationRequest.getPreferredMediaType())
+                .contentType(new MediaType(operationRequest.getPreferredMediaType(), StandardCharsets.UTF_8))
                 .headers(responseHeaderResolver.resolve(operationRequest, content))
                 .body(BodyInserters.fromValue(content)));
       }
