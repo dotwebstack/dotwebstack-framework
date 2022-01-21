@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.service.openapi.handler.OpenApiRequestHandler;
 import org.dotwebstack.framework.service.openapi.handler.OperationHandlerFactory;
 import org.dotwebstack.framework.service.openapi.helper.OasConstants;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import org.zalando.problem.spring.webflux.advice.http.HttpAdviceTrait;
 
 @Configuration
+@ConditionalOnExpression("${dotwebstack.openapi.enabled:true}")
 @Slf4j
 class RouterConfiguration {
 
