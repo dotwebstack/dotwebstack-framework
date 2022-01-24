@@ -52,7 +52,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>2.6.2</spring-boot.version>
+    <spring-boot.version>2.6.3</spring-boot.version>
     <rdf4j.version>3.7.4</rdf4j.version>
     <graphql.java.version>17.3</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.13</graphql.java.orchestrate.version>
@@ -103,14 +103,21 @@
         <version>3.0.1u2</version>
       </dependency>
       <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.core</artifactId>
-        <version>6.0.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.apiguardian</groupId>
         <artifactId>apiguardian-api</artifactId>
         <version>1.1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging-processor</artifactId>
+        <version>2.2.1.Final</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.logging</groupId>
+        <artifactId>jboss-logging-annotations</artifactId>
+        <version>2.2.1.Final</version>
+        <scope>provided</scope>
       </dependency>
       <!-- Regular dependencies -->
       <dependency>
