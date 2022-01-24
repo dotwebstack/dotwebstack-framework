@@ -4,6 +4,7 @@ import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,8 +24,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 
 @Configuration
 class OrchestrateConfiguration {
@@ -75,8 +79,15 @@ class OrchestrateConfiguration {
     Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(subschemaProperties.getBearerAuth())
         .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
 
+    ConnectionProvider provider = ConnectionProvider.builder("orchestrate")
+        .maxIdleTime(Duration.ofSeconds(10))
+        .build();
+
+    HttpClient client = HttpClient.create(provider);
+
     var webClient = webClientBuilder.clone()
         .defaultHeaders(headerBuilder)
+        .clientConnector(new ReactorClientHttpConnector(client))
         .exchangeStrategies(ExchangeStrategies.builder()
             .codecs(configurer -> configurer.defaultCodecs()
                 .maxInMemorySize(5 * 1024 * 1024))
