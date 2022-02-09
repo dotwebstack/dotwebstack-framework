@@ -186,8 +186,13 @@ public class BackendRequestFactory {
   }
 
   private FieldRequest mapToFieldRequest(SelectedField selectedField) {
+    var key =
+        selectedField.getAlias() != null ? String.format("%s.%s", selectedField.getName(), selectedField.getAlias())
+            : selectedField.getName();
+
     return FieldRequest.builder()
         .name(selectedField.getName())
+        .key(key)
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
         .arguments(selectedField.getArguments())
         .build();
@@ -222,8 +227,13 @@ public class BackendRequestFactory {
 
           var aggregationObjectType = objectField.getTargetType();
 
+          var key = selectedField.getAlias() != null
+              ? String.format("%s.%s", selectedField.getName(), selectedField.getAlias())
+              : selectedField.getName();
+
           return AggregateObjectRequest.builder()
               .objectField(objectField)
+              .key(key)
               .aggregateFields(getAggregateFields(aggregationObjectType, selectedField.getSelectionSet()))
               .build();
         })

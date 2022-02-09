@@ -1,11 +1,9 @@
 package org.dotwebstack.framework.core.backend;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,7 +17,6 @@ import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,33 +50,87 @@ class BackendDataFetcherWiringFactoryTest {
         new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema, backendExecutionStepInfo, List.of());
   }
 
-  @Test
-  void providesDataFetcher_returnsFalse_ifTypeNameIsNotPresented() {
-    var environment = mock(FieldWiringEnvironment.class);
 
-    var result = dataFetcher.providesDataFetcher(environment);
-    assertFalse(result);
+  @Test
+  void providesDataFetcher_throwsException_ifTypeNameIsNotPresent() {
+    var exception = assertThrows(NoSuchElementException.class, () -> dataFetcher.providesDataFetcher(environment));
+
+    assertThat(exception.getMessage(), is("No value present"));
   }
 
   @Test
-  void getDataFetcher_throwsException_ifTypeNameIsEmpty() {
-    var environment = mock(FieldWiringEnvironment.class);
+  void providesDataFetcher_throwsException_ifTypeNameIsEmpty() {
+    var typeMock = getTypeMock("");
+    when(environment.getFieldType()).thenReturn(typeMock);
 
+    var exception = assertThrows(IllegalStateException.class, () -> dataFetcher.providesDataFetcher(environment));
+
+    assertThat(exception.getMessage(), is("Unknown ObjectType: "));
+  }
+
+  @Test
+  void providesDataFetcher_returnsTrue_ifTypeNameEqualsAggregate() {
+    var typeMock = getTypeMock("Aggregate");
+
+    when(environment.getFieldType()).thenReturn(typeMock);
+
+    var result = dataFetcher.providesDataFetcher(environment);
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void providesDataFetcher_returnsTrue_ifTypeNameIsPresent() {
+    var typeMock = getTypeMock("Beer");
+
+    when(environment.getFieldType()).thenReturn(typeMock);
+
+    var result = dataFetcher.providesDataFetcher(environment);
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void getDataFetcher_throwsException_ifTypeNameIsNotPresent() {
     var exception = assertThrows(NoSuchElementException.class, () -> dataFetcher.getDataFetcher(environment));
 
     assertThat(exception.getMessage(), is("No value present"));
   }
 
   @Test
+  void getDataFetcher_throwsException_ifTypeNameIsEmpty() {
+    var typeMock = getTypeMock("");
+    when(environment.getFieldType()).thenReturn(typeMock);
+
+    var exception = assertThrows(IllegalStateException.class, () -> dataFetcher.getDataFetcher(environment));
+
+    assertThat(exception.getMessage(), is("Unknown ObjectType: "));
+  }
+
+  @Test
   void getDataFetcher_returnsDataFetcher_ifTypeNamePresented() {
-    GraphQLNamedOutputType typeMock = mock(GraphQLNamedOutputType.class);
-    lenient().when(typeMock.getName())
-        .thenReturn("Brewery");
+    var typeMock = getTypeMock("Brewery");
 
     when(environment.getFieldType()).thenReturn(typeMock);
 
     var result = dataFetcher.getDataFetcher(environment);
-    assertThat(result, CoreMatchers.is(notNullValue()));
-    assertTrue(result instanceof BackendDataFetcher);
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getClass(), is(BackendDataFetcher.class));
+  }
+
+  @Test
+  void getDataFetcher_returnsDataFetcher_ifTypeNameEqualsAggregate() {
+    var typeMock = getTypeMock("Aggregate");
+
+    when(environment.getFieldType()).thenReturn(typeMock);
+
+    var result = dataFetcher.getDataFetcher(environment);
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getClass(), is(BackendDataFetcher.class));
+  }
+
+  private GraphQLNamedOutputType getTypeMock(String typeName) {
+    GraphQLNamedOutputType typeMock = mock(GraphQLNamedOutputType.class);
+    lenient().when(typeMock.getName())
+        .thenReturn(typeName);
+    return typeMock;
   }
 }

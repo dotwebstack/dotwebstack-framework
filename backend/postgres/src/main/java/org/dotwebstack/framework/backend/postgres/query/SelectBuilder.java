@@ -214,7 +214,9 @@ class SelectBuilder {
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
-            .getName()), entry.getValue(), selectTable, fieldMapper))
+            .getName()), entry.getKey()
+                .getKey(),
+            entry.getValue(), selectTable, fieldMapper))
         .map(selectResult -> {
           Optional.of(selectResult)
               .map(SelectResult::getSelectQuery)
@@ -262,8 +264,7 @@ class SelectBuilder {
       AggregateObjectRequest aggregateObjectRequest, Table<Record> table) {
     var aggregateObjectMapper = new ObjectMapper();
 
-    fieldMapper.register(aggregateObjectRequest.getObjectField()
-        .getName(), aggregateObjectMapper);
+    fieldMapper.register(aggregateObjectRequest.getKey(), aggregateObjectMapper);
 
     var objectField = (PostgresObjectField) aggregateObjectRequest.getObjectField();
 
@@ -379,29 +380,30 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String key,
+      ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
-      return createRelationObject(objectField, objectRequest, table, parentMapper).stream();
+      return createRelationObject(objectField, objectRequest, table, parentMapper, key).stream();
     }
 
     // Create a new nested object and take data from the same table
     if (objectField.getTargetType()
         .isNested()) {
-      return createNestedObject(objectField, objectRequest, table, parentMapper);
+      return createNestedObject(objectField, objectRequest, table, parentMapper, key);
     }
 
     // Create a new object and take data from another table and join with it
     return createObject(objectField, objectRequest, table, parentMapper,
-        JoinConfiguration.toJoinConfiguration(objectField));
+        JoinConfiguration.toJoinConfiguration(objectField), key);
   }
 
   private Stream<SelectResult> createObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration,
+      String key) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(key, objectMapper);
 
     var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
@@ -430,10 +432,10 @@ class SelectBuilder {
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String key) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper);
+      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper, key);
     }
 
     var objectMapper = new ObjectMapper();
@@ -473,9 +475,10 @@ class SelectBuilder {
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
-      ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+      ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
+      String key) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(key, objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
 
@@ -521,7 +524,7 @@ class SelectBuilder {
           .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
           .build();
 
-      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration)
+      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration, childObjectField.getName())
           .collect(Collectors.toList());
     }
   }
@@ -556,11 +559,11 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String key) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
-    parentMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(key, objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
 
@@ -582,7 +585,9 @@ class SelectBuilder {
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
-            .getName()), entry.getValue(), table, objectMapper))
+            .getName()), entry.getKey()
+                .getKey(),
+            entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
     return selectResults.stream();

@@ -10,6 +10,8 @@ public class FieldRequest {
 
   private final String name;
 
+  private final String key;
+
   private final boolean isList;
 
   private final Map<String, Object> arguments;
