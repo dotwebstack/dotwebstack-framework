@@ -396,14 +396,13 @@ class SelectBuilder {
 
     // Create a new object and take data from another table and join with it
     return createObject(objectField, objectRequest, table, parentMapper,
-        JoinConfiguration.toJoinConfiguration(objectField), key);
+        JoinConfiguration.toJoinConfiguration(objectField));
   }
 
   private Stream<SelectResult> createObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration,
-      String key) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(key, objectMapper);
+    parentMapper.register(objectField.getName(), objectMapper);
 
     var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
@@ -524,7 +523,7 @@ class SelectBuilder {
           .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
           .build();
 
-      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration, childObjectField.getName())
+      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration)
           .collect(Collectors.toList());
     }
   }
