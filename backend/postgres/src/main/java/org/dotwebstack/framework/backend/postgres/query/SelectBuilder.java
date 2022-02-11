@@ -530,10 +530,10 @@ class SelectBuilder {
     return objectField.getJoinTable()
         .getInverseJoinColumns()
         .stream()
+        .filter(joinColumn -> joinColumn.getReferencedField() != null)
         .anyMatch(joinColumn -> joinColumn.getReferencedField()
             .startsWith(fieldRequest.getName()));
   }
-
 
   private Stream<Field<Object>> createReferenceObject(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table, ObjectMapper parentMapper, FieldRequest fieldRequest) {
