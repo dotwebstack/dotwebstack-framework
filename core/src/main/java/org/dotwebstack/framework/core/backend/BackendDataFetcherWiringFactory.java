@@ -1,14 +1,16 @@
 package org.dotwebstack.framework.core.backend;
 
+import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
+import graphql.language.TypeDefinition;
 import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import java.util.List;
-import java.util.Optional;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.model.Schema;
@@ -46,12 +48,11 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
       throw illegalStateException("Unknown ObjectType: %s", typeName);
     }
 
-    if (AGGREGATE_TYPE.equals(typeName)) {
+    if (isAliasedType(typeName, environment)) {
       return true;
     }
 
-    return Optional.of(typeName)
-        .flatMap(schema::getObjectType)
+    return of(typeName).flatMap(schema::getObjectType)
         .isPresent();
   }
 
@@ -64,16 +65,21 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     }
 
     // Initialize BackendDataFetcher without BackendLoader to support aliases for Aggregates.
-    if (AGGREGATE_TYPE.equals(typeName)) {
+    if (isAliasedType(typeName, environment)) {
       return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators);
     } else {
-      var objectType = Optional.of(typeName)
-          .flatMap(schema::getObjectType)
+      var objectType = of(typeName).flatMap(schema::getObjectType)
           .orElseThrow();
 
       var backendLoader = backendModule.getBackendLoaderFactory()
           .create(objectType);
       return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators);
     }
+  }
+
+  private boolean isAliasedType(String typeName, FieldWiringEnvironment environment) {
+    return AGGREGATE_TYPE.equals(typeName) || ofNullable(environment.getParentType()).map(TypeDefinition::getName)
+        .filter(name -> name.equals(AGGREGATE_TYPE))
+        .isPresent();
   }
 }

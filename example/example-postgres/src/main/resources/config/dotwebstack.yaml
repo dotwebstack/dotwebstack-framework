@@ -54,7 +54,7 @@ queries:
 
 objectTypes:
   Beer:
-    table: beers
+    table: dbeerpedia.beers
     filters:
       name:
         field: name
@@ -91,7 +91,7 @@ objectTypes:
         type: Ingredient
         nullable: true
         joinTable:
-          name: beers_ingredients
+          name: dbeerpedia.beers_ingredients
           joinColumns:
             - name: beers_identifier
               referencedField: identifier
@@ -102,7 +102,7 @@ objectTypes:
         type: Ingredient
         list: true
         joinTable:
-          name: beers_ingredients
+          name: dbeerpedia.beers_ingredients
           joinColumns:
             - name: beers_identifier
               referencedField: identifier
@@ -112,7 +112,7 @@ objectTypes:
       ingredientAgg:
         aggregationOf: Ingredient
         joinTable:
-          name: beers_ingredients
+          name: dbeerpedia.beers_ingredients
           joinColumns:
             - name: beers_identifier
               referencedField: identifier
@@ -123,11 +123,11 @@ objectTypes:
         type: String
         list: true
         enum:
-          type: beer_taste
+          type: dbeerpedia.beer_taste
           values: ["MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY"]
 
   Brewery:
-    table: breweries
+    table: dbeerpedia.breweries
     sortableBy:
       name:
         - field: name
@@ -160,7 +160,7 @@ objectTypes:
       status:
         type: String
         enum:
-          type: brewery_status
+          type: dbeerpedia.brewery_status
           values: [ "active", "inactive"]
       geometry:
         type: Geometry
@@ -197,7 +197,7 @@ objectTypes:
         type: Brewery
         list: true
         joinTable:
-          name: breweries__related_to
+          name: dbeerpedia.breweries__related_to
           joinColumns:
             - name: brewery_identifier
               referencedField: identifier
@@ -206,7 +206,7 @@ objectTypes:
               referencedField: identifier
 
   Ingredient:
-    table: ingredients
+    table: dbeerpedia.ingredients
     filters:
       name: {}
     fields:
@@ -222,7 +222,7 @@ objectTypes:
         list: true
 
   Address:
-    table: addresses
+    table: dbeerpedia.addresses
     filters:
       street: {}
       city: {}

@@ -10,5 +10,5 @@ dotwebstack:
     port: 5432
     username: postgres
     password: postgres
-    database: dbeerpedia
-#    schema: dbeerpedia
+    database: postgres
+    schema: dbeerpedia

@@ -168,22 +168,23 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table,
+      String key) {
 
     if (objectField.getMappedByObjectField() != null) {
       var mappedByObjectField = objectField.getMappedByObjectField();
 
       if (mappedByObjectField.getJoinTable() != null) {
         return handleJoinColumn(objectField, mappedByObjectField.getJoinTable()
-            .getInverseJoinColumns(), table);
+            .getInverseJoinColumns(), table, key);
       } else if (mappedByObjectField.getJoinColumns() != null) {
-        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table);
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table, key);
       }
     }
 
     if (objectField.getJoinTable() != null) {
       return handleJoinColumn(objectField, objectField.getJoinTable()
-          .getJoinColumns(), table);
+          .getJoinColumns(), table, key);
     }
 
     if (objectField.getJoinColumns() != null) {
@@ -202,7 +203,11 @@ class SelectBuilder {
           var objectField = getObjectField(objectRequest, entry.getKey()
               .getName());
 
-          return processObjectListFields(objectField, table).stream();
+          var objectFieldKey = entry.getKey()
+              .getKey();
+          var joinKey = objectFieldKey.substring(objectFieldKey.lastIndexOf(".") + 1);
+
+          return processObjectListFields(objectField, table, joinKey).stream();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
@@ -396,13 +401,14 @@ class SelectBuilder {
 
     // Create a new object and take data from another table and join with it
     return createObject(objectField, objectRequest, table, parentMapper,
-        JoinConfiguration.toJoinConfiguration(objectField));
+        JoinConfiguration.toJoinConfiguration(objectField), key);
   }
 
   private Stream<SelectResult> createObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration,
+      String key) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(key, objectMapper);
 
     var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
@@ -523,8 +529,8 @@ class SelectBuilder {
           .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
           .build();
 
-      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration)
-          .collect(Collectors.toList());
+      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration,
+          childObjectField.getName()).collect(Collectors.toList());
     }
   }
 
@@ -535,7 +541,6 @@ class SelectBuilder {
         .anyMatch(joinColumn -> joinColumn.getReferencedField()
             .startsWith(fieldRequest.getName()));
   }
-
 
   private Stream<Field<Object>> createReferenceObject(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table, ObjectMapper parentMapper, FieldRequest fieldRequest) {
@@ -661,8 +666,8 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
-      Table<Record> table) {
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
+      Table<Record> table, String key) {
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(key), row -> PostgresJoinCondition.builder()
         .key(getJoinColumnValues(joinColumns, row))
         .build());
 

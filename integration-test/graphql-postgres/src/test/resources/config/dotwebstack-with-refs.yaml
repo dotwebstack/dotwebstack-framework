@@ -41,7 +41,6 @@ queries:
     type: Brewery
     list: true
 
-
 objectTypes:
   Beer:
     table: db.beer
@@ -72,8 +71,11 @@ objectTypes:
             - name: ingredient_code
               referencedField: refs.code
       taste:
-        type: Taste
+        type: String
         list: true
+        enum:
+          type: db.taste
+          values: [ "MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY" ]
       predecessor:
         type: BeerBeer
         nullable: true
@@ -85,6 +87,7 @@ objectTypes:
         field: name
       brewery: {}
       ingredients: {}
+      taste: {}
     sortableBy:
       name:
         - field: name
@@ -151,7 +154,7 @@ objectTypes:
         list: true
         nullable: true
         joinColumns:
-          - name: record_id
+          - name: identifier_brewery
             referencedField: brewery
       beerAgg:
         aggregationOf: Beer

@@ -75,7 +75,12 @@ class BackendDataFetcher implements DataFetcher<Object> {
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
-      var joinKey = JOIN_KEY_PREFIX.concat(fieldName);
+      // Get alias without ObjectType
+      if (lookupName.contains(".")) {
+        lookupName = lookupName.substring(lookupName.lastIndexOf(".") + 1);
+      }
+
+      var joinKey = JOIN_KEY_PREFIX.concat(lookupName);
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
