@@ -380,30 +380,30 @@ class SelectBuilder {
     return new ColumnMapper(column);
   }
 
-  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String key,
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
       ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
-      return createRelationObject(objectField, objectRequest, table, parentMapper, key).stream();
+      return createRelationObject(objectField, objectRequest, table, parentMapper, resultKey).stream();
     }
 
     // Create a new nested object and take data from the same table
     if (objectField.getTargetType()
         .isNested()) {
-      return createNestedObject(objectField, objectRequest, table, parentMapper, key);
+      return createNestedObject(objectField, objectRequest, table, parentMapper, resultKey);
     }
 
     // Create a new object and take data from another table and join with it
     return createObject(objectField, objectRequest, table, parentMapper,
-        JoinConfiguration.toJoinConfiguration(objectField), key);
+        JoinConfiguration.toJoinConfiguration(objectField), resultKey);
   }
 
   private Stream<SelectResult> createObject(PostgresObjectField objectField, ObjectRequest objectRequest,
       Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration,
-      String key) {
+      String resultKey) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(key, objectMapper);
+    parentMapper.register(resultKey, objectMapper);
 
     var select = newSelect().requestContext(requestContext)
         .fieldMapper(objectMapper)
@@ -432,10 +432,11 @@ class SelectBuilder {
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String key) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper, key);
+      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper,
+          resultKey);
     }
 
     var objectMapper = new ObjectMapper();
@@ -476,9 +477,9 @@ class SelectBuilder {
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
       ObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
-      String key) {
+      String resultKey) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
-    parentMapper.register(key, objectMapper);
+    parentMapper.register(resultKey, objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
 
@@ -559,11 +560,11 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, ObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String key) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
-    parentMapper.register(key, objectMapper);
+    parentMapper.register(resultKey, objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
 
