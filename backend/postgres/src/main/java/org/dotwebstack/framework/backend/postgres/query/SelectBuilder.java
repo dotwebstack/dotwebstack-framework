@@ -533,6 +533,7 @@ class SelectBuilder {
     return objectField.getJoinTable()
         .getInverseJoinColumns()
         .stream()
+        .filter(joinColumn -> joinColumn.getReferencedField() != null)
         .anyMatch(joinColumn -> joinColumn.getReferencedField()
             .startsWith(fieldRequest.getName()));
   }
