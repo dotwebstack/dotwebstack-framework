@@ -270,7 +270,6 @@ class BackendDataFetcherTest {
     var fieldMock = mock(MergedField.class);
     when(fieldMock.getName()).thenReturn(fieldName);
     when(fieldMock.getResultKey()).thenReturn(resultKey);
-    when(environment.getMergedField()).thenReturn(fieldMock);
 
     ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
     when(executionStepInfo.getField()).thenReturn(fieldMock);

@@ -10,7 +10,7 @@ public class FieldRequest {
 
   private final String name;
 
-  private final String key;
+  private final String resultKey;
 
   private final boolean isList;
 

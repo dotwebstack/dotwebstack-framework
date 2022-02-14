@@ -14,6 +14,7 @@ import static org.hamcrest.core.IsIterableContaining.hasItems;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.collection.IsMapWithSize;
 import org.hamcrest.core.IsIterableContaining;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
@@ -108,6 +110,13 @@ class GraphQlPostgresIntegrationTest {
     registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
     registry.add("dotwebstack.postgres.password", postgreSqlContainer::getPassword);
     registry.add("dotwebstack.postgres.database", postgreSqlContainer::getDatabaseName);
+  }
+
+  @BeforeEach
+  public void setUp() {
+    client = client.mutate()
+        .responseTimeout(Duration.ofMinutes(5L))
+        .build();
   }
 
   @Test
@@ -1611,12 +1620,17 @@ class GraphQlPostgresIntegrationTest {
     assertThat(fruityBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
 
     var smokybeers = getNestedObjects(brewery, "smokybeers");
-    assertThat(smokybeers.size(), is(1));
+    assertThat(smokybeers.size(), is(2));
 
     var smokyBeer1 = smokybeers.get(0);
     assertThat(smokyBeer1.containsKey(NAME), is(true));
     assertThat(smokyBeer1.get(NAME), is("Beer 2"));
     assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
+
+    var smokyBeer2 = smokybeers.get(1);
+    assertThat(smokyBeer2.containsKey(NAME), is(true));
+    assertThat(smokyBeer2.get(NAME), is("Beer 3"));
+    assertThat(smokyBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "SMOKY")));
   }
 
   @SuppressWarnings("unchecked")

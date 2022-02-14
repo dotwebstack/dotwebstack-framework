@@ -93,7 +93,6 @@ class GraphQlPostgresWithPagingIntegrationTest {
                 "offset", 1))));
   }
 
-  //TODO fix
   @Test
   void getRequest_returnsBreweriesWithBeers_withPagingArguments() {
     var query = "{\n" + "  breweries(first: 2, offset: 0) {\n" + "    nodes {\n" + "      identifier_brewery\n"
@@ -150,7 +149,6 @@ class GraphQlPostgresWithPagingIntegrationTest {
                 "offset", 0))));
   }
 
-  //TODO fix
   @Test
   void getRequest_returnsBeersWithIngredients_forQueryWithJoinTable() {
     String query = "{\n" + "  beers(first: 10, offset: 0) {\n" + "    nodes {\n" + "      identifier_beer\n"

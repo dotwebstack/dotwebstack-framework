@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
@@ -51,12 +52,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     var fieldName = executionStepInfo.getField()
         .getName();
 
-    var lookupName = !environment.getMergedField()
-        .getResultKey()
-        .equals(fieldName) ? String.format("%s.%s", fieldName,
-            environment.getMergedField()
-                .getResultKey())
-            : fieldName;
+    String lookupName = getLookupName(executionStepInfo, fieldName);
 
     // Data was eager-loaded by parent
     if (source != null && source.containsKey(lookupName)) {
@@ -74,11 +70,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
-
-      // Get alias without ObjectType
-      if (lookupName.contains(".")) {
-        lookupName = lookupName.substring(lookupName.lastIndexOf(".") + 1);
-      }
 
       var joinKey = JOIN_KEY_PREFIX.concat(lookupName);
       if (source != null && source.containsKey(joinKey)) {
@@ -146,5 +137,14 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
         .setMaxBatchSize(MAX_BATCH_SIZE));
+  }
+
+  private String getLookupName(ExecutionStepInfo executionStepInfo, String fieldName) {
+    return !executionStepInfo.getField()
+        .getResultKey()
+        .equals(fieldName) ? String.format("%s.%s", fieldName,
+            executionStepInfo.getField()
+                .getResultKey())
+            : fieldName;
   }
 }
