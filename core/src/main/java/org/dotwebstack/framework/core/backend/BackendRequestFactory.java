@@ -328,8 +328,8 @@ public class BackendRequestFactory {
   }
 
   private String createResultKey(SelectedField selectedField) {
-    return selectedField.getAlias() != null ? String.format("%s.%s", selectedField.getName(), selectedField.getAlias())
-        : selectedField.getName();
+    return selectedField.getAlias() == null ? selectedField.getName()
+        : String.format("%s.%s", selectedField.getName(), selectedField.getAlias());
   }
 
   private ObjectType<?> getObjectType(GraphQLType type) {

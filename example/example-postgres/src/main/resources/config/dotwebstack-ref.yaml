@@ -49,11 +49,6 @@ objectTypes:
         field: name
       taste:
         field: taste
-# filter within refObject does not work yet.
-#      brewery:
-#        field: brewery.ref.record_id
-#      ingredients:
-#        field: ingredients.refs.identifier
     sortableBy:
       name:
         - field: name
@@ -195,7 +190,7 @@ objectTypes:
   Ingredient:
     table: dbeerpedia.ingredients
     filters:
-      name: {}
+      name: { }
     fields:
       identifier:
         type: ID
@@ -214,11 +209,11 @@ objectTypes:
       city:
         type: String
     filters:
-      street: {}
+      street: { }
       streetPartial:
         type: partial
         field: street
-      city: {}
+      city: { }
 
   History:
     fields:
@@ -229,8 +224,8 @@ objectTypes:
         type: String
         column: his_history
     filters:
-      age: {}
+      age: { }
 
 enumerations:
   Taste:
-    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
+    values: [ MEATY, FRUITY, SMOKY, SPICY, WATERY ]
