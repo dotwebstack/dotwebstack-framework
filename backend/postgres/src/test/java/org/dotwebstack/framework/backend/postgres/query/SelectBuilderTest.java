@@ -223,15 +223,18 @@ class SelectBuilderTest {
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
+                .resultKey("soldPerYear")
                 .build()))
         .objectListFields(Map.of(FieldRequest.builder()
             .name("ingredients")
+            .resultKey("ingredients")
             .build(),
             CollectionRequest.builder()
                 .objectRequest(ObjectRequest.builder()
                     .objectType(ingredientObjectType)
                     .scalarFields(List.of(FieldRequest.builder()
                         .name("name")
+                        .resultKey("name")
                         .build()))
                     .build())
                 .build()))
@@ -523,6 +526,7 @@ class SelectBuilderTest {
         .objectType(beerObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .build();
 
@@ -537,9 +541,11 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectListFields(Map.of(FieldRequest.builder()
             .name("beers")
+            .resultKey("beers")
             .build(), beersCollectionRequest))
         .build();
 
@@ -572,6 +578,7 @@ class SelectBuilderTest {
         .objectType(beerObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .build();
 
@@ -586,9 +593,11 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectListFields(Map.of(FieldRequest.builder()
             .name("beers")
+            .resultKey("beers")
             .build(), beersCollectionRequest))
         .build();
 

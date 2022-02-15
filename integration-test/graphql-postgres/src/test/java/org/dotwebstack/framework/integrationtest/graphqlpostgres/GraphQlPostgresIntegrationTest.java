@@ -29,7 +29,6 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.collection.IsMapWithSize;
 import org.hamcrest.core.IsIterableContaining;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactivestreams.Publisher;
@@ -762,7 +761,6 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  @Disabled("see story DHUB-288")
   void getRequest_returnsBeerWithAggregateType_forCountDistinct() {
     var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
         + "{name ingredientAgg{ countWeightDis : count( field : \"weight\", distinct : true ) "
@@ -1547,6 +1545,83 @@ class GraphQlPostgresIntegrationTest {
             IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
                 "Exception while fetching data (/breweries) : Filter operator '_exists' "
                     + "is only supported for nested objects"))));
+  }
+
+  @Test
+  void getRequest_returnsBeerWithBrewery_withMultipleAliasesForBreweryObject() {
+    var query = "query beer{\n" + "  beer(identifier_beer:\"b0e7cf18-e3ce-439b-a63e-034c8452f59c\") {\n"
+        + "    identifier_beer\n" + "    name\n" + "  \tbrewery1: brewery{\n" + "      identifier_brewery\n" + "    }\n"
+        + "    brewery2: brewery{\n" + "      name\n" + "    }\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEER), is(true));
+
+    var beer = getNestedObject(data, BEER);
+
+    assertThat(beer.size(), is(4));
+    assertThat(beer.get(NAME), is("Beer 1"));
+    assertThat(beer.get("identifier_beer"), is("b0e7cf18-e3ce-439b-a63e-034c8452f59c"));
+    assertThat(beer.containsKey("brewery1"), is(true));
+    assertThat(beer.containsKey("brewery2"), is(true));
+
+    var brewery1 = getNestedObject(beer, "brewery1");
+    assertThat(brewery1.size(), is(1));
+    assertThat(brewery1.containsKey("identifier_brewery"), is(true));
+    assertThat(brewery1.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
+
+    var brewery2 = getNestedObject(beer, "brewery2");
+    assertThat(brewery2.size(), is(1));
+    assertThat(brewery2.containsKey(NAME), is(true));
+    assertThat(brewery2.get(NAME), is("Brewery X"));
+  }
+
+  @Test
+  void getRequest_returnsBreweryWithBeers_withMultipleAliasesForBeersObjects() {
+    var query = "query brewery {\n" + "  brewery (identifier_brewery: \"d3654375-95fa-46b4-8529-08b0f777bd6b\") {\n"
+        + "    identifier_brewery\n" + "  \tsmokybeers: beers(filter: {taste: {containsAnyOf: [\"SMOKY\"]}}){\n"
+        + "      name\n" + "      taste\n" + "    }\n"
+        + "  \tfruityBeers: beers(filter: {taste: {containsAnyOf: [\"FRUITY\"]}}){\n" + "      name\n" + "      taste\n"
+        + "    }\n" + "  }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERY), is(true));
+
+    var brewery = getNestedObject(data, BREWERY);
+
+    assertThat(brewery.size(), is(3));
+    assertThat(brewery.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
+    assertThat(brewery.containsKey("fruityBeers"), is(true));
+    assertThat(brewery.containsKey("smokybeers"), is(true));
+
+    var fruityBeers = getNestedObjects(brewery, "fruityBeers");
+    assertThat(fruityBeers.size(), is(2));
+
+    var fruityBeer1 = fruityBeers.get(0);
+    assertThat(fruityBeer1.containsKey(NAME), is(true));
+    assertThat(fruityBeer1.get(NAME), is("Beer 1"));
+    assertThat(fruityBeer1.get("taste"), is(List.of("MEATY", "FRUITY")));
+
+    var fruityBeer2 = fruityBeers.get(1);
+    assertThat(fruityBeer2.containsKey(NAME), is(true));
+    assertThat(fruityBeer2.get(NAME), is("Beer 2"));
+    assertThat(fruityBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
+
+    var smokybeers = getNestedObjects(brewery, "smokybeers");
+    assertThat(smokybeers.size(), is(2));
+
+    var smokyBeer1 = smokybeers.get(0);
+    assertThat(smokyBeer1.containsKey(NAME), is(true));
+    assertThat(smokyBeer1.get(NAME), is("Beer 2"));
+    assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
+
+    var smokyBeer2 = smokybeers.get(1);
+    assertThat(smokyBeer2.containsKey(NAME), is(true));
+    assertThat(smokyBeer2.get(NAME), is("Beer 3"));
+    assertThat(smokyBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "SMOKY")));
   }
 
   @SuppressWarnings("unchecked")

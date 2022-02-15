@@ -77,6 +77,7 @@ public class ObjectRequestHelper {
         .build();
     FieldRequest field = FieldRequest.builder()
         .name(objectField.getName())
+        .resultKey(objectField.getName())
         .build();
     objectFields.put(field, objectRequest);
     return objectRequest;

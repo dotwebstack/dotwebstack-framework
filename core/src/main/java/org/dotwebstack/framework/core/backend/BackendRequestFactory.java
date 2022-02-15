@@ -186,8 +186,11 @@ public class BackendRequestFactory {
   }
 
   private FieldRequest mapToFieldRequest(SelectedField selectedField) {
+    String resultKey = createResultKey(selectedField);
+
     return FieldRequest.builder()
         .name(selectedField.getName())
+        .resultKey(resultKey)
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
         .arguments(selectedField.getArguments())
         .build();
@@ -222,8 +225,11 @@ public class BackendRequestFactory {
 
           var aggregationObjectType = objectField.getTargetType();
 
+          String resultKey = createResultKey(selectedField);
+
           return AggregateObjectRequest.builder()
               .objectField(objectField)
+              .key(resultKey)
               .aggregateFields(getAggregateFields(aggregationObjectType, selectedField.getSelectionSet()))
               .build();
         })
@@ -256,11 +262,13 @@ public class BackendRequestFactory {
     var objectField = objectType.getFields()
         .get(fieldName);
 
+    String resultKey = createResultKey(selectedField);
+
     return AggregateField.builder()
         .field(objectField)
         .functionType(aggregateFunctionType)
         .type(type)
-        .alias(selectedField.getName())
+        .alias(resultKey)
         .distinct(distinct)
         .separator(separator)
         .build();
@@ -317,6 +325,11 @@ public class BackendRequestFactory {
 
   private String formatSortEnumName(String enumName) {
     return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, enumName);
+  }
+
+  private String createResultKey(SelectedField selectedField) {
+    return selectedField.getAlias() == null ? selectedField.getName()
+        : String.format("%s.%s", selectedField.getName(), selectedField.getAlias());
   }
 
   private ObjectType<?> getObjectType(GraphQLType type) {

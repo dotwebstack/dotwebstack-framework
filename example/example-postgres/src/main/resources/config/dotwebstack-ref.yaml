@@ -41,17 +41,14 @@ queries:
     type: Brewery
     list: true
 
-
 objectTypes:
   Beer:
     table: dbeerpedia.beers
     filters:
       name:
         field: name
-      brewery:
-        field: brewery.ref.record_id
-      ingredient:
-        field: ingredients.refs.identifier
+      taste:
+        field: taste
     sortableBy:
       name:
         - field: name
@@ -83,8 +80,11 @@ objectTypes:
             - name: ingredients_identifier
               referencedField: refs.identifier
       taste:
-        type: Taste
+        type: String
         list: true
+        enum:
+          type: beer_taste
+          values: [ "MEATY", "FRUITY", "SMOKY", "SPICY", "WATERY" ]
 
   BeerBrewery:
     fields:
@@ -163,15 +163,15 @@ objectTypes:
           inverseJoinColumns:
             - name: brewery_related_to_identifier
               referencedField: identifier
-      filters:
-        name: { }
-        status: { }
-        geometry: { }
-        postalAddress: { }
-        visitAddress: { }
-        history: { }
-        relatedTo: { }
-        beers: { }
+    filters:
+      name: { }
+      status: { }
+      geometry: { }
+      postalAddress: { }
+      visitAddress: { }
+      history: { }
+      relatedTo: { }
+      beers: { }
 
   BeerIngredient:
     fields:
@@ -190,7 +190,7 @@ objectTypes:
   Ingredient:
     table: dbeerpedia.ingredients
     filters:
-      name: {}
+      name: { }
     fields:
       identifier:
         type: ID
@@ -209,11 +209,11 @@ objectTypes:
       city:
         type: String
     filters:
-      street: {}
+      street: { }
       streetPartial:
         type: partial
         field: street
-      city: {}
+      city: { }
 
   History:
     fields:
@@ -224,8 +224,8 @@ objectTypes:
         type: String
         column: his_history
     filters:
-      age: {}
+      age: { }
 
 enumerations:
   Taste:
-    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
+    values: [ MEATY, FRUITY, SMOKY, SPICY, WATERY ]

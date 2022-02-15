@@ -2,9 +2,11 @@ package org.dotwebstack.framework.core.backend;
 
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
+import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
@@ -43,8 +45,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
-    graphQlValidators.forEach(validator -> validator.validate(environment));
-
     Map<String, Object> source = environment.getSource();
 
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo((environment));
@@ -52,10 +52,18 @@ class BackendDataFetcher implements DataFetcher<Object> {
     var fieldName = executionStepInfo.getField()
         .getName();
 
+    String lookupName = getLookupName(executionStepInfo, fieldName);
+
     // Data was eager-loaded by parent
-    if (source != null && source.containsKey(fieldName)) {
-      return source.get(fieldName);
+    if (source != null && source.containsKey(lookupName)) {
+      return source.get(lookupName);
     }
+
+    if (backendLoader == null) {
+      throw illegalStateException("BackendLoader can't be null.");
+    }
+
+    graphQlValidators.forEach(validator -> validator.validate(environment));
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
     var requestContext = requestFactory.createRequestContext(environment);
@@ -63,7 +71,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
-      var joinKey = JOIN_KEY_PREFIX.concat(fieldName);
+      var joinKey = JOIN_KEY_PREFIX.concat(lookupName);
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 
@@ -129,5 +137,14 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
         .setMaxBatchSize(MAX_BATCH_SIZE));
+  }
+
+  private String getLookupName(ExecutionStepInfo executionStepInfo, String fieldName) {
+    return !executionStepInfo.getField()
+        .getResultKey()
+        .equals(fieldName) ? String.format("%s.%s", fieldName,
+            executionStepInfo.getField()
+                .getResultKey())
+            : fieldName;
   }
 }

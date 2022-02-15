@@ -12,4 +12,6 @@ public class AggregateObjectRequest {
   private final ObjectField objectField;
 
   private final List<AggregateField> aggregateFields;
+
+  private final String key;
 }

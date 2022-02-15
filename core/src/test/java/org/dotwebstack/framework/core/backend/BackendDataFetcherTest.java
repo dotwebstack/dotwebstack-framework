@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.backend;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -63,17 +64,24 @@ class BackendDataFetcherTest {
   private BackendDataFetcher dataFetcher;
 
   @Test
-  void get_returnObject_ifDataWasEagerLoaded() {
+  void get_returnsObject_ifDataWasEagerLoaded() {
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
     when(environment.getSource()).thenReturn(source);
 
-    var fieldMock = mock(MergedField.class);
-    when(fieldMock.getName()).thenReturn("a");
-    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
-    when(executionStepInfo.getField()).thenReturn(fieldMock);
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfo);
+    mockExecutionStepInfo("a", "a");
+
+    var result = dataFetcher.get(environment);
+    assertThat(result, is("bbb"));
+  }
+
+  @Test
+  void get_returnsObject_ifDataWasEagerLoadedWithAlias() {
+    Map<String, Object> source = new HashMap<>();
+    source.put("a.alias", "bbb");
+    when(environment.getSource()).thenReturn(source);
+
+    mockExecutionStepInfo("a", "alias");
 
     var result = dataFetcher.get(environment);
     assertThat(result, is("bbb"));
@@ -81,19 +89,7 @@ class BackendDataFetcherTest {
 
   @Test
   @Disabled("fix me")
-  void get_returnCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
-    var fieldMock1 = mock(MergedField.class);
-    when(fieldMock1.getName()).thenReturn("fff");
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
-    ResultPath resultPath = ResultPath.rootPath()
-        .segment("a");
-    when(executionStepInfoMock.getPath()).thenReturn(resultPath);
-
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfoMock);
-    when(environment.getExecutionStepInfo()).thenReturn(executionStepInfoMock);
-
+  void get_returnsCompletableFuture_ifNotSubscription_ListTypeTrue_and_JoinCondition() {
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
     Map<String, Object> condition = new HashMap<>();
@@ -107,6 +103,8 @@ class BackendDataFetcherTest {
         .objectField(mock(ObjectField.class))
         .source(source)
         .build();
+
+    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("fff", "fff", "a");
 
     when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
     when(environment.getSource()).thenReturn(source);
@@ -139,20 +137,8 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  void get_returnFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
-    var fieldMock1 = mock(MergedField.class);
-    when(fieldMock1.getName()).thenReturn("fff");
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
-    ResultPath resultPath = ResultPath.rootPath()
-        .segment("a");
-    lenient().when(executionStepInfoMock.getPath())
-        .thenReturn(resultPath);
-
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfoMock);
-    lenient().when(environment.getExecutionStepInfo())
-        .thenReturn(executionStepInfoMock);
+  void get_returnsFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
+    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("fff", "fff", "a");
 
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
@@ -182,7 +168,7 @@ class BackendDataFetcherTest {
     when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
         .thenReturn(Flux.just(resultMock));
 
-    var result = ((CompletableFuture) dataFetcher.get(environment)).join();
+    var result = ((CompletableFuture<?>) dataFetcher.get(environment)).join();
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof List);
@@ -193,20 +179,8 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  void get_returnFluxMap_ifSourceNull_SubscriptionTrue() {
-    var fieldMock1 = mock(MergedField.class);
-    when(fieldMock1.getName()).thenReturn("fff");
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
-    ResultPath resultPath = ResultPath.rootPath()
-        .segment("a");
-    lenient().when(executionStepInfoMock.getPath())
-        .thenReturn(resultPath);
-
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfoMock);
-    lenient().when(environment.getExecutionStepInfo())
-        .thenReturn(executionStepInfoMock);
+  void get_returnsFluxMap_ifSourceNull_SubscriptionTrue() {
+    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("bbb", "bbb", "a");
 
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
@@ -234,7 +208,7 @@ class BackendDataFetcherTest {
     when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
         .thenReturn(Flux.just(resultMock));
 
-    var result = ((Flux) dataFetcher.get(environment)).blockFirst();
+    var result = ((Flux<?>) dataFetcher.get(environment)).blockFirst();
 
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
@@ -245,14 +219,8 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  void get_returnMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
-    var fieldMock1 = mock(MergedField.class);
-    when(fieldMock1.getName()).thenReturn("fff");
-    ExecutionStepInfo executionStepInfoMock = mock(ExecutionStepInfo.class);
-    when(executionStepInfoMock.getField()).thenReturn(fieldMock1);
-
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
-        .thenReturn(executionStepInfoMock);
+  void get_returnsMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
+    var executionStepInfoMock = mockExecutionStepInfo("fff", "fff");
 
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
@@ -278,12 +246,51 @@ class BackendDataFetcherTest {
     resultMock.put("aa", new String[] {"a", "b"});
     when(backendLoader.loadSingle(objectRequest, requestContext)).thenReturn(Mono.just(resultMock));
 
-    var result = ((CompletableFuture) dataFetcher.get(environment)).join();
+    var result = ((CompletableFuture<?>) dataFetcher.get(environment)).join();
 
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(resultMock.get("aa")));
     verify(requestFactory).createObjectRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
     verify(backendLoader).loadSingle(any(ObjectRequest.class), any(RequestContext.class));
+  }
+
+  @Test
+  void get_throwsException_ifBackendLoaderIsNull() {
+    var dataFetcherWithoutBackendLoader =
+        new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators);
+
+    mockExecutionStepInfo("a", "a");
+
+    var exception = assertThrows(IllegalStateException.class, () -> dataFetcherWithoutBackendLoader.get(environment));
+
+    assertThat(exception.getMessage(), CoreMatchers.is("BackendLoader can't be null."));
+  }
+
+  private ExecutionStepInfo mockExecutionStepInfo(String fieldName, String resultKey) {
+    var fieldMock = mock(MergedField.class);
+    when(fieldMock.getName()).thenReturn(fieldName);
+    when(fieldMock.getResultKey()).thenReturn(resultKey);
+
+    ExecutionStepInfo executionStepInfo = mock(ExecutionStepInfo.class);
+    when(executionStepInfo.getField()).thenReturn(fieldMock);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfo);
+    lenient().when(environment.getExecutionStepInfo())
+        .thenReturn(executionStepInfo);
+
+    return executionStepInfo;
+  }
+
+  private ExecutionStepInfo mockExecutionStepInfoWithResultPath(String fieldName, String resultKey,
+      String resultPathSegment) {
+    var executionStepInfoMock = mockExecutionStepInfo(fieldName, resultKey);
+
+    ResultPath resultPath = ResultPath.rootPath()
+        .segment(resultPathSegment);
+    lenient().when(executionStepInfoMock.getPath())
+        .thenReturn(resultPath);
+
+    return executionStepInfoMock;
   }
 
 }
