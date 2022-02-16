@@ -168,31 +168,6 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
-
-    if (objectField.getMappedByObjectField() != null) {
-      var mappedByObjectField = objectField.getMappedByObjectField();
-
-      if (mappedByObjectField.getJoinTable() != null) {
-        return handleJoinColumn(objectField, mappedByObjectField.getJoinTable()
-            .getInverseJoinColumns(), table);
-      } else if (mappedByObjectField.getJoinColumns() != null) {
-        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table);
-      }
-    }
-
-    if (objectField.getJoinTable() != null) {
-      return handleJoinColumn(objectField, objectField.getJoinTable()
-          .getJoinColumns(), table);
-    }
-
-    if (objectField.getJoinColumns() != null) {
-      return handleJoinColumnSource(objectField, table);
-    }
-
-    return List.of();
-  }
-
   private void processObjectListFields(ObjectRequest objectRequest, Table<Record> table,
       SelectQuery<Record> dataQuery) {
     objectRequest.getObjectListFields()
@@ -202,10 +177,38 @@ class SelectBuilder {
           var objectField = getObjectField(objectRequest, entry.getKey()
               .getName());
 
-          return processObjectListFields(objectField, table).stream();
+          var resultKey = entry.getKey()
+              .getResultKey();
+          return processObjectListFields(objectField, table, resultKey).stream();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
+  }
+
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table,
+      String resultKey) {
+
+    if (objectField.getMappedByObjectField() != null) {
+      var mappedByObjectField = objectField.getMappedByObjectField();
+
+      if (mappedByObjectField.getJoinTable() != null) {
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinTable()
+            .getInverseJoinColumns(), table, resultKey);
+      } else if (mappedByObjectField.getJoinColumns() != null) {
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table, resultKey);
+      }
+    }
+
+    if (objectField.getJoinTable() != null) {
+      return handleJoinColumn(objectField, objectField.getJoinTable()
+          .getJoinColumns(), table, resultKey);
+    }
+
+    if (objectField.getJoinColumns() != null) {
+      return handleJoinColumnSource(objectField, table, resultKey);
+    }
+
+    return List.of();
   }
 
   private void processObjectFields(ObjectRequest objectRequest, PostgresObjectType objectType,
@@ -638,13 +641,14 @@ class SelectBuilder {
     return query;
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
+  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table,
+      String resultKey) {
     var selectFields = objectField.getJoinColumns()
         .stream()
         .collect(Collectors.toMap(Function.identity(),
             joinColumn -> column(table, joinColumn.getName()).as(aliasManager.newAlias())));
 
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(resultKey), row -> PostgresJoinCondition.builder()
         .key(selectFields.entrySet()
             .stream()
             .collect(HashMap::new, (map, joinSelectField) -> {
@@ -663,8 +667,8 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
-      Table<Record> table) {
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
+      Table<Record> table, String resultKey) {
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(resultKey), row -> PostgresJoinCondition.builder()
         .key(getJoinColumnValues(joinColumns, row))
         .build());
 
