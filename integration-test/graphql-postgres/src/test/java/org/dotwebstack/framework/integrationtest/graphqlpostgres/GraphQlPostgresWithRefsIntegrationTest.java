@@ -232,17 +232,12 @@ class GraphQlPostgresWithRefsIntegrationTest {
     assertThat(fruityBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
 
     var smokybeers = getNestedObjects(brewery, "smokybeers");
-    assertThat(smokybeers.size(), is(2));
+    assertThat(smokybeers.size(), is(1));
 
     var smokyBeer1 = smokybeers.get(0);
     assertThat(smokyBeer1.containsKey("name"), is(true));
     assertThat(smokyBeer1.get("name"), is("Beer 2"));
     assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
-
-    var smokyBeer2 = smokybeers.get(1);
-    assertThat(smokyBeer2.containsKey("name"), is(true));
-    assertThat(smokyBeer2.get("name"), is("Beer 3"));
-    assertThat(smokyBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "SMOKY")));
   }
 
   @SuppressWarnings("unchecked")

@@ -71,7 +71,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
-      var joinKey = JOIN_KEY_PREFIX.concat(lookupName);
+      var joinKey = JOIN_KEY_PREFIX.concat(fieldName);
       if (source != null && source.containsKey(joinKey)) {
         var joinCondition = (JoinCondition) source.get(joinKey);
 

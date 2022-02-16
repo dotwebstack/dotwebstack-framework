@@ -168,6 +168,21 @@ class SelectBuilder {
     return dataQuery;
   }
 
+  private void processObjectListFields(ObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery) {
+    objectRequest.getObjectListFields()
+        .entrySet()
+        .stream()
+        .flatMap(entry -> {
+          var objectField = getObjectField(objectRequest, entry.getKey()
+              .getName());
+
+          return processObjectListFields(objectField, table).stream();
+        })
+        .filter(Objects::nonNull)
+        .forEach(dataQuery::addSelect);
+  }
+
   private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
 
     if (objectField.getMappedByObjectField() != null) {
@@ -191,21 +206,6 @@ class SelectBuilder {
     }
 
     return List.of();
-  }
-
-  private void processObjectListFields(ObjectRequest objectRequest, Table<Record> table,
-      SelectQuery<Record> dataQuery) {
-    objectRequest.getObjectListFields()
-        .entrySet()
-        .stream()
-        .flatMap(entry -> {
-          var objectField = getObjectField(objectRequest, entry.getKey()
-              .getName());
-
-          return processObjectListFields(objectField, table).stream();
-        })
-        .filter(Objects::nonNull)
-        .forEach(dataQuery::addSelect);
   }
 
   private void processObjectFields(ObjectRequest objectRequest, PostgresObjectType objectType,
