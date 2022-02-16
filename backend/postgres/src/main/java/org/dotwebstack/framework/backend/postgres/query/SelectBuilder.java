@@ -177,35 +177,32 @@ class SelectBuilder {
           var objectField = getObjectField(objectRequest, entry.getKey()
               .getName());
 
-          var resultKey = entry.getKey()
-              .getResultKey();
-          return processObjectListFields(objectField, table, resultKey).stream();
+          return processObjectListFields(objectField, table).stream();
         })
         .filter(Objects::nonNull)
         .forEach(dataQuery::addSelect);
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table,
-      String resultKey) {
+  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
 
     if (objectField.getMappedByObjectField() != null) {
       var mappedByObjectField = objectField.getMappedByObjectField();
 
       if (mappedByObjectField.getJoinTable() != null) {
         return handleJoinColumn(objectField, mappedByObjectField.getJoinTable()
-            .getInverseJoinColumns(), table, resultKey);
+            .getInverseJoinColumns(), table);
       } else if (mappedByObjectField.getJoinColumns() != null) {
-        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table, resultKey);
+        return handleJoinColumn(objectField, mappedByObjectField.getJoinColumns(), table);
       }
     }
 
     if (objectField.getJoinTable() != null) {
       return handleJoinColumn(objectField, objectField.getJoinTable()
-          .getJoinColumns(), table, resultKey);
+          .getJoinColumns(), table);
     }
 
     if (objectField.getJoinColumns() != null) {
-      return handleJoinColumnSource(objectField, table, resultKey);
+      return handleJoinColumnSource(objectField, table);
     }
 
     return List.of();
@@ -641,14 +638,13 @@ class SelectBuilder {
     return query;
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table,
-      String resultKey) {
+  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
     var selectFields = objectField.getJoinColumns()
         .stream()
         .collect(Collectors.toMap(Function.identity(),
             joinColumn -> column(table, joinColumn.getName()).as(aliasManager.newAlias())));
 
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(resultKey), row -> PostgresJoinCondition.builder()
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(selectFields.entrySet()
             .stream()
             .collect(HashMap::new, (map, joinSelectField) -> {
@@ -667,8 +663,8 @@ class SelectBuilder {
   }
 
   private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
-      Table<Record> table, String resultKey) {
-    fieldMapper.register(JOIN_KEY_PREFIX.concat(resultKey), row -> PostgresJoinCondition.builder()
+      Table<Record> table) {
+    fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(getJoinColumnValues(joinColumns, row))
         .build());
 
