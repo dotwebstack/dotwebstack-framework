@@ -4,9 +4,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConf
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -16,16 +14,26 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Conditional(OnLocalSchema.class)
-public class KeyValidator implements SchemaValidator {
-
-  private final Set<String> keyNames = new HashSet<>();
+public class QueryValidator implements SchemaValidator {
 
   @Override
   public void validate(Schema schema) {
     var queries = schema.getQueries();
 
-    queries.forEach((queryName, query) -> query.getKeys()
-        .forEach(keyPath -> validateKeyFieldPath(queryName, keyPath, query.getType(), schema)));
+    queries.keySet()
+        .forEach(queryName -> validateQuery(schema, queryName));
+  }
+
+  private void validateQuery(Schema schema, String queryName) {
+    var query = schema.getQueries()
+        .get(queryName);
+
+    if (query.isBatch() && query.isPageable()) {
+      throw invalidConfigurationException("Paging and batching is not supported for query '{}'!", queryName);
+    }
+
+    query.getKeys()
+        .forEach(keyPath -> validateKeyFieldPath(queryName, keyPath, query.getType(), schema));
   }
 
   private void validateKeyFieldPath(String queryName, String keyPath, String objectTypeName, Schema schema) {
@@ -43,7 +51,6 @@ public class KeyValidator implements SchemaValidator {
       validateComposedKeyField(queryName, keyPath, objectType, schema);
     } else {
       validateKey(schema, objectType.getName(), keyPath);
-      keyNames.add(keyPath);
     }
   }
 
