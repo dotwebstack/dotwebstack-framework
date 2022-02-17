@@ -1619,6 +1619,68 @@ class GraphQlPostgresIntegrationTest {
     assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
   }
 
+  @Test
+  void getRequest_returnsBeerWithIngredients_withAliasesForJoinTable() {
+    var query = "query beerIngredients{\n" + "    beer(identifier_beer: \"766883b5-3482-41cf-a66d-a81e79a4f0ed\"){\n"
+        + "      identifier_beer\n" + "      ingName: ingredients{\n" + "          name\n" + "      }\n" + "    }\n"
+        + "  }";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BEER), is(true));
+
+    var beer = getNestedObject(data, BEER);
+
+    assertThat(beer.size(), is(2));
+    assertThat(beer.containsKey("identifier_beer"), is(true));
+    assertThat(beer.get("identifier_beer"), is("766883b5-3482-41cf-a66d-a81e79a4f0ed"));
+    assertThat(beer.containsKey("ingName"), is(true));
+
+    var ingredients = getNestedObjects(beer, "ingName");
+    assertThat(ingredients.size(), is(4));
+    Assert.assertThat(ingredients, hasItems(equalTo(Map.of("name", "Water")), equalTo(Map.of("name", "Hop")),
+        equalTo(Map.of("name", "Barley")), equalTo(Map.of("name", "Yeast"))));
+  }
+
+  @Test
+  void getRequest_returnsBeersWithIngredients_withAliasesForJoinTableAndSortableByOnNestedObject() {
+    var query = "query beerIngredients{\n" + "    breweries(sort: BREWERY_AGE){\n" + "      identifier_brewery\n"
+        + "      name\n" + "      his: history{\n" + "          leeftijd: age\n" + "      }\n" + "    }\n" + "  }";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERIES), is(true));
+
+    var breweries = getNestedObjects(data, BREWERIES);
+
+    assertThat(breweries.size(), is(4));
+
+    var brewery1 = breweries.get(0);
+    assertThat(brewery1.containsKey(NAME), is(true));
+    assertThat(brewery1.get(NAME), is("Brewery Z"));
+    assertThat(brewery1.get("his"), is(nullValue()));
+
+    var brewery2 = breweries.get(1);
+    assertThat(brewery2.containsKey(NAME), is(true));
+    assertThat(brewery2.get(NAME), is("Brewery X"));
+    var brewery2His = getNestedObject(brewery2, "his");
+    assertThat(brewery2His.get("leeftijd"), is(1988));
+
+    var brewery3 = breweries.get(2);
+    assertThat(brewery3.containsKey(NAME), is(true));
+    assertThat(brewery3.get(NAME), is("Brewery Y"));
+    var brewery3His = getNestedObject(brewery3, "his");
+    assertThat(brewery3His.get("leeftijd"), is(1900));
+
+    var brewery4 = breweries.get(3);
+    assertThat(brewery4.containsKey(NAME), is(true));
+    assertThat(brewery4.get(NAME), is("Brewery S"));
+    var brewery4His = getNestedObject(brewery4, "his");
+    assertThat(brewery4His.get("leeftijd"), is(1600));
+  }
+
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> getNestedObjects(Map<String, Object> data, String name) {
     return (List<Map<String, Object>>) data.get(name);

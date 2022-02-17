@@ -218,6 +218,9 @@ objectTypes:
       name:
         - field: name
           direction: ASC
+      breweryAge:
+        - field: history.age
+          direction: DESC
 
   Address:
     table: db.address
