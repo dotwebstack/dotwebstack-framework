@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,6 @@ class BatchJoinBuilder {
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
-  @NotNull
   private JoinConfiguration joinConfiguration;
 
   private ContextCriteria contextCriteria;
@@ -66,6 +66,10 @@ class BatchJoinBuilder {
 
   SelectQuery<Record> build() {
     validateFields(this);
+
+    if (joinConfiguration == null) {
+      return batchJoinWithKeysOnly();
+    }
 
     if (joinConfiguration.getMappedBy() != null) {
       var mappedBy = joinConfiguration.getMappedBy();
@@ -103,6 +107,27 @@ class BatchJoinBuilder {
             .getName());
   }
 
+  private SelectQuery<Record> batchJoinWithKeysOnly() {
+    var keyColumnAliases = joinKeys.stream()
+        .findFirst()
+        .stream()
+        .flatMap(map -> map.keySet()
+            .stream())
+        .collect(Collectors.toMap(Function.identity(), field -> aliasManager.newAlias()));
+
+    var keyTable = createValuesTable(keyColumnAliases, joinKeys);
+
+    keyColumnAliases.entrySet()
+        .stream()
+        .map(entry -> QueryHelper.column(null, entry.getKey())
+            .equal(QueryHelper.column(keyTable, entry.getValue())))
+        .forEach(dataQuery::addConditions);
+
+    addExists(dataQuery, new ArrayList<>(keyColumnAliases.keySet()), table);
+
+    return batchJoin(keyTable);
+  }
+
   private SelectQuery<Record> batchJoin(List<JoinColumn> joinColumns, Table<Record> joinConditionTable) {
     var objectType = joinConfiguration.getObjectType();
 
@@ -122,7 +147,7 @@ class BatchJoinBuilder {
             .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
         .forEach(dataQuery::addConditions);
 
-    addExists(dataQuery, joinColumns, joinConditionTable);
+    addExistsForJoinColumns(dataQuery, joinColumns, joinConditionTable);
 
     return batchJoin(keyTable);
   }
@@ -152,16 +177,16 @@ class BatchJoinBuilder {
     return batchJoin(joinTable.getJoinColumns(), junctionTable);
   }
 
-  private Table<Record> createValuesTable(Map<String, String> keyColumnNames, Collection<Map<String, Object>> keys) {
+  private Table<Record> createValuesTable(Map<String, String> keyColumnAliases, Collection<Map<String, Object>> keys) {
     var keyTableRows = keys.stream()
-        .map(joinKey -> keyColumnNames.keySet()
+        .map(joinKey -> keyColumnAliases.keySet()
             .stream()
             .map(joinKey::get)
             .toArray())
         .map(DSL::row)
         .toArray(RowN[]::new);
 
-    return createValuesTable(keyColumnNames, keyTableRows);
+    return createValuesTable(keyColumnAliases, keyTableRows);
 
   }
 
@@ -169,21 +194,29 @@ class BatchJoinBuilder {
     // Register field mapper for grouping rows per key
     fieldMapper.register(GROUP_KEY, row -> keyColumnAliases.entrySet()
         .stream()
-        .collect(Collectors.toMap(Map.Entry::getKey, columnAlias -> row.get(columnAlias.getValue()))));
+        .collect(Collectors.toMap(Map.Entry::getKey, columnAlias -> row.get(columnAlias.getValue()),
+            (prev, next) -> next, HashMap::new)));
 
     return DSL.values(keyTableRows)
         .as(aliasManager.newAlias(), keyColumnAliases.values()
             .toArray(String[]::new));
   }
 
-  private void addExists(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
+  private void addExistsForJoinColumns(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns,
+      Table<Record> table) {
     var existsColumnNames = joinColumns.stream()
         .map(JoinColumn::getName)
         .collect(Collectors.toList());
 
+    addExists(dataQuery, existsColumnNames, table);
+  }
+
+  private void addExists(SelectQuery<Record> dataQuery, List<String> existsColumnNames, Table<Record> table) {
     existsColumnNames.stream()
         .map(existsColumn -> QueryHelper.column(table, existsColumn))
         .forEach(dataQuery::addSelect);
+
+    // TODO: Hier dienen we ook een alias te gebruiken
 
     // Register field mapper for exist row columns
     fieldMapper.register(EXISTS_KEY, row -> existsColumnNames.stream()

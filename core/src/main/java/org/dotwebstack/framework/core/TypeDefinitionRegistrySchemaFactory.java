@@ -17,6 +17,8 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_LIST_QUERY;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_SINGLE_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
@@ -33,6 +35,7 @@ import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
+import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
@@ -275,11 +278,19 @@ public class TypeDefinitionRegistrySchemaFactory {
   private Type<?> createTypeForQuery(Query query) {
     var type = query.getType();
 
+    Type<?> result;
     if (query.isList()) {
-      return createListType(type, query.isPageable(), false);
+      result = createListType(type, query.isPageable(), false);
+    } else {
+      result = newType(query.getType());
     }
 
-    return newType(query.getType());
+    if (query.isBatch()) {
+      return ListType.newListType(result)
+          .build();
+    }
+
+    return result;
   }
 
   private Type<?> createListType(String type, boolean pageable, boolean nullable) {
@@ -421,16 +432,27 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newFieldDefinition().name(queryName)
         .type(createTypeForQuery(query))
         .inputValueDefinitions(inputValueDefinitions)
+        .additionalData(createQueryAdditionalData(query))
         .build();
+  }
+
+  private Map<String, String> createQueryAdditionalData(Query query) {
+    if (query.isBatch()) {
+      if (query.isList()) {
+        return Map.of(IS_BATCH_LIST_QUERY, Boolean.TRUE.toString());
+      }
+      return Map.of(IS_BATCH_SINGLE_QUERY, Boolean.TRUE.toString());
+    }
+
+    return Map.of();
   }
 
   private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
     return query.getKeys()
         .stream()
-        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField)))
+        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField), query.isBatch()))
         .collect(Collectors.toList());
   }
-
 
   private Optional<InputValueDefinition> createFilterArgument(Query query, ObjectType<?> objectType) {
     if (query.isList()) {
@@ -538,6 +560,11 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createInputValueDefinition(String keyField, ObjectType<?> objectType,
       Map<String, String> additionalData) {
+    return createInputValueDefinition(keyField, objectType, additionalData, false);
+  }
+
+  private InputValueDefinition createInputValueDefinition(String keyField, ObjectType<?> objectType,
+      Map<String, String> additionalData, boolean batch) {
 
     if (isNestedFieldPath(keyField)) {
       var splittedKeys = Arrays.asList(keyField.split("\\.", 2));
@@ -548,8 +575,11 @@ public class TypeDefinitionRegistrySchemaFactory {
       keyField = splittedKeys.get(1);
     }
 
+    var fieldType = createType(keyField, objectType);
+
     return newInputValueDefinition().name(keyField)
-        .type(createType(keyField, objectType))
+        .type(batch ? ListType.newListType(fieldType)
+            .build() : fieldType)
         .additionalData(additionalData)
         .build();
   }

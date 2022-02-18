@@ -12,15 +12,19 @@ import graphql.language.StringValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.language.Value;
+import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
@@ -87,7 +91,7 @@ public class GraphQlHelper {
     return getAdditionalData(unmodifiedType).containsKey(GraphQlConstants.IS_SCALAR);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked"})
   private static Map<String, String> getAdditionalData(GraphQLUnmodifiedType unmodifiedType) {
     return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
         .map(Node::getAdditionalData)
@@ -100,5 +104,16 @@ public class GraphQlHelper {
       return getRequestStepInfo(executionStepInfo.getParent());
     }
     return executionStepInfo;
+  }
+
+  public static List<GraphQLArgument> getKeyArgumentsWithValue(GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> argumentValues) {
+    return fieldDefinition.getArguments()
+        .stream()
+        .filter(argument -> argument.getDefinition()
+            .getAdditionalData()
+            .containsKey(GraphQlConstants.KEY_FIELD))
+        .filter(argument -> argumentValues.containsKey(argument.getName()))
+        .collect(Collectors.toList());
   }
 }

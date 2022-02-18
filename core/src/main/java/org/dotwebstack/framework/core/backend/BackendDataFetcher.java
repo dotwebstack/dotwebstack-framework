@@ -2,13 +2,18 @@ package org.dotwebstack.framework.core.backend;
 
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_LIST_QUERY;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_SINGLE_QUERY;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArgumentsWithValue;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -16,6 +21,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
+import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -67,6 +73,27 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
     var requestContext = requestFactory.createRequestContext(environment);
+    var additionalData = environment.getFieldDefinition()
+        .getDefinition()
+        .getAdditionalData();
+
+    // batch query
+    // TODO: bepalen of iets een batch query is kan netter,
+    if (additionalData.containsKey(IS_BATCH_SINGLE_QUERY) || additionalData.containsKey(IS_BATCH_LIST_QUERY)) {
+      DataLoader<Map<String, Object>, ?> batchLoader;
+
+      if (additionalData.containsKey(IS_BATCH_SINGLE_QUERY)) {
+        batchLoader = createSingleBatchLoader(environment, requestContext);
+      } else {
+        batchLoader = createManyBatchLoader(environment, requestContext, null);
+      }
+
+      getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments())
+          .forEach(argument -> castToList(environment.getArguments()
+              .get(argument.getName())).forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue))));
+
+      return batchLoader.dispatchAndJoin();
+    }
 
     if (isSubscription || isListType(environment.getFieldType())) {
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
@@ -137,6 +164,28 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
         .setMaxBatchSize(MAX_BATCH_SIZE));
+  }
+
+  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
+      DataFetchingEnvironment environment, RequestContext requestContext) {
+    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
+
+    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+
+    MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
+
+      var batchRequest = BatchRequest.builder()
+          .objectRequest(objectRequest)
+          .keys(keys)
+          .build();
+
+      return backendLoader.batchLoadSingle(batchRequest, requestContext)
+          .collectMap(Tuple2::getT1, objects -> objects.getT2() != BackendLoader.NILL_MAP ? objects.getT2() : null,
+              HashMap::new)
+          .toFuture();
+    };
+
+    return newMappedDataLoader(batchLoader);
   }
 
   private String getLookupName(ExecutionStepInfo executionStepInfo, String fieldName) {

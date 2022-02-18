@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
@@ -25,6 +26,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 public class Query {
 
@@ -81,11 +84,18 @@ public class Query {
         .map(rowMapper);
   }
 
-  @SuppressWarnings("unchecked")
-  public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatch(DatabaseClient databaseClient) {
-    return execute(databaseClient).groupBy(row -> (Map<String, Object>) row.get(GROUP_KEY))
-        .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(),
-            groupedFlux.filter(row -> !row.containsKey(EXISTS_KEY) || getNestedMap(row, EXISTS_KEY).size() > 0)));
+  public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatchMany(DatabaseClient databaseClient) {
+    return execute(databaseClient).groupBy(row -> getNestedMap(row, GROUP_KEY))
+        .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(), groupedFlux.filter(this::rowExists)));
+  }
+
+  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> executeBatchSingle(DatabaseClient databaseClient) {
+    return execute(databaseClient)
+        .map(row -> Tuples.of(getNestedMap(row, GROUP_KEY), rowExists(row) ? row : BackendLoader.NILL_MAP));
+  }
+
+  private boolean rowExists(Map<String, Object> row) {
+    return !row.containsKey(EXISTS_KEY) || getNestedMap(row, EXISTS_KEY).size() > 0;
   }
 
   private List<Param<?>> getParams(SelectQuery<Record> selectQuery) {

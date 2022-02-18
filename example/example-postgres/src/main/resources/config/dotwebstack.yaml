@@ -40,6 +40,17 @@ queries:
     type: Brewery
     keys:
       - identifier
+  breweryBatch:
+    type: Brewery
+    keys:
+      - identifier
+    batch: true
+  breweryBatchList:
+    type: Brewery
+    keys:
+      - identifier
+    list: true
+    batch: true
   breweryCollection:
     type: Brewery
     list: true
