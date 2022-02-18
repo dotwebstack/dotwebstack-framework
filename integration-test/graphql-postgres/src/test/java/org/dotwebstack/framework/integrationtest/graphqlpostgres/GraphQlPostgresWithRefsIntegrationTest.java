@@ -4,7 +4,6 @@ import static org.dotwebstack.framework.integrationtest.graphqlpostgres.Assert.a
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.equalToObject;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -176,26 +175,12 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
     var data = WebTestClientHelper.get(client, query);
 
-    assertThat(data.size(), is(1));
-    assertThat(data.containsKey("beer"), is(true));
-
-    var beer = getNestedObject(data, "beer");
-
-    assertThat(beer.size(), is(4));
-    assertThat(beer.get("name"), is("Beer 1"));
-    assertThat(beer.get("identifier_beer"), is("b0e7cf18-e3ce-439b-a63e-034c8452f59c"));
-    assertThat(beer.containsKey("brewery1"), is(true));
-    assertThat(beer.containsKey("brewery2"), is(true));
-
-    var brewery1 = getNestedObject(getNestedObject(beer, "brewery1"), "node");
-    assertThat(brewery1.size(), is(1));
-    assertThat(brewery1.containsKey("identifier_brewery"), is(true));
-    assertThat(brewery1.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
-
-    var brewery2 = getNestedObject(getNestedObject(beer, "brewery2"), "node");
-    assertThat(brewery2.size(), is(1));
-    assertThat(brewery2.containsKey("name"), is(true));
-    assertThat(brewery2.get("name"), is("Brewery X"));
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data,
+        hasEntry(equalTo("beer"),
+            equalTo(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1", "brewery1",
+                Map.of("node", Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b")), "brewery2",
+                Map.of("node", Map.of("name", "Brewery X"))))));
   }
 
   @Test
@@ -208,45 +193,13 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
     var data = WebTestClientHelper.get(client, query);
 
-    assertThat(data.size(), is(1));
-    assertThat(data.containsKey("brewery"), is(true));
-
-    var brewery = getNestedObject(data, "brewery");
-
-    assertThat(brewery.size(), is(3));
-    assertThat(brewery.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
-    assertThat(brewery.containsKey("fruityBeers"), is(true));
-    assertThat(brewery.containsKey("smokybeers"), is(true));
-
-    var fruityBeers = getNestedObjects(brewery, "fruityBeers");
-    assertThat(fruityBeers.size(), is(2));
-
-    var fruityBeer1 = fruityBeers.get(0);
-    assertThat(fruityBeer1.containsKey("name"), is(true));
-    assertThat(fruityBeer1.get("name"), is("Beer 1"));
-    assertThat(fruityBeer1.get("taste"), is(List.of("MEATY", "FRUITY")));
-
-    var fruityBeer2 = fruityBeers.get(1);
-    assertThat(fruityBeer2.containsKey("name"), is(true));
-    assertThat(fruityBeer2.get("name"), is("Beer 2"));
-    assertThat(fruityBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
-
-    var smokybeers = getNestedObjects(brewery, "smokybeers");
-    assertThat(smokybeers.size(), is(1));
-
-    var smokyBeer1 = smokybeers.get(0);
-    assertThat(smokyBeer1.containsKey("name"), is(true));
-    assertThat(smokyBeer1.get("name"), is("Beer 2"));
-    assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Map<String, Object>> getNestedObjects(Map<String, Object> data, String name) {
-    return (List<Map<String, Object>>) data.get(name);
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> getNestedObject(Map<String, Object> data, String name) {
-    return (Map<String, Object>) data.get(name);
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data,
+        hasEntry(equalTo("brewery"),
+            equalTo(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "fruityBeers",
+                List.of(Map.of("name", "Beer 1", "taste", List.of("MEATY", "FRUITY")),
+                    Map.of("name", "Beer 2", "taste", List.of("MEATY", "SMOKY", "WATERY", "FRUITY"))),
+                "smokybeers",
+                List.of(Map.of("name", "Beer 2", "taste", List.of("MEATY", "SMOKY", "WATERY", "FRUITY")))))));
   }
 }

@@ -359,7 +359,7 @@ class SelectBuilderTest {
             .build()))
         .objectFields(Map.of(FieldRequest.builder()
             .name("ingredientRelation")
-            .resultKey("ingredientRelation")
+            .resultKey("ingredientRelation.alias")
             .build(),
             ObjectRequest.builder()
                 .objectListFields(objectListFields)
@@ -377,6 +377,12 @@ class SelectBuilderTest {
         + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
         + "    select array_agg(ingredient_identifier) as \"x4\"\n" + "    from \"beer_ingredient\" as \"x3\"\n"
         + "    where \"x3\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n" + "  ) as \"x5\"\n" + "    on true"));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "Brewery 1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("Brewery 1")));
+    assertThat(fieldMapperResult, hasKey("ingredientRelation.alias"));
   }
 
   @Test
