@@ -1,10 +1,11 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_LIST_QUERY;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_SINGLE_QUERY;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArgumentsWithValue;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
@@ -13,14 +14,18 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLTypeUtil;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
@@ -77,22 +82,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .getDefinition()
         .getAdditionalData();
 
-    // batch query
-    // TODO: bepalen of iets een batch query is kan netter,
-    if (additionalData.containsKey(IS_BATCH_SINGLE_QUERY) || additionalData.containsKey(IS_BATCH_LIST_QUERY)) {
-      DataLoader<Map<String, Object>, ?> batchLoader;
-
-      if (additionalData.containsKey(IS_BATCH_SINGLE_QUERY)) {
-        batchLoader = createSingleBatchLoader(environment, requestContext);
-      } else {
-        batchLoader = createManyBatchLoader(environment, requestContext, null);
-      }
-
-      getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments())
-          .forEach(argument -> castToList(environment.getArguments()
-              .get(argument.getName())).forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue))));
-
-      return batchLoader.dispatchAndJoin();
+    if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
+      return executeBatchQueryWithKeys(environment, requestContext);
     }
 
     if (isSubscription || isListType(environment.getFieldType())) {
@@ -126,6 +117,41 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
+  }
+
+  private List<?> executeBatchQueryWithKeys(DataFetchingEnvironment environment, RequestContext requestContext) {
+    DataLoader<Map<String, Object>, ?> batchLoader;
+
+    var outputType = Optional.of(environment.getFieldDefinition()
+        .getType())
+        .filter(TypeHelper::isListType)
+        .map(GraphQLTypeUtil::unwrapNonNull)
+        .map(GraphQLList.class::cast)
+        .orElseThrow(() -> illegalStateException("Batch output type needs to be a list!"));
+
+    if (isListType(unwrapNonNull(outputType.getWrappedType()))) {
+      batchLoader = createManyBatchLoader(environment, requestContext, null);
+    } else {
+      batchLoader = createSingleBatchLoader(environment, requestContext);
+    }
+
+    getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments()).forEach(argument -> {
+      var keys = castToList(environment.getArguments()
+          .get(argument.getName()));
+
+      if (keys.isEmpty()) {
+        throw unsupportedOperationException("At least one batch key must be provided");
+      }
+
+      if (keys.size() > 100) {
+        throw unsupportedOperationException("Got {} batch keys but a maximum of 100 batch keys is allowed!",
+            keys.size());
+      }
+
+      keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));
+    });
+
+    return batchLoader.dispatchAndJoin();
   }
 
   private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,

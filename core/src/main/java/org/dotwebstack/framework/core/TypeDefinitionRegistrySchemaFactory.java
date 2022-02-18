@@ -17,8 +17,7 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_LIST_QUERY;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_SINGLE_QUERY;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
@@ -438,10 +437,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private Map<String, String> createQueryAdditionalData(Query query) {
     if (query.isBatch()) {
-      if (query.isList()) {
-        return Map.of(IS_BATCH_LIST_QUERY, Boolean.TRUE.toString());
-      }
-      return Map.of(IS_BATCH_SINGLE_QUERY, Boolean.TRUE.toString());
+      return Map.of(IS_BATCH_KEY_QUERY, Boolean.TRUE.toString());
     }
 
     return Map.of();

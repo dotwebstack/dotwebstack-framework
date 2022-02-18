@@ -10,8 +10,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_LIST_QUERY;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_SINGLE_QUERY;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
@@ -285,8 +284,7 @@ public class BackendRequestFactory {
         .getAdditionalData();
 
     // do not construct key criteria for batch queries
-    // TODO: Herkennen van batch query kan netter
-    if (additionalData.containsKey(IS_BATCH_LIST_QUERY) || additionalData.containsKey(IS_BATCH_SINGLE_QUERY)) {
+    if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
       return List.of();
     }
 

@@ -28,8 +28,15 @@ public class QueryValidator implements SchemaValidator {
     var query = schema.getQueries()
         .get(queryName);
 
-    if (query.isBatch() && query.isPageable()) {
-      throw invalidConfigurationException("Paging and batching is not supported for query '{}'!", queryName);
+    if (query.isBatch()) {
+      if (query.isPageable()) {
+        throw invalidConfigurationException("Paging and batching is not supported for query '{}'!", queryName);
+      }
+
+      if (query.getKeys()
+          .isEmpty()) {
+        throw invalidConfigurationException("Batching for query '{}' is not possible without keys!", queryName);
+      }
     }
 
     query.getKeys()

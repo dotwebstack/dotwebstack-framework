@@ -50,7 +50,6 @@ public class PostgresBackendLoader implements BackendLoader {
     return query.executeBatchMany(databaseClient);
   }
 
-
   @Override
   public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> batchLoadSingle(BatchRequest batchRequest,
       RequestContext requestContext) {
