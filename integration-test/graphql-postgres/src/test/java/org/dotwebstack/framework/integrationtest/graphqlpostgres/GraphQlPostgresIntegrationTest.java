@@ -15,6 +15,7 @@ import static org.hamcrest.core.IsIterableContaining.hasItems;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1555,26 +1556,12 @@ class GraphQlPostgresIntegrationTest {
 
     var data = WebTestClientHelper.get(client, query);
 
-    assertThat(data.size(), is(1));
-    assertThat(data.containsKey(BEER), is(true));
-
-    var beer = getNestedObject(data, BEER);
-
-    assertThat(beer.size(), is(4));
-    assertThat(beer.get(NAME), is("Beer 1"));
-    assertThat(beer.get("identifier_beer"), is("b0e7cf18-e3ce-439b-a63e-034c8452f59c"));
-    assertThat(beer.containsKey("brewery1"), is(true));
-    assertThat(beer.containsKey("brewery2"), is(true));
-
-    var brewery1 = getNestedObject(beer, "brewery1");
-    assertThat(brewery1.size(), is(1));
-    assertThat(brewery1.containsKey("identifier_brewery"), is(true));
-    assertThat(brewery1.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
-
-    var brewery2 = getNestedObject(beer, "brewery2");
-    assertThat(brewery2.size(), is(1));
-    assertThat(brewery2.containsKey(NAME), is(true));
-    assertThat(brewery2.get(NAME), is("Brewery X"));
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data,
+        hasEntry(equalTo(BEER),
+            equalTo(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1", "brewery1",
+                Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b"), "brewery2",
+                Map.of("name", "Brewery X")))));
   }
 
   @Test
@@ -1587,36 +1574,50 @@ class GraphQlPostgresIntegrationTest {
 
     var data = WebTestClientHelper.get(client, query);
 
-    assertThat(data.size(), is(1));
-    assertThat(data.containsKey(BREWERY), is(true));
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data,
+        hasEntry(equalTo(BREWERY),
+            equalTo(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "fruityBeers",
+                List.of(Map.of("name", "Beer 1", "taste", List.of("MEATY", "FRUITY")),
+                    Map.of("name", "Beer 2", "taste", List.of("MEATY", "SMOKY", "WATERY", "FRUITY"))),
+                "smokybeers",
+                List.of(Map.of("name", "Beer 2", "taste", List.of("MEATY", "SMOKY", "WATERY", "FRUITY")))))));
+  }
 
-    var brewery = getNestedObject(data, BREWERY);
+  @Test
+  void getRequest_returnsBeerWithIngredients_withAliasesForJoinTable() {
+    var query = "query beerIngredients{\n" + "    beer(identifier_beer: \"766883b5-3482-41cf-a66d-a81e79a4f0ed\"){\n"
+        + "      identifier_beer\n" + "      ingName: ingredients{\n" + "          name\n" + "      }\n" + "    }\n"
+        + "  }";
 
-    assertThat(brewery.size(), is(3));
-    assertThat(brewery.get("identifier_brewery"), is("d3654375-95fa-46b4-8529-08b0f777bd6b"));
-    assertThat(brewery.containsKey("fruityBeers"), is(true));
-    assertThat(brewery.containsKey("smokybeers"), is(true));
+    var data = WebTestClientHelper.get(client, query);
 
-    var fruityBeers = getNestedObjects(brewery, "fruityBeers");
-    assertThat(fruityBeers.size(), is(2));
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data, hasEntry(equalTo(BEER), equalTo(Map.of("identifier_beer",
+        "766883b5-3482-41cf-a66d-a81e79a4f0ed", "ingName",
+        List.of(Map.of("name", "Water"), Map.of("name", "Hop"), Map.of("name", "Barley"), Map.of("name", "Yeast"))))));
+  }
 
-    var fruityBeer1 = fruityBeers.get(0);
-    assertThat(fruityBeer1.containsKey(NAME), is(true));
-    assertThat(fruityBeer1.get(NAME), is("Beer 1"));
-    assertThat(fruityBeer1.get("taste"), is(List.of("MEATY", "FRUITY")));
+  @Test
+  void getRequest_returnsBeersWithIngredients_withAliasesForJoinTableAndSortableByOnNestedObject() {
+    var query = "query beerIngredients{\n" + "    breweries(sort: BREWERY_AGE){\n" + "      identifier_brewery\n"
+        + "      name\n" + "      his: history{\n" + "          leeftijd: age\n" + "      }\n" + "    }\n" + "  }";
 
-    var fruityBeer2 = fruityBeers.get(1);
-    assertThat(fruityBeer2.containsKey(NAME), is(true));
-    assertThat(fruityBeer2.get(NAME), is("Beer 2"));
-    assertThat(fruityBeer2.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
+    var data = WebTestClientHelper.get(client, query);
 
-    var smokybeers = getNestedObjects(brewery, "smokybeers");
-    assertThat(smokybeers.size(), is(1));
-
-    var smokyBeer1 = smokybeers.get(0);
-    assertThat(smokyBeer1.containsKey(NAME), is(true));
-    assertThat(smokyBeer1.get(NAME), is("Beer 2"));
-    assertThat(smokyBeer1.get("taste"), is(List.of("MEATY", "SMOKY", "WATERY", "FRUITY")));
+    assertThat(data, aMapWithSize(1));
+    Assert.assertThat(data, hasEntry(equalTo(BREWERIES), hasItems(equalTo(new HashMap<String, Object>() {
+      {
+        put("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c31959");
+        put("name", "Brewery Z");
+        put("his", null);
+      }
+    }), equalTo(Map.of("identifier_brewery", "d3654375-95fa-46b4-8529-08b0f777bd6b", "name", "Brewery X", "his",
+        Map.of("leeftijd", 1988))),
+        equalTo(Map.of("identifier_brewery", "6e8f89da-9676-4cb9-801b-aeb6e2a59ac9", "name", "Brewery Y", "his",
+            Map.of("leeftijd", 1900))),
+        equalTo(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S", "his",
+            Map.of("leeftijd", 1600))))));
   }
 
   @SuppressWarnings("unchecked")

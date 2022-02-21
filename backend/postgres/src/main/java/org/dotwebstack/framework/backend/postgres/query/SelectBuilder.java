@@ -440,7 +440,7 @@ class SelectBuilder {
     }
 
     var objectMapper = new ObjectMapper();
-    parentMapper.register(objectField.getName(), objectMapper);
+    parentMapper.register(resultKey, objectMapper);
 
     return objectRequest.getObjectListFields()
         .keySet()

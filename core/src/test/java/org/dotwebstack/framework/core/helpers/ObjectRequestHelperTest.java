@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,10 +124,10 @@ class ObjectRequestHelperTest {
 
     assertThat(originalCollectionRequest.getObjectRequest()
         .getObjectFields()
-        .size(), is(0));
+        .size(), is(1));
     assertThat(collectionRequest.getObjectRequest()
         .getObjectFields()
-        .size(), is(1));
+        .size(), is(2));
 
     var newObjectRequest = collectionRequest.getObjectRequest()
         .getObjectFields()
@@ -227,7 +228,7 @@ class ObjectRequestHelperTest {
     addKeyFields(objectRequest);
 
     assertThat(originalObjectRequest.getObjectFields()
-        .size(), is(0));
+        .size(), is(1));
     assertThat(originalObjectRequest.getObjectFields()
         .entrySet()
         .stream()
@@ -236,7 +237,7 @@ class ObjectRequestHelperTest {
             .equals("brewery"))
         .findFirst(), is(Optional.empty()));
     assertThat(objectRequest.getObjectFields()
-        .size(), is(1));
+        .size(), is(2));
 
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
@@ -288,7 +289,7 @@ class ObjectRequestHelperTest {
     addKeyFields(objectRequest);
 
     assertThat(originalObjectRequest.getObjectFields()
-        .size(), is(0));
+        .size(), is(1));
     assertThat(originalObjectRequest.getObjectFields()
         .entrySet()
         .stream()
@@ -297,7 +298,7 @@ class ObjectRequestHelperTest {
             .equals("history"))
         .findFirst(), is(Optional.empty()));
     assertThat(objectRequest.getObjectFields()
-        .size(), is(1));
+        .size(), is(2));
 
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
@@ -332,6 +333,8 @@ class ObjectRequestHelperTest {
   private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias) {
     var objectType = mock(ObjectType.class);
 
+    Map<FieldRequest, ObjectRequest> objectFieldMap = getNestedObjectField();
+
     return ObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
@@ -343,7 +346,27 @@ class ObjectRequestHelperTest {
             FieldRequest.builder()
                 .name("soldPerYear")
                 .build())))
+        .objectFields(objectFieldMap)
         .keyCriterias(keyCriterias)
         .build();
+  }
+
+  private Map<FieldRequest, ObjectRequest> getNestedObjectField() {
+    var nestedObjectType = mock(ObjectType.class);
+
+    var nestedObject = ObjectRequest.builder()
+        .objectType(nestedObjectType)
+        .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
+            .name("nestedField_id")
+            .resultKey("nestedField_id")
+            .build())))
+        .build();
+
+    Map<FieldRequest, ObjectRequest> objectFieldMap = new HashMap<>();
+    objectFieldMap.put(FieldRequest.builder()
+        .name("nestedField")
+        .resultKey("nestedField")
+        .build(), nestedObject);
+    return objectFieldMap;
   }
 }

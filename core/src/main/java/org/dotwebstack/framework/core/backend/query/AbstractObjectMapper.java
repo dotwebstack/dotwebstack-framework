@@ -41,6 +41,10 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
     for (var field : fields) {
       var nestedFieldMapper = finalObjectFieldMapper.getFieldMapper(field.getName());
 
+      if (nestedFieldMapper == null) {
+        nestedFieldMapper = finalObjectFieldMapper.getFieldMapper(String.format("%s.%s", field.getName(), "$system"));
+      }
+
       if (nestedFieldMapper instanceof ObjectFieldMapper) {
         finalObjectFieldMapper = (ObjectFieldMapper<T>) nestedFieldMapper;
       } else {
