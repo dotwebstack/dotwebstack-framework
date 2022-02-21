@@ -57,6 +57,41 @@ class ObjectRequestHelperTest {
   }
 
   @Test
+  void addSortFields_doesNotModifyCollectionRequest_forExistingObjectField() {
+    var nestedObjectField = new TestObjectField();
+    nestedObjectField.setName("nestedField");
+
+    var idObjectField = new TestObjectField();
+    idObjectField.setName("nestedField_id");
+
+    var nestedObjectType = new TestObjectType();
+    nestedObjectType.setFields(Map.of("nestedField_id", idObjectField));
+    nestedObjectType.setTable("NestedTable");
+    nestedObjectType.setName("Nested");
+    idObjectField.setObjectType(nestedObjectType);
+
+    var breweryIdSortCriteria = getSortCriteria(List.of(nestedObjectField, idObjectField), DESC);
+
+    collectionRequest = CollectionRequest.builder()
+        .objectRequest(getObjectRequest(null, getObjectFields()))
+        .sortCriterias(List.of(breweryIdSortCriteria))
+        .build();
+    final CollectionRequest originalCollectionRequest = CollectionRequest.builder()
+        .objectRequest(getObjectRequest(null, getObjectFields()))
+        .sortCriterias(List.of(breweryIdSortCriteria))
+        .build();
+
+    ObjectRequestHelper.addSortFields(collectionRequest);
+
+    assertThat(originalCollectionRequest.getObjectRequest()
+        .getObjectFields()
+        .size(),
+        is(collectionRequest.getObjectRequest()
+            .getObjectFields()
+            .size()));
+  }
+
+  @Test
   void addSortFields_addsScalarFieldToObjectRequest_forNonExistingScalarField() {
     var abvObjectField = new TestObjectField();
     abvObjectField.setName("abv");
@@ -124,10 +159,10 @@ class ObjectRequestHelperTest {
 
     assertThat(originalCollectionRequest.getObjectRequest()
         .getObjectFields()
-        .size(), is(1));
+        .size(), is(0));
     assertThat(collectionRequest.getObjectRequest()
         .getObjectFields()
-        .size(), is(2));
+        .size(), is(1));
 
     var newObjectRequest = collectionRequest.getObjectRequest()
         .getObjectFields()
@@ -136,7 +171,7 @@ class ObjectRequestHelperTest {
         .findFirst()
         .orElseThrow();
     assertThat(newObjectRequest.getKey()
-        .getName(), is("brewery"));
+        .getResultKey(), is("brewery.$system"));
     assertThat(newObjectRequest.getValue()
         .getScalarFields()
         .stream()
@@ -158,6 +193,32 @@ class ObjectRequestHelperTest {
 
     var objectRequest = getObjectRequest(keyCriterias);
     final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias);
+
+    addKeyFields(objectRequest);
+
+    assertThat(objectRequest.getScalarFields()
+        .size(),
+        is(originalObjectRequest.getScalarFields()
+            .size()));
+  }
+
+  @Test
+  void addKeyFields_doesNotModifyCollectionRequest_forExistingObjectField() {
+    List<KeyCriteria> keyCriterias = new ArrayList<>();
+
+    var nestedObjectField = new TestObjectField();
+    nestedObjectField.setName("nestedField");
+
+    var idObjectField = new TestObjectField();
+    idObjectField.setName("nestedField_id");
+
+    keyCriterias.add(KeyCriteria.builder()
+        .fieldPath(List.of(nestedObjectField, idObjectField))
+        .value("id-1")
+        .build());
+
+    var objectRequest = getObjectRequest(keyCriterias, getObjectFields());
+    final ObjectRequest originalObjectRequest = getObjectRequest(keyCriterias, getObjectFields());
 
     addKeyFields(objectRequest);
 
@@ -228,7 +289,7 @@ class ObjectRequestHelperTest {
     addKeyFields(objectRequest);
 
     assertThat(originalObjectRequest.getObjectFields()
-        .size(), is(1));
+        .size(), is(0));
     assertThat(originalObjectRequest.getObjectFields()
         .entrySet()
         .stream()
@@ -237,7 +298,7 @@ class ObjectRequestHelperTest {
             .equals("brewery"))
         .findFirst(), is(Optional.empty()));
     assertThat(objectRequest.getObjectFields()
-        .size(), is(2));
+        .size(), is(1));
 
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
@@ -289,7 +350,7 @@ class ObjectRequestHelperTest {
     addKeyFields(objectRequest);
 
     assertThat(originalObjectRequest.getObjectFields()
-        .size(), is(1));
+        .size(), is(0));
     assertThat(originalObjectRequest.getObjectFields()
         .entrySet()
         .stream()
@@ -298,7 +359,7 @@ class ObjectRequestHelperTest {
             .equals("history"))
         .findFirst(), is(Optional.empty()));
     assertThat(objectRequest.getObjectFields()
-        .size(), is(2));
+        .size(), is(1));
 
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
@@ -331,9 +392,12 @@ class ObjectRequestHelperTest {
   }
 
   private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias) {
-    var objectType = mock(ObjectType.class);
+    return getObjectRequest(keyCriterias, new HashMap<>());
+  }
 
-    Map<FieldRequest, ObjectRequest> objectFieldMap = getNestedObjectField();
+  private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias,
+      Map<FieldRequest, ObjectRequest> objectFields) {
+    var objectType = mock(ObjectType.class);
 
     return ObjectRequest.builder()
         .objectType(objectType)
@@ -346,15 +410,23 @@ class ObjectRequestHelperTest {
             FieldRequest.builder()
                 .name("soldPerYear")
                 .build())))
-        .objectFields(objectFieldMap)
+        .objectFields(objectFields)
         .keyCriterias(keyCriterias)
         .build();
   }
 
-  private Map<FieldRequest, ObjectRequest> getNestedObjectField() {
-    var nestedObjectType = mock(ObjectType.class);
+  private Map<FieldRequest, ObjectRequest> getObjectFields() {
+    var idObjectField = new TestObjectField();
+    idObjectField.setName("nestedField_id");
 
-    var nestedObject = ObjectRequest.builder()
+    var nestedObjectType = new TestObjectType();
+    nestedObjectType.setFields(Map.of("nestedField_id", idObjectField));
+    nestedObjectType.setTable("NestedTable");
+    nestedObjectType.setName("Nested");
+
+    idObjectField.setObjectType(nestedObjectType);
+
+    var nestedObjectRequest = ObjectRequest.builder()
         .objectType(nestedObjectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("nestedField_id")
@@ -366,7 +438,7 @@ class ObjectRequestHelperTest {
     objectFieldMap.put(FieldRequest.builder()
         .name("nestedField")
         .resultKey("nestedField")
-        .build(), nestedObject);
+        .build(), nestedObjectRequest);
     return objectFieldMap;
   }
 }

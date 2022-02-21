@@ -62,11 +62,13 @@ public class ObjectRequestHelper {
       ObjectField objectField, ObjectField nextObjectField) {
     return objectFields.entrySet()
         .stream()
-        .filter(field ->
-        // Only reuse existing ObjectRequest when aliases are not used.
-        field.getKey()
-            .getResultKey()
-            .equals(objectField.getName()))
+        .filter(field -> {
+          // Only reuse existing ObjectRequest when aliases are not used.
+          var resultKey = field.getKey()
+              .getResultKey();
+
+          return resultKey.equals(objectField.getName()) || resultKey.equals(objectField.getName() + ".$system");
+        })
         .map(Map.Entry::getValue)
         .findFirst()
         .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
