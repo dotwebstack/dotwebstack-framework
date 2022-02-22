@@ -251,8 +251,6 @@ class BackendDataFetcherTest {
         .source(source)
         .build();
 
-    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("fff", "fff");
-
     when(requestFactory.createRequestContext(environment)).thenReturn(requestContext);
     when(environment.getSource()).thenReturn(source);
     lenient().when(environment.getField())
@@ -272,7 +270,9 @@ class BackendDataFetcherTest {
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(environment.getSelectionSet()).thenReturn(selectionSet);
 
-    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSet)))
+    var executionStepInfo = mockExecutionStepInfoWithResultPath("fff", "fff");
+
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfo), eq(selectionSet)))
         .thenReturn(collectionRequest);
 
     var result = backendDataFetcher.get(environment);
@@ -286,8 +286,6 @@ class BackendDataFetcherTest {
 
   @Test
   void get_returnsFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
-    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("fff", "fff");
-
     var requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
@@ -311,7 +309,10 @@ class BackendDataFetcherTest {
 
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(environment.getSelectionSet()).thenReturn(selectionSet);
-    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSet)))
+
+    var executionStepInfo = mockExecutionStepInfoWithResultPath("fff", "fff");
+
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfo), eq(selectionSet)))
         .thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
@@ -332,8 +333,6 @@ class BackendDataFetcherTest {
 
   @Test
   void get_returnsFluxMap_ifSourceNull_SubscriptionTrue() {
-    var executionStepInfoMock = mockExecutionStepInfoWithResultPath("bbb", "bbb");
-
     var requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
@@ -352,7 +351,10 @@ class BackendDataFetcherTest {
 
     var selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(environment.getSelectionSet()).thenReturn(selectionSet);
-    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfoMock), eq(selectionSet)))
+
+    var executionStepInfo = mockExecutionStepInfoWithResultPath("bbb", "bbb");
+
+    lenient().when(requestFactory.createCollectionRequest(eq(executionStepInfo), eq(selectionSet)))
         .thenReturn(collectionRequest);
 
     Map<String, Object> data = new HashMap<>();
@@ -374,8 +376,6 @@ class BackendDataFetcherTest {
 
   @Test
   void get_returnsMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
-    var executionStepInfoMock = mockExecutionStepInfo("fff", "fff");
-
     var requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(null)
@@ -391,7 +391,9 @@ class BackendDataFetcherTest {
         .build();
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(environment.getSelectionSet()).thenReturn(selectionSet);
-    lenient().when(requestFactory.createObjectRequest(eq(executionStepInfoMock), eq(selectionSet)))
+
+    var executionStepInfo = mockExecutionStepInfo("fff", "fff");
+    lenient().when(requestFactory.createObjectRequest(eq(executionStepInfo), eq(selectionSet)))
         .thenReturn(objectRequest);
 
     Map<String, Object> data = new HashMap<>();
