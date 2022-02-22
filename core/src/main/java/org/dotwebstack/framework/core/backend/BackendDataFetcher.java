@@ -4,8 +4,8 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArgumentsWithValue;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
@@ -82,11 +82,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .getDefinition()
         .getAdditionalData();
 
-    if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
-      return executeBatchQueryWithKeys(environment, requestContext);
-    }
-
     if (isSubscription || isListType(environment.getFieldType())) {
+      if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
+        return executeBatchQueryWithKeys(environment, requestContext);
+      }
+
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
       var joinKey = JOIN_KEY_PREFIX.concat(fieldName);
@@ -140,12 +140,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .get(argument.getName()));
 
       if (keys.isEmpty()) {
-        throw unsupportedOperationException("At least one batch key must be provided");
+        throw illegalArgumentException("At least one batch key must be provided");
       }
 
       if (keys.size() > 100) {
-        throw unsupportedOperationException("Got {} batch keys but a maximum of 100 batch keys is allowed!",
-            keys.size());
+        throw illegalArgumentException("Got {} batch keys but a maximum of 100 batch keys is allowed!", keys.size());
       }
 
       keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));
