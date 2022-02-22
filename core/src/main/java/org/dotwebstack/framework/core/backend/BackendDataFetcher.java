@@ -16,11 +16,13 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLTypeUtil;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
@@ -140,11 +142,19 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .get(argument.getName()));
 
       if (keys.isEmpty()) {
-        throw illegalArgumentException("At least one batch key must be provided");
+        throw illegalArgumentException("At least one key must be provided");
       }
 
       if (keys.size() > 100) {
-        throw illegalArgumentException("Got {} batch keys but a maximum of 100 batch keys is allowed!", keys.size());
+        throw illegalArgumentException("Got {} keys but a maximum of 100 keys is allowed!", keys.size());
+      }
+
+      var duplicateKeys = keys.stream()
+          .filter(key -> Collections.frequency(keys, key) > 1)
+          .distinct()
+          .collect(Collectors.toList());
+      if (duplicateKeys.size() > 0) {
+        throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
       }
 
       keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));

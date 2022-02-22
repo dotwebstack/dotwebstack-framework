@@ -107,8 +107,9 @@ class BatchQueryBuilderTest {
     assertThat(result, notNullValue());
     assertThat(result.toString(),
         equalTo("select *\n" + "from (values\n" + "  ('id-1'),\n" + "  ('id-2')\n" + ") as \"x2\" (\"x1\")\n"
-            + "  left outer join lateral (\n" + "    select *\n" + "    from beers\n"
-            + "    where \"identifier\" = \"x2\".\"x1\"\n" + "  ) as \"x3\"\n" + "    on true"));
+            + "  left outer join lateral (\n" + "    select\n" + "      *,\n"
+            + "      \"beers\".\"identifier\" as \"x3\"\n" + "    from beers\n"
+            + "    where \"identifier\" = \"x2\".\"x1\"\n" + "  ) as \"x4\"\n" + "    on true"));
   }
 
   @Test

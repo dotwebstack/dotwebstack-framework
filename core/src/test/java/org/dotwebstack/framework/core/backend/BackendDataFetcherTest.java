@@ -128,7 +128,7 @@ class BackendDataFetcherTest {
 
     var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
 
-    assertThat(thrown.getMessage(), equalTo("At least one batch key must be provided"));
+    assertThat(thrown.getMessage(), equalTo("At least one key must be provided"));
   }
 
   @Test
@@ -158,7 +158,37 @@ class BackendDataFetcherTest {
 
     var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
 
-    assertThat(thrown.getMessage(), equalTo("Got 120 batch keys but a maximum of 100 batch keys is allowed!"));
+    assertThat(thrown.getMessage(), equalTo("Got 120 keys but a maximum of 100 keys is allowed!"));
+  }
+
+  @Test
+  void get_throwsException_forBatchQueryKeyNotUnique() {
+    mockExecutionStepInfo("itemsBatchQuery", "itemsBatchQuery");
+    mockOperationDefinition(OperationDefinition.Operation.QUERY);
+
+    var objectRequest = ObjectRequest.builder()
+        .build();
+
+    when(requestFactory.createObjectRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(objectRequest);
+
+    var type = GraphQLList.list(newObject().name("Item")
+        .build());
+
+    var fieldDefinition = createFieldDefinitionForBatchKeyQuery(type);
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(environment.getFieldType()).thenReturn(fieldDefinition.getType());
+
+    var keys = new ArrayList<>();
+    keys.add("id-1");
+    keys.add("id-2");
+    keys.add("id-1");
+
+    when(environment.getArguments()).thenReturn(Map.of("identifier", keys));
+
+    var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
+
+    assertThat(thrown.getMessage(), equalTo("The following keys are duplicate: [id-1]"));
   }
 
   @Test

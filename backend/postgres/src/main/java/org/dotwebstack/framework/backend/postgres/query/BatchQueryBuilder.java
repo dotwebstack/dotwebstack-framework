@@ -122,7 +122,7 @@ class BatchQueryBuilder {
             .equal(QueryHelper.column(keyTable, entry.getValue())))
         .forEach(dataQuery::addConditions);
 
-    register(EXISTS_KEY, columnAliases);
+    addExists(dataQuery, columnAliases.keySet(), table);
 
     return batchQuery(keyTable);
   }
@@ -146,7 +146,7 @@ class BatchQueryBuilder {
             .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
         .forEach(dataQuery::addConditions);
 
-    addExists(dataQuery, joinColumns, joinConditionTable);
+    addExistsJoinColumns(dataQuery, joinColumns, joinConditionTable);
 
     return batchQuery(keyTable);
   }
@@ -198,9 +198,16 @@ class BatchQueryBuilder {
             .toArray(String[]::new));
   }
 
-  private void addExists(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
-    var columnAliases = joinColumns.stream()
+  private void addExistsJoinColumns(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
+    var columnsNames = joinColumns.stream()
         .map(JoinColumn::getName)
+        .collect(Collectors.toList());
+
+    addExists(dataQuery, columnsNames, table);
+  }
+
+  private void addExists(SelectQuery<Record> dataQuery, Collection<String> columnNames, Table<Record> table) {
+    var columnAliases = columnNames.stream()
         .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
 
     columnAliases.entrySet()

@@ -32,10 +32,6 @@ public class JoinConfiguration {
   private PostgresObjectType targetType;
 
   public static JoinConfiguration toJoinConfiguration(PostgresObjectField objectField) {
-    if (objectField == null) {
-      return null;
-    }
-
     return JoinConfiguration.builder()
         .objectField(objectField)
         .targetType((PostgresObjectType) objectField.getTargetType())
@@ -48,11 +44,6 @@ public class JoinConfiguration {
 
   public static JoinConfiguration toJoinConfiguration(PostgresObjectField objectField,
       PostgresJoinCondition joinCondition) {
-
-    if (objectField == null) {
-      return null;
-    }
-
     JoinTable joinTable;
     if (joinCondition != null && joinCondition.getJoinTable() != null) {
       joinTable = joinCondition.getJoinTable();
