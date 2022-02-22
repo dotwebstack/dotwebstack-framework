@@ -124,6 +124,7 @@ class SelectBuilderTest {
         .objectType(nestedObjectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("age")
+            .resultKey("age")
             .build())))
         .build();
 
@@ -131,12 +132,15 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
+                .resultKey("soldPerYear")
                 .build())))
         .objectFields(Map.of(FieldRequest.builder()
             .name("history")
+            .resultKey("history")
             .build(), nestedObject))
         .keyCriterias(List.of(KeyCriteria.builder()
             .fieldPath(List.of(identifierObjectField))
@@ -158,9 +162,11 @@ class SelectBuilderTest {
         .contextCriteria(createContextCriteria())
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
+                .resultKey("soldPerYear")
                 .build())))
         .keyCriterias(List.of(KeyCriteria.builder()
             .fieldPath(List.of(identifierObjectField))
@@ -185,9 +191,11 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
+                .resultKey("soldPerYear")
                 .build()))
         .build();
 
@@ -220,6 +228,7 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build(),
             FieldRequest.builder()
                 .name("soldPerYear")
@@ -276,14 +285,17 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectFields(Map.of(FieldRequest.builder()
             .name("postalAddress")
+            .resultKey("postalAddress")
             .build(),
             ObjectRequest.builder()
                 .objectType(addressObjectType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("street")
+                    .resultKey("street")
                     .build()))
                 .build()))
         .build();
@@ -327,12 +339,14 @@ class SelectBuilderTest {
     Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
     objectListFields.put(FieldRequest.builder()
         .name("refs")
+        .resultKey("refs")
         .build(),
         CollectionRequest.builder()
             .objectRequest(ObjectRequest.builder()
                 .objectType(ingredientRefType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("identifier")
+                    .resultKey("identifier")
                     .build()))
                 .build())
             .build());
@@ -341,9 +355,11 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectFields(Map.of(FieldRequest.builder()
             .name("ingredientRelation")
+            .resultKey("ingredientRelation.alias")
             .build(),
             ObjectRequest.builder()
                 .objectListFields(objectListFields)
@@ -361,6 +377,12 @@ class SelectBuilderTest {
         + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
         + "    select array_agg(ingredient_identifier) as \"x4\"\n" + "    from \"beer_ingredient\" as \"x3\"\n"
         + "    where \"x3\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n" + "  ) as \"x5\"\n" + "    on true"));
+
+    var fieldMapperResult = fieldMapper.apply(Map.of("x2", "Brewery 1"));
+
+    assertThat(fieldMapperResult, notNullValue());
+    assertThat(fieldMapperResult, hasEntry(equalTo("name"), equalTo("Brewery 1")));
+    assertThat(fieldMapperResult, hasKey("ingredientRelation.alias"));
   }
 
   @Test
@@ -387,12 +409,14 @@ class SelectBuilderTest {
     Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();
     objectListFields.put(FieldRequest.builder()
         .name("nodes")
+        .resultKey("nodes")
         .build(),
         CollectionRequest.builder()
             .objectRequest(ObjectRequest.builder()
                 .objectType(ingredientObjectType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("name")
+                    .resultKey("name")
                     .build()))
                 .build())
             .build());
@@ -401,9 +425,11 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectFields(Map.of(FieldRequest.builder()
             .name("ingredientRelation")
+            .resultKey("ingredientRelation")
             .build(),
             ObjectRequest.builder()
                 .objectListFields(objectListFields)
@@ -469,19 +495,23 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .objectFields(Map.of(FieldRequest.builder()
             .name("breweryRelation")
+            .resultKey("breweryRelation")
             .build(),
             ObjectRequest.builder()
                 .objectType(breweryObjectRelationType)
                 .objectFields(Map.of(FieldRequest.builder()
                     .name("node")
+                    .resultKey("node")
                     .build(),
                     ObjectRequest.builder()
                         .objectType(breweryObjectType)
                         .scalarFields(List.of(FieldRequest.builder()
                             .name("name")
+                            .resultKey("name")
                             .build()))
                         .build()))
                 .build()))
@@ -689,6 +719,7 @@ class SelectBuilderTest {
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
+            .resultKey("name")
             .build()))
         .build();
 

@@ -62,8 +62,10 @@ public class ObjectRequestHelper {
       ObjectField objectField, ObjectField nextObjectField) {
     return objectFields.entrySet()
         .stream()
-        .filter(field -> field.getKey()
-            .getName()
+        .filter(field ->
+        // Only reuse existing ObjectRequest when aliases are not used.
+        field.getKey()
+            .getResultKey()
             .equals(objectField.getName()))
         .map(Map.Entry::getValue)
         .findFirst()
@@ -77,7 +79,7 @@ public class ObjectRequestHelper {
         .build();
     FieldRequest field = FieldRequest.builder()
         .name(objectField.getName())
-        .resultKey(objectField.getName())
+        .resultKey(createSystemAlias(objectField))
         .build();
     objectFields.put(field, objectRequest);
     return objectRequest;
@@ -97,5 +99,9 @@ public class ObjectRequestHelper {
       objectRequest.getScalarFields()
           .add(field);
     }
+  }
+
+  private static String createSystemAlias(ObjectField objectField) {
+    return String.format("%s.%s", objectField.getName(), "$system");
   }
 }
