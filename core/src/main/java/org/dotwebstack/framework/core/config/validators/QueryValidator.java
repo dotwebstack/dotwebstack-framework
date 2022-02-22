@@ -30,12 +30,19 @@ public class QueryValidator implements SchemaValidator {
 
     if (query.isBatch()) {
       if (query.isPageable()) {
-        throw invalidConfigurationException("Paging and batching is not supported for query '{}'!", queryName);
+        throw invalidConfigurationException("Batching for query '{}' in combination with paging is not supported!",
+            queryName);
       }
 
       if (query.getKeys()
           .isEmpty()) {
-        throw invalidConfigurationException("Batching for query '{}' is not possible without keys!", queryName);
+        throw invalidConfigurationException("Batching for query '{}' without keys is not possible!", queryName);
+      }
+
+      if (query.getKeys()
+          .size() > 1) {
+        throw invalidConfigurationException("Batching for query '{}' with a composite key is not supported!",
+            queryName);
       }
     }
 

@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.model.Query;
@@ -18,7 +19,7 @@ class QueryValidatorTest {
   private final SchemaReader dwsReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
 
   @Test
-  void validate_throwsException_forPageableBatchConfiguration() {
+  void validate_throwsException_forBatchQueryWithPaging() {
     var schema = new Schema();
 
     var query = new Query();
@@ -32,7 +33,43 @@ class QueryValidatorTest {
 
     var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
 
-    assertThat(exception.getMessage(), is("Paging and batching is not supported for query 'testQuery'!"));
+    assertThat(exception.getMessage(),
+        is("Batching for query 'testQuery' in combination with paging is not supported!"));
+  }
+
+  @Test
+  void validate_throwsException_forBatchQueryWithoutKeys() {
+    var schema = new Schema();
+
+    var query = new Query();
+    query.setBatch(true);
+
+    schema.getQueries()
+        .put("testQuery", query);
+
+    var validator = new QueryValidator();
+
+    var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
+
+    assertThat(exception.getMessage(), is("Batching for query 'testQuery' without keys is not possible!"));
+  }
+
+  @Test
+  void validate_throwsException_forBatchQueryWithCompositeKey() {
+    var schema = new Schema();
+
+    var query = new Query();
+    query.setBatch(true);
+    query.setKeys(List.of("foo", "bar"));
+
+    schema.getQueries()
+        .put("testQuery", query);
+
+    var validator = new QueryValidator();
+
+    var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
+
+    assertThat(exception.getMessage(), is("Batching for query 'testQuery' with a composite key is not supported!"));
   }
 
   @Test
