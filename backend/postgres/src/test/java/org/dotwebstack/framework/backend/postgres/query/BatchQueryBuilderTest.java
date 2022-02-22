@@ -1,11 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
+import static org.dotwebstack.framework.backend.postgres.query.BatchQueryBuilder.newBatchQuery;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,14 +24,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class BatchJoinBuilderTest {
+class BatchQueryBuilderTest {
   private final ObjectFieldMapper<Map<String, Object>> fieldMapper = new ObjectMapper();
 
-  private BatchJoinBuilder batchJoinBuilder;
+  private BatchQueryBuilder batchQueryBuilder;
 
   @BeforeEach
   public void doBefore() {
-    batchJoinBuilder = newBatchJoining().fieldMapper(fieldMapper)
+    batchQueryBuilder = newBatchQuery().fieldMapper(fieldMapper)
         .aliasManager(new AliasManager());
   }
 
@@ -66,22 +68,74 @@ class BatchJoinBuilderTest {
         .from(table)
         .getQuery();
 
-    batchJoinBuilder.table(table)
+    batchQueryBuilder.table(table)
         .joinConfiguration(joinConfiguration)
         .dataQuery(dataQuery)
         .joinKeys(Set.of(Map.of("identifier", "id-1")));
 
-    var result = batchJoinBuilder.build();
+    var result = batchQueryBuilder.build();
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
         equalTo("select *\n" + "from (values ('id-1')) as \"x3\" (\"x2\")\n" + "  left outer join lateral (\n"
-            + "    select\n" + "      *,\n" + "      \"x1\".\"ingredient__identifier\"\n" + "    from\n"
+            + "    select\n" + "      *,\n" + "      \"x1\".\"ingredient__identifier\" as \"x4\"\n" + "    from\n"
             + "      ingredients,\n" + "      \"beer_ingredients\" as \"x1\"\n" + "    where (\n"
             + "      \"x1\".\"beer__identifier\" = \"ingredients\".\"identifier\"\n"
-            + "      and \"x1\".\"ingredient__identifier\" = \"x3\".\"x2\"\n" + "    )\n" + "  ) as \"x4\"\n"
+            + "      and \"x1\".\"ingredient__identifier\" = \"x3\".\"x2\"\n" + "    )\n" + "  ) as \"x5\"\n"
             + "    on true"));
 
+  }
+
+  @Test
+  void build_returnsQuery_forBatchKeys() {
+    var table = DSL.table("beers");
+
+    var dataQuery = DSL.select(DSL.asterisk())
+        .from(table)
+        .getQuery();
+
+    Set<Map<String, Object>> joinKeys = new LinkedHashSet<>();
+    joinKeys.add(Map.of("identifier", "id-1"));
+    joinKeys.add(Map.of("identifier", "id-2"));
+
+    batchQueryBuilder.table(table)
+        .dataQuery(dataQuery)
+        .joinKeys(joinKeys);
+
+    var result = batchQueryBuilder.build();
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(),
+        equalTo("select *\n" + "from (values\n" + "  ('id-1'),\n" + "  ('id-2')\n" + ") as \"x2\" (\"x1\")\n"
+            + "  left outer join lateral (\n" + "    select *\n" + "    from beers\n"
+            + "    where \"identifier\" = \"x2\".\"x1\"\n" + "  ) as \"x3\"\n" + "    on true"));
+  }
+
+  @Test
+  void build_throwsException_whileMissingJoinConfiguration() {
+    var table = DSL.table("beers");
+
+    var dataQuery = DSL.select(DSL.asterisk())
+        .from(table)
+        .getQuery();
+
+    var objectField = new PostgresObjectField();
+    objectField.setName("testField");
+
+    var joinConfiguration = JoinConfiguration.builder()
+        .objectField(objectField)
+        .objectType(new PostgresObjectType())
+        .targetType(new PostgresObjectType())
+        .build();
+
+    var builder = batchQueryBuilder.table(table)
+        .dataQuery(dataQuery)
+        .joinConfiguration(joinConfiguration)
+        .joinKeys(Set.of(Map.of("identifier", "id-1")));
+
+    var thrown = assertThrows(IllegalArgumentException.class, builder::build);
+
+    assertThat(thrown.getMessage(), equalTo("Object field 'testField' has no relation configuration!"));
   }
 
   private JoinTable createJoinTable() {

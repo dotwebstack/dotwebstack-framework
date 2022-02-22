@@ -5,7 +5,7 @@ import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatial
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.isRequestedBbox;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
-import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
+import static org.dotwebstack.framework.backend.postgres.query.BatchQueryBuilder.newBatchQuery;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
@@ -717,7 +717,7 @@ class SelectBuilder {
 
     var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
 
-    return newBatchJoining().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
+    return newBatchQuery().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
         .contextCriteria(objectRequest.getContextCriteria())
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
