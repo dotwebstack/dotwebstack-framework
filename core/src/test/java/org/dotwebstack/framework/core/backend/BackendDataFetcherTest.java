@@ -17,9 +17,11 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
 import graphql.language.Field;
+import graphql.language.FieldDefinition;
 import graphql.language.OperationDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import java.util.HashMap;
 import java.util.List;
@@ -137,8 +139,6 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  @Disabled
-  // FIXME: fix test
   void get_returnsFluxList_ifSourceNull_NotSubscription_and_ListTypeTrue() {
     var executionStepInfoMock = mockExecutionStepInfoWithResultPath("fff", "fff", "a");
 
@@ -170,6 +170,8 @@ class BackendDataFetcherTest {
     when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
         .thenReturn(Flux.just(resultMock));
 
+    mockGraphQlFieldDefinition();
+
     var result = ((CompletableFuture<?>) dataFetcher.get(environment)).join();
 
     assertThat(result, CoreMatchers.is(notNullValue()));
@@ -181,8 +183,6 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  @Disabled
-  // FIXME: fix test
   void get_returnsFluxMap_ifSourceNull_SubscriptionTrue() {
     var executionStepInfoMock = mockExecutionStepInfoWithResultPath("bbb", "bbb", "a");
 
@@ -212,6 +212,8 @@ class BackendDataFetcherTest {
     when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
         .thenReturn(Flux.just(resultMock));
 
+    mockGraphQlFieldDefinition();
+
     var result = ((Flux<?>) dataFetcher.get(environment)).blockFirst();
 
     assertThat(result, CoreMatchers.is(notNullValue()));
@@ -223,8 +225,6 @@ class BackendDataFetcherTest {
   }
 
   @Test
-  @Disabled
-  // FIXME: fix test
   void get_returnsMonoMap_ifSourceNull_SubscriptionFalse_and_ListTypeFalse() {
     var executionStepInfoMock = mockExecutionStepInfo("fff", "fff");
 
@@ -251,6 +251,8 @@ class BackendDataFetcherTest {
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
     when(backendLoader.loadSingle(objectRequest, requestContext)).thenReturn(Mono.just(resultMock));
+
+    mockGraphQlFieldDefinition();
 
     var result = ((CompletableFuture<?>) dataFetcher.get(environment)).join();
 
@@ -299,4 +301,11 @@ class BackendDataFetcherTest {
     return executionStepInfoMock;
   }
 
+  private void mockGraphQlFieldDefinition() {
+    var graphQlFieldDefinitionMock = mock(GraphQLFieldDefinition.class);
+    when(environment.getFieldDefinition()).thenReturn(graphQlFieldDefinitionMock);
+    var fieldDefinitionMock = mock(FieldDefinition.class);
+    when(graphQlFieldDefinitionMock.getDefinition()).thenReturn(fieldDefinitionMock);
+    when(fieldDefinitionMock.getAdditionalData()).thenReturn(Map.of());
+  }
 }
