@@ -6,6 +6,8 @@ public class ObjectFieldHelper {
 
   private static final String SYSTEM_FIELD_FORMAT = "%s.$system";
 
+  private ObjectFieldHelper() {}
+
   public static String createSystemAlias(ObjectField objectField) {
     return String.format(SYSTEM_FIELD_FORMAT, objectField.getName());
   }
