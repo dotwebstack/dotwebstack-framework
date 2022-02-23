@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.ObjectFieldHelper.createSystemAlias;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -10,8 +12,6 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 public class ObjectRequestHelper {
-
-  private static final String SYSTEM_FIELD_FORMAT = "%s.$system";
 
   private ObjectRequestHelper() {}
 
@@ -68,8 +68,7 @@ public class ObjectRequestHelper {
           // Only reuse existing ObjectRequest when aliases are not used.
           var resultKey = field.getKey()
               .getResultKey();
-
-          return createSystemAlias(objectField).equals(resultKey);
+          return resultKey.equals(objectField.getName()) || createSystemAlias(objectField).equals(resultKey);
         })
         .map(Map.Entry::getValue)
         .findFirst()
@@ -78,10 +77,11 @@ public class ObjectRequestHelper {
 
   private static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
-    ObjectRequest objectRequest = ObjectRequest.builder()
+    var objectRequest = ObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())
         .build();
-    FieldRequest field = FieldRequest.builder()
+
+    var field = FieldRequest.builder()
         .name(objectField.getName())
         .resultKey(createSystemAlias(objectField))
         .build();
@@ -97,15 +97,11 @@ public class ObjectRequestHelper {
         .findFirst();
 
     if (scalarField.isEmpty()) {
-      FieldRequest field = FieldRequest.builder()
+      var field = FieldRequest.builder()
           .name(objectField.getName())
           .build();
       objectRequest.getScalarFields()
           .add(field);
     }
-  }
-
-  private static String createSystemAlias(ObjectField objectField) {
-    return String.format(SYSTEM_FIELD_FORMAT, objectField.getName());
   }
 }
