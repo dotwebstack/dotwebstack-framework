@@ -11,6 +11,8 @@ import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 public class ObjectRequestHelper {
 
+  private static final String SYSTEM_FIELD_FORMAT = "%s.$system";
+
   private ObjectRequestHelper() {}
 
   public static void addSortFields(CollectionRequest collectionRequest) {
@@ -67,7 +69,7 @@ public class ObjectRequestHelper {
           var resultKey = field.getKey()
               .getResultKey();
 
-          return resultKey.equals(objectField.getName()) || resultKey.equals(objectField.getName() + ".$system");
+          return createSystemAlias(objectField).equals(resultKey);
         })
         .map(Map.Entry::getValue)
         .findFirst()
@@ -104,6 +106,6 @@ public class ObjectRequestHelper {
   }
 
   private static String createSystemAlias(ObjectField objectField) {
-    return String.format("%s.%s", objectField.getName(), "$system");
+    return String.format(SYSTEM_FIELD_FORMAT, objectField.getName());
   }
 }
