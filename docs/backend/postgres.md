@@ -332,6 +332,45 @@ CREATE FUNCTION db.beer_v_ctx(date,timestamp with time zone) RETURNS SETOF db.be
 $$ language SQL immutable;
 ```
 
+### Batching queries
+
+It is possible to retrieve a batch of objects for an array of keys. 
+
+The following conditions must be observed:
+- At least one key must be provided
+- A maximum of 100 keys are allowed
+- The provided keys needs to be unique
+- There is no support for composite keys
+- Batching queries cannot be paginated
+- The results are returned in key order
+- An empty list is returned if no result is found for a key where a list of results is expected
+- An null value is returned if no result is found for a key where one result is expected
+
+```yaml
+queries:
+  beerBatch:
+    type: Beer
+    keys:
+      - identifier_beer
+    batch: true
+  beerBatchList:
+    type: Beer
+    keys:
+      - identifier_beer
+    list: true
+    batch: true
+
+objectTypes:
+  Beer:
+    table: db.beer_v
+    fields:
+      identifier_beer:
+        type: ID
+      name:
+        type: String
+```
+
+
 ### Spatial
 When the Extension module: `ext-spatial` is enabled it is possible to add next to the default `ext-spatial` configuration
 extra postgres config for Geometry column mapping.

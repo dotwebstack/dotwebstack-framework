@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
@@ -26,6 +27,7 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -99,11 +101,12 @@ public class BackendRequestFactory {
       DataFetchingFieldSelectionSet selectionSet) {
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
+    var keyCriterias =
+        createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriterias(createKeyCriterias(objectType, executionStepInfo.getFieldDefinition()
-            .getArguments(), executionStepInfo.getArguments()))
+        .keyCriterias(keyCriterias)
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -115,13 +118,14 @@ public class BackendRequestFactory {
   private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
     var objectType = getObjectType(unwrapConnectionType(selectedField.getType()));
 
-    var arguments = selectedField.getFieldDefinitions()
-        .get(0)
-        .getArguments();
+    var fieldDefinition = selectedField.getFieldDefinitions()
+        .stream()
+        .findFirst()
+        .orElseThrow();
 
     return ObjectRequest.builder()
         .objectType(objectType)
-        .keyCriterias(createKeyCriterias(objectType, arguments, selectedField.getArguments()))
+        .keyCriterias(createKeyCriterias(objectType, fieldDefinition, selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
@@ -274,14 +278,23 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, List<GraphQLArgument> arguments,
-      Map<String, Object> argumentMap) {
-    return arguments.stream()
+  private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, GraphQLFieldDefinition fieldDefinition,
+      Map<String, Object> argumentValues) {
+    var additionalData = fieldDefinition.getDefinition()
+        .getAdditionalData();
+
+    // do not construct key criteria for batch queries
+    if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
+      return List.of();
+    }
+
+    return fieldDefinition.getArguments()
+        .stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(KEY_FIELD))
-        .filter(argument -> argumentMap.containsKey(argument.getName()))
-        .map(argument -> createKeyCriteria(objectType, argumentMap, argument))
+        .filter(argument -> argumentValues.containsKey(argument.getName()))
+        .map(argument -> createKeyCriteria(objectType, argumentValues, argument))
         .collect(Collectors.toList());
   }
 

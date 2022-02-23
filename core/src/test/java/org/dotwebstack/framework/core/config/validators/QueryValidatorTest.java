@@ -4,21 +4,78 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.config.SchemaReader;
+import org.dotwebstack.framework.core.model.Query;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-class KeyValidatorTest {
+class QueryValidatorTest {
 
   private final SchemaReader dwsReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
 
   @Test
+  void validate_throwsException_forBatchQueryWithPaging() {
+    var schema = new Schema();
+
+    var query = new Query();
+    query.setPageable(true);
+    query.setBatch(true);
+
+    schema.getQueries()
+        .put("testQuery", query);
+
+    var validator = new QueryValidator();
+
+    var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
+
+    assertThat(exception.getMessage(),
+        is("Batching for query 'testQuery' in combination with paging is not supported!"));
+  }
+
+  @Test
+  void validate_throwsException_forBatchQueryWithoutKeys() {
+    var schema = new Schema();
+
+    var query = new Query();
+    query.setBatch(true);
+
+    schema.getQueries()
+        .put("testQuery", query);
+
+    var validator = new QueryValidator();
+
+    var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
+
+    assertThat(exception.getMessage(), is("Batching for query 'testQuery' without keys is not possible!"));
+  }
+
+  @Test
+  void validate_throwsException_forBatchQueryWithCompositeKey() {
+    var schema = new Schema();
+
+    var query = new Query();
+    query.setBatch(true);
+    query.setKeys(List.of("foo", "bar"));
+
+    schema.getQueries()
+        .put("testQuery", query);
+
+    var validator = new QueryValidator();
+
+    var exception = assertThrows(InvalidConfigurationException.class, () -> validator.validate(schema));
+
+    assertThat(exception.getMessage(), is("Batching for query 'testQuery' with a composite key is not supported!"));
+  }
+
+  @Test
   void validate_throwsNoException_withValidKeyFields() {
     var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-key.yaml");
-    new KeyValidator().validate(dotWebStackConfiguration);
+    new QueryValidator().validate(dotWebStackConfiguration);
   }
 
   @ParameterizedTest
@@ -37,7 +94,7 @@ class KeyValidatorTest {
       delimiterString = "|")
   void validate_throwsException_forInvalidKeyConfiguration(String file, String message) {
     var dotWebStackConfiguration = dwsReader.read("validators/" + file);
-    var validator = new KeyValidator();
+    var validator = new QueryValidator();
 
     var exception =
         assertThrows(InvalidConfigurationException.class, () -> validator.validate(dotWebStackConfiguration));

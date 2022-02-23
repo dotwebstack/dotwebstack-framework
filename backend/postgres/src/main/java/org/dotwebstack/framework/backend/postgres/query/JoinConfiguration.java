@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,8 @@ public class JoinConfiguration {
 
   private PostgresObjectField mappedBy;
 
-  private List<JoinColumn> joinColumns;
+  @Builder.Default
+  private List<JoinColumn> joinColumns = new ArrayList<>();
 
   private JoinTable joinTable;
 

@@ -15,6 +15,7 @@ import static org.hamcrest.core.IsIterableContaining.hasItems;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +327,44 @@ class GraphQlPostgresIntegrationTest {
         .map(map -> map.get(NAME))
         .map(Objects::toString)
         .collect(Collectors.toList()), equalTo(List.of("Beer 1", "Beer 2", "Beer 4")));
+  }
+
+  @Test
+  void getRequest_returnsBreweryBatch_forIdentifier() {
+    String query = "{breweryBatch (identifier_brewery : [\"id-fake1\","
+        + "\"d3654375-95fa-46b4-8529-08b0f777bd6b\",\"id-fake2\"]){name status}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+
+    assertThat(data.containsKey("breweryBatch"), is(true));
+
+    var expected = new ArrayList<>();
+    expected.add(null);
+    expected.add(Map.of("name", "Brewery X", "status", "active"));
+    expected.add(null);
+
+    assertThat(data.get("breweryBatch"), equalTo(expected));
+  }
+
+  @Test
+  void getRequest_returnsBreweryBatchList_forIdentifier() {
+    String query = "{breweryBatchList (identifier_brewery : [\"id-fake1\","
+        + "\"d3654375-95fa-46b4-8529-08b0f777bd6b\",\"id-fake2\"]){name status}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+
+    assertThat(data.containsKey("breweryBatchList"), is(true));
+
+    var expected = new ArrayList<>();
+    expected.add(List.of());
+    expected.add(List.of(Map.of("name", "Brewery X", "status", "active")));
+    expected.add(List.of());
+
+    assertThat(data.get("breweryBatchList"), equalTo(expected));
   }
 
   @Test

@@ -14,4 +14,6 @@ public class GraphQlConstants {
 
   public static final String IS_PAGING_NODE = "isPagingNode";
 
+  public static final String IS_BATCH_KEY_QUERY = "isBatchKeyQuery";
+
 }

@@ -1,21 +1,34 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArgumentsWithValue;
+import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLTypeUtil;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
+import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
@@ -26,6 +39,8 @@ import reactor.util.function.Tuples;
 class BackendDataFetcher implements DataFetcher<Object> {
 
   private static final int MAX_BATCH_SIZE = 250;
+
+  private static final int MAX_BATCH_KEY_SIZE = 100;
 
   private final BackendLoader backendLoader;
 
@@ -67,8 +82,15 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
     var requestContext = requestFactory.createRequestContext(environment);
+    var additionalData = environment.getFieldDefinition()
+        .getDefinition()
+        .getAdditionalData();
 
     if (isSubscription || isListType(environment.getFieldType())) {
+      if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
+        return executeBatchQueryWithKeys(environment, requestContext);
+      }
+
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
       var joinKey = JOIN_KEY_PREFIX.concat(fieldName);
@@ -99,6 +121,60 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
+  }
+
+  private List<?> executeBatchQueryWithKeys(DataFetchingEnvironment environment, RequestContext requestContext) {
+    DataLoader<Map<String, Object>, ?> batchLoader;
+
+    batchLoader = getDataLoaderForBatchKeyQuery(environment, requestContext);
+
+    getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments()).forEach(argument -> {
+      var keys = castToList(environment.getArguments()
+          .get(argument.getName()));
+
+      validateBatchKeys(keys);
+
+      keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));
+    });
+
+    return batchLoader.dispatchAndJoin();
+  }
+
+  private void validateBatchKeys(List<Object> keys) {
+    if (keys.isEmpty()) {
+      throw illegalArgumentException("At least one key must be provided");
+    }
+
+    if (keys.size() > MAX_BATCH_KEY_SIZE) {
+      throw illegalArgumentException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
+          MAX_BATCH_KEY_SIZE);
+    }
+
+    var duplicateKeys = keys.stream()
+        .filter(key -> Collections.frequency(keys, key) > 1)
+        .distinct()
+        .collect(Collectors.toList());
+    if (!duplicateKeys.isEmpty()) {
+      throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
+    }
+  }
+
+  private DataLoader<Map<String, Object>, ?> getDataLoaderForBatchKeyQuery(DataFetchingEnvironment environment,
+      RequestContext requestContext) {
+    DataLoader<Map<String, Object>, ?> batchLoader;
+    var outputType = Optional.of(environment.getFieldDefinition()
+        .getType())
+        .filter(TypeHelper::isListType)
+        .map(GraphQLTypeUtil::unwrapNonNull)
+        .map(GraphQLList.class::cast)
+        .orElseThrow(() -> illegalStateException("Batch output type needs to be a list!"));
+
+    if (isListType(unwrapNonNull(outputType.getWrappedType()))) {
+      batchLoader = createManyBatchLoader(environment, requestContext, null);
+    } else {
+      batchLoader = createSingleBatchLoader(environment, requestContext);
+    }
+    return batchLoader;
   }
 
   private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
@@ -137,6 +213,28 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
         .setMaxBatchSize(MAX_BATCH_SIZE));
+  }
+
+  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
+      DataFetchingEnvironment environment, RequestContext requestContext) {
+    var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
+
+    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+
+    MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
+
+      var batchRequest = BatchRequest.builder()
+          .objectRequest(objectRequest)
+          .keys(keys)
+          .build();
+
+      return backendLoader.batchLoadSingle(batchRequest, requestContext)
+          .collectMap(Tuple2::getT1, objects -> objects.getT2() != BackendLoader.NILL_MAP ? objects.getT2() : null,
+              HashMap::new)
+          .toFuture();
+    };
+
+    return newMappedDataLoader(batchLoader);
   }
 
   private String getLookupName(ExecutionStepInfo executionStepInfo, String fieldName) {

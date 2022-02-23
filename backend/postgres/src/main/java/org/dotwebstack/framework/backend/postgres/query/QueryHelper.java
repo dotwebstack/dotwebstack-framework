@@ -30,6 +30,10 @@ class QueryHelper {
     return DSL.name(table.getName(), columnName);
   }
 
+  public static Field<Object> column(String columnName) {
+    return DSL.field(DSL.name(columnName));
+  }
+
   public static Field<Object> column(Table<Record> table, String columnName) {
     return DSL.field(name(table, columnName));
   }

@@ -267,6 +267,9 @@ class BackendRequestFactoryTest {
     fieldDefinitionBuilder.name("a");
     fieldDefinitionBuilder.description("any");
     fieldDefinitionBuilder.type(mock(GraphQLOutputType.class));
+    fieldDefinitionBuilder.definition(FieldDefinition.newFieldDefinition()
+        .build());
+
     when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinitionBuilder.build());
 
     return executionStepInfo;

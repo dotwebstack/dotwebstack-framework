@@ -1,11 +1,12 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.isRequestedBbox;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHelper.isStringJoin;
-import static org.dotwebstack.framework.backend.postgres.query.BatchJoinBuilder.newBatchJoining;
+import static org.dotwebstack.framework.backend.postgres.query.BatchQueryBuilder.newBatchQuery;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
@@ -713,17 +714,20 @@ class SelectBuilder {
 
   private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
       Table<Record> dataTable, JoinCriteria joinCriteria) {
-    var objectField = (PostgresObjectField) requestContext.getObjectField();
 
     var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
 
-    return newBatchJoining().joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
-        .contextCriteria(objectRequest.getContextCriteria())
+    var builder = newBatchQuery().contextCriteria(objectRequest.getContextCriteria())
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
         .dataQuery(dataQuery)
         .table(dataTable)
-        .joinKeys(joinCriteria.getKeys())
-        .build();
+        .joinKeys(joinCriteria.getKeys());
+
+    ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)
+        .map(objectField -> JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
+        .ifPresent(builder::joinConfiguration);
+
+    return builder.build();
   }
 }
