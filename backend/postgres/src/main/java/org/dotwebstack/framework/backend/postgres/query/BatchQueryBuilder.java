@@ -118,7 +118,7 @@ class BatchQueryBuilder {
 
     columnAliases.entrySet()
         .stream()
-        .map(entry -> QueryHelper.column(null, entry.getKey())
+        .map(entry -> QueryHelper.column(entry.getKey())
             .equal(QueryHelper.column(keyTable, entry.getValue())))
         .forEach(dataQuery::addConditions);
 

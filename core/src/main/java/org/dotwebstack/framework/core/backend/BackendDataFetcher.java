@@ -40,6 +40,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private static final int MAX_BATCH_SIZE = 250;
 
+  private static final int MAX_BATCH_KEY_SIZE = 100;
+
   private final BackendLoader backendLoader;
 
   private final BackendRequestFactory requestFactory;
@@ -124,6 +126,42 @@ class BackendDataFetcher implements DataFetcher<Object> {
   private List<?> executeBatchQueryWithKeys(DataFetchingEnvironment environment, RequestContext requestContext) {
     DataLoader<Map<String, Object>, ?> batchLoader;
 
+    batchLoader = getDataLoaderForBatchKeyQuery(environment, requestContext);
+
+    getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments()).forEach(argument -> {
+      var keys = castToList(environment.getArguments()
+          .get(argument.getName()));
+
+      validateBatchKeys(keys);
+
+      keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));
+    });
+
+    return batchLoader.dispatchAndJoin();
+  }
+
+  private void validateBatchKeys(List<Object> keys) {
+    if (keys.isEmpty()) {
+      throw illegalArgumentException("At least one key must be provided");
+    }
+
+    if (keys.size() > MAX_BATCH_KEY_SIZE) {
+      throw illegalArgumentException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
+          MAX_BATCH_KEY_SIZE);
+    }
+
+    var duplicateKeys = keys.stream()
+        .filter(key -> Collections.frequency(keys, key) > 1)
+        .distinct()
+        .collect(Collectors.toList());
+    if (!duplicateKeys.isEmpty()) {
+      throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
+    }
+  }
+
+  private DataLoader<Map<String, Object>, ?> getDataLoaderForBatchKeyQuery(DataFetchingEnvironment environment,
+      RequestContext requestContext) {
+    DataLoader<Map<String, Object>, ?> batchLoader;
     var outputType = Optional.of(environment.getFieldDefinition()
         .getType())
         .filter(TypeHelper::isListType)
@@ -136,31 +174,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     } else {
       batchLoader = createSingleBatchLoader(environment, requestContext);
     }
-
-    getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments()).forEach(argument -> {
-      var keys = castToList(environment.getArguments()
-          .get(argument.getName()));
-
-      if (keys.isEmpty()) {
-        throw illegalArgumentException("At least one key must be provided");
-      }
-
-      if (keys.size() > 100) {
-        throw illegalArgumentException("Got {} keys but a maximum of 100 keys is allowed!", keys.size());
-      }
-
-      var duplicateKeys = keys.stream()
-          .filter(key -> Collections.frequency(keys, key) > 1)
-          .distinct()
-          .collect(Collectors.toList());
-      if (!duplicateKeys.isEmpty()) {
-        throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
-      }
-
-      keys.forEach(keyValue -> batchLoader.load(Map.of(argument.getName(), keyValue)));
-    });
-
-    return batchLoader.dispatchAndJoin();
+    return batchLoader;
   }
 
   private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
