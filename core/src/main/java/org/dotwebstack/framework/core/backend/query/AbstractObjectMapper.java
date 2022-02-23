@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.backend.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ObjectFieldHelper.createSystemAlias;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,31 +34,35 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
   @SuppressWarnings("unchecked")
   public ScalarFieldMapper<T> getLeafFieldMapper(List<ObjectField> fieldPath) {
-    var fields = new ArrayList<>(fieldPath);
-    var finalField = fields.remove(fields.size() - 1);
+    var objectFields = new ArrayList<>(fieldPath);
+    var finalField = objectFields.remove(objectFields.size() - 1);
 
-    ObjectFieldMapper<T> finalObjectFieldMapper = this;
-
-    for (var field : fields) {
-      var nestedFieldMapper = finalObjectFieldMapper.getFieldMapper(field.getName());
-
-      if (nestedFieldMapper == null) {
-        nestedFieldMapper = finalObjectFieldMapper.getFieldMapper(String.format("%s.%s", field.getName(), "$system"));
-      }
+    ObjectFieldMapper<T> current = this;
+    for (var objectField : objectFields) {
+      var nestedFieldMapper = getNestedFieldMapper(current, objectField);
 
       if (nestedFieldMapper instanceof ObjectFieldMapper) {
-        finalObjectFieldMapper = (ObjectFieldMapper<T>) nestedFieldMapper;
+        current = (ObjectFieldMapper<T>) nestedFieldMapper;
       } else {
         throw illegalStateException("Non-final path segments must have an object field mapper.");
       }
     }
 
-    var fieldMapper = finalObjectFieldMapper.getFieldMapper(finalField.getName());
+    var fieldMapper = current.getFieldMapper(finalField.getName());
 
     if (fieldMapper instanceof ScalarFieldMapper) {
       return (ScalarFieldMapper<T>) fieldMapper;
     }
 
     throw illegalArgumentException("Scalar field mapper {} not found.", finalField.getName());
+  }
+
+  private FieldMapper<T, ?> getNestedFieldMapper(ObjectFieldMapper<T> current, ObjectField objectField) {
+    var nestedFieldMapper = current.getFieldMapper(objectField.getName());
+
+    if (nestedFieldMapper == null) {
+      nestedFieldMapper = current.getFieldMapper(createSystemAlias(objectField));
+    }
+    return nestedFieldMapper;
   }
 }
