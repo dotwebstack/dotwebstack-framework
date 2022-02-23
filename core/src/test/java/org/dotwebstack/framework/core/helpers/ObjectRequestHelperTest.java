@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.helpers;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.query.model.SortDirection.ASC;
 import static org.dotwebstack.framework.core.query.model.SortDirection.DESC;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -150,12 +151,14 @@ class ObjectRequestHelperTest {
         .getObjectFields()
         .entrySet()
         .stream()
-        .findFirst()
-        .orElseThrow();
+        .filter(entry -> entry.getKey()
+            .getResultKey()
+            .equals("brewery.$system"))
+        .findFirst();
 
-    assertThat(newObjectRequest.getKey()
-        .getResultKey(), is("brewery.$system"));
-    assertThat(newObjectRequest.getValue()
+    assertThat(newObjectRequest.isPresent(), equalTo(Boolean.TRUE));
+    assertThat(newObjectRequest.orElseThrow()
+        .getValue()
         .getScalarFields()
         .stream()
         .findFirst()
