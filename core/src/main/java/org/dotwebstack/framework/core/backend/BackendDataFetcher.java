@@ -153,7 +153,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .filter(key -> Collections.frequency(keys, key) > 1)
           .distinct()
           .collect(Collectors.toList());
-      if (duplicateKeys.size() > 0) {
+      if (!duplicateKeys.isEmpty()) {
         throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
       }
 

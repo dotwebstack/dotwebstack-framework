@@ -336,14 +336,12 @@ $$ language SQL immutable;
 
 It is possible to retrieve a batch of objects for an array of keys. 
 
-The following pre conditions must be observed:
+The following conditions must be observed:
 - At least one key must be provided
 - A maximum of 100 keys are allowed
 - The provided keys needs to be unique
 - There is no support for composite keys
 - Batching queries cannot be paginated
-
-The following post conditions must be observed:
 - The results are returned in key order
 - An empty list is returned if no result is found for a key where a list of results is expected
 - An null value is returned if no result is found for a key where one result is expected
