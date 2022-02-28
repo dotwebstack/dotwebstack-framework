@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -51,7 +52,7 @@ class FilterCriteriaBuilderTest {
         .fieldPath(fieldPath)
         .argument(arguments);
 
-    var throwed = assertThrows(UnsupportedOperationException.class, builder::build);
+    var throwed = assertThrows(RequestValidationException.class, builder::build);
 
     assertThat(throwed.getMessage(), equalTo("Filter operator '_exists' is only supported for nested objects"));
   }

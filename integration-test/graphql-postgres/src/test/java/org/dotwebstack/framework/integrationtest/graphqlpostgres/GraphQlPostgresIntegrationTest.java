@@ -28,7 +28,6 @@ import org.hamcrest.Matchers;
 import org.hamcrest.collection.IsCollectionWithSize;
 import org.hamcrest.collection.IsIn;
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.hamcrest.collection.IsMapContaining;
 import org.hamcrest.collection.IsMapWithSize;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.Test;
@@ -188,7 +187,7 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
-    assertThat(data, IsMapContaining.hasEntry("beer", null));
+    assertThat(data, hasEntry("beer", null));
   }
 
   @Test
@@ -569,11 +568,9 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query);
 
-    Assert.assertThat(response,
-        IsMapContaining.hasEntry(equalTo("errors"),
-            IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
-                "Exception while fetching data (/brewery) : Type argument is not allowed "
-                    + "when argument bbox is true (geometry)."))));
+    assertThat(response,
+        hasEntry("detail", "Type argument is not allowed " + "when argument bbox is true (geometry)."));
+    assertThat(response, hasEntry("status", 400));
   }
 
   @Test
@@ -1156,9 +1153,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query);
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response,
-        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
@@ -1168,9 +1164,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query, "");
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response,
-        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
@@ -1178,9 +1173,8 @@ class GraphQlPostgresIntegrationTest {
     var query = "";
     var response = WebTestClientHelper.get(client, query);
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response,
-        IsMapContaining.hasEntry("detail", "400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
   }
 
   @Test
@@ -1190,8 +1184,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query, null, variables);
 
-    Assert.assertThat(response, IsMapContaining.hasEntry(equalTo("errors"), IsIterableContaining.hasItems(
-        IsMapContaining.hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
+    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining
+        .hasItems(hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
@@ -1250,8 +1244,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    Assert.assertThat(response, IsMapContaining.hasEntry(equalTo("errors"), IsIterableContaining.hasItems(
-        IsMapContaining.hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
+    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining
+        .hasItems(hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
@@ -1261,9 +1255,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response,
-        IsMapContaining.hasEntry("detail", "Must provide operation name if query contains multiple operations."));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "Must provide operation name if query contains multiple operations."));
   }
 
   @Test
@@ -1272,8 +1265,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response, IsMapContaining.hasEntry("detail", "Required parameter 'query' can not be empty."));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "Required parameter 'query' can not be empty."));
   }
 
   @Test
@@ -1282,8 +1275,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    assertThat(response, IsMapContaining.hasEntry("status", 400));
-    assertThat(response, IsMapContaining.hasEntry("detail", "Required parameter 'query' is not present."));
+    assertThat(response, hasEntry("status", 400));
+    assertThat(response, hasEntry("detail", "Required parameter 'query' is not present."));
   }
 
   @Test
@@ -1365,15 +1358,13 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(4));
 
-    assertThat(breweries,
-        IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S"),
-            IsMapContaining.hasEntry("name", "Brewery X"), IsMapContaining.hasEntry("name", "Brewery Y"),
-            IsMapContaining.hasEntry("name", "Brewery Z")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S"),
+        hasEntry("name", "Brewery X"), hasEntry("name", "Brewery Y"), hasEntry("name", "Brewery Z")));
 
     var beers = getNestedObjects(breweries.get(1), BEERS);
 
-    assertThat(beers, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Beer 4"),
-        IsMapContaining.hasEntry("name", "Beer 2"), IsMapContaining.hasEntry("name", "Beer 1")));
+    assertThat(beers, IsIterableContainingInOrder.contains(hasEntry("name", "Beer 4"), hasEntry("name", "Beer 2"),
+        hasEntry("name", "Beer 1")));
   }
 
   @Test
@@ -1390,10 +1381,8 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(4));
 
-    assertThat(breweries,
-        IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S"),
-            IsMapContaining.hasEntry("name", "Brewery X"), IsMapContaining.hasEntry("name", "Brewery Y"),
-            IsMapContaining.hasEntry("name", "Brewery Z")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S"),
+        hasEntry("name", "Brewery X"), hasEntry("name", "Brewery Y"), hasEntry("name", "Brewery Z")));
 
     assertThat(getNestedObjects(breweries.get(0), BEERS).size(), is(0));
     assertThat(getNestedObjects(breweries.get(1), BEERS).size(), is(3));
@@ -1413,7 +1402,7 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery X")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery X")));
   }
 
   @Test
@@ -1431,7 +1420,7 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S")));
   }
 
   @Test
@@ -1448,7 +1437,7 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S")));
   }
 
   @Test
@@ -1467,7 +1456,7 @@ class GraphQlPostgresIntegrationTest {
     List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
     assertThat(breweries.size(), is(1));
 
-    assertThat(breweries, IsIterableContainingInOrder.contains(IsMapContaining.hasEntry("name", "Brewery S")));
+    assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S")));
   }
 
   @Test
@@ -1580,11 +1569,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query);
 
-    Assert.assertThat(response,
-        IsMapContaining.hasEntry(equalTo("errors"),
-            IsIterableContaining.hasItems(IsMapContaining.hasEntry("message",
-                "Exception while fetching data (/breweries) : Filter operator '_exists' "
-                    + "is only supported for nested objects"))));
+    assertThat(response, hasEntry("detail", "Filter operator '_exists' is only supported for nested objects"));
+    assertThat(response, hasEntry("status", 400));
   }
 
   @Test

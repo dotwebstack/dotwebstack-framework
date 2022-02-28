@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.ext.spatial.validator;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
@@ -32,7 +32,7 @@ public class SpatialArgumentValidator implements GraphQlValidator {
         .get(ARGUMENT_BBOX);
 
     if (type != null && Boolean.TRUE.equals(bbox)) {
-      throw illegalArgumentException(String.format("Type argument is not allowed when argument bbox is true (%s).",
+      throw requestValidationException(String.format("Type argument is not allowed when argument bbox is true (%s).",
           selectedField.getQualifiedName()));
     }
   }

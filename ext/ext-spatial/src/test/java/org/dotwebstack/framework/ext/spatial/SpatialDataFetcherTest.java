@@ -23,6 +23,7 @@ import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialReferenceSystem;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,10 +86,13 @@ class SpatialDataFetcherTest {
   }
 
   @Test
-  void get_returnsNull_notGeometry() {
+  void get_throwsException_notGeometry() {
     when(dataFetchingEnvironment.getSource()).thenReturn(mock(SpatialConfigurer.class));
 
-    assertThrows(IllegalArgumentException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
+    var exception =
+        assertThrows(RequestValidationException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
+
+    assertThat(exception.getMessage(), is("Source is not an instance of Geometry"));
   }
 
   @Test
@@ -199,6 +203,9 @@ class SpatialDataFetcherTest {
     when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
     when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
 
-    assertThrows(UnsupportedOperationException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
+    var exception =
+        assertThrows(RequestValidationException.class, () -> spatialDataFetcher.get(dataFetchingEnvironment));
+
+    assertThat(exception.getMessage(), is("Invalid fieldName monkey"));
   }
 }

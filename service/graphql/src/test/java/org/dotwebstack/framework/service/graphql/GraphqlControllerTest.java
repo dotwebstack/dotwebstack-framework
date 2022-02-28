@@ -4,15 +4,21 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.execution.ResultPath;
 import graphql.execution.UnknownOperationException;
+import graphql.language.SourceLocation;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,6 +104,48 @@ class GraphqlControllerTest {
 
     assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
   }
+
+  @Test
+  void handleGet_shouldReturnInternalServerError_whenNonDotWebStackRuntimeExceptionIsThrown() {
+    var query = "{beers{identifier_beer name}}";
+
+    var executionResult = mock(ExecutionResultImpl.class);
+    when(graphQL.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    Mono<Map<String, Object>> result = graphqlController.handleGet(query, null, null);
+
+    var graphQlError = new ExceptionWhileDataFetching(ResultPath.fromList(List.of("beers")), new NullPointerException(),
+        SourceLocation.EMPTY);
+    List<GraphQLError> errors = List.of(graphQlError);
+    when(executionResult.getErrors()).thenReturn(errors);
+
+    StepVerifier.create(result)
+        .expectErrorMessage("An internal server error has occurred!")
+        .verify();
+  }
+
+  @Test
+  void handleGet_shouldReturnProblem_whenDotWebStackRuntimeExceptionIsThrown() {
+    var query = "{beers{identifier_beer name}}";
+
+    var executionResult = mock(ExecutionResultImpl.class);
+    when(graphQL.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    Mono<Map<String, Object>> result = graphqlController.handleGet(query, null, null);
+
+
+    var graphQlError = new ExceptionWhileDataFetching(ResultPath.fromList(List.of("beers")),
+        new RequestValidationException("Bad request"), SourceLocation.EMPTY);
+    List<GraphQLError> errors = List.of(graphQlError);
+    when(executionResult.getErrors()).thenReturn(errors);
+
+    StepVerifier.create(result)
+        .expectErrorMessage("Bad request")
+        .verify();
+  }
+
 
   @Test
   void handlePost_shouldReturnMono_applicationJson() {
@@ -201,6 +249,46 @@ class GraphqlControllerTest {
     Throwable throwable = assertThrows(UnknownOperationException.class, () -> graphqlController.handlePost(body));
 
     assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
+  }
+
+  @Test
+  void handlePost_shouldReturnInternalServerError_whenNonDotWebStackRuntimeExceptionIsThrown() {
+    var body = Map.of("query", "{beers{identifier_beer name}}", "variables", Map.of());
+
+    var executionResult = mock(ExecutionResultImpl.class);
+    when(graphQL.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    var result = graphqlController.handlePost(body);
+
+    var graphQlError = new ExceptionWhileDataFetching(ResultPath.fromList(List.of("beers")), new NullPointerException(),
+        SourceLocation.EMPTY);
+    List<GraphQLError> errors = List.of(graphQlError);
+    when(executionResult.getErrors()).thenReturn(errors);
+
+    StepVerifier.create(result)
+        .expectErrorMessage("An internal server error has occurred!")
+        .verify();
+  }
+
+  @Test
+  void handlePost_shouldReturnProblem_whenDotWebStackRuntimeExceptionIsThrown() {
+    var body = Map.of("query", "{beers{identifier_beer name}}", "variables", Map.of());
+
+    var executionResult = mock(ExecutionResultImpl.class);
+    when(graphQL.executeAsync(any(ExecutionInput.class)))
+        .thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    var result = graphqlController.handlePost(body);
+
+    var graphQlError = new ExceptionWhileDataFetching(ResultPath.fromList(List.of("beers")),
+        new RequestValidationException("Bad request"), SourceLocation.EMPTY);
+    List<GraphQLError> errors = List.of(graphQlError);
+    when(executionResult.getErrors()).thenReturn(errors);
+
+    StepVerifier.create(result)
+        .expectErrorMessage("Bad request")
+        .verify();
   }
 
   @SuppressWarnings("unchecked")

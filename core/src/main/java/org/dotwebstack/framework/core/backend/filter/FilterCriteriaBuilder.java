@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.core.backend.filter;
 
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
@@ -55,7 +55,7 @@ public class FilterCriteriaBuilder {
   private FilterCriteria build(String filterName) {
     if (EXISTS_FIELD.equalsIgnoreCase(filterName)) {
       if (fieldPath.isEmpty()) {
-        throw unsupportedOperationException("Filter operator '_exists' is only supported for nested objects");
+        throw requestValidationException("Filter operator '_exists' is only supported for nested objects");
       }
       return ObjectFieldFilterCriteria.builder()
           .filterType(FilterType.EXACT)
@@ -133,7 +133,7 @@ public class FilterCriteriaBuilder {
       return resolveSuppliers(castToMap(rawValue));
     }
 
-    throw illegalArgumentException("Expected entry value of type 'java.util.Map' but got '{}'", rawValue.getClass()
+    throw requestValidationException("Expected entry value of type 'java.util.Map' but got '{}'", rawValue.getClass()
         .getName());
   }
 

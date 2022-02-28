@@ -106,14 +106,12 @@ public class GraphQlHelper {
     return executionStepInfo;
   }
 
-  public static List<GraphQLArgument> getKeyArgumentsWithValue(GraphQLFieldDefinition fieldDefinition,
-      Map<String, Object> argumentValues) {
+  public static List<GraphQLArgument> getKeyArguments(GraphQLFieldDefinition fieldDefinition) {
     return fieldDefinition.getArguments()
         .stream()
         .filter(argument -> argument.getDefinition()
             .getAdditionalData()
             .containsKey(GraphQlConstants.KEY_FIELD))
-        .filter(argument -> argumentValues.containsKey(argument.getName()))
         .collect(Collectors.toList());
   }
 }

@@ -4,9 +4,9 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArgumentsWithValue;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
@@ -128,9 +128,12 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
     batchLoader = getDataLoaderForBatchKeyQuery(environment, requestContext);
 
-    getKeyArgumentsWithValue(environment.getFieldDefinition(), environment.getArguments()).forEach(argument -> {
-      var keys = castToList(environment.getArguments()
-          .get(argument.getName()));
+    getKeyArguments(environment.getFieldDefinition()).forEach(argument -> {
+
+      var argumentValue = environment.getArguments()
+          .get(argument.getName());
+
+      var keys = argumentValue != null ? castToList(argumentValue) : List.of();
 
       validateBatchKeys(keys);
 
@@ -142,11 +145,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private void validateBatchKeys(List<Object> keys) {
     if (keys.isEmpty()) {
-      throw illegalArgumentException("At least one key must be provided");
+      throw requestValidationException("At least one key must be provided");
     }
 
     if (keys.size() > MAX_BATCH_KEY_SIZE) {
-      throw illegalArgumentException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
+      throw requestValidationException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
           MAX_BATCH_KEY_SIZE);
     }
 
@@ -155,7 +158,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .distinct()
         .collect(Collectors.toList());
     if (!duplicateKeys.isEmpty()) {
-      throw illegalArgumentException("The following keys are duplicate: {}", duplicateKeys);
+      throw requestValidationException("The following keys are duplicate: {}", duplicateKeys);
     }
   }
 

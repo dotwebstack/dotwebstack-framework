@@ -16,6 +16,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,8 +81,8 @@ class ConnectionDataFetcherTest {
   void get_throwsException_forInvalidFirstArgumentValue() {
     when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, 101, OFFSET_ARGUMENT_NAME, 20));
 
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    RequestValidationException exception =
+        assertThrows(RequestValidationException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
     assertThat(exception.getMessage(), is("Argument 'first' is not allowed to be higher than 100."));
   }
 
@@ -90,8 +91,8 @@ class ConnectionDataFetcherTest {
     when(dataFetchingEnvironment.getArguments())
         .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 2, OFFSET_ARGUMENT_NAME, 10001));
 
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    RequestValidationException exception =
+        assertThrows(RequestValidationException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
     assertThat(exception.getMessage(), is("Argument 'offset' is not allowed to be higher than 10000."));
   }
 }
