@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -101,21 +102,22 @@ class GraphqlController {
     var errors = executionResult.getErrors();
 
     if (errors.stream()
-        .anyMatch(ExceptionWhileDataFetching.class::isInstance)) {
-      errors.stream()
-          .filter(ExceptionWhileDataFetching.class::isInstance)
-          .map(ExceptionWhileDataFetching.class::cast)
-          .map(ExceptionWhileDataFetching::getException)
-          .findFirst()
-          .ifPresent(throwable -> {
-            if (throwable instanceof DotWebStackRuntimeException) {
-              throw ((DotWebStackRuntimeException) throwable);
-            }
-            throw internalServerErrorException();
-          });
+        .noneMatch(ExceptionWhileDataFetching.class::isInstance)) {
+      return Mono.just(executionResult.toSpecification());
     }
 
-    return Mono.just(executionResult.toSpecification());
+    var throwable = errors.stream()
+        .filter(ExceptionWhileDataFetching.class::isInstance)
+        .map(ExceptionWhileDataFetching.class::cast)
+        .map(ExceptionWhileDataFetching::getException)
+        .findFirst()
+        .orElseThrow(ExceptionHelper::internalServerErrorException);
+
+    if (throwable instanceof DotWebStackRuntimeException) {
+      throw ((DotWebStackRuntimeException) throwable);
+    }
+
+    return Mono.error(internalServerErrorException());
   }
 
   private void validateOperationNameIsNotEmptyString(String operationName) {

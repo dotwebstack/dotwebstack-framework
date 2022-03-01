@@ -133,7 +133,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
       var argumentValue = environment.getArguments()
           .get(argument.getName());
 
-      var keys = argumentValue != null ? castToList(argumentValue) : List.of();
+      var keys = argumentValue == null ? List.of() : castToList(argumentValue);
 
       validateBatchKeys(keys);
 
