@@ -13,6 +13,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -59,7 +60,7 @@ class SpatialArgumentValidatorTest {
 
     SpatialArgumentValidator spatialArgumentValidator = new SpatialArgumentValidator();
     Exception exception =
-        assertThrows(IllegalArgumentException.class, () -> spatialArgumentValidator.validate(environment));
+        assertThrows(RequestValidationException.class, () -> spatialArgumentValidator.validate(environment));
 
     assertThat(exception.getMessage(), is("Type argument is not allowed when argument bbox is true (geometry)."));
   }

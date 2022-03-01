@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
@@ -126,7 +127,7 @@ class BackendDataFetcherTest {
     when(environment.getFieldType()).thenReturn(fieldDefinition.getType());
     when(environment.getArguments()).thenReturn(Map.of("identifier", List.of()));
 
-    var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
+    var thrown = assertThrows(RequestValidationException.class, () -> backendDataFetcher.get(environment));
 
     assertThat(thrown.getMessage(), equalTo("At least one key must be provided"));
   }
@@ -156,7 +157,7 @@ class BackendDataFetcherTest {
 
     when(environment.getArguments()).thenReturn(Map.of("identifier", keys));
 
-    var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
+    var thrown = assertThrows(RequestValidationException.class, () -> backendDataFetcher.get(environment));
 
     assertThat(thrown.getMessage(), equalTo("Got 120 keys but a maximum of 100 keys is allowed!"));
   }
@@ -186,7 +187,7 @@ class BackendDataFetcherTest {
 
     when(environment.getArguments()).thenReturn(Map.of("identifier", keys));
 
-    var thrown = assertThrows(IllegalArgumentException.class, () -> backendDataFetcher.get(environment));
+    var thrown = assertThrows(RequestValidationException.class, () -> backendDataFetcher.get(environment));
 
     assertThat(thrown.getMessage(), equalTo("The following keys are duplicate: [id-1]"));
   }

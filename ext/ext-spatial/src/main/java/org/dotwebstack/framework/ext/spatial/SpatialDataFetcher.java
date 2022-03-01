@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
@@ -66,7 +65,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
       case AS_GEOJSON:
         return createGeoJson(geometry);
       default:
-        throw unsupportedOperationException("Invalid fieldName {}", fieldName);
+        throw illegalArgumentException("Invalid fieldName {}", fieldName);
     }
   }
 

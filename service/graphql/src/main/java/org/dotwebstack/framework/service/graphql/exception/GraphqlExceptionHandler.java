@@ -4,6 +4,7 @@ import static org.zalando.problem.Status.BAD_REQUEST;
 
 import graphql.execution.UnknownOperationException;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,6 +34,14 @@ public class GraphqlExceptionHandler implements ProblemHandling {
       ServerWebExchange request) {
     LOG.error(exception.getMessage());
 
+    var problem = getThrowableProblem(BAD_REQUEST, exception.getMessage());
+
+    return create(problem, request);
+  }
+
+  @ExceptionHandler(RequestValidationException.class)
+  public Mono<ResponseEntity<Problem>> handleRequestValidationException(RequestValidationException exception,
+      ServerWebExchange request) {
     var problem = getThrowableProblem(BAD_REQUEST, exception.getMessage());
 
     return create(problem, request);

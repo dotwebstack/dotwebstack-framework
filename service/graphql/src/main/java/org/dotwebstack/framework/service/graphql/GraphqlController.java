@@ -1,9 +1,11 @@
 package org.dotwebstack.framework.service.graphql;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
@@ -12,6 +14,8 @@ import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
+import org.dotwebstack.framework.core.DotWebStackRuntimeException;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -57,7 +61,7 @@ class GraphqlController {
     var executionInput = getExecutionInput(query, operationName, variablesMap);
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .map(ExecutionResult::toSpecification);
+        .flatMap(this::handleErrors);
   }
 
   @CrossOrigin
@@ -81,7 +85,7 @@ class GraphqlController {
     var executionInput = getExecutionInput(requestBody);
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .map(ExecutionResult::toSpecification);
+        .flatMap(this::handleErrors);
   }
 
   @CrossOrigin
@@ -91,7 +95,29 @@ class GraphqlController {
     var executionInput = getExecutionInput(body, null, Map.of());
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .map(ExecutionResult::toSpecification);
+        .flatMap(this::handleErrors);
+  }
+
+  private Mono<Map<String, Object>> handleErrors(ExecutionResult executionResult) {
+    var errors = executionResult.getErrors();
+
+    if (errors.stream()
+        .noneMatch(ExceptionWhileDataFetching.class::isInstance)) {
+      return Mono.just(executionResult.toSpecification());
+    }
+
+    var throwable = errors.stream()
+        .filter(ExceptionWhileDataFetching.class::isInstance)
+        .map(ExceptionWhileDataFetching.class::cast)
+        .map(ExceptionWhileDataFetching::getException)
+        .findFirst()
+        .orElseThrow(ExceptionHelper::internalServerErrorException);
+
+    if (throwable instanceof DotWebStackRuntimeException) {
+      throw ((DotWebStackRuntimeException) throwable);
+    }
+
+    return Mono.error(internalServerErrorException());
   }
 
   private void validateOperationNameIsNotEmptyString(String operationName) {

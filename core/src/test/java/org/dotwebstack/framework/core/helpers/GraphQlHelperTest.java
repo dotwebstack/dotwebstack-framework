@@ -1,5 +1,11 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLScalarType.newScalar;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
@@ -14,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
+import graphql.language.FieldDefinition;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.ObjectField;
@@ -21,6 +28,8 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.TypeName;
+import graphql.scalar.GraphqlStringCoercing;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLScalarType;
@@ -31,6 +40,7 @@ import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.junit.jupiter.api.Test;
 
 class GraphQlHelperTest {
@@ -268,6 +278,58 @@ class GraphQlHelperTest {
     var actual = getRequestStepInfo(request);
 
     assertThat(actual, equalTo(request));
+  }
+
+  @Test
+  void getKeyArguments_returnsList_forArgumentsWithKeyField() {
+    var type = GraphQLList.list(newObject().name("Item")
+        .build());
+
+    var fieldDefinition = newFieldDefinition().name("itemsBatchQuery")
+        .definition(FieldDefinition.newFieldDefinition()
+            .name("itemsBatchQuery")
+            .additionalData(GraphQlConstants.IS_BATCH_KEY_QUERY, Boolean.TRUE.toString())
+            .build())
+        .type(type)
+        .argument(newArgument().type(GraphQLList.list(newScalar().name("String")
+            .coercing(new GraphqlStringCoercing())
+            .build()))
+            .definition(newInputValueDefinition().additionalData(GraphQlConstants.KEY_FIELD, Boolean.TRUE.toString())
+                .build())
+            .name("identifier")
+            .build())
+        .build();
+
+    var result = getKeyArguments(fieldDefinition);
+
+    assertThat(result.size(), is(1));
+    assertThat(result.get(0)
+        .getName(), is("identifier"));
+  }
+
+  @Test
+  void getKeyArguments_returnsEmptyList_forArgumentsWithoutKeyField() {
+    var type = GraphQLList.list(newObject().name("Item")
+        .build());
+
+    var fieldDefinition = newFieldDefinition().name("itemsBatchQuery")
+        .definition(FieldDefinition.newFieldDefinition()
+            .name("itemsBatchQuery")
+            .additionalData(GraphQlConstants.IS_BATCH_KEY_QUERY, Boolean.TRUE.toString())
+            .build())
+        .type(type)
+        .argument(newArgument().type(GraphQLList.list(newScalar().name("String")
+            .coercing(new GraphqlStringCoercing())
+            .build()))
+            .definition(newInputValueDefinition().additionalData(Map.of())
+                .build())
+            .name("identifier")
+            .build())
+        .build();
+
+    var result = getKeyArguments(fieldDefinition);
+
+    assertThat(result.size(), is(0));
   }
 
 }

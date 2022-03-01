@@ -4,6 +4,7 @@ import java.util.MissingFormatArgumentException;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.RequestValidationException;
 
 public class ExceptionHelper {
 
@@ -60,4 +61,9 @@ public class ExceptionHelper {
   public static InternalServerErrorException internalServerErrorException(String message, Object... arguments) {
     return new InternalServerErrorException(formatMessage(message, arguments), findCause(arguments));
   }
+
+  public static RequestValidationException requestValidationException(String message, Object... arguments) {
+    return new RequestValidationException(formatMessage(message, arguments), findCause(arguments));
+  }
+
 }
