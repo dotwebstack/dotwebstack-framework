@@ -10,12 +10,14 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomScalarField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -35,6 +37,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -45,7 +48,6 @@ import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -190,38 +192,27 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
-    var customScalarFields = selectionSet.getImmediateFields()
-        .stream()
-        .filter(isCustomScalarField)
-        .filter(not(isIntrospectionField))
-        .flatMap(selectedField -> {
-          var fieldDefinition = selectedField.getFieldDefinitions()
-              .stream()
-              .findFirst()
-              .orElseThrow()
-              .getDefinition();
-
-          var customValueFetcher = fieldDefinition.getAdditionalData()
-              .get(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER);
-
-          return customValueFetcherDispatcher.getSourceFieldNames(customValueFetcher)
-              .stream()
-              .map(fieldName -> FieldRequest.builder()
-                  .name(fieldName)
-                  .resultKey(fieldName)
-                  .build());
-        })
-        .collect(Collectors.toList());
-
-    var scalarFields = selectionSet.getImmediateFields()
+    return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .map(this::mapToFieldRequest)
+        .flatMap(this::mapScalarFieldToFieldRequests)
         .collect(Collectors.toList());
+  }
 
-    return Stream.concat(customScalarFields.stream(), scalarFields.stream())
-        .collect(Collectors.toList());
+  private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField) {
+    if (isCustomField.test(selectedField)) {
+      return getAdditionalData(selectedField, CUSTOM_FIELD_VALUEFETCHER).stream()
+          .flatMap(customValueFetcher -> Objects.requireNonNull(customValueFetcherDispatcher)
+              .getSourceFieldNames(customValueFetcher)
+              .stream())
+          .map(fieldName -> FieldRequest.builder()
+              .name(fieldName)
+              .resultKey(fieldName)
+              .build());
+    }
+
+    return Stream.of(mapToFieldRequest(selectedField));
   }
 
   private FieldRequest mapToFieldRequest(SelectedField selectedField) {

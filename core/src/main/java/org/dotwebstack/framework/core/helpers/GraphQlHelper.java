@@ -2,9 +2,11 @@ package org.dotwebstack.framework.core.helpers;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
+import graphql.language.FieldDefinition;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.Node;
@@ -23,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.NonNull;
@@ -58,28 +61,11 @@ public class GraphQlHelper {
     return value.toString();
   }
 
-  public static final Predicate<SelectedField> isCustomScalarField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-
-    return (unwrappedType instanceof GraphQLScalarType
-        || unwrappedType instanceof GraphQLEnumType || isScalarType(unwrappedType))
-        && selectedField.getFieldDefinitions()
-            .stream()
-            .anyMatch(fieldDefinition -> fieldDefinition.getDefinition()
-                .getAdditionalData()
-                .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
-  };
-
   public static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
 
-    return (unwrappedType instanceof GraphQLScalarType
-        || unwrappedType instanceof GraphQLEnumType || isScalarType(unwrappedType))
-        && selectedField.getFieldDefinitions()
-            .stream()
-            .noneMatch(fieldDefinition -> fieldDefinition.getDefinition()
-                .getAdditionalData()
-                .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
+    return (unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType
+        || isScalarType(unwrappedType));
   };
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
@@ -102,18 +88,17 @@ public class GraphQlHelper {
         || getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
   };
 
+  public static final Predicate<SelectedField> isCustomField = selectedField -> selectedField.getFieldDefinitions()
+      .stream()
+      .anyMatch(fieldDefinition -> fieldDefinition.getDefinition()
+          .getAdditionalData()
+          .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
+
   public static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
 
   private static boolean isScalarType(GraphQLUnmodifiedType unmodifiedType) {
     return getAdditionalData(unmodifiedType).containsKey(GraphQlConstants.IS_SCALAR);
-  }
-
-  @SuppressWarnings({"unchecked"})
-  private static Map<String, String> getAdditionalData(GraphQLUnmodifiedType unmodifiedType) {
-    return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
-        .map(Node::getAdditionalData)
-        .orElse(Map.of());
   }
 
   public static ExecutionStepInfo getRequestStepInfo(ExecutionStepInfo executionStepInfo) {
@@ -131,5 +116,36 @@ public class GraphQlHelper {
             .getAdditionalData()
             .containsKey(GraphQlConstants.KEY_FIELD))
         .collect(Collectors.toList());
+  }
+
+  public static FieldDefinition getFieldDefinition(SelectedField selectedField) {
+    if (selectedField.getFieldDefinitions()
+        .size() > 1) {
+      throw illegalArgumentException("SelectedField '{}' has {} fieldDefinitions but expected one!",
+          selectedField.getName(), selectedField.getFieldDefinitions()
+              .size());
+    }
+    return selectedField.getFieldDefinitions()
+        .stream()
+        .findFirst()
+        .orElseThrow()
+        .getDefinition();
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private static Map<String, String> getAdditionalData(GraphQLUnmodifiedType unmodifiedType) {
+    return ofNullable(unmodifiedType).map(GraphQLUnmodifiedType::getDefinition)
+        .map(Node::getAdditionalData)
+        .orElse(Map.of());
+  }
+
+  public static Optional<String> getAdditionalData(SelectedField selectedField, String key) {
+    var fieldDefinition = getFieldDefinition(selectedField);
+
+    return Optional.of(fieldDefinition)
+        .filter(def -> def.getAdditionalData()
+            .containsKey(key))
+        .map(def -> def.getAdditionalData()
+            .get(key));
   }
 }
