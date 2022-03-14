@@ -31,5 +31,7 @@ public interface ObjectField {
 
   FieldEnumConfiguration getEnumeration();
 
+  String getValueFetcher();
+
   boolean isEnumeration();
 }

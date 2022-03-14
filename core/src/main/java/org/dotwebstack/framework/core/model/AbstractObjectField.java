@@ -29,6 +29,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected String keyField;
 
+  protected String valueFetcher;
+
   @JsonProperty("enum")
   protected FieldEnumConfiguration enumeration;
 

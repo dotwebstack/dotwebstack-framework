@@ -58,10 +58,28 @@ public class GraphQlHelper {
     return value.toString();
   }
 
+  public static final Predicate<SelectedField> isCustomScalarField = selectedField -> {
+    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+
+    return (unwrappedType instanceof GraphQLScalarType
+        || unwrappedType instanceof GraphQLEnumType || isScalarType(unwrappedType))
+        && selectedField.getFieldDefinitions()
+            .stream()
+            .anyMatch(fieldDefinition -> fieldDefinition.getDefinition()
+                .getAdditionalData()
+                .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
+  };
+
   public static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
-    return unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType
-        || isScalarType(unwrappedType);
+
+    return (unwrappedType instanceof GraphQLScalarType
+        || unwrappedType instanceof GraphQLEnumType || isScalarType(unwrappedType))
+        && selectedField.getFieldDefinitions()
+            .stream()
+            .noneMatch(fieldDefinition -> fieldDefinition.getDefinition()
+                .getAdditionalData()
+                .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
   };
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {

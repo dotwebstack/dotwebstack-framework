@@ -11,8 +11,12 @@ import graphql.schema.DataFetcher;
 import graphql.schema.idl.FieldWiringEnvironment;
 import graphql.schema.idl.WiringFactory;
 import java.util.List;
+import javax.annotation.Nullable;
+import org.dotwebstack.framework.core.CustomValueDataFetcher;
+import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
@@ -31,13 +35,17 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final List<GraphQlValidator> graphQlValidators;
 
+  private final CustomValueFetcherDispatcher customValueFetcherDispatcher;
+
   public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
-      Schema schema, BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators) {
+      Schema schema, BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators,
+      @Nullable CustomValueFetcherDispatcher customValueFetcherDispatcher) {
     this.backendModule = backendModule;
     this.requestFactory = requestFactory;
     this.schema = schema;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
     this.graphQlValidators = graphQlValidators;
+    this.customValueFetcherDispatcher = customValueFetcherDispatcher;
   }
 
   @Override
@@ -46,6 +54,10 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
     if (typeName.isEmpty()) {
       throw illegalStateException("Unknown ObjectType: %s", typeName);
+    }
+
+    if (isCustomValueField(environment)) {
+      return true;
     }
 
     if (isAliasedType(typeName, environment)) {
@@ -64,6 +76,13 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
       throw illegalStateException("Unknown ObjectType: %s", typeName);
     }
 
+    if (isCustomValueField(environment)) {
+      if (customValueFetcherDispatcher == null) {
+        throw illegalStateException("Missing CustomValueFetcherDispatcher bean!");
+      }
+      return new CustomValueDataFetcher(customValueFetcherDispatcher);
+    }
+
     // Initialize BackendDataFetcher without BackendLoader to support aliases for Aggregates.
     if (isAliasedType(typeName, environment)) {
       return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators);
@@ -75,6 +94,12 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
           .create(objectType);
       return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators);
     }
+  }
+
+  private boolean isCustomValueField(FieldWiringEnvironment environment) {
+    return environment.getFieldDefinition()
+        .getAdditionalData()
+        .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER);
   }
 
   private boolean isAliasedType(String typeName, FieldWiringEnvironment environment) {

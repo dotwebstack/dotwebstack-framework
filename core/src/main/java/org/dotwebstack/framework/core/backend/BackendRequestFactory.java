@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomScalarField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -35,12 +36,16 @@ import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -64,9 +69,13 @@ public class BackendRequestFactory {
 
   private final BackendExecutionStepInfo backendExecutionStepInfo;
 
-  public BackendRequestFactory(Schema schema, BackendExecutionStepInfo backendExecutionStepInfo) {
+  private final CustomValueFetcherDispatcher customValueFetcherDispatcher;
+
+  public BackendRequestFactory(Schema schema, BackendExecutionStepInfo backendExecutionStepInfo,
+      @Nullable CustomValueFetcherDispatcher customValueFetcherDispatcher) {
     this.schema = schema;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
+    this.customValueFetcherDispatcher = customValueFetcherDispatcher;
   }
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
@@ -181,11 +190,37 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
-    return selectionSet.getImmediateFields()
+    var customScalarFields = selectionSet.getImmediateFields()
+        .stream()
+        .filter(isCustomScalarField)
+        .filter(not(isIntrospectionField))
+        .flatMap(selectedField -> {
+          var fieldDefinition = selectedField.getFieldDefinitions()
+              .stream()
+              .findFirst()
+              .orElseThrow()
+              .getDefinition();
+
+          var customValueFetcher = fieldDefinition.getAdditionalData()
+              .get(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER);
+
+          return customValueFetcherDispatcher.getSourceFieldNames(customValueFetcher)
+              .stream()
+              .map(fieldName -> FieldRequest.builder()
+                  .name(fieldName)
+                  .resultKey(fieldName)
+                  .build());
+        })
+        .collect(Collectors.toList());
+
+    var scalarFields = selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
         .map(this::mapToFieldRequest)
+        .collect(Collectors.toList());
+
+    return Stream.concat(customScalarFields.stream(), scalarFields.stream())
         .collect(Collectors.toList());
   }
 

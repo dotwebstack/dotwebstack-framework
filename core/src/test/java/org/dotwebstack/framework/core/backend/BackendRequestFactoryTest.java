@@ -82,7 +82,7 @@ class BackendRequestFactoryTest {
     when(beerField.getArguments()).thenReturn(Map.of("identifier", "foo"));
     when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
 
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
@@ -125,7 +125,7 @@ class BackendRequestFactoryTest {
 
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
 
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
 
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
     assertThat(objectRequest.getKeyCriterias(), is(notNullValue()));
@@ -170,9 +170,9 @@ class BackendRequestFactoryTest {
     when(selectionSetParent.getImmediateFields()).thenReturn(List.of(selectedFieldParent));
 
     var executionStepInfo = initExecutionStepInfoMock();
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
 
-    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, is(notNullValue()));
@@ -223,7 +223,7 @@ class BackendRequestFactoryTest {
         .build());
 
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
-    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo());
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
 
     var result = backendRequestFactory.createRequestContext(envBuilder.build());
 

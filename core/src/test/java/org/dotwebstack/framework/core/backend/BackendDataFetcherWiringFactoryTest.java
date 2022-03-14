@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.language.FieldDefinition.newFieldDefinition;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -46,8 +47,11 @@ class BackendDataFetcherWiringFactoryTest {
     BackendModule<?> backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
     SchemaReader schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
     Schema schema = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
-    dataFetcher =
-        new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema, backendExecutionStepInfo, List.of());
+    dataFetcher = new BackendDataFetcherWiringFactory(backendModule, requestFactory, schema, backendExecutionStepInfo,
+        List.of(), null);
+
+    lenient().when(environment.getFieldDefinition())
+        .thenReturn(newFieldDefinition().build());
   }
 
 
