@@ -3,7 +3,9 @@ package org.dotwebstack.framework.core.backend;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
 import graphql.language.TypeDefinition;
@@ -16,7 +18,6 @@ import org.dotwebstack.framework.core.CustomValueDataFetcher;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
@@ -97,9 +98,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
   }
 
   private boolean isCustomValueField(FieldWiringEnvironment environment) {
-    return environment.getFieldDefinition()
-        .getAdditionalData()
-        .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER);
+    return getAdditionalData(environment.getFieldDefinition(), CUSTOM_FIELD_VALUEFETCHER).isPresent();
   }
 
   private boolean isAliasedType(String typeName, FieldWiringEnvironment environment) {

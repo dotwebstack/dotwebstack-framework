@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.core;
 
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
+
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 
 public class CustomValueDataFetcher implements DataFetcher<Object> {
 
@@ -17,9 +19,7 @@ public class CustomValueDataFetcher implements DataFetcher<Object> {
     var fieldDefinition = environment.getFieldDefinition()
         .getDefinition();
 
-    var customValueFetcher = fieldDefinition.getAdditionalData()
-        .get(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER);
-
-    return customValueFetcherDispatcher.fetch(customValueFetcher, environment.getSource());
+    return getAdditionalData(fieldDefinition, CUSTOM_FIELD_VALUEFETCHER)
+        .map(customValueFetcher -> customValueFetcherDispatcher.fetch(customValueFetcher, environment.getSource()));
   }
 }

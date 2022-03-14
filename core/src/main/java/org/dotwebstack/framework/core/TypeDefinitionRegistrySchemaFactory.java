@@ -18,6 +18,7 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
@@ -58,7 +59,6 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -260,7 +260,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     Map<String, String> additionalData = new HashMap<>();
     if (isNotBlank(objectField.getValueFetcher())) {
-      additionalData.put(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER, objectField.getValueFetcher());
+      additionalData.put(CUSTOM_FIELD_VALUEFETCHER, objectField.getValueFetcher());
     }
 
     return Optional.of(newFieldDefinition().name(objectField.getName())

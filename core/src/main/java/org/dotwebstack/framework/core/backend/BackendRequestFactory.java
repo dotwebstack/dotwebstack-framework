@@ -17,7 +17,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStat
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -201,7 +201,7 @@ public class BackendRequestFactory {
   }
 
   private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField) {
-    if (isCustomField.test(selectedField)) {
+    if (isCustomValueField.test(selectedField)) {
       return getAdditionalData(selectedField, CUSTOM_FIELD_VALUEFETCHER).stream()
           .flatMap(customValueFetcher -> Objects.requireNonNull(customValueFetcherDispatcher)
               .getSourceFieldNames(customValueFetcher)

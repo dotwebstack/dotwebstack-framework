@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.helpers;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.execution.ExecutionStepInfo;
@@ -88,11 +89,11 @@ public class GraphQlHelper {
         || getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
   };
 
-  public static final Predicate<SelectedField> isCustomField = selectedField -> selectedField.getFieldDefinitions()
+  public static final Predicate<SelectedField> isCustomValueField = selectedField -> selectedField.getFieldDefinitions()
       .stream()
       .anyMatch(fieldDefinition -> fieldDefinition.getDefinition()
           .getAdditionalData()
-          .containsKey(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER));
+          .containsKey(CUSTOM_FIELD_VALUEFETCHER));
 
   public static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
@@ -142,6 +143,10 @@ public class GraphQlHelper {
   public static Optional<String> getAdditionalData(SelectedField selectedField, String key) {
     var fieldDefinition = getFieldDefinition(selectedField);
 
+    return getAdditionalData(fieldDefinition, key);
+  }
+
+  public static Optional<String> getAdditionalData(FieldDefinition fieldDefinition, String key) {
     return Optional.of(fieldDefinition)
         .filter(def -> def.getAdditionalData()
             .containsKey(key))

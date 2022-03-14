@@ -5,10 +5,11 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLScalarType.newScalar;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomField;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -381,24 +382,24 @@ class GraphQlHelperTest {
   }
 
   @Test
-  void isCustomField_returnsTrue_forCustomField() {
+  void isCustomValueField_returnsTrue_forCustomField() {
     var selectedField = mock(SelectedField.class);
 
     var fieldDefinition = newFieldDefinition().name("fieldDefA")
         .definition(FieldDefinition.newFieldDefinition()
-            .additionalData(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER, "testValuefetcher")
+            .additionalData(CUSTOM_FIELD_VALUEFETCHER, "testValuefetcher")
             .build())
         .type(Scalars.GraphQLString)
         .build();
 
     when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
 
-    var result = isCustomField.test(selectedField);
+    var result = isCustomValueField.test(selectedField);
     assertThat(result, is(true));
   }
 
   @Test
-  void isCustomField_returnsFalse_forNonCustomField() {
+  void isCustomValueField_returnsFalse_forNonCustomField() {
     var selectedField = mock(SelectedField.class);
 
     var fieldDefinition = newFieldDefinition().name("fieldDefA")
@@ -409,7 +410,7 @@ class GraphQlHelperTest {
 
     when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
 
-    var result = isCustomField.test(selectedField);
+    var result = isCustomValueField.test(selectedField);
     assertThat(result, is(false));
   }
 
