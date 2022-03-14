@@ -1,0 +1,15 @@
+queries:
+  breweryCollection:
+    type: Brewery
+    list: true
+
+objectTypes:
+  Brewery:
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      shortName:
+        valueFetcher: shortname-valuefetcher
+        type: String
