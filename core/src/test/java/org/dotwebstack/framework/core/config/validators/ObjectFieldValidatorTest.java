@@ -78,8 +78,8 @@ class ObjectFieldValidatorTest {
 
     var thrown = assertThrows(InvalidConfigurationException.class, () -> objectFieldValidator.validate(schema));
 
-    assertThat(thrown.getMessage(), is(
-        "Valuefetcher 'shortname-valuefetcher' configured with type 'Integer' but implementation type is 'java.lang.String'!"));
+    assertThat(thrown.getMessage(), is("Valuefetcher 'shortname-valuefetcher' configured with type 'Integer' but "
+        + "implementation type is 'java.lang.String'!"));
   }
 
   private CustomValueFetcherDispatcher mockValueFetcherDispatcher(String valueFetcher) {
@@ -91,8 +91,6 @@ class ObjectFieldValidatorTest {
   }
 
   private Schema createSchema(String valueFetcher, String type) {
-    var schema = new Schema();
-
     var objectField = new TestObjectField();
     objectField.setValueFetcher(valueFetcher);
     objectField.setType(type);
@@ -100,6 +98,8 @@ class ObjectFieldValidatorTest {
 
     var objectType = new TestObjectType();
     objectType.setName("Brewery");
+
+    var schema = new Schema();
 
     objectType.setFields(Map.of("shortName", objectField));
     schema.setObjectTypes(Map.of("Brewery", objectType));
