@@ -37,10 +37,23 @@ public class ObjectFieldValidator implements SchemaValidator {
   }
 
   private void validate(ObjectType<?> objectType, ObjectField objectField) {
-    if (StringUtils.isNotBlank(objectField.getValueFetcher()) && (customValueFetcherDispatcher == null
+    if (StringUtils.isBlank(objectField.getValueFetcher())) {
+      return;
+    }
+
+    if ((customValueFetcherDispatcher == null
         || !customValueFetcherDispatcher.supports(objectField.getValueFetcher()))) {
       throw invalidConfigurationException("ValueFetcher '{}' is not supported for field {}.{}!",
           objectField.getValueFetcher(), objectType.getName(), objectField.getName());
+    }
+
+    Class<?> resultType = customValueFetcherDispatcher.getResultType(objectField.getValueFetcher());
+
+    if (!resultType.getSimpleName()
+        .equalsIgnoreCase(objectField.getType())) {
+      throw invalidConfigurationException(
+          "Valuefetcher '{}' configured with type '{}' but implementation type is '{}'!", objectField.getValueFetcher(),
+          objectField.getType(), resultType.getName());
     }
   }
 }
