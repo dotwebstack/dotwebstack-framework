@@ -1,7 +1,9 @@
 package org.dotwebstack.framework.core.backend;
 
+import static graphql.execution.ExecutionStepInfo.newExecutionStepInfo;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -27,12 +29,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
+import org.dotwebstack.framework.core.model.Query;
+import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
+import org.dotwebstack.framework.core.testhelpers.TestObjectField;
+import org.dotwebstack.framework.core.testhelpers.TestObjectType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +64,72 @@ class BackendRequestFactoryTest {
   }
 
   @Test
+  void createObjectRequest_returnsObjectRequest_forBeerWithCustomValue() {
+    var objectType = new TestObjectType();
+    objectType.setName("TestObject");
+
+    var nameField = new TestObjectField();
+    nameField.setName("name");
+    nameField.setType("String");
+    objectType.getFields()
+        .put("name", nameField);
+
+    var shortNameField = new TestObjectField();
+    shortNameField.setName("shortName");
+    shortNameField.setType("String");
+    shortNameField.setValueFetcher("shortname-valuefetcher");
+    objectType.getFields()
+        .put("shortName", shortNameField);
+
+    var schema = new Schema();
+    schema.getObjectTypes()
+        .put("TestObject", objectType);
+
+    var testQuery = new Query();
+    testQuery.setType("TestObject");
+    schema.getQueries()
+        .put("testQuery", testQuery);
+
+    var graphQlSchema = TestHelper.schemaToGraphQl(schema);
+
+    var fieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("testQuery");
+
+    GraphQLObjectType objectType2 = mock(GraphQLObjectType.class);
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(fieldDefinition)
+        .fieldContainer(objectType2)
+        .type(fieldDefinition.getType())
+        .build();
+
+    var selectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    var selectedField = mock(SelectedField.class);
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(newFieldDefinition().type(Scalars.GraphQLString)
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData(GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER, "shortname-valuefetcher")
+            .build())
+        .name("shortName")
+        .build()));
+    when(selectedField.getName()).thenReturn("shortName");
+    when(selectedField.getType()).thenReturn(Scalars.GraphQLString);
+
+    when(selectionSet.getImmediateFields()).thenReturn(List.of(selectedField));
+
+    var customValueFetcherDispatcher = mock(CustomValueFetcherDispatcher.class);
+    when(customValueFetcherDispatcher.getSourceFieldNames("shortname-valuefetcher")).thenReturn(Set.of("name"));
+
+    var backendRequestFactory =
+        new BackendRequestFactory(schema, new BackendExecutionStepInfo(), customValueFetcherDispatcher);
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, selectionSet);
+
+    assertThat(objectRequest, is(notNullValue()));
+    assertThat(objectRequest.getScalarFields(), equalTo(List.of(FieldRequest.builder()
+        .name("name")
+        .resultKey("name")
+        .build())));
+  }
+
+  @Test
   void createObjectRequest_returnsObjectRequest_forBeerWithKey() {
     var schema = testHelper.loadSchema("dotwebstack/dotwebstack-objecttypes.yaml");
     var graphQlSchema = TestHelper.schemaToGraphQl(schema);
@@ -66,8 +141,7 @@ class BackendRequestFactoryTest {
         .getFieldDefinition("beer");
 
     GraphQLObjectType objectType = mock(GraphQLObjectType.class);
-    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
-        .fieldDefinition(breweryFieldDefinition)
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
         .build();
@@ -116,8 +190,7 @@ class BackendRequestFactoryTest {
         .getFieldDefinition("brewery");
 
     GraphQLObjectType objectType = mock(GraphQLObjectType.class);
-    var executionStepInfo = ExecutionStepInfo.newExecutionStepInfo()
-        .fieldDefinition(breweryFieldDefinition)
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
         .arguments(Map.of("identifier", "id-1"))
