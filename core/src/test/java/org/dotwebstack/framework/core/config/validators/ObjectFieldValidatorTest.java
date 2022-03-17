@@ -63,8 +63,8 @@ class ObjectFieldValidatorTest {
 
     var thrown = assertThrows(InvalidConfigurationException.class, () -> objectFieldValidator.validate(schema));
 
-    assertThat(thrown.getMessage(),
-        is("ValueFetcher 'shortname-valuefetcher' is not supported for field Brewery.shortName!"));
+    assertThat(thrown.getMessage(), is("ValueFetcher 'shortname-valuefetcher' configured for field Brewery.shortName "
+        + "but 'CustomValueFetcherDispatcher' bean is missing!"));
   }
 
   @Test

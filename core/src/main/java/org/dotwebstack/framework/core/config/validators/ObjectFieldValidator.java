@@ -41,8 +41,13 @@ public class ObjectFieldValidator implements SchemaValidator {
       return;
     }
 
-    if ((customValueFetcherDispatcher == null
-        || !customValueFetcherDispatcher.supports(objectField.getValueFetcher()))) {
+    if (customValueFetcherDispatcher == null) {
+      throw invalidConfigurationException(
+          "ValueFetcher '{}' configured for field {}.{} but 'CustomValueFetcherDispatcher' bean is missing!",
+          objectField.getValueFetcher(), objectType.getName(), objectField.getName());
+    }
+
+    if (!customValueFetcherDispatcher.supports(objectField.getValueFetcher())) {
       throw invalidConfigurationException("ValueFetcher '{}' is not supported for field {}.{}!",
           objectField.getValueFetcher(), objectType.getName(), objectField.getName());
     }
