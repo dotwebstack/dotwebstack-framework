@@ -16,4 +16,6 @@ public class GraphQlConstants {
 
   public static final String IS_BATCH_KEY_QUERY = "isBatchKeyQuery";
 
+  public static final String CUSTOM_FIELD_VALUEFETCHER = "customFieldValueFetcher";
+
 }

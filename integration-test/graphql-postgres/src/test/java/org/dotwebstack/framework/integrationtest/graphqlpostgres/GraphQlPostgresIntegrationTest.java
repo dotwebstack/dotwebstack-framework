@@ -1645,6 +1645,17 @@ class GraphQlPostgresIntegrationTest {
             Map.of("leeftijd", 1600))))));
   }
 
+  @Test
+  void getRequest_returnsBreweryWithCustomValue_forSingleBeer() {
+    var query = "{brewery (identifier_brewery : \"28649f76-ddcf-417a-8c1d-8e5012c11666\")"
+        + "{identifier_brewery shortName } }";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, equalTo(
+        Map.of("brewery", Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "shortName", "Bre"))));
+  }
+
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> getNestedObjects(Map<String, Object> data, String name) {
     return (List<Map<String, Object>>) data.get(name);

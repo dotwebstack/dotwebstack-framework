@@ -7,6 +7,7 @@ import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinitio
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
@@ -17,6 +18,7 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
@@ -256,9 +258,15 @@ public class TypeDefinitionRegistrySchemaFactory {
       type = createTypeForField(objectField);
     }
 
+    Map<String, String> additionalData = new HashMap<>();
+    if (isNotBlank(objectField.getValueFetcher())) {
+      additionalData.put(CUSTOM_FIELD_VALUEFETCHER, objectField.getValueFetcher());
+    }
+
     return Optional.of(newFieldDefinition().name(objectField.getName())
         .type(type)
         .inputValueDefinitions(createInputValueDefinitions(objectField))
+        .additionalData(additionalData)
         .build());
   }
 
@@ -403,7 +411,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     createSortArgument(subscription, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (StringUtils.isNotBlank(subscription.getContext())) {
+    if (isNotBlank(subscription.getContext())) {
       addOptionalContext(subscription.getContext(), inputValueDefinitions);
     }
 
@@ -424,7 +432,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
     createSortArgument(query, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (StringUtils.isNotBlank(query.getContext())) {
+    if (isNotBlank(query.getContext())) {
       addOptionalContext(query.getContext(), inputValueDefinitions);
     }
 

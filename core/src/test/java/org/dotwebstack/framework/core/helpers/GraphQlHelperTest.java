@@ -5,8 +5,11 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLScalarType.newScalar;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
@@ -15,9 +18,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
 import graphql.language.FieldDefinition;
@@ -39,7 +44,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.junit.jupiter.api.Test;
 
@@ -330,6 +337,99 @@ class GraphQlHelperTest {
     var result = getKeyArguments(fieldDefinition);
 
     assertThat(result.size(), is(0));
+  }
+
+  @Test
+  void getFieldDefinition_throwsException_forSelectedFieldWithMultipleFieldDefinitions() {
+    var selectedField = mock(SelectedField.class);
+
+    when(selectedField.getName()).thenReturn("testSelectedField");
+
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(newFieldDefinition().name("fieldDefA")
+        .definition(FieldDefinition.newFieldDefinition()
+            .build())
+        .type(Scalars.GraphQLString)
+        .build(),
+        newFieldDefinition().name("fieldDefB")
+            .definition(FieldDefinition.newFieldDefinition()
+                .build())
+            .type(Scalars.GraphQLString)
+            .build()));
+
+    var thrown = assertThrows(IllegalArgumentException.class, () -> GraphQlHelper.getFieldDefinition(selectedField));
+
+    assertThat(thrown.getMessage(),
+        equalTo("SelectedField 'testSelectedField' has 2 fieldDefinitions but expected one!"));
+  }
+
+  @Test
+  void getFieldDefinition_returnsDefinition_forSelectedFieldWithSingleFieldDefinition() {
+    var selectedField = mock(SelectedField.class);
+
+    when(selectedField.getName()).thenReturn("testSelectedField");
+
+    var fieldDefinition = newFieldDefinition().name("fieldDefA")
+        .definition(FieldDefinition.newFieldDefinition()
+            .build())
+        .type(Scalars.GraphQLString)
+        .build();
+
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
+
+    var result = GraphQlHelper.getFieldDefinition(selectedField);
+
+    assertThat(result, equalTo(result));
+  }
+
+  @Test
+  void isCustomValueField_returnsTrue_forCustomField() {
+    var selectedField = mock(SelectedField.class);
+
+    var fieldDefinition = newFieldDefinition().name("fieldDefA")
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData(CUSTOM_FIELD_VALUEFETCHER, "testValuefetcher")
+            .build())
+        .type(Scalars.GraphQLString)
+        .build();
+
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
+
+    var result = isCustomValueField.test(selectedField);
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void isCustomValueField_returnsFalse_forNonCustomField() {
+    var selectedField = mock(SelectedField.class);
+
+    var fieldDefinition = newFieldDefinition().name("fieldDefA")
+        .definition(FieldDefinition.newFieldDefinition()
+            .build())
+        .type(Scalars.GraphQLString)
+        .build();
+
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
+
+    var result = isCustomValueField.test(selectedField);
+    assertThat(result, is(false));
+  }
+
+  @Test
+  void getAdditionalData_returnsAdditionalData_forSelectedField() {
+    var selectedField = mock(SelectedField.class);
+
+    var fieldDefinition = newFieldDefinition().name("fieldDefA")
+        .definition(FieldDefinition.newFieldDefinition()
+            .additionalData("test", "testvalue")
+            .build())
+        .type(Scalars.GraphQLString)
+        .build();
+
+    when(selectedField.getFieldDefinitions()).thenReturn(List.of(fieldDefinition));
+
+    var result = getAdditionalData(selectedField, "test");
+
+    assertThat(result, is(Optional.of("testvalue")));
   }
 
 }
