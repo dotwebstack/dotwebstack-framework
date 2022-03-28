@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.codec;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,10 +13,10 @@ import io.r2dbc.postgresql.api.PostgresqlResult;
 import io.r2dbc.postgresql.api.PostgresqlStatement;
 import io.r2dbc.postgresql.codec.CodecRegistry;
 import java.util.AbstractMap;
+import java.util.function.BiFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -42,8 +43,7 @@ class SpatialCodecRegistrarTest {
     AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>("typname", "aa");
 
     PostgresqlResult result = mock(PostgresqlResult.class);
-    Mockito.lenient()
-        .when(result.map(any()))
+    lenient().when(result.map(any(BiFunction.class)))
         .thenReturn(Flux.just(entry));
 
     PostgresqlStatement statement = mock(PostgresqlStatement.class);

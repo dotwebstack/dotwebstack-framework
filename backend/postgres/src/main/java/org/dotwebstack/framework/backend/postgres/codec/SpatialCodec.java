@@ -5,7 +5,7 @@ import static org.dotwebstack.framework.backend.postgres.codec.SpatialCodecRegis
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.r2dbc.postgresql.client.Parameter;
+import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.codec.Codec;
 import io.r2dbc.postgresql.message.Format;
 import java.nio.charset.StandardCharsets;
@@ -56,13 +56,18 @@ class SpatialCodec implements Codec<Geometry> {
   }
 
   @Override
-  public Parameter encode(Object o) {
-    return new Parameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY),
+  public EncodedParameter encode(Object o) {
+    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY),
         Flux.just(Unpooled.wrappedBuffer(jtsBinaryWriter.writeBinary((Geometry) o))));
   }
 
   @Override
-  public Parameter encodeNull() {
-    return new Parameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY), Parameter.NULL_VALUE);
+  public EncodedParameter encode(Object o, int i) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public EncodedParameter encodeNull() {
+    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY), EncodedParameter.NULL_VALUE);
   }
 }

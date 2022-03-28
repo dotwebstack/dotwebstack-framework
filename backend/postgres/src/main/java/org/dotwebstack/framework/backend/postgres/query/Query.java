@@ -6,8 +6,10 @@ import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.dotwebstack.framework.backend.postgres.ContextAwareConnectionPool;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
@@ -79,9 +81,27 @@ public class Query {
           .getValue()));
     }
 
+    Thread requestThread = Thread.currentThread();
     return executeSpec.fetch()
         .all()
+        .doOnCancel(() -> cancelRequest(databaseClient, requestThread))
+        .doOnTerminate(() -> cleanUpConnection(databaseClient, requestThread))
         .map(rowMapper);
+  }
+
+  private void cleanUpConnection(DatabaseClient databaseClient, Thread requestThread) {
+    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cleanUp(requestThread));
+  }
+
+  private void cancelRequest(DatabaseClient databaseClient, Thread requestThread) {
+    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cancelRequest(requestThread));
+  }
+
+  private Optional<ContextAwareConnectionPool> getContextAwareConnectionPool(DatabaseClient databaseClient) {
+    return Optional.of(databaseClient)
+        .map(DatabaseClient::getConnectionFactory)
+        .filter(ContextAwareConnectionPool.class::isInstance)
+        .map(ContextAwareConnectionPool.class::cast);
   }
 
   public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatchMany(DatabaseClient databaseClient) {

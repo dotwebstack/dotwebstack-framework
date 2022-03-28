@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.r2dbc.postgresql.client.Parameter;
+import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.message.Format;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -105,15 +105,15 @@ class SpatialCodecTest {
   void encode_returnsParameter_forGeometry() {
     Point point = new GeometryFactory().createPoint(new Coordinate(5.97927433, 52.21715768));
 
-    Parameter encodedValue = codec.encode(point);
+    EncodedParameter encodedValue = codec.encode(point);
 
     assertThat(encodedValue, is(notNullValue()));
   }
 
   @Test
   void encodeNull_returnsParameter_always() {
-    Parameter result = codec.encodeNull();
+    EncodedParameter result = codec.encodeNull();
 
-    assertThat(result.getClass(), is(Parameter.class));
+    assertThat(result.getClass(), is(EncodedParameter.class));
   }
 }
