@@ -11,10 +11,15 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Mono;
+import reactor.util.context.ContextView;
 
 @Slf4j
 public class ContextAwareConnectionPool implements ConnectionFactory {
-  private final Map<Thread, Connection> connectionMap = new HashMap<>();
+
+  public static final String CTX_CONNECTION_UUID = "CONNECTION_UUID";
+
+  private final Map<String, Connection> connectionMap = new HashMap<>();
 
   private final ConnectionPool connectionPool;
 
@@ -24,38 +29,47 @@ public class ContextAwareConnectionPool implements ConnectionFactory {
 
   @Override
   public Publisher<? extends Connection> create() {
-    Thread requestThread = Thread.currentThread();
-    return connectionPool.create()
-        .doOnNext(connection -> connectionMap.put(requestThread, connection));
+    return Mono.deferContextual(ctx -> connectionPool.create()
+        .doOnNext(connection -> addToConnectionMap(ctx, connection)));
   }
 
-  public void cancelRequest(Thread requestThread) {
-    LOG.debug("Cancel connection for thread {} (exists: {})", requestThread, connectionMap.containsKey(requestThread));
-    getConnection(requestThread).filter(Wrapped.class::isInstance)
+  private void addToConnectionMap(ContextView ctx, Connection connection) {
+    if (ctx.hasKey(CTX_CONNECTION_UUID)) {
+      connectionMap.put(ctx.get(CTX_CONNECTION_UUID), connection);
+    } else {
+      LOG.debug("Context does not contain key: {}", CTX_CONNECTION_UUID);
+    }
+  }
+
+  public void cancelRequest(String uuid) {
+    LOG.debug("Cancel connection for uuid {} (exists: {})", uuid, connectionMap.containsKey(uuid));
+    getConnection(uuid).filter(Wrapped.class::isInstance)
         .map(Wrapped.class::cast)
         .map(Wrapped::unwrap)
         .filter(PostgresqlConnection.class::isInstance)
         .map(PostgresqlConnection.class::cast)
-        .ifPresent(conn -> cancelRequest(conn, requestThread));
+        .ifPresent(this::cancelRequest);
   }
 
-  private void cancelRequest(PostgresqlConnection conn, Thread requestThread) {
+  private void cancelRequest(PostgresqlConnection conn) {
     conn.cancelRequest()
-        .doOnTerminate(() -> cleanUp(requestThread))
         .subscribe();
   }
 
-  public void cleanUp(Thread requestThread) {
-    LOG.debug("Clean up connection for thread {} (exists: {})", requestThread,
-        connectionMap.containsKey(requestThread));
-    connectionMap.remove(requestThread);
+  public void cleanUp(String uuid) {
+    LOG.debug("Clean up connection for uuid {} (exists: {})", uuid, connectionMap.containsKey(uuid));
+    connectionMap.remove(uuid);
   }
 
-  private Optional<Connection> getConnection(Thread requestThread) {
-    if (connectionMap.containsKey(requestThread)) {
-      return Optional.of(connectionMap.get(requestThread));
+  private Optional<Connection> getConnection(String uuid) {
+    if (connectionMap.containsKey(uuid)) {
+      return Optional.of(connectionMap.get(uuid));
     }
     return Optional.empty();
+  }
+
+  boolean hasConnections() {
+    return !connectionMap.isEmpty();
   }
 
   @Override

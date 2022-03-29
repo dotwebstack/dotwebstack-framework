@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.backend.postgres.ContextAwareConnectionPool.CTX_CONNECTION_UUID;
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.postgres.ContextAwareConnectionPool;
@@ -81,20 +83,23 @@ public class Query {
           .getValue()));
     }
 
-    Thread requestThread = Thread.currentThread();
+    var uuid = UUID.randomUUID()
+        .toString();
+
     return executeSpec.fetch()
         .all()
-        .doOnCancel(() -> cancelRequest(databaseClient, requestThread))
-        .doOnTerminate(() -> cleanUpConnection(databaseClient, requestThread))
+        .contextWrite(ctx -> ctx.put(CTX_CONNECTION_UUID, uuid))
+        .doOnCancel(() -> cancelRequest(databaseClient, uuid))
+        .doFinally(v -> cleanUp(databaseClient, uuid))
         .map(rowMapper);
   }
 
-  private void cleanUpConnection(DatabaseClient databaseClient, Thread requestThread) {
-    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cleanUp(requestThread));
+  private void cleanUp(DatabaseClient databaseClient, String uuid) {
+    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cleanUp(uuid));
   }
 
-  private void cancelRequest(DatabaseClient databaseClient, Thread requestThread) {
-    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cancelRequest(requestThread));
+  private void cancelRequest(DatabaseClient databaseClient, String uuid) {
+    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cancelRequest(uuid));
   }
 
   private Optional<ContextAwareConnectionPool> getContextAwareConnectionPool(DatabaseClient databaseClient) {
