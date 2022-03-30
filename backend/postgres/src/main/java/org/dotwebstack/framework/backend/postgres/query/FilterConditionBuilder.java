@@ -457,6 +457,8 @@ class FilterConditionBuilder {
         return Optional.of(DSL.condition("ST_Within({0}, {1})", geoField, field));
       case INTERSECTS:
         return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoField));
+      case TOUCHES:
+        return Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoField));
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");
     }

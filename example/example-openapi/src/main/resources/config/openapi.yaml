@@ -204,6 +204,9 @@ paths:
             intersects:
               fromGeoJSON:
                 x-dws-expr: "json:asString($body._geo.intersects)!"
+            touches:
+              fromGeoJSON:
+                x-dws-expr: "json:asString($body._geo.touches)!"
             within:
               fromGeoJSON:
                 x-dws-expr: "json:asString($body._geo.within)!"
@@ -596,6 +599,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/Intersects'
         - $ref: '#/components/schemas/Contains'
+        - $ref: '#/components/schemas/Touches'
         - $ref: '#/components/schemas/Within'
     Intersects:
       type: object
@@ -609,6 +613,13 @@ components:
       description: Omsluit volledig
       properties:
         contains:
+          $ref: '#/components/schemas/GeoJSONGeometry'
+    Touches:
+      type: object
+      description: >-
+        'raakt' valt hieronder
+      properties:
+        intersects:
           $ref: '#/components/schemas/GeoJSONGeometry'
     Within:
       type: object

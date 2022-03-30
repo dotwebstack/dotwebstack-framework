@@ -48,6 +48,8 @@ public class SpatialConstants {
 
   public static final String INTERSECTS = "intersects";
 
+  public static final String TOUCHES = "touches";
+
   // GeometryTypes
 
   static final String POINT = "POINT";

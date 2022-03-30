@@ -29,6 +29,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOLYGO
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TOUCHES;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.WITHIN;
 
@@ -112,6 +113,9 @@ public class SpatialConfigurer implements GraphqlConfigurer, FilterConfigurer {
             .type(newTypeName(GEOMETRY_INPUT).build())
             .build())
         .inputValueDefinition(newInputValueDefinition().name(INTERSECTS)
+            .type(newTypeName(GEOMETRY_INPUT).build())
+            .build())
+        .inputValueDefinition(newInputValueDefinition().name(TOUCHES)
             .type(newTypeName(GEOMETRY_INPUT).build())
             .build())
         .inputValueDefinition(newInputValueDefinition().name(NOT_FIELD)
