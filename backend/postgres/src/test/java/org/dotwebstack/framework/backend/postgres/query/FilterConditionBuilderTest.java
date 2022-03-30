@@ -57,7 +57,9 @@ class FilterConditionBuilderTest {
         arguments(Map.of("within", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Within(cast('POINT (1 2)' as geometry), \"x1\".\"geometry_column\"))"),
         arguments(Map.of("intersects", Map.of("fromWKT", "POINT(1 2)")),
-            "(ST_Intersects(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"));
+            "(ST_Intersects(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
+        arguments(Map.of("touches", Map.of("fromWKT", "POINT(1 2)")),
+            "(ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"));
   }
 
   @ParameterizedTest

@@ -141,6 +141,7 @@ input GeometryFilter {
   within: GeometryInput!
   contains: GeometryInput!
   intersects: GeometryInput!
+  touches: GeometryInput!
   not: GeometryFilter!
 }
 
