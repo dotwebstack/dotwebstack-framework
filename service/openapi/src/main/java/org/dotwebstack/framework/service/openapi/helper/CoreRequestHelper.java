@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.helper;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
@@ -17,7 +16,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
-import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 public class CoreRequestHelper {
@@ -49,12 +47,6 @@ public class CoreRequestHelper {
 
     if (contentLength > 0) {
       throw parameterValidationException("A request body is not allowed for this request");
-    }
-  }
-
-  public static void validateResponseMediaTypesAreConfigured(List<MediaType> responseTemplatesList) {
-    if (responseTemplatesList.isEmpty()) {
-      throw unsupportedOperationException("No configured responses with mediatypes found within the 200 range.");
     }
   }
 
