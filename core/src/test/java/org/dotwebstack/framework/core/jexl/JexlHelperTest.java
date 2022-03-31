@@ -7,10 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.ImmutableMap;
-import graphql.Scalars;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLFieldDefinition;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -28,42 +24,6 @@ class JexlHelperTest {
       .create();
 
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
-
-  @Test
-  void evaluateDirective_returns_value() {
-    final GraphQLDirective directive = getGraphQlDirective();
-    final String expectedValue = "value1";
-    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
-
-    final Optional<String> evaluated =
-        this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, String.class);
-
-    assertThat("expected non-empty optional", evaluated.isPresent());
-    assertThat(expectedValue, is(equalTo(evaluated.get())));
-  }
-
-
-  @Test
-  void evaluateDirective_returns_empty() {
-    final GraphQLDirective directive = getGraphQlDirective();
-    final String expectedValue = "value1";
-    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
-
-    final Optional<String> evaluated =
-        this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg2", context, String.class);
-
-    assertThat("expected empty optional", evaluated.isEmpty());
-  }
-
-  @Test
-  void evaluateDirective_throwsException_forTypeMismatch() {
-    final GraphQLDirective directive = getGraphQlDirective();
-    final String expectedValue = "value1";
-    final JexlContext context = new MapContext(ImmutableMap.of("directiveValue1", expectedValue));
-
-    assertThrows(IllegalArgumentException.class,
-        () -> this.jexlHelper.evaluateDirectiveArgument(directive, "directiveArg1", context, Integer.class));
-  }
 
   @Test
   void evaluateExpression_returns_value() {
@@ -159,45 +119,7 @@ class JexlHelperTest {
     assertEquals("test", evaluateExpressionToString("args.name", context));
   }
 
-  @Test
-  void createJexlContent_createsContext_forFieldDefinition() {
-    GraphQLFieldDefinition fieldDefinition = GraphQLFieldDefinition.newFieldDefinition()
-        .name("beers")
-        .type(Scalars.GraphQLString)
-        .argument(GraphQLArgument.newArgument()
-            .name("defaultValue")
-            .type(Scalars.GraphQLString)
-            .defaultValueProgrammatic("1")
-            .build())
-        .argument(GraphQLArgument.newArgument()
-            .name("value")
-            .type(Scalars.GraphQLString)
-            .valueProgrammatic("12")
-            .build())
-        .argument(GraphQLArgument.newArgument()
-            .name("both")
-            .type(Scalars.GraphQLString)
-            .defaultValueProgrammatic("1")
-            .valueProgrammatic("12")
-            .build())
-        .build();
 
-    JexlContext context = JexlHelper.getJexlContext(fieldDefinition);
-
-    assertEquals("1", evaluateExpressionToString("args.defaultValue", context));
-    assertEquals("12", evaluateExpressionToString("args.value", context));
-    assertEquals("12", evaluateExpressionToString("args.both", context));
-  }
-
-  private GraphQLDirective getGraphQlDirective() {
-    return GraphQLDirective.newDirective()
-        .name("directive")
-        .argument(GraphQLArgument.newArgument()
-            .name("directiveArg1")
-            .type(Scalars.GraphQLString)
-            .valueProgrammatic("directiveValue1"))
-        .build();
-  }
 
   private String evaluateExpressionToString(String expression, JexlContext jexlContext) {
     return this.jexlHelper.evaluateExpression(expression, jexlContext, String.class)

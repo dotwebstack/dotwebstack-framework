@@ -193,7 +193,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
-        .arguments(Map.of("identifier", "id-1"))
+        .arguments(() -> Map.of("identifier", "id-1"))
         .build();
 
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
