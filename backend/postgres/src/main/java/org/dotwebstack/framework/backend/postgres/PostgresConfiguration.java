@@ -66,7 +66,7 @@ public class PostgresConfiguration {
         .maxIdleTime(Duration.ofMinutes(poolProperties.getMaxIdleTime()))
         .build();
 
-    return new ContextAwareConnectionPool(new ConnectionPool(poolConfiguration));
+    return new ConnectionPool(poolConfiguration);
   }
 
   @Bean

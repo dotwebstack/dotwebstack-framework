@@ -12,7 +12,6 @@ import io.r2dbc.postgresql.api.PostgresqlConnection;
 import io.r2dbc.postgresql.api.PostgresqlResult;
 import io.r2dbc.postgresql.api.PostgresqlStatement;
 import io.r2dbc.postgresql.codec.CodecRegistry;
-import java.util.function.BiFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentMatchers;
@@ -34,7 +33,7 @@ class EnumArrayCodecRegistrarTest {
   @Test
   void register_registerOids_withQuery() {
     PostgresqlResult result = mock(PostgresqlResult.class);
-    lenient().when(result.map(any(BiFunction.class)))
+    lenient().when(result.map(any()))
         .thenReturn(Flux.just(1234));
 
     PostgresqlStatement statement = mock(PostgresqlStatement.class);

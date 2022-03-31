@@ -119,13 +119,6 @@
         <version>2.2.1.Final</version>
         <scope>provided</scope>
       </dependency>
-      <dependency>
-        <groupId>io.r2dbc</groupId>
-        <artifactId>r2dbc-bom</artifactId>
-        <version>Borca-SR1</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <!-- Regular dependencies -->
       <dependency>
         <groupId>org.springframework.boot</groupId>

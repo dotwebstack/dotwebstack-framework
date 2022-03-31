@@ -1,17 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.ContextAwareConnectionPool.CTX_CONNECTION_UUID;
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.dotwebstack.framework.backend.postgres.ContextAwareConnectionPool;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
@@ -83,30 +79,9 @@ public class Query {
           .getValue()));
     }
 
-    var uuid = UUID.randomUUID()
-        .toString();
-
     return executeSpec.fetch()
         .all()
-        .contextWrite(ctx -> ctx.put(CTX_CONNECTION_UUID, uuid))
-        .doOnCancel(() -> cancelRequest(databaseClient, uuid))
-        .doFinally(v -> cleanUp(databaseClient, uuid))
         .map(rowMapper);
-  }
-
-  private void cleanUp(DatabaseClient databaseClient, String uuid) {
-    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cleanUp(uuid));
-  }
-
-  private void cancelRequest(DatabaseClient databaseClient, String uuid) {
-    getContextAwareConnectionPool(databaseClient).ifPresent(connPool -> connPool.cancelRequest(uuid));
-  }
-
-  private Optional<ContextAwareConnectionPool> getContextAwareConnectionPool(DatabaseClient databaseClient) {
-    return Optional.of(databaseClient)
-        .map(DatabaseClient::getConnectionFactory)
-        .filter(ContextAwareConnectionPool.class::isInstance)
-        .map(ContextAwareConnectionPool.class::cast);
   }
 
   public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatchMany(DatabaseClient databaseClient) {
