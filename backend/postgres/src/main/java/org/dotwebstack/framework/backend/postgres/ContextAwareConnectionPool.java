@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres;
 
 import io.r2dbc.pool.ConnectionPool;
 import io.r2dbc.postgresql.api.PostgresqlConnection;
-import io.r2dbc.spi.Closeable;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
@@ -12,13 +11,11 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
-import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 import reactor.util.context.ContextView;
 
 @Slf4j
-public class ContextAwareConnectionPool
-    implements ConnectionFactory, Disposable, Closeable, Wrapped<ConnectionFactory> {
+public class ContextAwareConnectionPool implements ConnectionFactory {
 
   public static final String CTX_CONNECTION_UUID = "CONNECTION_UUID";
 
@@ -78,20 +75,5 @@ public class ContextAwareConnectionPool
   @Override
   public ConnectionFactoryMetadata getMetadata() {
     return connectionPool.getMetadata();
-  }
-
-  @Override
-  public Publisher<Void> close() {
-    return connectionPool.close();
-  }
-
-  @Override
-  public ConnectionFactory unwrap() {
-    return connectionPool.unwrap();
-  }
-
-  @Override
-  public void dispose() {
-    connectionPool.dispose();
   }
 }
