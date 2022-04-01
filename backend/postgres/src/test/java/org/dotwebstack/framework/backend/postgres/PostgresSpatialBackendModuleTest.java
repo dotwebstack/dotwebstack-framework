@@ -6,12 +6,10 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -60,7 +58,7 @@ class PostgresSpatialBackendModuleTest {
     var schema = new Schema();
     schema.setObjectTypes(createObjectTypes());
 
-    var postgresClient = mockDatabaseCalls(Flux.just(createRows()));
+    var postgresClient = mockDatabaseCalls(createRows());
 
     var spatial = createSpatial();
 
@@ -151,23 +149,21 @@ class PostgresSpatialBackendModuleTest {
     return Map.of(7931, srs7931, 9067, srs9067, 7415, srs7415, 28892, srs28892);
   }
 
-  private PostgresClient mockDatabaseCalls(Flux<Object> flux) {
+  private PostgresClient mockDatabaseCalls(Flux<Map<String, Object>> flux) {
     var postgresClient = mock(PostgresClient.class);
-    when(postgresClient.fetch(anyString(), any())).thenReturn(flux);
+    when(postgresClient.fetch(anyString())).thenReturn(flux);
     return postgresClient;
   }
 
-  private Object[] createRows() {
+  private Flux<Map<String, Object>> createRows() {
     var breweryGeometryRow7931 = createRow("brewery_geometry", 7931);
     var breweryGeometryRowBbox7931 = createRow("brewery_geometry_bbox", 7931);
     var breweryGeometryRow7415 = createRow("brewery_geometry_7415", 7415);
     var addressGeometryRow7931 = createRow("address_geometry", 7931);
     var addressGeometryRow7415 = createRow("address_geometry_7415", 7415);
 
-    return List
-        .of(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
-            addressGeometryRow7415)
-        .toArray();
+    return Flux.just(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
+        addressGeometryRow7415);
   }
 
   private Map<String, Object> createRow(String geometryColumnName, Integer srid) {

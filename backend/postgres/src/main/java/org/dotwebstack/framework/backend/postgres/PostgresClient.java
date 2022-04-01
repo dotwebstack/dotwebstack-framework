@@ -7,7 +7,6 @@ import io.r2dbc.spi.RowMetadata;
 import io.r2dbc.spi.Statement;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -30,13 +29,13 @@ public class PostgresClient {
     this.connectionFactory = connectionFactory;
   }
 
-  public <T> Flux<T> fetch(String sql, BiFunction<Row, RowMetadata, T> rowMapper) {
+  public Flux<Map<String, Object>> fetch(String sql) {
     return Mono.from(connectionFactory.create())
         .flatMapMany(connection -> {
           var statement = connection.createStatement(sql);
 
           return Mono.from(statement.execute())
-              .flatMapMany(result -> result.map(rowMapper))
+              .flatMapMany(result -> result.map(PostgresClient::rowToMap))
               .doFinally(signalType -> Mono.from(connection.close())
                   .subscribe());
         });
