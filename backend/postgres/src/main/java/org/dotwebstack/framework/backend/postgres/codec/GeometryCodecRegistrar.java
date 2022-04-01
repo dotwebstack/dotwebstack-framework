@@ -12,8 +12,8 @@ public class GeometryCodecRegistrar implements CodecRegistrar {
 
   static final String TYPE_NAME_GEOMETRY = "geometry";
 
-  private static final String GEO_OID_STMT = String.format(
-      "SELECT t.oid, t.typname FROM pg_type t WHERE t.typname = '%s'", TYPE_NAME_GEOMETRY);
+  private static final String GEO_OID_STMT =
+      String.format("SELECT t.oid, t.typname FROM pg_type t WHERE t.typname = '%s'", TYPE_NAME_GEOMETRY);
 
   @Override
   public Publisher<Void> register(PostgresqlConnection connection, ByteBufAllocator allocator, CodecRegistry registry) {

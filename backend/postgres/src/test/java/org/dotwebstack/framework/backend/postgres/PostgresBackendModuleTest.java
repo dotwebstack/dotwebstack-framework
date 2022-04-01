@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import io.r2dbc.spi.ConnectionFactory;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -23,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PostgresBackendModuleTest {
 
   @Mock
-  private ConnectionFactory connectionFactory;
+  private PostgresClient postgresClient;
 
   private PostgresBackendLoaderFactory backendLoaderFactory;
 
@@ -33,7 +32,7 @@ class PostgresBackendModuleTest {
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoaderFactory = new PostgresBackendLoaderFactory(connectionFactory);
+    backendLoaderFactory = new PostgresBackendLoaderFactory(postgresClient);
     postgresBackendModule = new PostgresBackendModule(backendLoaderFactory);
     testHelper = new TestHelper(postgresBackendModule);
   }

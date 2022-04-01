@@ -78,8 +78,8 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireType(value, Geometry.class, "value must be Geometry type");
     Geometry geometry = (Geometry) value;
 
-    return new EncodedParameter(FORMAT_TEXT, oid, Mono.fromSupplier(
-        () -> ByteBufUtils.encode(byteBufAllocator, geometry.toText())));
+    return new EncodedParameter(FORMAT_TEXT, oid,
+        Mono.fromSupplier(() -> ByteBufUtils.encode(byteBufAllocator, geometry.toText())));
   }
 
   @Override

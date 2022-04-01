@@ -2,14 +2,10 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
-import io.r2dbc.spi.Row;
-import io.r2dbc.spi.RowMetadata;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -22,12 +18,10 @@ import org.jooq.Record;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.springframework.util.LinkedCaseInsensitiveMap;
 
 class QueryHelper {
 
-  private QueryHelper() {
-  }
+  private QueryHelper() {}
 
   private static Name name(Table<Record> table, String columnName) {
     if (table == null) {
@@ -110,18 +104,5 @@ class QueryHelper {
       query.addFrom(requestedTable);
       return requestedTable;
     };
-  }
-
-  public static Map<String, Object> rowToMap(Row row, RowMetadata rowMetadata) {
-    var columnMetadatas = rowMetadata.getColumnMetadatas();
-    var mapOfColValues = new LinkedCaseInsensitiveMap<>(columnMetadatas.size());
-
-    IntStream.range(0, columnMetadatas.size())
-        .forEach(index -> {
-          var columnMetadata = columnMetadatas.get(index);
-          mapOfColValues.put(columnMetadata.getName(), row.get(index));
-        });
-
-    return mapOfColValues;
   }
 }

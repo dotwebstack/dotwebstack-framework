@@ -6,9 +6,11 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import io.r2dbc.spi.ConnectionFactory;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -30,9 +32,9 @@ class PostgresSpatialBackendModuleTest {
   @Test
   void contructor_throwsNoException_onError() {
     var schema = mock(Schema.class);
-    var connectionFactory = mockDatabaseCalls(Flux.error(new RuntimeException("Something went wrong.")));
+    var postgresClient = mockDatabaseCalls(Flux.error(new RuntimeException("Something went wrong.")));
 
-    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, connectionFactory));
+    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, postgresClient));
   }
 
   @Test
@@ -48,9 +50,9 @@ class PostgresSpatialBackendModuleTest {
   @Test
   void init_setSpatial_doesNothingWhenNull() {
     var schema = mock(Schema.class);
-    var databaseClient = mockDatabaseCalls(Flux.empty());
+    var postgresClient = mockDatabaseCalls(Flux.empty());
 
-    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, databaseClient).init(null));
+    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, postgresClient).init(null));
   }
 
   @Test
@@ -58,11 +60,11 @@ class PostgresSpatialBackendModuleTest {
     var schema = new Schema();
     schema.setObjectTypes(createObjectTypes());
 
-    var databaseClient = mockDatabaseCalls(Flux.just(createRows()));
+    var postgresClient = mockDatabaseCalls(Flux.just(createRows()));
 
     var spatial = createSpatial();
 
-    new PostgresSpatialBackendModule(schema, databaseClient).init(spatial);
+    new PostgresSpatialBackendModule(schema, postgresClient).init(spatial);
 
     var brewerySpatial = ((PostgresObjectField) schema.getObjectTypes()
         .get("Brewery")
@@ -149,17 +151,10 @@ class PostgresSpatialBackendModuleTest {
     return Map.of(7931, srs7931, 9067, srs9067, 7415, srs7415, 28892, srs28892);
   }
 
-  private ConnectionFactory mockDatabaseCalls(Flux<Object> flux) {
-//    var databaseClient = mock(DatabaseClient.class);
-//    var executeSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-//    var fetchSpec = mock(FetchSpec.class);
-//
-//    when(databaseClient.sql(anyString())).thenReturn(executeSpec);
-//    when(executeSpec.fetch()).thenReturn(fetchSpec);
-//    when(fetchSpec.all()).thenReturn(flux);
-//
-//    return databaseClient;
-    return null;
+  private PostgresClient mockDatabaseCalls(Flux<Object> flux) {
+    var postgresClient = mock(PostgresClient.class);
+    when(postgresClient.fetch(anyString(), any())).thenReturn(flux);
+    return postgresClient;
   }
 
   private Object[] createRows() {

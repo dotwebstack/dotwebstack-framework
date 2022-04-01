@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import io.r2dbc.spi.ConnectionFactory;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -9,14 +8,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class PostgresBackendLoaderFactory implements BackendLoaderFactory {
 
-  private final ConnectionFactory connectionFactory;
+  private final PostgresClient postgresClient;
 
-  public PostgresBackendLoaderFactory(ConnectionFactory connectionFactory) {
-    this.connectionFactory = connectionFactory;
+  public PostgresBackendLoaderFactory(PostgresClient postgresClient) {
+    this.postgresClient = postgresClient;
   }
 
   @Override
   public <T extends ObjectType<?>> BackendLoader create(T objectType) {
-    return new PostgresBackendLoader(connectionFactory);
+    return new PostgresBackendLoader(postgresClient);
   }
 }

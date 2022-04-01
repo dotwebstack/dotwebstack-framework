@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import io.r2dbc.spi.ConnectionFactory;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -18,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PostgresBackendLoaderFactoryTest {
 
   @Mock
-  private ConnectionFactory connectionFactory;
+  private PostgresClient postgresClient;
 
   private PostgresBackendLoaderFactory backendLoaderFactory;
 
@@ -26,7 +25,7 @@ class PostgresBackendLoaderFactoryTest {
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoaderFactory = new PostgresBackendLoaderFactory(connectionFactory);
+    backendLoaderFactory = new PostgresBackendLoaderFactory(postgresClient);
   }
 
   @Test
