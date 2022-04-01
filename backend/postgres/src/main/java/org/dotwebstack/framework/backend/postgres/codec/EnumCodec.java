@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.r2dbc.postgresql.client.Parameter;
+import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.codec.Codec;
 import io.r2dbc.postgresql.message.Format;
 import java.nio.charset.StandardCharsets;
@@ -40,12 +40,17 @@ class EnumCodec implements Codec<String> {
   }
 
   @Override
-  public Parameter encode(Object o) {
+  public EncodedParameter encode(Object o) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Parameter encodeNull() {
+  public EncodedParameter encode(Object o, int i) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public EncodedParameter encodeNull() {
     throw new UnsupportedOperationException();
   }
 }

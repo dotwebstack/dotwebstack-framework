@@ -3,6 +3,7 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
+import io.r2dbc.spi.Connection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,9 +24,9 @@ import org.jooq.SelectQuery;
 import org.jooq.conf.ParamType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
+import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -65,32 +66,37 @@ public class Query {
     selectQuery = createSelect(batchRequest);
   }
 
-  public Flux<Map<String, Object>> execute(DatabaseClient databaseClient) {
-    var queryString = selectQuery.getSQL(ParamType.NAMED);
+  public Flux<Map<String, Object>> execute(Connection connection) {
+    var queryString = selectQuery.getSQL(ParamType.NAMED)
+        .replace(":", "$");
+
     List<Param<?>> params = getParams(selectQuery);
 
     LOG.debug("Binding variables: {}", params);
     LOG.debug("Executing query: {}", queryString);
 
-    DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(queryString);
+    var statement = connection.createStatement(queryString);
 
     for (var index = 0; index < params.size(); index++) {
-      executeSpec = executeSpec.bind(index, Objects.requireNonNull(params.get(index)
-          .getValue()));
+      var paramBinding = "$".concat(String.valueOf(index + 1));
+      var paramValue = Objects.requireNonNull(params.get(index)
+              .getValue());
+      statement = statement.bind(paramBinding, paramValue);
     }
 
-    return executeSpec.fetch()
-        .all()
+    return Mono.from(statement.execute())
+        .flatMapMany(result -> result.map(QueryHelper::rowToMap))
         .map(rowMapper);
   }
 
-  public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatchMany(DatabaseClient databaseClient) {
-    return execute(databaseClient).groupBy(row -> getNestedMap(row, GROUP_KEY))
+  public Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> executeBatchMany(Connection connection) {
+    return execute(connection)
+        .groupBy(row -> getNestedMap(row, GROUP_KEY))
         .map(groupedFlux -> new KeyGroupedFlux(groupedFlux.key(), groupedFlux.filter(this::rowExists)));
   }
 
-  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> executeBatchSingle(DatabaseClient databaseClient) {
-    return execute(databaseClient)
+  public Flux<Tuple2<Map<String, Object>, Map<String, Object>>> executeBatchSingle(Connection connection) {
+    return execute(connection)
         .map(row -> Tuples.of(getNestedMap(row, GROUP_KEY), rowExists(row) ? row : BackendLoader.NILL_MAP));
   }
 

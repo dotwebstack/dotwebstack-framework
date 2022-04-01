@@ -49,5 +49,8 @@ public class PostgresProperties {
 
     @NotNull
     private Integer maxIdleTime = 30;
+
+    @NotNull
+    private Integer maxLifeTime = 120;
   }
 }

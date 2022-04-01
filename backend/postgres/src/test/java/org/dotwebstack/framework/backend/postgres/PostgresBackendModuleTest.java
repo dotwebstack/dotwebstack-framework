@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import io.r2dbc.spi.ConnectionFactory;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -17,13 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresBackendModuleTest {
 
   @Mock
-  private DatabaseClient databaseClient;
+  private ConnectionFactory connectionFactory;
 
   private PostgresBackendLoaderFactory backendLoaderFactory;
 
@@ -33,7 +33,7 @@ class PostgresBackendModuleTest {
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoaderFactory = new PostgresBackendLoaderFactory(databaseClient);
+    backendLoaderFactory = new PostgresBackendLoaderFactory(connectionFactory);
     postgresBackendModule = new PostgresBackendModule(backendLoaderFactory);
     testHelper = new TestHelper(postgresBackendModule);
   }

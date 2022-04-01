@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import io.r2dbc.spi.ConnectionFactory;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.query.Query;
 import org.dotwebstack.framework.core.backend.BackendLoader;
@@ -8,7 +9,6 @@ import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -16,10 +16,10 @@ import reactor.util.function.Tuple2;
 
 public class PostgresBackendLoader implements BackendLoader {
 
-  private final DatabaseClient databaseClient;
+  private final ConnectionFactory connectionFactory;
 
-  public PostgresBackendLoader(DatabaseClient databaseClient) {
-    this.databaseClient = databaseClient;
+  public PostgresBackendLoader(ConnectionFactory connectionFactory) {
+    this.connectionFactory = connectionFactory;
   }
 
   @Override
@@ -31,7 +31,10 @@ public class PostgresBackendLoader implements BackendLoader {
 
     var query = new Query(objectRequest, requestContext);
 
-    return query.execute(databaseClient)
+    return Mono.from(connectionFactory.create())
+        .flatMapMany(connection -> query.execute(connection)
+            .doFinally(signalType -> Mono.from(connection.close())
+                .subscribe()))
         .singleOrEmpty();
   }
 
@@ -39,7 +42,10 @@ public class PostgresBackendLoader implements BackendLoader {
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest, RequestContext requestContext) {
     var query = new Query(collectionRequest, requestContext);
 
-    return query.execute(databaseClient);
+    return Mono.from(connectionFactory.create())
+        .flatMapMany(connection -> query.execute(connection)
+            .doFinally(signalType -> Mono.from(connection.close())
+                .subscribe()));
   }
 
   @Override
@@ -47,7 +53,10 @@ public class PostgresBackendLoader implements BackendLoader {
       CollectionBatchRequest collectionBatchRequest, RequestContext requestContext) {
     var query = new Query(collectionBatchRequest, requestContext);
 
-    return query.executeBatchMany(databaseClient);
+    return Mono.from(connectionFactory.create())
+        .flatMapMany(connection -> query.executeBatchMany(connection)
+            .doFinally(signalType -> Mono.from(connection.close())
+                .subscribe()));
   }
 
   @Override
@@ -55,6 +64,9 @@ public class PostgresBackendLoader implements BackendLoader {
       RequestContext requestContext) {
     var query = new Query(batchRequest, requestContext);
 
-    return query.executeBatchSingle(databaseClient);
+    return Mono.from(connectionFactory.create())
+        .flatMapMany(connection -> query.executeBatchSingle(connection)
+            .doFinally(signalType -> Mono.from(connection.close())
+                .subscribe()));
   }
 }

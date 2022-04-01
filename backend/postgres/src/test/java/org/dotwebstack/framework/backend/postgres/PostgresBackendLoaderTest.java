@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.r2dbc.spi.ConnectionFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.r2dbc.core.FetchSpec;
 import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,13 +41,13 @@ import reactor.core.publisher.Flux;
 class PostgresBackendLoaderTest {
 
   @Mock
-  private DatabaseClient databaseClient;
+  private ConnectionFactory connectionFactory;
 
   private PostgresBackendLoader backendLoader;
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoader = new PostgresBackendLoader(databaseClient);
+    backendLoader = new PostgresBackendLoader(connectionFactory);
   }
 
   @Test
@@ -60,13 +59,17 @@ class PostgresBackendLoaderTest {
         .source(source)
         .build();
 
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
-    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(anotherSpec.fetch()).thenReturn(fetchSpec);
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
+//    var connection = mock(PostgresqlConnection.class);
+//    when(connectionFactory.create()).thenReturn(Mono.just(connection));
+//
+//    var statement = mock(Statement.class);
+//
+//    FetchSpec fetchSpec = mock(FetchSpec.class);
+//    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
+//    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
+//    when(anotherSpec.fetch()).thenReturn(fetchSpec);
+//    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
+//    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
 
     ObjectRequest objectRequest = initObjectRequest();
 
@@ -79,13 +82,13 @@ class PostgresBackendLoaderTest {
 
   @Test
   void loadMany_returnsFluxObject() {
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
-    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(anotherSpec.fetch()).thenReturn(fetchSpec);
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
+//    FetchSpec fetchSpec = mock(FetchSpec.class);
+//    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
+//    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
+//    when(anotherSpec.fetch()).thenReturn(fetchSpec);
+//    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
+//    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
+//    when(databaseClient.sql(anyString())).thenReturn(spec);
 
     Map<String, Object> source = new HashMap<>();
     source.put("a", "bbb");
@@ -110,11 +113,11 @@ class PostgresBackendLoaderTest {
   @Test
   @Disabled("fix me")
   void batchLoadMany_returnsFluxObject() {
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Map.of("@@@", "ccc")));
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.fetch()).thenReturn(fetchSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
+//    FetchSpec fetchSpec = mock(FetchSpec.class);
+//    when(fetchSpec.all()).thenReturn(Flux.just(Map.of("@@@", "ccc")));
+//    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
+//    when(spec.fetch()).thenReturn(fetchSpec);
+//    when(databaseClient.sql(anyString())).thenReturn(spec);
 
     PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
     when(objectFieldMock.getJoinTable()).thenReturn(mock(JoinTable.class));

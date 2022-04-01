@@ -10,31 +10,18 @@ import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
-import org.jooq.Record;
-import org.jooq.SelectQuery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
 class QueryTest {
-
-  @Mock
-  private DatabaseClient databaseClient;
-
-  @Mock
-  private SelectQuery<Record> selectQuery;
-
-  @Mock
-  private AliasManager aliasManager;
 
   @Mock
   private RequestContext requestContext;
@@ -77,5 +64,4 @@ class QueryTest {
         .objectFields(objectFields)
         .build();
   }
-
 }

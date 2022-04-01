@@ -4,6 +4,9 @@ import static java.util.function.Predicate.not;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.Row;
+import io.r2dbc.spi.Statement;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +25,8 @@ import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.dotwebstack.framework.ext.spatial.backend.SpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -44,25 +47,28 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   private final Schema schema;
 
-  public PostgresSpatialBackendModule(Schema schema, DatabaseClient databaseClient) {
+  public PostgresSpatialBackendModule(Schema schema, ConnectionFactory connectionFactory) {
     this.schema = schema;
-    this.sridByTableColumn = getSridByTableColumn(databaseClient);
+    this.sridByTableColumn = getSridByTableColumn(connectionFactory);
   }
 
-  private Map<String, Integer> getSridByTableColumn(DatabaseClient databaseClient) {
-    return databaseClient.sql(GEOMETRY_COLUMNS_STMT)
-        .fetch()
-        .all()
-        .map(this::mapToEntry)
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
-        .onErrorReturn(Map.of())
+  private Map<String, Integer> getSridByTableColumn(ConnectionFactory connectionFactory) {
+    return Mono.from(connectionFactory.create())
+        .flatMap(connection -> Mono.just(connection.createStatement(GEOMETRY_COLUMNS_STMT))
+            .flatMapMany(Statement::execute)
+            .flatMap(result -> result.map((row, rowMetadata) -> mapToEntry(row)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+            .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
+            .onErrorReturn(Map.of())
+            .doFinally(signalType -> Mono.from(connection.close())
+                .subscribe()))
         .block();
   }
 
-  private AbstractMap.SimpleEntry<String, Integer> mapToEntry(Map<String, Object> row) {
-    String key = row.get(F_TABLE_SCHEMA) + "." + row.get(F_TABLE_NAME) + "." + row.get(F_GEOMETRY_COLUMN);
-    Integer value = (Integer) row.get(SRID);
+  private AbstractMap.SimpleEntry<String, Integer> mapToEntry(Row row) {
+    var key = row.get(F_TABLE_SCHEMA, String.class) + "." + row.get(F_TABLE_NAME, String.class) + "." +
+        row.get(F_GEOMETRY_COLUMN, String.class);
+    var value = row.get(SRID, Integer.class);
     return new AbstractMap.SimpleEntry<>(key, value);
   }
 
