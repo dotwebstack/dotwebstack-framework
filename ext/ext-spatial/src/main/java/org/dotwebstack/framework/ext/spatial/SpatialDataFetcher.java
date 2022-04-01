@@ -96,7 +96,10 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
   }
 
   private int getDimensionsFromGeometry(Geometry geometry) {
-    return Double.isNaN(geometry.getCoordinate()
-        .getZ()) ? 2 : 3;
+    var coordinate = geometry.getCoordinate();
+    if (coordinate != null) {
+      return Double.isNaN(coordinate.getZ()) ? 2 : 3;
+    }
+    return 2;
   }
 }
