@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mock;
@@ -175,6 +176,23 @@ class SpatialDataFetcherTest {
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
     assertThat(stringValue, is("ACAAAAEAAB77QBfqxuQjKTNAShvL0rQDxA=="));
+  }
+
+  @Test
+  void get_returnsValue_forAsWkb_withEmptyGeometry() {
+    geometry = new GeometryFactory().createPolygon();
+    when(dataFetchingEnvironment.getSource()).thenReturn(geometry);
+    when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getName()).thenReturn(AS_WKB);
+    when(dataFetchingEnvironment.getExecutionStepInfo()).thenReturn(executionStepInfo);
+    when(executionStepInfo.getParent()).thenReturn(executionStepInfo);
+
+    Object value = spatialDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(value, is(notNullValue()));
+    assertThat(value, instanceOf(String.class));
+    String stringValue = (String) value;
+    assertThat(stringValue, is("ACAAAAMAAAAAAAAAAQAAAAA="));
   }
 
   @Test
