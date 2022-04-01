@@ -48,6 +48,7 @@ public class PostgresClient {
 
           return Mono.from(statement.execute())
               .flatMapMany(result -> result.map(PostgresClient::rowToMap))
+              .map(query.getRowMapper())
               .doFinally(signalType -> Mono.from(connection.close())
                   .subscribe());
         });

@@ -51,6 +51,10 @@ public class Query {
     return selectQuery;
   }
 
+  public RowMapper<Map<String, Object>> getRowMapper() {
+    return rowMapper;
+  }
+
   private SelectQuery<Record> createSelect(CollectionRequest collectionRequest) {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
