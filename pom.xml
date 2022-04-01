@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.111-SNAPSHOT</version>
+  <version>0.3.112-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -52,10 +52,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>2.6.5</spring-boot.version>
+    <spring-boot.version>2.6.6</spring-boot.version>
     <rdf4j.version>3.7.6</rdf4j.version>
-    <graphql.java.version>17.3</graphql.java.version>
-    <graphql.java.orchestrate.version>0.1.15</graphql.java.orchestrate.version>
+    <graphql.java.version>18.0</graphql.java.version>
+    <graphql.java.orchestrate.version>0.1.16</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
@@ -118,13 +118,6 @@
         <artifactId>jboss-logging-annotations</artifactId>
         <version>2.2.1.Final</version>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>io.r2dbc</groupId>
-        <artifactId>r2dbc-bom</artifactId>
-        <version>Borca-SR1</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
       <!-- Regular dependencies -->
       <dependency>

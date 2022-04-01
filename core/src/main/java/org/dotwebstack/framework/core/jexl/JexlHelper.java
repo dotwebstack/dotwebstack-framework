@@ -4,8 +4,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLFieldDefinition;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,7 +14,6 @@ import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
-import org.dotwebstack.framework.core.directives.DirectiveUtils;
 
 @Slf4j
 public class JexlHelper {
@@ -61,30 +58,6 @@ public class JexlHelper {
     }
 
     return jexlContext;
-  }
-
-  public static JexlContext getJexlContext(GraphQLFieldDefinition graphQlField) {
-    JexlContext jexlContext = new MapContext();
-
-    if (Objects.nonNull(graphQlField)) {
-      graphQlField.getArguments()
-          .stream()
-          .filter(argument -> argument.getArgumentValue()
-              .isSet()
-              || argument.getArgumentDefaultValue()
-                  .isSet())
-          .forEach(argument -> Optional.ofNullable(argument.getArgumentValue()
-              .getValue())
-              .or(() -> Optional.ofNullable(argument.getArgumentDefaultValue()
-                  .getValue()))
-              .ifPresent(argValue -> jexlContext.set(ARGUMENT_PREFIX + "." + argument.getName(), argValue)));
-    }
-
-    return jexlContext;
-  }
-
-  public static void updateContext(@NonNull JexlContext context, @NonNull Map<String, Object> requestArguments) {
-    requestArguments.forEach((key, value) -> context.set(ARGUMENT_PREFIX + key, value));
   }
 
   public <T> Optional<T> evaluateScriptWithFallback(@NonNull String scriptString, String fallbackString,
@@ -146,16 +119,6 @@ public class JexlHelper {
           evaluated.getClass());
     } else {
       return Optional.of(cast(clazz, evaluated));
-    }
-  }
-
-  public <T> Optional<T> evaluateDirectiveArgument(GraphQLDirective directive, String argumentName, JexlContext context,
-      Class<T> clazz) {
-    var expressionString = DirectiveUtils.getArgument(directive, argumentName, String.class);
-    if (expressionString == null) {
-      return Optional.empty();
-    } else {
-      return evaluateExpression(expressionString, context, clazz);
     }
   }
 

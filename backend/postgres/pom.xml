@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>backend</artifactId>
-    <version>0.3.111-SNAPSHOT</version>
+    <version>0.3.112-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -33,7 +33,7 @@
       <artifactId>lombok</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.postgresql</groupId>
+      <groupId>io.r2dbc</groupId>
       <artifactId>r2dbc-postgresql</artifactId>
     </dependency>
     <dependency>
