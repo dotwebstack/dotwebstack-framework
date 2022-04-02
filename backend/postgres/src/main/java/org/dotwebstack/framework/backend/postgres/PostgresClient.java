@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import io.r2dbc.postgresql.api.PostgresqlConnection;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
 import io.r2dbc.spi.Statement;
+import io.r2dbc.spi.Wrapped;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -36,6 +38,8 @@ public class PostgresClient {
 
           return Mono.from(statement.execute())
               .flatMapMany(result -> result.map(PostgresClient::rowToMap))
+              .doOnCancel(() -> unwrap(connection).cancelRequest()
+                  .subscribe())
               .doFinally(signalType -> Mono.from(connection.close())
                   .subscribe());
         });
@@ -52,6 +56,18 @@ public class PostgresClient {
               .doFinally(signalType -> Mono.from(connection.close())
                   .subscribe());
         });
+  }
+
+  private static PostgresqlConnection unwrap(Connection connection) {
+    if (connection instanceof PostgresqlConnection) {
+      return (PostgresqlConnection) connection;
+    }
+
+    if (connection instanceof Wrapped) {
+      return unwrap(((Wrapped<Connection>) connection).unwrap());
+    }
+
+    throw new IllegalArgumentException("R2DBC connection could not be unwrapped.");
   }
 
   private static Statement createStatement(Connection connection, SelectQuery<Record> query) {
