@@ -5,7 +5,6 @@ import static io.r2dbc.postgresql.message.Format.FORMAT_BINARY;
 import static io.r2dbc.postgresql.message.Format.FORMAT_TEXT;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.codec.Codec;
@@ -30,14 +29,11 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   private static final Class<Geometry> TYPE = Geometry.class;
 
-  private final ByteBufAllocator byteBufAllocator;
-
   private final GeometryFactory geometryFactory = new GeometryFactory();
 
   private final Map<String, Integer> dataTypes;
 
-  GeometryCodec(ByteBufAllocator byteBufAllocator, Map<String, Integer> dataTypes) {
-    this.byteBufAllocator = Assert.requireNonNull(byteBufAllocator, "byteBufAllocator must not be null");
+  GeometryCodec(Map<String, Integer> dataTypes) {
     this.dataTypes = dataTypes;
   }
 
@@ -80,19 +76,20 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public EncodedParameter encode(Object value) {
-    Assert.requireType(value, Geometry.class, "value must be Geometry type");
-    Geometry geometry = (Geometry) value;
-
-    // TODO: fix static dimension
-    var wkbWriter = new WKBWriter(2, true);
-
-    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY),
-        Flux.just(Unpooled.wrappedBuffer(wkbWriter.write(geometry))));
+    return encode(value, dataTypes.get(TYPE_NAME_GEOMETRY));
   }
 
   @Override
   public EncodedParameter encode(Object value, int dataType) {
-    return encode(value);
+    Assert.requireType(value, Geometry.class, "value must be Geometry type");
+    var geometry = (Geometry) value;
+
+    var outputDimension = Double.isNaN(geometry.getCoordinate()
+        .getZ()) ? 2 : 3;
+
+    var wkbWriter = new WKBWriter(outputDimension, true);
+
+    return new EncodedParameter(FORMAT_BINARY, dataType, Flux.just(Unpooled.wrappedBuffer(wkbWriter.write(geometry))));
   }
 
   @Override

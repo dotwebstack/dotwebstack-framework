@@ -26,7 +26,7 @@ public class GeometryCodecRegistrar implements CodecRegistrar {
             result -> result.map((row, rowMetadata) -> new AbstractMap.SimpleEntry<>(row.get("typname", String.class),
                 row.get("oid", Integer.class))))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        .doOnNext(dataTypes -> registry.addFirst(new GeometryCodec(allocator, dataTypes)))
+        .doOnNext(dataTypes -> registry.addFirst(new GeometryCodec(dataTypes)))
         .then();
   }
 }
