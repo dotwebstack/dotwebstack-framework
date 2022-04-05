@@ -6,6 +6,7 @@ import static io.r2dbc.postgresql.message.Format.FORMAT_TEXT;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.Unpooled;
 import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.codec.Codec;
 import io.r2dbc.postgresql.codec.CodecMetadata;
@@ -14,14 +15,18 @@ import io.r2dbc.postgresql.message.Format;
 import io.r2dbc.postgresql.util.Assert;
 import io.r2dbc.postgresql.util.ByteBufUtils;
 import java.util.Collections;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
-import reactor.core.publisher.Mono;
+import org.locationtech.jts.io.WKBWriter;
+import reactor.core.publisher.Flux;
 
 class GeometryCodec implements Codec<Geometry>, CodecMetadata {
+
+  static final String TYPE_NAME_GEOMETRY = "geometry";
 
   private static final Class<Geometry> TYPE = Geometry.class;
 
@@ -29,11 +34,11 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   private final GeometryFactory geometryFactory = new GeometryFactory();
 
-  private final int oid;
+  private final Map<String, Integer> dataTypes;
 
-  GeometryCodec(ByteBufAllocator byteBufAllocator, int oid) {
+  GeometryCodec(ByteBufAllocator byteBufAllocator, Map<String, Integer> dataTypes) {
     this.byteBufAllocator = Assert.requireNonNull(byteBufAllocator, "byteBufAllocator must not be null");
-    this.oid = oid;
+    this.dataTypes = dataTypes;
   }
 
   @Override
@@ -41,7 +46,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireNonNull(format, "format must not be null");
     Assert.requireNonNull(type, "type must not be null");
 
-    return dataType == oid;
+    return dataTypes.containsValue(dataType);
   }
 
   @Override
@@ -78,8 +83,11 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireType(value, Geometry.class, "value must be Geometry type");
     Geometry geometry = (Geometry) value;
 
-    return new EncodedParameter(FORMAT_TEXT, oid,
-        Mono.fromSupplier(() -> ByteBufUtils.encode(byteBufAllocator, geometry.toText())));
+    // TODO: fix static dimension
+    var wkbWriter = new WKBWriter(2, true);
+
+    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY),
+        Flux.just(Unpooled.wrappedBuffer(wkbWriter.write(geometry))));
   }
 
   @Override
@@ -89,7 +97,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public EncodedParameter encodeNull() {
-    return new EncodedParameter(FORMAT_BINARY, oid, NULL_VALUE);
+    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY), NULL_VALUE);
   }
 
   @Override
@@ -99,6 +107,6 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public Iterable<PostgresTypeIdentifier> getDataTypes() {
-    return Collections.singleton(() -> oid);
+    return Collections.singleton(() -> dataTypes.get(TYPE_NAME_GEOMETRY));
   }
 }

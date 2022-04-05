@@ -72,7 +72,7 @@ public class PostgresClient {
 
   private static Statement createStatement(Connection connection, SelectQuery<Record> query) {
     var sql = query.getSQL(ParamType.NAMED)
-        .replace(":", "$");
+        .replaceAll("(:)(\\d+)", "\\$$2");
 
     var params = query.getParams()
         .values()
