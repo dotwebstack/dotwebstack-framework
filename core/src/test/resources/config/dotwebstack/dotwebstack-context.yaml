@@ -7,6 +7,15 @@ contexts:
       availableOn:
         type: DateTime
         default: NOW
+      isAvailable:
+        type: Boolean
+        default: true
+      numberOfEmployees:
+        type: Int
+        default: 1
+      pricePerBeer:
+        type: Float
+        default: 1.5
 
 queries:
   breweryCollection:
@@ -71,4 +80,3 @@ objectTypes:
 enumerations:
   STATUS:
     values: [ACTIVE, INACTIVE]
-

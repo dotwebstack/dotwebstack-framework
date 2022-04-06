@@ -1,8 +1,11 @@
 package org.dotwebstack.framework.core;
 
+import static graphql.language.BooleanValue.newBooleanValue;
 import static graphql.language.FieldDefinition.newFieldDefinition;
+import static graphql.language.FloatValue.newFloatValue;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.IntValue.newIntValue;
 import static graphql.language.StringValue.newStringValue;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
@@ -33,6 +36,8 @@ import graphql.language.ObjectValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeUtil;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -502,6 +507,18 @@ class TypeDefinitionRegistrySchemaFactoryTest {
             .inputValueDefinition(newInputValueDefinition().name("availableOn")
                 .type(newNonNullableType("DateTime"))
                 .defaultValue(newStringValue("NOW").build())
+                .build())
+            .inputValueDefinition(newInputValueDefinition().name("isAvailable")
+                .type(newNonNullableType("Boolean"))
+                .defaultValue(newBooleanValue(true).build())
+                .build())
+            .inputValueDefinition(newInputValueDefinition().name("numberOfEmployees")
+                .type(newNonNullableType("Int"))
+                .defaultValue(newIntValue(new BigInteger("1")).build())
+                .build())
+            .inputValueDefinition(newInputValueDefinition().name("pricePerBeer")
+                .type(newNonNullableType("Float"))
+                .defaultValue(newFloatValue(new BigDecimal("1.5")).build())
                 .build())
             .build()
             .toString()));
