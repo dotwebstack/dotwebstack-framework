@@ -9,6 +9,7 @@ import io.r2dbc.spi.Statement;
 import io.r2dbc.spi.Wrapped;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,32 +33,30 @@ public class PostgresClient {
   }
 
   public Flux<Map<String, Object>> fetch(String sql) {
+    return fetch(connection -> connection.createStatement(sql), row -> row);
+  }
+
+  public Flux<Map<String, Object>> fetch(Query query) {
+    return fetch(connection -> createStatement(connection, query.getSelectQuery()), query.getRowMapper());
+  }
+
+  private Flux<Map<String, Object>> fetch(Function<Connection, Statement> statementFunction,
+      Function<Map<String, Object>, Map<String, Object>> rowMapper) {
     return Mono.from(connectionFactory.create())
         .flatMapMany(connection -> {
-          var statement = connection.createStatement(sql);
+          var statement = statementFunction.apply(connection);
 
           return Mono.from(statement.execute())
               .flatMapMany(result -> result.map(PostgresClient::rowToMap))
               .doOnCancel(() -> unwrap(connection).cancelRequest()
                   .subscribe())
+              .map(rowMapper)
               .doFinally(signalType -> Mono.from(connection.close())
                   .subscribe());
         });
   }
 
-  public Flux<Map<String, Object>> fetch(Query query) {
-    return Mono.from(connectionFactory.create())
-        .flatMapMany(connection -> {
-          var statement = createStatement(connection, query.getSelectQuery());
-
-          return Mono.from(statement.execute())
-              .flatMapMany(result -> result.map(PostgresClient::rowToMap))
-              .map(query.getRowMapper())
-              .doFinally(signalType -> Mono.from(connection.close())
-                  .subscribe());
-        });
-  }
-
+  @SuppressWarnings("unchecked")
   private static PostgresqlConnection unwrap(Connection connection) {
     if (connection instanceof PostgresqlConnection) {
       return (PostgresqlConnection) connection;
