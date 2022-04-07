@@ -55,4 +55,8 @@ public class PostgresObjectField extends AbstractObjectField {
           .orElse(columnName);
     }
   }
+
+  public void setSpatial(PostgresSpatial spatial) {
+    this.spatial = spatial;
+  }
 }

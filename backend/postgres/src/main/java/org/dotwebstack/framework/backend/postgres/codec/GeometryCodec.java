@@ -67,7 +67,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     try {
       return new WKBReader(geometryFactory).read(WKBReader.hexToBytes(ByteBufUtils.decode(buffer)));
     } catch (ParseException e) {
-      throw new IllegalArgumentException(e);
+      throw new IllegalArgumentException("Unable to read WKB geometry", e);
     }
   }
 
