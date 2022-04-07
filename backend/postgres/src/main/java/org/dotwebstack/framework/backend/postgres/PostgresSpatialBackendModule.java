@@ -60,7 +60,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   private Map.Entry<String, Integer> mapToEntry(Map<String, Object> row) {
     var key = row.get(F_TABLE_SCHEMA) + "." + row.get(F_TABLE_NAME) + "." + row.get(F_GEOMETRY_COLUMN);
     var value = (int) row.get(SRID);
-    return Map.entry(key, value);
+    return new AbstractMap.SimpleEntry<>(key, value);
   }
 
   @Override
