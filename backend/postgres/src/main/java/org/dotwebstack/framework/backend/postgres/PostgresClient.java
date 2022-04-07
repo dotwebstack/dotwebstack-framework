@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.postgres.query.Query;
 import org.jooq.Param;
 import org.jooq.Record;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class PostgresClient {
 
   private final ConnectionFactory connectionFactory;
@@ -80,6 +82,9 @@ public class PostgresClient {
         .stream()
         .filter(Predicate.not(Param::isInline))
         .collect(Collectors.toList());
+
+    LOG.debug("Executing query: {}", sql);
+    LOG.debug("Binding variables: {}", params);
 
     var statement = connection.createStatement(sql);
 
