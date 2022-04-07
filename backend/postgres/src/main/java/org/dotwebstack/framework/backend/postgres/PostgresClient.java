@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.dotwebstack.framework.backend.postgres.query.Query;
@@ -37,11 +38,12 @@ public class PostgresClient {
   }
 
   public Flux<Map<String, Object>> fetch(Query query) {
-    return fetch(connection -> createStatement(connection, query.getSelectQuery()), query.getRowMapper());
+    return fetch(connection -> createStatement(connection, query.getSelectQuery()), row -> query.getRowMapper()
+        .apply(row));
   }
 
   private Flux<Map<String, Object>> fetch(Function<Connection, Statement> statementFunction,
-      Function<Map<String, Object>, Map<String, Object>> rowMapper) {
+      UnaryOperator<Map<String, Object>> rowMapper) {
     return Mono.from(connectionFactory.create())
         .flatMapMany(connection -> {
           var statement = statementFunction.apply(connection);

@@ -5,7 +5,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -21,7 +20,7 @@ class GeometryCodecTest {
   @BeforeEach
   void doBeforeEach() {
     geometryFactory = new GeometryFactory();
-    geometryCodec = new GeometryCodec(Map.of("geometry", 1));
+    geometryCodec = new GeometryCodec(1);
   }
 
   @Test

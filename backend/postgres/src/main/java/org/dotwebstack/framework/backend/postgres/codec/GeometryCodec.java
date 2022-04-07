@@ -14,7 +14,6 @@ import io.r2dbc.postgresql.message.Format;
 import io.r2dbc.postgresql.util.Assert;
 import io.r2dbc.postgresql.util.ByteBufUtils;
 import java.util.Collections;
-import java.util.Map;
 import javax.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -25,16 +24,14 @@ import reactor.core.publisher.Flux;
 
 class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
-  static final String TYPE_NAME_GEOMETRY = "geometry";
-
   private static final Class<Geometry> TYPE = Geometry.class;
 
   private final GeometryFactory geometryFactory = new GeometryFactory();
 
-  private final Map<String, Integer> dataTypes;
+  private final int oid;
 
-  GeometryCodec(Map<String, Integer> dataTypes) {
-    this.dataTypes = dataTypes;
+  GeometryCodec(int oid) {
+    this.oid = oid;
   }
 
   @Override
@@ -42,7 +39,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireNonNull(format, "format must not be null");
     Assert.requireNonNull(type, "type must not be null");
 
-    return dataTypes.containsValue(dataType);
+    return dataType == oid;
   }
 
   @Override
@@ -76,7 +73,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public EncodedParameter encode(Object value) {
-    return encode(value, dataTypes.get(TYPE_NAME_GEOMETRY));
+    return encode(value, oid);
   }
 
   @Override
@@ -94,7 +91,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public EncodedParameter encodeNull() {
-    return new EncodedParameter(FORMAT_BINARY, dataTypes.get(TYPE_NAME_GEOMETRY), NULL_VALUE);
+    return new EncodedParameter(FORMAT_BINARY, oid, NULL_VALUE);
   }
 
   @Override
@@ -104,6 +101,6 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   @Override
   public Iterable<PostgresTypeIdentifier> getDataTypes() {
-    return Collections.singleton(() -> dataTypes.get(TYPE_NAME_GEOMETRY));
+    return Collections.singleton(() -> oid);
   }
 }
