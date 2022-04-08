@@ -5,7 +5,7 @@ import static io.r2dbc.postgresql.util.Assert.requireArrayDimension;
 import static io.r2dbc.postgresql.util.Assert.requireNonNull;
 
 import io.netty.buffer.ByteBuf;
-import io.r2dbc.postgresql.client.Parameter;
+import io.r2dbc.postgresql.client.EncodedParameter;
 import io.r2dbc.postgresql.codec.Codec;
 import io.r2dbc.postgresql.message.Format;
 import io.r2dbc.postgresql.util.Assert;
@@ -58,12 +58,17 @@ public class EnumArrayCodec implements Codec<String[]> {
   }
 
   @Override
-  public Parameter encode(Object value) {
+  public EncodedParameter encode(Object value) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Parameter encodeNull() {
+  public EncodedParameter encode(Object o, int i) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public EncodedParameter encodeNull() {
     throw new UnsupportedOperationException();
   }
 

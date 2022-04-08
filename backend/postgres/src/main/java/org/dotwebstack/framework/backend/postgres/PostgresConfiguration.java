@@ -15,7 +15,6 @@ import org.jooq.impl.DSL;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.r2dbc.core.DatabaseClient;
 
 @Configuration
 @EnableConfigurationProperties(PostgresProperties.class)
@@ -64,13 +63,9 @@ public class PostgresConfiguration {
         .initialSize(poolProperties.getInitialSize())
         .maxSize(poolProperties.getMaxSize())
         .maxIdleTime(Duration.ofMinutes(poolProperties.getMaxIdleTime()))
+        .maxLifeTime(Duration.ofMinutes(poolProperties.getMaxLifeTime()))
         .build();
 
     return new ConnectionPool(poolConfiguration);
-  }
-
-  @Bean
-  public DatabaseClient databaseClient(ConnectionFactory connectionFactory) {
-    return DatabaseClient.create(connectionFactory);
   }
 }

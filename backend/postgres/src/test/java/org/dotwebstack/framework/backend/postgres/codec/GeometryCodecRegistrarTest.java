@@ -1,8 +1,9 @@
 package org.dotwebstack.framework.backend.postgres.codec;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,49 +12,41 @@ import io.r2dbc.postgresql.api.PostgresqlConnection;
 import io.r2dbc.postgresql.api.PostgresqlResult;
 import io.r2dbc.postgresql.api.PostgresqlStatement;
 import io.r2dbc.postgresql.codec.CodecRegistry;
-import java.util.AbstractMap;
+import java.util.function.BiFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
-class SpatialCodecRegistrarTest {
-
-  @Mock
-  private ByteBufGeometryParser geometryParser;
+class GeometryCodecRegistrarTest {
 
   @Mock
   private PostgresqlConnection connection;
 
   @Mock
-  private ByteBufAllocator allocator;
-
-  @Mock
   private CodecRegistry registry;
 
-  private final SpatialCodecRegistrar codecRegistrar = new SpatialCodecRegistrar(geometryParser);
+  private final GeometryCodecRegistrar registrar = new GeometryCodecRegistrar();
 
   @Test
-  void register_shouldAdd_SpatialCodec() {
-    AbstractMap.SimpleEntry<String, String> entry = new AbstractMap.SimpleEntry<>("typname", "aa");
-
+  void register_registerOids_withQuery() {
     PostgresqlResult result = mock(PostgresqlResult.class);
-    Mockito.lenient()
-        .when(result.map(any()))
-        .thenReturn(Flux.just(entry));
+    lenient().when(result.map(any(BiFunction.class)))
+        .thenReturn(Flux.just(1234));
 
     PostgresqlStatement statement = mock(PostgresqlStatement.class);
-    when(statement.execute()).thenReturn(Flux.just(result));
-    when(connection.createStatement(anyString())).thenReturn(statement);
 
-    codecRegistrar.register(connection, allocator, registry);
-    Mono.from(codecRegistrar.register(connection, allocator, registry))
+    when(statement.execute()).thenReturn(Flux.just(result));
+
+    when(connection.createStatement(ArgumentMatchers.anyString())).thenReturn(statement);
+
+    Mono.from(registrar.register(connection, ByteBufAllocator.DEFAULT, registry))
         .block();
 
-    verify(registry).addFirst(any(SpatialCodec.class));
+    verify(registry, times(1)).addFirst(any());
   }
 }

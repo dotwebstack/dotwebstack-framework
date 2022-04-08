@@ -22,7 +22,6 @@ import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.dotwebstack.framework.ext.spatial.backend.SpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -44,15 +43,13 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   private final Schema schema;
 
-  public PostgresSpatialBackendModule(Schema schema, DatabaseClient databaseClient) {
+  public PostgresSpatialBackendModule(Schema schema, PostgresClient postgresClient) {
     this.schema = schema;
-    this.sridByTableColumn = getSridByTableColumn(databaseClient);
+    this.sridByTableColumn = getSridByTableColumn(postgresClient);
   }
 
-  private Map<String, Integer> getSridByTableColumn(DatabaseClient databaseClient) {
-    return databaseClient.sql(GEOMETRY_COLUMNS_STMT)
-        .fetch()
-        .all()
+  private Map<String, Integer> getSridByTableColumn(PostgresClient postgresClient) {
+    return postgresClient.fetch(GEOMETRY_COLUMNS_STMT)
         .map(this::mapToEntry)
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
@@ -60,9 +57,9 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .block();
   }
 
-  private AbstractMap.SimpleEntry<String, Integer> mapToEntry(Map<String, Object> row) {
-    String key = row.get(F_TABLE_SCHEMA) + "." + row.get(F_TABLE_NAME) + "." + row.get(F_GEOMETRY_COLUMN);
-    Integer value = (Integer) row.get(SRID);
+  private Map.Entry<String, Integer> mapToEntry(Map<String, Object> row) {
+    var key = row.get(F_TABLE_SCHEMA) + "." + row.get(F_TABLE_NAME) + "." + row.get(F_GEOMETRY_COLUMN);
+    var value = (int) row.get(SRID);
     return new AbstractMap.SimpleEntry<>(key, value);
   }
 
@@ -180,5 +177,4 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .map(sridByTableColumn::get)
         .orElse(null);
   }
-
 }

@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
@@ -23,8 +22,6 @@ import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.r2dbc.core.FetchSpec;
 import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,9 +30,9 @@ class PostgresSpatialBackendModuleTest {
   @Test
   void contructor_throwsNoException_onError() {
     var schema = mock(Schema.class);
-    var databaseClient = mockDatabaseCalls(Flux.error(new RuntimeException("Something went wrong.")));
+    var postgresClient = mockDatabaseCalls(Flux.error(new RuntimeException("Something went wrong.")));
 
-    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, databaseClient));
+    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, postgresClient));
   }
 
   @Test
@@ -51,9 +48,9 @@ class PostgresSpatialBackendModuleTest {
   @Test
   void init_setSpatial_doesNothingWhenNull() {
     var schema = mock(Schema.class);
-    var databaseClient = mockDatabaseCalls(Flux.empty());
+    var postgresClient = mockDatabaseCalls(Flux.empty());
 
-    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, databaseClient).init(null));
+    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, postgresClient).init(null));
   }
 
   @Test
@@ -61,11 +58,11 @@ class PostgresSpatialBackendModuleTest {
     var schema = new Schema();
     schema.setObjectTypes(createObjectTypes());
 
-    var databaseClient = mockDatabaseCalls(Flux.just(createRows()));
+    var postgresClient = mockDatabaseCalls(createRows());
 
     var spatial = createSpatial();
 
-    new PostgresSpatialBackendModule(schema, databaseClient).init(spatial);
+    new PostgresSpatialBackendModule(schema, postgresClient).init(spatial);
 
     var brewerySpatial = ((PostgresObjectField) schema.getObjectTypes()
         .get("Brewery")
@@ -152,30 +149,21 @@ class PostgresSpatialBackendModuleTest {
     return Map.of(7931, srs7931, 9067, srs9067, 7415, srs7415, 28892, srs28892);
   }
 
-  @SuppressWarnings({"unchecked"})
-  private DatabaseClient mockDatabaseCalls(Flux<Object> flux) {
-    var databaseClient = mock(DatabaseClient.class);
-    var executeSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-    var fetchSpec = mock(FetchSpec.class);
-
-    when(databaseClient.sql(anyString())).thenReturn(executeSpec);
-    when(executeSpec.fetch()).thenReturn(fetchSpec);
-    when(fetchSpec.all()).thenReturn(flux);
-
-    return databaseClient;
+  private PostgresClient mockDatabaseCalls(Flux<Map<String, Object>> flux) {
+    var postgresClient = mock(PostgresClient.class);
+    when(postgresClient.fetch(anyString())).thenReturn(flux);
+    return postgresClient;
   }
 
-  private Object[] createRows() {
+  private Flux<Map<String, Object>> createRows() {
     var breweryGeometryRow7931 = createRow("brewery_geometry", 7931);
     var breweryGeometryRowBbox7931 = createRow("brewery_geometry_bbox", 7931);
     var breweryGeometryRow7415 = createRow("brewery_geometry_7415", 7415);
     var addressGeometryRow7931 = createRow("address_geometry", 7931);
     var addressGeometryRow7415 = createRow("address_geometry_7415", 7415);
 
-    return List
-        .of(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
-            addressGeometryRow7415)
-        .toArray();
+    return Flux.just(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
+        addressGeometryRow7415);
   }
 
   private Map<String, Object> createRow(String geometryColumnName, Integer srid) {

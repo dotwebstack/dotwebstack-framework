@@ -17,13 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresBackendModuleTest {
 
   @Mock
-  private DatabaseClient databaseClient;
+  private PostgresClient postgresClient;
 
   private PostgresBackendLoaderFactory backendLoaderFactory;
 
@@ -33,7 +32,7 @@ class PostgresBackendModuleTest {
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoaderFactory = new PostgresBackendLoaderFactory(databaseClient);
+    backendLoaderFactory = new PostgresBackendLoaderFactory(postgresClient);
     postgresBackendModule = new PostgresBackendModule(backendLoaderFactory);
     testHelper = new TestHelper(postgresBackendModule);
   }

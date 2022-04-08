@@ -4,18 +4,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.backend.postgres.query.Query;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -33,70 +31,54 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.r2dbc.core.FetchSpec;
 import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings({"unchecked", "rawtypes"})
 class PostgresBackendLoaderTest {
 
   @Mock
-  private DatabaseClient databaseClient;
+  private PostgresClient postgresClient;
 
   private PostgresBackendLoader backendLoader;
 
   @BeforeEach
   void doBeforeEach() {
-    backendLoader = new PostgresBackendLoader(databaseClient);
+    backendLoader = new PostgresBackendLoader(postgresClient);
   }
 
   @Test
   void loadSingle_returnsMonoObject() {
-    Map<String, Object> source = new HashMap<>();
-    source.put("a", "bbb");
-    RequestContext requestContext = RequestContext.builder()
+    when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Collections.emptyMap()));
+    Map<String, Object> source = Map.of("a", "bbb");
+
+    var requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(source)
         .build();
 
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
-    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(anotherSpec.fetch()).thenReturn(fetchSpec);
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
+    var objectRequest = initObjectRequest();
 
-    ObjectRequest objectRequest = initObjectRequest();
+    var result = backendLoader.loadSingle(objectRequest, requestContext);
 
-    var res = backendLoader.loadSingle(objectRequest, requestContext);
-
-    assertThat(res, CoreMatchers.is(notNullValue()));
-    res.doOnNext(result -> assertTrue(result.isEmpty()))
-        .subscribe();
+    StepVerifier.create(result)
+        .expectNext(Collections.emptyMap())
+        .verifyComplete();
   }
 
   @Test
   void loadMany_returnsFluxObject() {
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Collections.emptyMap()));
-    DatabaseClient.GenericExecuteSpec anotherSpec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(anotherSpec.fetch()).thenReturn(fetchSpec);
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.bind(anyInt(), any())).thenReturn(anotherSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
+    when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Collections.emptyMap()));
+    Map<String, Object> source = Map.of("a", "bbb");
 
-    Map<String, Object> source = new HashMap<>();
-    source.put("a", "bbb");
-    RequestContext requestContext = RequestContext.builder()
+    var requestContext = RequestContext.builder()
         .objectField(mock(ObjectField.class))
         .source(source)
         .build();
 
-    ObjectRequest objectRequest = initObjectRequest();
+    var objectRequest = initObjectRequest();
 
-    CollectionRequest request = CollectionRequest.builder()
+    var request = CollectionRequest.builder()
         .objectRequest(objectRequest)
         .sortCriterias(List.of())
         .build();
@@ -110,29 +92,22 @@ class PostgresBackendLoaderTest {
   @Test
   @Disabled("fix me")
   void batchLoadMany_returnsFluxObject() {
-    FetchSpec fetchSpec = mock(FetchSpec.class);
-    when(fetchSpec.all()).thenReturn(Flux.just(Map.of("@@@", "ccc")));
-    DatabaseClient.GenericExecuteSpec spec = mock(DatabaseClient.GenericExecuteSpec.class);
-    when(spec.fetch()).thenReturn(fetchSpec);
-    when(databaseClient.sql(anyString())).thenReturn(spec);
-
+    when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Map.of("@@@", "ccc")));
     PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
     when(objectFieldMock.getJoinTable()).thenReturn(mock(JoinTable.class));
-    Map<String, Object> source = new HashMap<>();
-    source.put("a", "bbb");
-    RequestContext requestContext = RequestContext.builder()
+    Map<String, Object> source = Map.of("a", "bbb");
+
+    var requestContext = RequestContext.builder()
         .objectField(objectFieldMock)
         .source(source)
         .build();
 
-    ObjectRequest objectRequest = initObjectRequest();
-
-    CollectionRequest collectionRequest = CollectionRequest.builder()
-        .objectRequest(objectRequest)
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(initObjectRequest())
         .sortCriterias(List.of())
         .build();
 
-    CollectionBatchRequest request = CollectionBatchRequest.builder()
+    var request = CollectionBatchRequest.builder()
         .collectionRequest(collectionRequest)
         .joinCriteria(JoinCriteria.builder()
             .build())
@@ -143,13 +118,13 @@ class PostgresBackendLoaderTest {
   }
 
   private ObjectRequest initObjectRequest() {
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
+    var objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
 
     Map<String, Object> mapValues = Map.of("a", "bbb");
-    ContextCriteria contextCriteria = mock(ContextCriteria.class);
+    var contextCriteria = mock(ContextCriteria.class);
 
-    Context context = mock(Context.class);
+    var context = mock(Context.class);
     when(context.getFields()).thenReturn(Map.of("a", mock(ContextField.class)));
 
     when(contextCriteria.getContext()).thenReturn(context);
@@ -163,6 +138,5 @@ class PostgresBackendLoaderTest {
         .objectFields(objectFields)
         .contextCriteria(contextCriteria)
         .build();
-
   }
 }
