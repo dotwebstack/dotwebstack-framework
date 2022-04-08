@@ -33,6 +33,7 @@ import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValue;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
+import graphql.language.FloatValue;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
 import graphql.language.IntValue;
@@ -42,7 +43,10 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
+import graphql.language.Value;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -60,6 +64,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.model.Context;
+import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.model.FieldArgument;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -156,15 +161,38 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(entry -> newInputValueDefinition().name(entry.getKey())
             .type(newNonNullableType(entry.getValue()
                 .getType()))
-            .defaultValue(StringValue.newStringValue(entry.getValue()
-                .getDefaultValue())
-                .build())
+            .defaultValue(getDefaultValue(entry))
             .build())
         .collect(Collectors.toList());
 
     return newInputObjectDefinition().name(formatContextTypeName(contextName))
         .inputValueDefinitions(inputValueDefinitions)
         .build();
+  }
+
+  private Value<?> getDefaultValue(Map.Entry<String, ContextField> entry) {
+    String type = entry.getValue()
+        .getType();
+    if (Scalars.GraphQLBoolean.getName()
+        .equals(type)) {
+      return BooleanValue.newBooleanValue(Boolean.parseBoolean(entry.getValue()
+          .getDefaultValue()))
+          .build();
+    } else if (Scalars.GraphQLInt.getName()
+        .equals(type)) {
+      return IntValue.newIntValue(new BigInteger(entry.getValue()
+          .getDefaultValue()))
+          .build();
+    } else if (Scalars.GraphQLFloat.getName()
+        .equals(type)) {
+      return FloatValue.newFloatValue(new BigDecimal(entry.getValue()
+          .getDefaultValue()))
+          .build();
+    } else {
+      return StringValue.newStringValue(entry.getValue()
+          .getDefaultValue())
+          .build();
+    }
   }
 
   private void addConnectionTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
