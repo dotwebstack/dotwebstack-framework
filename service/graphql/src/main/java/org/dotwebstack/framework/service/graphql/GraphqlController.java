@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -61,7 +60,7 @@ class GraphqlController {
     var executionInput = getExecutionInput(query, operationName, variablesMap);
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .flatMap(this::handleErrors);
+        .flatMap(executionResult -> handleErrors(executionInput, executionResult));
   }
 
   @CrossOrigin
@@ -85,7 +84,7 @@ class GraphqlController {
     var executionInput = getExecutionInput(requestBody);
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .flatMap(this::handleErrors);
+        .flatMap(executionResult -> handleErrors(executionInput, executionResult));
   }
 
   @CrossOrigin
@@ -95,10 +94,10 @@ class GraphqlController {
     var executionInput = getExecutionInput(body, null, Map.of());
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .flatMap(this::handleErrors);
+        .flatMap(executionResult -> handleErrors(executionInput, executionResult));
   }
 
-  private Mono<Map<String, Object>> handleErrors(ExecutionResult executionResult) {
+  private Mono<Map<String, Object>> handleErrors(ExecutionInput executionInput, ExecutionResult executionResult) {
     var errors = executionResult.getErrors();
 
     if (errors.stream()
@@ -111,13 +110,13 @@ class GraphqlController {
         .map(ExceptionWhileDataFetching.class::cast)
         .map(ExceptionWhileDataFetching::getException)
         .findFirst()
-        .orElseThrow(ExceptionHelper::internalServerErrorException);
+        .orElseThrow(() -> internalServerErrorException(executionInput));
 
     if (throwable instanceof DotWebStackRuntimeException) {
       throw ((DotWebStackRuntimeException) throwable);
     }
 
-    return Mono.error(internalServerErrorException());
+    return Mono.error(internalServerErrorException(executionInput));
   }
 
   private void validateOperationNameIsNotEmptyString(String operationName) {

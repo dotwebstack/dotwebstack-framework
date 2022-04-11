@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.handler;
 
+import static graphql.ExecutionResultImpl.newExecutionResult;
 import static org.dotwebstack.framework.service.openapi.TestConstants.APPLICATION_JSON_HAL;
 import static org.dotwebstack.framework.service.openapi.TestMocks.mockRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,7 +14,6 @@ import static org.springframework.http.MediaType.APPLICATION_XML;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
-import graphql.ExecutionResultImpl;
 import graphql.GraphQL;
 import graphql.execution.ResultPath;
 import graphql.language.SourceLocation;
@@ -208,8 +208,7 @@ class OperationHandlerFactoryTest {
         parameterResolverFactory, responseHeaderResolver);
 
     var executionInput = mock(ExecutionInput.class);
-    var executionResult = ExecutionResultImpl.newExecutionResult()
-        .addError(new QueryOperationMissingError())
+    var executionResult = newExecutionResult().addError(new QueryOperationMissingError())
         .build();
 
     when(queryMapper.map(any())).thenReturn(executionInput);
@@ -231,7 +230,7 @@ class OperationHandlerFactoryTest {
 
     var throwableProblem = new ThrowableProblem() {};
     var executionInput = mock(ExecutionInput.class);
-    var executionResult = ExecutionResultImpl.newExecutionResult()
+    var executionResult = newExecutionResult()
         .addError(new ExceptionWhileDataFetching(ResultPath.rootPath(), throwableProblem, SourceLocation.EMPTY))
         .build();
 

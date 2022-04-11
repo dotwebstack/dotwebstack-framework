@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.service.openapi.mapping;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.badRequestException;
 
@@ -85,7 +85,7 @@ public class GeometryTypeMapper implements TypeMapper {
     try {
       return OBJECT_MAPPER.readValue(data, TYPE_REFERENCE);
     } catch (JsonProcessingException e) {
-      throw internalServerErrorException("Error while parsing GeoJSON string.", e);
+      throw illegalArgumentException("Error while parsing GeoJSON string.", e);
     }
   }
 
