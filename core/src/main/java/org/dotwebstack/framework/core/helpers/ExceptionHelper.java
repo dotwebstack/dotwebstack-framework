@@ -1,11 +1,14 @@
 package org.dotwebstack.framework.core.helpers;
 
+import graphql.ExecutionInput;
 import java.util.MissingFormatArgumentException;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.RequestValidationException;
 
+@Slf4j
 public class ExceptionHelper {
 
   public static final String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '{}'";
@@ -54,12 +57,10 @@ public class ExceptionHelper {
     return new InvalidConfigurationException(formatMessage(message, arguments), findCause(arguments));
   }
 
-  public static InternalServerErrorException internalServerErrorException() {
-    return new InternalServerErrorException("An internal server error has occurred!");
-  }
+  public static InternalServerErrorException internalServerErrorException(ExecutionInput executionInput) {
+    LOG.error("Internal server error occurred for executionInput: {}", executionInput);
 
-  public static InternalServerErrorException internalServerErrorException(String message, Object... arguments) {
-    return new InternalServerErrorException(formatMessage(message, arguments), findCause(arguments));
+    return new InternalServerErrorException("An internal server error has occurred!");
   }
 
   public static RequestValidationException requestValidationException(String message, Object... arguments) {

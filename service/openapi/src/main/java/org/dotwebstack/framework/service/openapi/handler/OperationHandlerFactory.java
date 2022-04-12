@@ -137,10 +137,10 @@ public class OperationHandlerFactory {
     LOG.debug("Query variables:\n{}", executionInput.getVariables());
 
     return Mono.fromFuture(graphQL.executeAsync(executionInput))
-        .flatMap(this::handleErrors);
+        .flatMap(executionResult -> handleErrors(executionInput, executionResult));
   }
 
-  private Mono<ExecutionResult> handleErrors(ExecutionResult executionResult) {
+  private Mono<ExecutionResult> handleErrors(ExecutionInput executionInput, ExecutionResult executionResult) {
     var errors = executionResult.getErrors();
 
     if (errors.isEmpty()) {
@@ -162,7 +162,7 @@ public class OperationHandlerFactory {
           throw throwableProblem;
         });
 
-    return Mono.error(internalServerErrorException());
+    return Mono.error(internalServerErrorException(executionInput));
   }
 
   private ContentNegotiator createContentNegotiator(ApiResponse bodyResponse) {

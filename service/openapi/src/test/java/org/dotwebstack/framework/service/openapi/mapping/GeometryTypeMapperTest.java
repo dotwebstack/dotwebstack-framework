@@ -13,7 +13,6 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.exception.BadRequestException;
@@ -92,7 +91,7 @@ class GeometryTypeMapperTest {
     var data = Map.of("asGeoJSON", "{foo}");
     var schema = new Schema<>().type("object");
 
-    Exception exception = assertThrows(InternalServerErrorException.class, () -> typeMapper.fieldToBody(data, schema));
+    Exception exception = assertThrows(IllegalArgumentException.class, () -> typeMapper.fieldToBody(data, schema));
 
     assertThat(exception.getMessage(), is("Error while parsing GeoJSON string."));
   }
