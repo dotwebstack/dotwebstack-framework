@@ -480,9 +480,9 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
-    return query.getKeys()
+    return query.getKeyMap().entrySet()
         .stream()
-        .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField), query.isBatch()))
+        .map(key -> createInputValueDefinition(key.getValue(), objectType, Map.of(KEY_FIELD, key.getKey()), query.isBatch()))
         .collect(Collectors.toList());
   }
 

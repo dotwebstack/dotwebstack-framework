@@ -46,8 +46,8 @@ public class QueryValidator implements SchemaValidator {
       }
     }
 
-    query.getKeys()
-        .forEach(keyPath -> validateKeyFieldPath(queryName, keyPath, query.getType(), schema));
+    query.getKeyMap()
+        .forEach((key, value) -> validateKeyFieldPath(queryName, value, query.getType(), schema));
   }
 
   private void validateKeyFieldPath(String queryName, String keyPath, String objectTypeName, Schema schema) {
