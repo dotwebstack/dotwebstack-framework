@@ -333,6 +333,7 @@ class SelectBuilder {
 
     var fieldPath = keyCriteria.getFieldPath();
     Field<Object> sqlField;
+    // TODO: Waarom 2?
     if (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
         .isNested()) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);

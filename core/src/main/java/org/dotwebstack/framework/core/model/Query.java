@@ -11,6 +11,7 @@ public class Query {
   @NotBlank
   private String type;
 
+  // TODO: List<Object>
   private List<String> keys = new ArrayList<>();
 
   private boolean list = false;

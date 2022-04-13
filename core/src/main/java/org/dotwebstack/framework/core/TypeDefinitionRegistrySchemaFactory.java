@@ -599,6 +599,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       Map<String, String> additionalData, boolean batch) {
 
     if (isNestedFieldPath(keyField)) {
+      // TODO: limit 2?
       var splittedKeys = Arrays.asList(keyField.split("\\.", 2));
 
       objectType = schema.getObjectType(objectType.getField(splittedKeys.get(0))

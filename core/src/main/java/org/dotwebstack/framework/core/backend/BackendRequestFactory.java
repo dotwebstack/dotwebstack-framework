@@ -329,6 +329,7 @@ public class BackendRequestFactory {
     var keyField = argument.getDefinition()
         .getAdditionalData()
         .get(KEY_FIELD);
+//    identificatieVanLigplaats: identificatieVanLigplaats.ref.identificatie
     var fieldPath = createFieldPath(objectType, keyField);
     var value = argumentMap.get(argument.getName());
 

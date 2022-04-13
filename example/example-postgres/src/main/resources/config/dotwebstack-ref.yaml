@@ -40,6 +40,11 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
+  breweryAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
 
 objectTypes:
   Beer:
