@@ -491,13 +491,15 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
-    return query.getKeyMap().entrySet()
+    return query.getKeyMap()
+        .entrySet()
         .stream()
         .map(key -> {
           // argumentName
           var aliasField = key.getKey(); // postalAddress.city of city
           var keyField = getFieldKey(key.getValue());
-          return createInputValueDefinition(aliasField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
+          return createInputValueDefinition(aliasField, objectType,
+              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
         })
         .collect(Collectors.toList());
   }
@@ -614,7 +616,7 @@ public class TypeDefinitionRegistrySchemaFactory {
       Map<String, String> additionalData, boolean batch) {
 
     var keyPath = additionalData.get(KEY_PATH);
-    var keyField= additionalData.get(KEY_FIELD);
+    var keyField = additionalData.get(KEY_FIELD);
 
     if (isNestedFieldPath(keyPath)) {
       // TODO: getNestedObjectType(objectType, keyPath)

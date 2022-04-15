@@ -35,7 +35,8 @@ public class FieldPathHelper {
       var current = fieldPath.get(i);
       Optional<ObjectField> next = (i + 1) < numberOfFields ? Optional.of(fieldPath.get(i + 1)) : Optional.empty();
       Optional<ObjectField> previous = i > 0 ? Optional.of(fieldPath.get(i - 1)) : Optional.empty();
-      if(current.getName().equals("ref")){
+      if (current.getName()
+          .equals("ref")) {
         return previous;
       }
     }
@@ -51,9 +52,9 @@ public class FieldPathHelper {
   }
 
   public static String getFieldKey(String keyPath) {
-    if(isNestedFieldPath(keyPath)){
+    if (isNestedFieldPath(keyPath)) {
       var splittedKeys = Arrays.asList(keyPath.split("\\."));
-      return splittedKeys.get(splittedKeys.size()-1);
+      return splittedKeys.get(splittedKeys.size() - 1);
     }
     return keyPath;
   }

@@ -32,7 +32,7 @@ public class Query {
         .map(key -> {
           // TODO: create FieldPath: FieldPathHelpr#createFieldPath
           if (key instanceof String) {
-            return new AbstractMap.SimpleEntry<>(getFieldKey((String)key), (String) key);
+            return new AbstractMap.SimpleEntry<>(getFieldKey((String) key), (String) key);
           }
 
           return ((HashMap<String, String>) key).entrySet()

@@ -341,8 +341,8 @@ class SelectBuilder {
       sqlField = column(null, leafFieldMapper.getAlias());
     } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
       var parentOfRefField = getParentOfRefField(fieldPath);
-      if(parentOfRefField.isPresent()) {
-        sqlField = column(table, ((PostgresObjectField)parentOfRefField.get()).getColumn());
+      if (parentOfRefField.isPresent()) {
+        sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
       } else {
         throw new IllegalStateException("TODO foutmelding");
       }
@@ -356,7 +356,8 @@ class SelectBuilder {
   }
 
   private boolean isNested(List<ObjectField> fieldPath) {
-    return getLeaf(fieldPath).getObjectType().isNested();
+    return getLeaf(fieldPath).getObjectType()
+        .isNested();
   }
 
   private boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {
