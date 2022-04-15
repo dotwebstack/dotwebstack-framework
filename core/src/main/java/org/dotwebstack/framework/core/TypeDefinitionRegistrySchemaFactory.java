@@ -610,15 +610,22 @@ public class TypeDefinitionRegistrySchemaFactory {
       Map<String, String> additionalData, boolean batch) {
 
     var keyPath = additionalData.get(KEY_PATH);
-    var keyField = additionalData.get(KEY_FIELD);
+    String fieldName;
 
     if (isNestedFieldPath(keyPath)) {
+
       var fieldPath = createFieldPath(objectType, keyPath);
+
+
       objectType = fieldPath.get(fieldPath.size() - 2)
           .getTargetType();
+      fieldName = fieldPath.get(fieldPath.size() - 1)
+          .getName();
+    } else {
+      fieldName = keyPath;
     }
 
-    var fieldType = createType(keyField, objectType);
+    var fieldType = createType(fieldName, objectType);
 
     return newInputValueDefinition().name(key)
         .type(batch ? ListType.newListType(fieldType)
