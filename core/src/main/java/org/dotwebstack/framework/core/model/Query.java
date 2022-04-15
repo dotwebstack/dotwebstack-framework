@@ -25,11 +25,11 @@ public class Query {
 
   private String context;
 
-  public Map<String, String> getKeyMap(){
+  public Map<String, String> getKeyMap() {
     return keys.stream()
         .map(key -> {
-          if (key instanceof String){
-            return new AbstractMap.SimpleEntry<>((String) key, (String)key);
+          if (key instanceof String) {
+            return new AbstractMap.SimpleEntry<>((String) key, (String) key);
           }
 
           return ((HashMap<String, String>) key).entrySet()

@@ -10,6 +10,8 @@ public class GraphQlConstants {
 
   public static final String KEY_FIELD = "keyField";
 
+  public static final String KEY_PATH = "keyPath";
+
   public static final String IS_CONNECTION_TYPE = "isConnectionType";
 
   public static final String IS_PAGING_NODE = "isPagingNode";

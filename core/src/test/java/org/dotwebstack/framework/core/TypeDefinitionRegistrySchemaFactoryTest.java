@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import graphql.language.BooleanValue;
 import graphql.language.EnumTypeDefinition;
@@ -48,12 +49,15 @@ import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
+import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.dotwebstack.framework.core.testhelpers.TestObjectField;
 import org.dotwebstack.framework.core.testhelpers.TestObjectType;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.r2dbc.core.DatabaseClient;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
 
@@ -72,9 +76,12 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
   }
 
+
   @Test
   void typeDefinitionRegistry_registerQueries_whenConfigured() {
-    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries.yaml");
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(mock(DatabaseClient.class)));
+    var testHelper = new TestHelper(backendModule);
+    var dotWebStackConfiguration = testHelper.loadSchema("dotwebstack/dotwebstack-queries.yaml");
 
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
