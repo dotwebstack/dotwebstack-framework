@@ -1,8 +1,16 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static graphql.schema.GraphQLTypeUtil.isList;
+import static graphql.schema.GraphQLTypeUtil.isObjectType;
+import static graphql.schema.GraphQLTypeUtil.unwrapAll;
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.execution.ExecutionStepInfo;
@@ -19,7 +27,6 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLScalarType;
-import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.time.LocalDate;
@@ -30,8 +37,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.NonNull;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
-import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 
 public class GraphQlHelper {
 
@@ -63,43 +68,40 @@ public class GraphQlHelper {
   }
 
   public static final Predicate<SelectedField> isScalarField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    var unwrappedType = unwrapAll(selectedField.getType());
 
     return (unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType
         || isScalarType(unwrappedType));
   };
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    var unwrappedType = unwrapAll(selectedField.getType());
     var additionalData = getAdditionalData(unwrappedType);
 
-    return !GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-        && GraphQLTypeUtil.isObjectType(unwrappedType) && !isScalarType(unwrappedType)
-        && !additionalData.containsKey(GraphQlConstants.IS_CONNECTION_TYPE) && !unwrappedType.getName()
-            .equals(AggregateConstants.AGGREGATE_TYPE);
+    return !isList(unwrapNonNull(selectedField.getType())) && isObjectType(unwrappedType)
+        && !isScalarType(unwrappedType) && !additionalData.containsKey(IS_CONNECTION_TYPE) && !unwrappedType.getName()
+            .equals(AGGREGATE_TYPE);
   };
 
   public static final Predicate<SelectedField> isObjectListField = selectedField -> {
-    var unwrappedType = GraphQLTypeUtil.unwrapAll(selectedField.getType());
+    var unwrappedType = unwrapAll(selectedField.getType());
 
-    return (GraphQLTypeUtil.isList(unwrapNonNull(selectedField.getType()))
-        && GraphQLTypeUtil.isObjectType(GraphQLTypeUtil.unwrapAll(selectedField.getType())))
+    return (isList(unwrapNonNull(selectedField.getType())) && isObjectType(unwrapAll(selectedField.getType())))
         && !unwrappedType.getName()
-            .equals(AggregateConstants.AGGREGATE_TYPE)
-        || getAdditionalData(unwrappedType).containsKey(GraphQlConstants.IS_CONNECTION_TYPE);
+            .equals(AGGREGATE_TYPE)
+        || getAdditionalData(unwrappedType).containsKey(IS_CONNECTION_TYPE);
   };
 
   public static final Predicate<SelectedField> isCustomValueField = selectedField -> selectedField.getFieldDefinitions()
       .stream()
-      .anyMatch(fieldDefinition -> fieldDefinition.getDefinition()
-          .getAdditionalData()
+      .anyMatch(fieldDefinition -> requireNonNull(fieldDefinition.getDefinition()).getAdditionalData()
           .containsKey(CUSTOM_FIELD_VALUEFETCHER));
 
   public static final Predicate<SelectedField> isIntrospectionField = selectedField -> selectedField.getName()
       .startsWith("__");
 
   private static boolean isScalarType(GraphQLUnmodifiedType unmodifiedType) {
-    return getAdditionalData(unmodifiedType).containsKey(GraphQlConstants.IS_SCALAR);
+    return getAdditionalData(unmodifiedType).containsKey(IS_SCALAR);
   }
 
   public static ExecutionStepInfo getRequestStepInfo(ExecutionStepInfo executionStepInfo) {
@@ -113,9 +115,8 @@ public class GraphQlHelper {
   public static List<GraphQLArgument> getKeyArguments(GraphQLFieldDefinition fieldDefinition) {
     return fieldDefinition.getArguments()
         .stream()
-        .filter(argument -> argument.getDefinition()
-            .getAdditionalData()
-            .containsKey(GraphQlConstants.KEY_FIELD))
+        .filter(argument -> requireNonNull(argument.getDefinition()).getAdditionalData()
+            .containsKey(KEY_FIELD))
         .collect(Collectors.toList());
   }
 

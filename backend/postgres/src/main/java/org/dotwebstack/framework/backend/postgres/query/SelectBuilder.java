@@ -44,6 +44,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -333,12 +334,14 @@ class SelectBuilder {
 
     var fieldPath = keyCriteria.getFieldPath();
     Field<Object> sqlField;
-    // TODO: Waarom 2?
-    if (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
+
+    if (fieldPath.size() > 1 && !getLeaf(fieldPath).getObjectType()
         .isNested()) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
       sqlField = column(null, leafFieldMapper.getAlias());
+    } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
+      sqlField = column(table, ((PostgresObjectField) fieldPath.get(0)).getColumn());
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
     }
@@ -346,6 +349,12 @@ class SelectBuilder {
     var condition = sqlField.equal(keyCriteria.getValue());
 
     return Optional.of(JoinHelper.andCondition(List.of(condition)));
+  }
+
+  private boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {
+    return fieldPaths.stream()
+        .anyMatch(fieldPath -> fieldPath.getName()
+            .equals("ref"));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,

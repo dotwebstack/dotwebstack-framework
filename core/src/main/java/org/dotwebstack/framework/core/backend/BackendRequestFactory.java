@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.backend;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapAll;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
@@ -13,6 +14,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateVal
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
@@ -37,7 +39,6 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -116,6 +117,7 @@ public class BackendRequestFactory {
         createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
 
     return ObjectRequest.builder()
+        .objectType(objectType)
         .objectType(objectType)
         .keyCriterias(keyCriterias)
         .scalarFields(getScalarFields(selectionSet))
@@ -203,9 +205,9 @@ public class BackendRequestFactory {
   private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField) {
     if (isCustomValueField.test(selectedField)) {
       return getAdditionalData(selectedField, CUSTOM_FIELD_VALUEFETCHER).stream()
-          .flatMap(customValueFetcher -> Objects.requireNonNull(customValueFetcherDispatcher)
-              .getSourceFieldNames(customValueFetcher)
-              .stream())
+          .flatMap(
+              customValueFetcher -> requireNonNull(customValueFetcherDispatcher).getSourceFieldNames(customValueFetcher)
+                  .stream())
           .map(fieldName -> FieldRequest.builder()
               .name(fieldName)
               .resultKey(fieldName)
@@ -306,8 +308,7 @@ public class BackendRequestFactory {
 
   private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, GraphQLFieldDefinition fieldDefinition,
       Map<String, Object> argumentValues) {
-    var additionalData = fieldDefinition.getDefinition()
-        .getAdditionalData();
+    var additionalData = requireNonNull(fieldDefinition.getDefinition()).getAdditionalData();
 
     // do not construct key criteria for batch queries
     if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
@@ -316,8 +317,7 @@ public class BackendRequestFactory {
 
     return fieldDefinition.getArguments()
         .stream()
-        .filter(argument -> argument.getDefinition()
-            .getAdditionalData()
+        .filter(argument -> requireNonNull(argument.getDefinition()).getAdditionalData()
             .containsKey(KEY_FIELD))
         .filter(argument -> argumentValues.containsKey(argument.getName()))
         .map(argument -> createKeyCriteria(objectType, argumentValues, argument))
@@ -326,11 +326,10 @@ public class BackendRequestFactory {
 
   private KeyCriteria createKeyCriteria(ObjectType<?> objectType, Map<String, Object> argumentMap,
       GraphQLArgument argument) {
-    var keyField = argument.getDefinition()
-        .getAdditionalData()
-        .get(KEY_FIELD);
-//    identificatieVanLigplaats: identificatieVanLigplaats.ref.identificatie
-    var fieldPath = createFieldPath(objectType, keyField);
+    var keyPath = requireNonNull(argument.getDefinition()).getAdditionalData()
+        .get(KEY_PATH);
+    // identificatieVanLigplaats: identificatieVanLigplaats.ref.identificatie
+    var fieldPath = createFieldPath(objectType, keyPath);
     var value = argumentMap.get(argument.getName());
 
     return KeyCriteria.builder()
