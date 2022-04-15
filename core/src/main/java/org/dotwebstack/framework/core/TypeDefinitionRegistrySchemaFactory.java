@@ -610,29 +610,6 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createInputValueDefinition(keyPath, objectType, additionalData, false);
   }
 
-//  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
-//      Map<String, String> additionalData, boolean batch) {
-//    // TODO keyField -> aliasField
-//    var keyPath = additionalData.get(KEY_PATH);
-//    var keyField= additionalData.get(KEY_FIELD);
-//    if (isNestedFieldPath(keyPath)) {
-//      // TODO: limit 2?
-//      var splittedKeys = Arrays.asList(keyPath.split("\\.", 2));
-//
-//      objectType = schema.getObjectType(objectType.getField(splittedKeys.get(0))
-//              .getType())
-//          .orElseThrow();
-//      //keyField = splittedKeys.get(1);
-//    }
-//
-//    var fieldType = createType(keyField, objectType);
-//
-//    return newInputValueDefinition().name(aliasField)
-//        .type(batch ? ListType.newListType(fieldType)
-//            .build() : fieldType)
-//        .additionalData(additionalData)
-//        .build();
-//  }
   private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
       Map<String, String> additionalData, boolean batch) {
 
@@ -640,7 +617,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var keyField= additionalData.get(KEY_FIELD);
 
     if (isNestedFieldPath(keyPath)) {
-      // TODO: getObjectTypeOfLastField(objectType, keyPath)
+      // TODO: getNestedObjectType(objectType, keyPath)
       var fieldPath = createFieldPath(objectType, keyPath);
       objectType = fieldPath.get(fieldPath.size() - 2)
           .getTargetType();

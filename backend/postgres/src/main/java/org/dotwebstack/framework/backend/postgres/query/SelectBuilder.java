@@ -22,6 +22,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -333,15 +334,18 @@ class SelectBuilder {
     }
 
     var fieldPath = keyCriteria.getFieldPath();
+
     Field<Object> sqlField;
-
-    if (fieldPath.size() > 1 && !getLeaf(fieldPath).getObjectType()
-        .isNested()) {
+    if (fieldPath.size() > 1 && !isNested(fieldPath)) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
-
       sqlField = column(null, leafFieldMapper.getAlias());
     } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
-      sqlField = column(table, ((PostgresObjectField) fieldPath.get(0)).getColumn());
+      var parentOfRefField = getParentOfRefField(fieldPath);
+      if(parentOfRefField.isPresent()) {
+        sqlField = column(table, ((PostgresObjectField)parentOfRefField.get()).getColumn());
+      } else {
+        throw new IllegalStateException("TODO foutmelding");
+      }
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
     }
@@ -349,6 +353,10 @@ class SelectBuilder {
     var condition = sqlField.equal(keyCriteria.getValue());
 
     return Optional.of(JoinHelper.andCondition(List.of(condition)));
+  }
+
+  private boolean isNested(List<ObjectField> fieldPath) {
+    return getLeaf(fieldPath).getObjectType().isNested();
   }
 
   private boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {

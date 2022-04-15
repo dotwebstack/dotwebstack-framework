@@ -68,7 +68,6 @@ public class ObjectRequestHelper {
           // Only reuse existing ObjectRequest when aliases are not used.
           var resultKey = field.getKey()
               .getResultKey();
-          // TODO: create system alias?
           return resultKey.equals(objectField.getName()) || createSystemAlias(objectField).equals(resultKey);
         })
         .map(Map.Entry::getValue)

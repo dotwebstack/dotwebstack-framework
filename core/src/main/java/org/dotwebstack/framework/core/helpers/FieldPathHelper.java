@@ -5,6 +5,7 @@ import static java.util.Optional.ofNullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
@@ -26,6 +27,19 @@ public class FieldPathHelper {
     }
 
     return fieldPath;
+  }
+
+  public static Optional<ObjectField> getParentOfRefField(List<ObjectField> fieldPath) {
+    var numberOfFields = fieldPath.size();
+    for (var i = 0; i < numberOfFields; i++) {
+      var current = fieldPath.get(i);
+      Optional<ObjectField> next = (i + 1) < numberOfFields ? Optional.of(fieldPath.get(i + 1)) : Optional.empty();
+      Optional<ObjectField> previous = i > 0 ? Optional.of(fieldPath.get(i - 1)) : Optional.empty();
+      if(current.getName().equals("ref")){
+        return previous;
+      }
+    }
+    return Optional.empty();
   }
 
   public static ObjectField getLeaf(List<ObjectField> fieldPath) {

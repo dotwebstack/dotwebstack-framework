@@ -26,25 +26,30 @@ subscriptions:
     type: Brewery
 
 queries:
-  beer:
-    type: Beer
-    keys:
-      - identifier
-  beerCollection:
-    type: Beer
-    list: true
-  brewery:
-    type: Brewery
-    keys:
-      - identifier
-  breweryCollection:
-    type: Brewery
-    list: true
+#  beer:
+#    type: Beer
+#    keys:
+#      - identifier
+#  beerCollection:
+#    type: Beer
+#    list: true
+#  brewery:
+#    type: Brewery
+#    keys:
+#      - identifier
+#  breweryCollection:
+#    type: Brewery
+#    list: true
   breweryAddress:
     type: Brewery
     keys:
       - identifier
       - postalAddress.city
+  beerBreweryRefKey:
+    type: Beer
+    keys:
+      - identifier
+      - breweryRef: brewery.ref.record_id
 
 objectTypes:
   Beer:
