@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.model;
 
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
+
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +30,9 @@ public class Query {
   public Map<String, String> getKeyMap() {
     return keys.stream()
         .map(key -> {
+          // TODO: create FieldPath: FieldPathHelpr#createFieldPath
           if (key instanceof String) {
-            return new AbstractMap.SimpleEntry<>((String) key, (String) key);
+            return new AbstractMap.SimpleEntry<>(getFieldKey((String)key), (String) key);
           }
 
           return ((HashMap<String, String>) key).entrySet()

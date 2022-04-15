@@ -39,6 +39,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 
 import com.google.common.base.CaseFormat;
@@ -490,11 +491,14 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
-    return query.getKeyMap()
-        .entrySet()
+    return query.getKeyMap().entrySet()
         .stream()
-        .map(keyMap -> createInputValueDefinition(keyMap.getKey(), objectType,
-            Map.of(KEY_FIELD, keyMap.getKey(), KEY_PATH, keyMap.getValue()), query.isBatch()))
+        .map(key -> {
+          // argumentName
+          var aliasField = key.getKey(); // postalAddress.city of city
+          var keyField = getFieldKey(key.getValue());
+          return createInputValueDefinition(aliasField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
+        })
         .collect(Collectors.toList());
   }
 
@@ -606,28 +610,45 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createInputValueDefinition(keyPath, objectType, additionalData, false);
   }
 
-  private InputValueDefinition createInputValueDefinition(String key, ObjectType<?> objectType,
+//  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
+//      Map<String, String> additionalData, boolean batch) {
+//    // TODO keyField -> aliasField
+//    var keyPath = additionalData.get(KEY_PATH);
+//    var keyField= additionalData.get(KEY_FIELD);
+//    if (isNestedFieldPath(keyPath)) {
+//      // TODO: limit 2?
+//      var splittedKeys = Arrays.asList(keyPath.split("\\.", 2));
+//
+//      objectType = schema.getObjectType(objectType.getField(splittedKeys.get(0))
+//              .getType())
+//          .orElseThrow();
+//      //keyField = splittedKeys.get(1);
+//    }
+//
+//    var fieldType = createType(keyField, objectType);
+//
+//    return newInputValueDefinition().name(aliasField)
+//        .type(batch ? ListType.newListType(fieldType)
+//            .build() : fieldType)
+//        .additionalData(additionalData)
+//        .build();
+//  }
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
       Map<String, String> additionalData, boolean batch) {
 
     var keyPath = additionalData.get(KEY_PATH);
-    String fieldName;
+    var keyField= additionalData.get(KEY_FIELD);
 
     if (isNestedFieldPath(keyPath)) {
-
+      // TODO: getObjectTypeOfLastField(objectType, keyPath)
       var fieldPath = createFieldPath(objectType, keyPath);
-
-
       objectType = fieldPath.get(fieldPath.size() - 2)
           .getTargetType();
-      fieldName = fieldPath.get(fieldPath.size() - 1)
-          .getName();
-    } else {
-      fieldName = keyPath;
     }
 
-    var fieldType = createType(fieldName, objectType);
+    var fieldType = createType(keyField, objectType);
 
-    return newInputValueDefinition().name(key)
+    return newInputValueDefinition().name(aliasField)
         .type(batch ? ListType.newListType(fieldType)
             .build() : fieldType)
         .additionalData(additionalData)
