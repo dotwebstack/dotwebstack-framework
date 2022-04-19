@@ -38,9 +38,8 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
-import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
-import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
 
 import com.google.common.base.CaseFormat;
 import graphql.language.BooleanValue;
@@ -495,8 +494,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(key -> {
-          // argumentName
-          var aliasField = key.getKey(); // postalAddress.city of city
+          var aliasField = key.getKey();
           var keyField = getFieldKey(key.getValue());
           return createInputValueDefinition(aliasField, objectType,
               Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
@@ -615,17 +613,11 @@ public class TypeDefinitionRegistrySchemaFactory {
   private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
       Map<String, String> additionalData, boolean batch) {
 
-    var keyPath = additionalData.get(KEY_PATH);
     var keyField = additionalData.get(KEY_FIELD);
+    var keyPath = additionalData.get(KEY_PATH);
+    var keyObjectType = getObjectType(objectType, keyPath);
 
-    if (isNestedFieldPath(keyPath)) {
-      // TODO: getNestedObjectType(objectType, keyPath)
-      var fieldPath = createFieldPath(objectType, keyPath);
-      objectType = fieldPath.get(fieldPath.size() - 2)
-          .getTargetType();
-    }
-
-    var fieldType = createType(keyField, objectType);
+    var fieldType = createType(keyField, keyObjectType);
 
     return newInputValueDefinition().name(aliasField)
         .type(batch ? ListType.newListType(fieldType)

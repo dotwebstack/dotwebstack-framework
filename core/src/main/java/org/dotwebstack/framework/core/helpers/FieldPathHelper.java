@@ -33,7 +33,6 @@ public class FieldPathHelper {
     var numberOfFields = fieldPath.size();
     for (var i = 0; i < numberOfFields; i++) {
       var current = fieldPath.get(i);
-      Optional<ObjectField> next = (i + 1) < numberOfFields ? Optional.of(fieldPath.get(i + 1)) : Optional.empty();
       Optional<ObjectField> previous = i > 0 ? Optional.of(fieldPath.get(i - 1)) : Optional.empty();
       if (current.getName()
           .equals("ref")) {
@@ -57,5 +56,14 @@ public class FieldPathHelper {
       return splittedKeys.get(splittedKeys.size() - 1);
     }
     return keyPath;
+  }
+
+  public static ObjectType<? extends ObjectField> getObjectType(ObjectType objectType, String keyPath) {
+    var fieldPath = createFieldPath(objectType, keyPath);
+    if (fieldPath.size() > 1) {
+      return fieldPath.get(fieldPath.size() - 2)
+          .getTargetType();
+    }
+    return objectType;
   }
 }
