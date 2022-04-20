@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.mockito.Mockito.mock;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -20,8 +22,21 @@ public class TestHelper {
 
   private final BackendModule<?> backendModule;
 
+  public TestHelper() {
+    var postgresClient = mock(PostgresClient.class);
+    var backendLoaderFactory = new PostgresBackendLoaderFactory(postgresClient);
+    this.backendModule = new PostgresBackendModule(backendLoaderFactory);
+
+  }
   public TestHelper(BackendModule<?> backendModule) {
     this.backendModule = backendModule;
+  }
+
+  public Schema init(String pathToConfigFile) {
+    var schema = getSchema(pathToConfigFile);
+    var objectTypes = schema.getObjectTypes();
+    backendModule.init(objectTypes);
+    return schema;
   }
 
   public Schema getSchema(String pathToConfigFile) {

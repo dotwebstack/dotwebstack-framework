@@ -355,11 +355,13 @@ class SelectBuilder {
     return Optional.of(JoinHelper.andCondition(List.of(condition)));
   }
 
+  // TODO move to FieldPathHelper
   private boolean isNested(List<ObjectField> fieldPath) {
     return getLeaf(fieldPath).getObjectType()
         .isNested();
   }
 
+  // TODO: move to FieldPathHelper
   private boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {
     return fieldPaths.stream()
         .anyMatch(fieldPath -> fieldPath.getName()
