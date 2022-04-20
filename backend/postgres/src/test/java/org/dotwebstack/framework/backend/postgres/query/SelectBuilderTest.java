@@ -191,16 +191,17 @@ class SelectBuilderTest {
   @Test
   void build_returnsSelectQuery_forObjectRequestWithKeyCriteriaHavingNodeRelation() {
     var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
-    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery").orElseThrow();
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
     var identifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
     var cityFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.node.city");
 
     var objectRequest = ObjectRequest.builder()
         .objectType(breweryObjectType)
         .scalarFields(List.of(FieldRequest.builder()
-                .name("identifier")
-                .resultKey("identifier")
-                .build()))
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
         .keyCriterias(List.of(KeyCriteria.builder()
             .fieldPath(identifierFieldPath)
             .value("id-1")
@@ -213,7 +214,11 @@ class SelectBuilderTest {
 
     var result = selectBuilder.build(objectRequest);
 
-    var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n" + "  \"x6\".*\n" + "from \"brewery\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n" + "      \"x4\".\"city\" as \"x5\",\n" + "      1 as \"x4\"\n" + "    from \"address\" as \"x4\"\n" + "    where \"x1\".\"postal_address\" = \"x4\".\"identifier\"\n" + "    limit 1\n" + "  ) as \"x6\"\n" + "    on true\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x5\" = 'Dublin'\n" + ")";
+    var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
+        + "  \"x6\".*\n" + "from \"brewery\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
+        + "      \"x4\".\"city\" as \"x5\",\n" + "      1 as \"x4\"\n" + "    from \"address\" as \"x4\"\n"
+        + "    where \"x1\".\"postal_address\" = \"x4\".\"identifier\"\n" + "    limit 1\n" + "  ) as \"x6\"\n"
+        + "    on true\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x5\" = 'Dublin'\n" + ")";
     assertThat(result, notNullValue());
     assertThat(result.toString(), is(expectedQuery));
   }
@@ -221,7 +226,8 @@ class SelectBuilderTest {
   @Test
   void build_returnsSelectQuery_forObjectRequestWithKeyCriteriaHavingRefRelation() {
     var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
-    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery").orElseThrow();
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
     var breweryIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
     var addressIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
 
@@ -232,9 +238,9 @@ class SelectBuilderTest {
             .resultKey("identifier")
             .build()))
         .keyCriterias(List.of(KeyCriteria.builder()
-                .fieldPath(breweryIdentifierFieldPath)
-                .value("id-1")
-                .build(),
+            .fieldPath(breweryIdentifierFieldPath)
+            .value("id-1")
+            .build(),
             KeyCriteria.builder()
                 .fieldPath(addressIdentifierFieldPath)
                 .value("id-2")
@@ -243,7 +249,9 @@ class SelectBuilderTest {
 
     var result = selectBuilder.build(objectRequest);
 
-    var expectedQuery = "select\n" +  "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n" + "  \"x1\".\"postal_address\" as \"x4\"\n" + "from \"brewery\" as \"x1\"\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x1\".\"postal_address\" = 'id-2'\n" + ")";
+    var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
+        + "  \"x1\".\"postal_address\" as \"x4\"\n" + "from \"brewery\" as \"x1\"\n" + "where (\n"
+        + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x1\".\"postal_address\" = 'id-2'\n" + ")";
     assertThat(result, notNullValue());
     assertThat(result.toString(), is(expectedQuery));
   }

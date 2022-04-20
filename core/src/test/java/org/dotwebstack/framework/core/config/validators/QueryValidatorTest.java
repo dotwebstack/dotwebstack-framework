@@ -3,20 +3,21 @@ package org.dotwebstack.framework.core.config.validators;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
+import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
+import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.r2dbc.core.DatabaseClient;
 
 class QueryValidatorTest {
-
-  private final SchemaReader dwsReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
 
   @Test
   void validate_throwsException_forBatchQueryWithPaging() {
@@ -74,7 +75,10 @@ class QueryValidatorTest {
 
   @Test
   void validate_throwsNoException_withValidKeyFields() {
-    var dotWebStackConfiguration = dwsReader.read("validators/dotwebstack-with-valid-key.yaml");
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(mock(DatabaseClient.class)));
+    var dotWebStackConfiguration =
+        new TestHelper(backendModule).loadSchema("validators/dotwebstack-with-valid-key.yaml");
+
     new QueryValidator().validate(dotWebStackConfiguration);
   }
 
@@ -90,10 +94,16 @@ class QueryValidatorTest {
           "dotwebstack-with-invalid-key.yaml | "
               + "Key field 'zipcode' in object type 'Address' can't be resolved to a single scalar type.",
           "dotwebstack-with-invalid-type-for-key.yaml | "
-              + "The type 'Beer', of query: 'breweryAddress', doesn't exist in the configuration."},
+              + "The type 'Beer', of query: 'breweryAddress', doesn't exist in the configuration.",
+          "dotwebstack-with-invalid-duplicate-for-key.yaml | "
+              + "Duplicate values are not allowed for keynames. Duplicate value: 'identifier'.",
+          "dotwebstack-with-invalid-pathsize-for-key.yaml | "
+              + "A key can't exist out of more than 3 fields. Key: 'brewery.node.postalAddress.city'."},
       delimiterString = "|")
   void validate_throwsException_forInvalidKeyConfiguration(String file, String message) {
-    var dotWebStackConfiguration = dwsReader.read("validators/" + file);
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(mock(DatabaseClient.class)));
+    var dotWebStackConfiguration = new TestHelper(backendModule).loadSchema("validators/" + file);
+
     var validator = new QueryValidator();
 
     var exception =

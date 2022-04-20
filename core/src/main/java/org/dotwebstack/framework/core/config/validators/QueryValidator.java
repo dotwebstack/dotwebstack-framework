@@ -1,9 +1,12 @@
 package org.dotwebstack.framework.core.config.validators;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -46,38 +49,69 @@ public class QueryValidator implements SchemaValidator {
       }
     }
 
+    validateKeyAliases(query.getKeys());
+
     query.getKeyMap()
-        .forEach((key, value) -> validateKeyFieldPath(queryName, value, query.getType(), schema));
+        .forEach((key, value) -> validateKeyValue(queryName, value, query.getType(), schema));
   }
 
-  private void validateKeyFieldPath(String queryName, String keyPath, String objectTypeName, Schema schema) {
-    ObjectType<?> objectType;
-    if (schema.getObjectType(objectTypeName)
-        .isEmpty()) {
-      throw invalidConfigurationException("The type '{}', of query: '{}', doesn't exist in the configuration.",
-          objectTypeName, queryName);
-    } else {
-      objectType = schema.getObjectType(objectTypeName)
-          .orElseThrow();
-    }
+  private void validateKeyAliases(List<Object> keys) {
+    var set = new HashSet<String>();
 
-    if (isNestedFieldPath(keyPath)) {
-      validateComposedKeyField(queryName, keyPath, objectType, schema);
-    } else {
-      validateKey(schema, objectType.getName(), keyPath);
+    for (Object key : keys) {
+      String fieldKeyName;
+      if (key instanceof String) {
+        fieldKeyName = getFieldKey((String) key);
+      } else if (key instanceof Map) {
+        fieldKeyName = ((Map<String, String>) key).keySet()
+            .stream()
+            .findFirst()
+            .orElseThrow();
+      } else {
+        throw invalidConfigurationException("Key must be an instance of String or Map.");
+      }
+
+      if (!set.contains(fieldKeyName)) {
+        set.add(fieldKeyName);
+      } else {
+        throw invalidConfigurationException("Duplicate values are not allowed for keynames. Duplicate value: '{}'.",
+            fieldKeyName);
+      }
     }
   }
 
-  private void validateComposedKeyField(String queryName, String composedKey, ObjectType<?> objectType, Schema schema) {
-    var splittedKey = Arrays.asList(composedKey.split("\\.", 2));
-    var nestedFieldName = splittedKey.get(0);
-    var nestedFieldTypeName = objectType.getField(nestedFieldName)
-        .getType();
+  private void validateKeyValue(String queryName, String keyPath, String objectTypeName, Schema schema) {
+    var objectType = schema.getObjectType(objectTypeName)
+        .orElseThrow(() -> invalidConfigurationException(
+            "The type '{}', of query: '{}', doesn't exist in the configuration.", objectTypeName, queryName));
 
-    validateObjectField(objectType, nestedFieldName);
+    validateKeyPath(keyPath, objectType, schema);
+  }
 
-    var key = splittedKey.get(1);
-    validateKeyFieldPath(queryName, key, nestedFieldTypeName, schema);
+  private void validateKeyPath(String fieldPath, ObjectType<?> objectType, Schema schema) {
+    var splitKey = Arrays.asList(fieldPath.split("\\."));
+
+    if (splitKey.size() > 3) {
+      throw invalidConfigurationException("A key can't exist out of more than 3 fields. Key: '{}'.", fieldPath);
+    }
+
+    for (int i = 0; i < splitKey.size(); i++) {
+      if (i == (splitKey.size() - 1)) {
+        validateKeyField(schema, objectType.getName(), splitKey.get(i));
+      } else {
+        var fieldName = splitKey.get(i);
+        validateObjectField(objectType, fieldName);
+
+        ObjectType<?> finalObjectType = objectType;
+        objectType = schema.getObjectType(objectType.getField(fieldName)
+            .getType())
+            .orElseThrow(() -> invalidConfigurationException(
+                "The type '{}', of field: '{}', doesn't exist in the configuration.",
+                finalObjectType.getField(fieldName)
+                    .getType(),
+                fieldName));
+      }
+    }
   }
 
   private void validateObjectField(ObjectType<?> objectType, String objectFieldName) {
@@ -85,8 +119,7 @@ public class QueryValidator implements SchemaValidator {
     validateField(objectField);
   }
 
-  private void validateKey(Schema schema, String objectTypeName, String keyField) {
-
+  private void validateKeyField(Schema schema, String objectTypeName, String keyField) {
     var keyFieldPath = new String[] {keyField};
     Optional<? extends ObjectField> field = getField(schema, objectTypeName, keyFieldPath);
 

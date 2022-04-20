@@ -52,8 +52,8 @@ public class FieldPathHelper {
 
   public static String getFieldKey(String keyPath) {
     if (isNestedFieldPath(keyPath)) {
-      var splittedKeys = Arrays.asList(keyPath.split("\\."));
-      return splittedKeys.get(splittedKeys.size() - 1);
+      var splitKeys = Arrays.asList(keyPath.split("\\."));
+      return splitKeys.get(splitKeys.size() - 1);
     }
     return keyPath;
   }
