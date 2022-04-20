@@ -2,6 +2,13 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
+  addressCollection:
+    type: Address
+    list: true
+    sortableBy:
+      city:
+        - field: city
+          direction: ASC
 
 objectTypes:
   Brewery:
@@ -33,3 +40,9 @@ objectTypes:
         type: String
       city:
         type: String
+    sortableBy:
+      streetCity:
+        - field: street
+          direction: ASC
+        - field: city
+          direction: ASC

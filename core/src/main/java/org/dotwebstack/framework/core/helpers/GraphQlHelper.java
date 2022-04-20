@@ -35,6 +35,8 @@ import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 
 public class GraphQlHelper {
 
+  private static final String QUERY_TYPE_NAME = "Query";
+
   private GraphQlHelper() {}
 
   public static Object getValue(@NonNull Type<?> type, @NonNull Value<?> value) {
@@ -152,5 +154,15 @@ public class GraphQlHelper {
             .containsKey(key))
         .map(def -> def.getAdditionalData()
             .get(key));
+  }
+
+  public static Optional<String> getQueryName(ExecutionStepInfo executionStepInfo) {
+    return Optional.of(executionStepInfo)
+        .map(GraphQlHelper::getRequestStepInfo)
+        .filter(requestStepInfo -> requestStepInfo.getObjectType()
+            .getName()
+            .equals(QUERY_TYPE_NAME))
+        .map(ExecutionStepInfo::getFieldDefinition)
+        .map(GraphQLFieldDefinition::getName);
   }
 }
