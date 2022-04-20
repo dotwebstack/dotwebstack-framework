@@ -1,0 +1,50 @@
+queries:
+  breweryCity:
+    type: Brewery
+    keys:
+      - identifier
+      - city: postalAddress.node.city
+  breweryRefAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - city: postalAddress.ref.identifier
+
+objectTypes:
+  Brewery:
+    table: brewery
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      postalAddress:
+        type: BreweryAddress
+        joinColumns:
+          - name: postal_address
+            referencedField: ref.identifier
+
+  BreweryAddress:
+    fields:
+      ref:
+        type: AddressRef
+      node:
+        type: Address
+        nullable: false
+
+  AddressRef:
+    fields:
+      identifier:
+        type: String
+
+  Address:
+    table: address
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
