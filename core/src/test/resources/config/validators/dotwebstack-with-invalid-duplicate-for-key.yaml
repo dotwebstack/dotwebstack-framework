@@ -6,7 +6,7 @@ queries:
     type: Brewery
     keys:
       - identifier
-      - postalAddressCity: postalAddress.city
+      - identifier: postalAddress.identifier
 
 objectTypes:
   Brewery:

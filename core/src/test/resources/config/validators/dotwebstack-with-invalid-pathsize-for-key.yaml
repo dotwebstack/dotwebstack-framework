@@ -1,0 +1,70 @@
+queries:
+  beerBreweryCity:
+    type: Beer
+    keys:
+      - identifier
+      - brewery.node.postalAddress.city
+  breweryCollection:
+    type: Brewery
+    list: true
+  breweryAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
+
+objectTypes:
+  Beer:
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      abv:
+        type: Float
+      soldPerYear:
+        type: Int
+      retired:
+        type: Boolean
+      brewery:
+        type: BeerBrewery
+        joinColumns:
+          - name: brewery
+            referencedField: ref.record_id
+
+  BeerBrewery:
+    fields:
+      ref:
+        type: BreweryRef
+      node:
+        type: Brewery
+        nullable: false
+
+  BreweryRef:
+    fields:
+      record_id:
+        type: Int
+
+  Brewery:
+    fields:
+      identifier:
+        type: ID
+      name:
+        type: String
+      status:
+        type: String
+      postalAddress:
+        type: Address
+        objectField: true
+    filters:
+      name:
+        field: name
+
+  Address:
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
