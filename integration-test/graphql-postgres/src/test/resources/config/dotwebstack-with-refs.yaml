@@ -40,7 +40,11 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-
+  beerBrewery:
+    type: Beer
+    keys:
+      - beerId: identifier_beer
+      - breweryId: brewery.ref.identifier_brewery
 objectTypes:
   Beer:
     table: db.beer

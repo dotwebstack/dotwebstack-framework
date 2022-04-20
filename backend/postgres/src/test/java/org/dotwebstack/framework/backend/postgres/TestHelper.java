@@ -28,6 +28,7 @@ public class TestHelper {
     this.backendModule = new PostgresBackendModule(backendLoaderFactory);
 
   }
+
   public TestHelper(BackendModule<?> backendModule) {
     this.backendModule = backendModule;
   }

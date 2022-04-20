@@ -11,6 +11,8 @@ import org.dotwebstack.framework.core.model.ObjectType;
 
 public class FieldPathHelper {
 
+  private static final String REF = "ref";
+
   private FieldPathHelper() {}
 
   public static List<ObjectField> createFieldPath(ObjectType<?> objectType, String path) {
@@ -35,7 +37,7 @@ public class FieldPathHelper {
       var current = fieldPath.get(i);
       Optional<ObjectField> previous = i > 0 ? Optional.of(fieldPath.get(i - 1)) : Optional.empty();
       if (current.getName()
-          .equals("ref")) {
+          .equals(REF)) {
         return previous;
       }
     }
@@ -51,11 +53,8 @@ public class FieldPathHelper {
   }
 
   public static String getFieldKey(String keyPath) {
-    if (isNestedFieldPath(keyPath)) {
-      var splittedKeys = Arrays.asList(keyPath.split("\\."));
-      return splittedKeys.get(splittedKeys.size() - 1);
-    }
-    return keyPath;
+    var splittedKeys = Arrays.asList(keyPath.split("\\."));
+    return splittedKeys.get(splittedKeys.size() - 1);
   }
 
   public static ObjectType<? extends ObjectField> getObjectType(ObjectType objectType, String keyPath) {
