@@ -205,15 +205,13 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Test
   void getRequest_returnsBeer_forBeerIdAndBreweryId() {
-    var query = "query beer{\n"
-        + "beerBrewery(beerId:\"b0e7cf18-e3ce-439b-a63e-034c8452f59c\", "
-        + "breweryId:\"d3654375-95fa-46b4-8529-08b0f777bd6b\"){\n"
-        + "identifier_beer\n" + "    name\n" + "  }\n" + "}";
+    var query = "query beer{\n" + "beerBrewery(beerId:\"b0e7cf18-e3ce-439b-a63e-034c8452f59c\", "
+        + "breweryId:\"d3654375-95fa-46b4-8529-08b0f777bd6b\"){\n" + "identifier_beer\n" + "    name\n" + "  }\n" + "}";
 
     var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, aMapWithSize(1));
-    Assert.assertThat(data, hasEntry(equalTo("beer"),
+    Assert.assertThat(data, hasEntry(equalTo("beerBrewery"),
         equalTo(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"))));
   }
 }
