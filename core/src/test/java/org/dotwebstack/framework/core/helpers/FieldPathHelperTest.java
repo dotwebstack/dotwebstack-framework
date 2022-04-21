@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNestedFieldPath;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -134,11 +136,59 @@ class FieldPathHelperTest {
     assertThat(result.getName(), is("identifier"));
   }
 
+  @Test
+  void isNested_returnsTrue_forNestedLeaf() {
+    var objectTypeFoo = createFooObjectType();
+    var path = "bar.ref.identifier";
+
+    List<ObjectField> fieldPath = createFieldPath(objectTypeFoo, path);
+
+    var result = isNested(fieldPath);
+
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void isNested_returnsFalse_forObjectTypeWithTable() {
+    var objectTypeFoo = createFooObjectType();
+    var path = "bar";
+
+    List<ObjectField> fieldPath = createFieldPath(objectTypeFoo, path);
+
+    var result = isNested(fieldPath);
+
+    assertThat(result, is(false));
+  }
+
+  @Test
+  void fieldPathContainsRef_returnTrue_forFieldPathWithRef() {
+    var objectTypeFoo = createFooObjectType();
+    var path = "bar.ref.identifier";
+    List<ObjectField> fieldPath = createFieldPath(objectTypeFoo, path);
+
+    var result = fieldPathContainsRef(fieldPath);
+
+    assertThat(result, is(true));
+  }
+
+  @Test
+  void fieldPathContainsRef_returnFalse_forFieldPathWithoutRef() {
+    var objectTypeFoo = createFooObjectType();
+    var path = "bar.baz";
+    List<ObjectField> fieldPath = createFieldPath(objectTypeFoo, path);
+
+    var result = fieldPathContainsRef(fieldPath);
+
+    assertThat(result, is(false));
+  }
+
   private TestObjectType createFooObjectType() {
     TestObjectType objectTypeFoo = new TestObjectType();
     objectTypeFoo.setName("Foo");
+    objectTypeFoo.setTable("Foo");
 
     TestObjectField objectFieldBar = new TestObjectField();
+    objectFieldBar.setObjectType(objectTypeFoo);
     objectFieldBar.setType("Bar");
     objectFieldBar.setName("bar");
     objectTypeFoo.setFields(Map.of("bar", objectFieldBar));
@@ -157,25 +207,22 @@ class FieldPathHelperTest {
     TestObjectType objectTypeBar = new TestObjectType();
     objectTypeBar.setName("Bar");
     TestObjectField objectFieldBaz = new TestObjectField();
+    objectFieldBaz.setObjectType(objectTypeBar);
     objectFieldBaz.setType("Baz");
     objectFieldBaz.setName("baz");
     TestObjectField objectFieldRef = new TestObjectField();
+    objectFieldRef.setObjectType(objectTypeBar);
     objectFieldRef.setType("Ref");
     objectFieldRef.setName("ref");
     objectTypeBar.setFields(Map.of("baz", objectFieldBaz, "ref", objectFieldRef));
     return objectTypeBar;
   }
 
-  private TestObjectType createBazObjectType() {
-    TestObjectType objectTypeBaz = new TestObjectType();
-    objectTypeBaz.setName("Baz");
-    return objectTypeBaz;
-  }
-
   private TestObjectType createRefObjectType() {
     TestObjectType objectTypeRef = new TestObjectType();
     objectTypeRef.setName("Ref");
     TestObjectField objectFieldId = new TestObjectField();
+    objectFieldId.setObjectType(objectTypeRef);
     objectFieldId.setType("String");
     objectFieldId.setName("identifier");
     objectTypeRef.setFields(Map.of("identifier", objectFieldId));

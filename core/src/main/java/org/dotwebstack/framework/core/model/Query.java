@@ -30,7 +30,6 @@ public class Query {
   public Map<String, String> getKeyMap() {
     return keys.stream()
         .map(key -> {
-          // TODO: create FieldPath: FieldPathHelpr#createFieldPath
           if (key instanceof String) {
             return new AbstractMap.SimpleEntry<>(getFieldKey((String) key), (String) key);
           }

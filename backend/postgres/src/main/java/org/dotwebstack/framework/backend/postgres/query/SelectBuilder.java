@@ -21,8 +21,10 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -45,7 +47,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -344,7 +345,7 @@ class SelectBuilder {
       if (parentOfRefField.isPresent()) {
         sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
       } else {
-        throw new IllegalStateException("TODO foutmelding");
+        throw new IllegalStateException("The parent of the ref field should be present");
       }
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
@@ -353,19 +354,6 @@ class SelectBuilder {
     var condition = sqlField.equal(keyCriteria.getValue());
 
     return Optional.of(JoinHelper.andCondition(List.of(condition)));
-  }
-
-  // TODO move to FieldPathHelper
-  private boolean isNested(List<ObjectField> fieldPath) {
-    return getLeaf(fieldPath).getObjectType()
-        .isNested();
-  }
-
-  // TODO: move to FieldPathHelper
-  private boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {
-    return fieldPaths.stream()
-        .anyMatch(fieldPath -> fieldPath.getName()
-            .equals("ref"));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,

@@ -52,9 +52,20 @@ public class FieldPathHelper {
     return path.contains(".");
   }
 
+  public static boolean isNested(List<ObjectField> fieldPath) {
+    return getLeaf(fieldPath).getObjectType()
+        .isNested();
+  }
+
   public static String getFieldKey(String keyPath) {
     var splittedKeys = Arrays.asList(keyPath.split("\\."));
     return splittedKeys.get(splittedKeys.size() - 1);
+  }
+
+  public static boolean fieldPathContainsRef(List<ObjectField> fieldPaths) {
+    return fieldPaths.stream()
+        .anyMatch(fieldPath -> fieldPath.getName()
+            .equals(REF));
   }
 
   public static ObjectType<? extends ObjectField> getObjectType(ObjectType objectType, String keyPath) {
