@@ -57,6 +57,10 @@ queries:
   ingredientCollection:
     type: Ingredient
     list: true
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
   breweryAddress:
     type: Brewery
     keys:
