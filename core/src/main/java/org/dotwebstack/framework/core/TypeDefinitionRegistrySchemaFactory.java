@@ -145,6 +145,7 @@ public class TypeDefinitionRegistrySchemaFactory {
             typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType.getSortableBy()));
           }
         });
+
     schema.getQueries()
         .forEach((name, query) -> {
           if (!query.getSortableBy()
