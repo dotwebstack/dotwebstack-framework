@@ -49,7 +49,7 @@ queries:
     type: Brewery
     keys:
       - identifier_brewery
-      - postalAddress.city
+      - city: postalAddress.city
   ingredients:
     type: Ingredient
     list: true

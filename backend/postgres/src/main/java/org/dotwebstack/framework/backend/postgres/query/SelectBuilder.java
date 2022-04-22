@@ -21,7 +21,10 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
@@ -44,6 +47,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -332,12 +336,18 @@ class SelectBuilder {
     }
 
     var fieldPath = keyCriteria.getFieldPath();
-    Field<Object> sqlField;
-    if (fieldPath.size() == 2 && !getLeaf(fieldPath).getObjectType()
-        .isNested()) {
-      var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
 
+    Field<Object> sqlField;
+    if (fieldPath.size() > 1 && !isNested(fieldPath)) {
+      var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
       sqlField = column(null, leafFieldMapper.getAlias());
+    } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
+      var parentOfRefField = getParentOfRefField(fieldPath);
+      if (parentOfRefField.isPresent()) {
+        sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
+      } else {
+        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present", fieldPath);
+      }
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
     }

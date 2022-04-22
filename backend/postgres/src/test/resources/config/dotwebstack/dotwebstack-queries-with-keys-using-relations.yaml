@@ -1,16 +1,14 @@
 queries:
-  brewery:
-    type: Brewery
-    keys:
-      - identifier
-  breweryCollection:
-    type: Brewery
-    list: true
   breweryCity:
     type: Brewery
     keys:
       - identifier
-      - city: postalAddress.city
+      - city: postalAddress.node.city
+  breweryRefAddress:
+    type: Brewery
+    keys:
+      - identifier
+      - city: postalAddress.ref.identifier
 
 objectTypes:
   Brewery:
@@ -23,7 +21,23 @@ objectTypes:
       status:
         type: String
       postalAddress:
+        type: BreweryAddress
+        joinColumns:
+          - name: postal_address
+            referencedField: ref.identifier
+
+  BreweryAddress:
+    fields:
+      ref:
+        type: AddressRef
+      node:
         type: Address
+        nullable: false
+
+  AddressRef:
+    fields:
+      identifier:
+        type: String
 
   Address:
     table: address

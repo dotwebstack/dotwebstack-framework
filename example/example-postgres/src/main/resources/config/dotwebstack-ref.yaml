@@ -40,7 +40,21 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
-
+  breweryAddressCity:
+    type: Brewery
+    keys:
+      - identifier
+      - postalAddress.city
+  breweryAddressIdentifier:
+    type: Brewery
+    keys:
+      - identifier
+      - postalIdentifier: postalAddress.identifier
+  beerBreweryRefKey:
+    type: Beer
+    keys:
+      - identifier: identifier
+      - brewery.ref.record_id
 objectTypes:
   Beer:
     table: dbeerpedia.beers

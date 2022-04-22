@@ -65,7 +65,7 @@ queries:
     type: Brewery
     keys:
       - identifier
-      - postalAddress.city
+      - city: postalAddress.city
 
 objectTypes:
   Beer:

@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -15,12 +16,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.backend.postgres.TestHelper;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.FieldPathHelper;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -49,6 +52,8 @@ class SelectBuilderTest {
   private ObjectFieldMapper<Map<String, Object>> fieldMapper;
 
   private SelectBuilder selectBuilder;
+
+  private TestHelper testHelper = new TestHelper();
 
   @BeforeEach
   void doBefore() {
@@ -181,6 +186,74 @@ class SelectBuilderTest {
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
             + "  \"x1\".\"identifier_column\" as \"x4\"\n" + "from beer_History_ctx('validFrom_value') as \"x1\"\n"
             + "where \"x1\".\"identifier_column\" = 'id-1'"));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forObjectRequestWithKeyCriteriaHavingNodeRelation() {
+    var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
+    var identifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
+    var cityFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.node.city");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(identifierFieldPath)
+            .value("id-1")
+            .build(),
+            KeyCriteria.builder()
+                .fieldPath(cityFieldPath)
+                .value("Dublin")
+                .build()))
+        .build();
+
+    var result = selectBuilder.build(objectRequest);
+
+    var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
+        + "  \"x6\".*\n" + "from \"brewery\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
+        + "      \"x4\".\"city\" as \"x5\",\n" + "      1 as \"x4\"\n" + "    from \"address\" as \"x4\"\n"
+        + "    where \"x1\".\"postal_address\" = \"x4\".\"identifier\"\n" + "    limit 1\n" + "  ) as \"x6\"\n"
+        + "    on true\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x5\" = 'Dublin'\n" + ")";
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), is(expectedQuery));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forObjectRequestWithKeyCriteriaHavingRefRelation() {
+    var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
+    var breweryIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
+    var addressIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(breweryIdentifierFieldPath)
+            .value("id-1")
+            .build(),
+            KeyCriteria.builder()
+                .fieldPath(addressIdentifierFieldPath)
+                .value("id-2")
+                .build()))
+        .build();
+
+    var result = selectBuilder.build(objectRequest);
+
+    var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
+        + "  \"x1\".\"postal_address\" as \"x4\"\n" + "from \"brewery\" as \"x1\"\n" + "where (\n"
+        + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x1\".\"postal_address\" = 'id-2'\n" + ")";
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), is(expectedQuery));
   }
 
   @Test
