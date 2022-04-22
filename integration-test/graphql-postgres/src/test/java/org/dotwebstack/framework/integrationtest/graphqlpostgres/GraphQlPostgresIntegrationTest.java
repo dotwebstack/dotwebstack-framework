@@ -1327,6 +1327,21 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsIngredients_forSortNameOnQuery() {
+    var query = "{ingredients(sort: NAME){ name }}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(INGREDIENTS), is(true));
+
+    List<Map<String, Object>> ingredients = getNestedObjects(data, INGREDIENTS);
+    assertThat(ingredients.size(), is(6));
+    assertThat(ingredients, is(List.of(Map.of("name", "Barley"), Map.of("name", "Caramel"), Map.of("name", "Hop"),
+        Map.of("name", "Orange"), Map.of("name", "Water"), Map.of("name", "Yeast"))));
+  }
+
+  @Test
   void getRequest_returnsBeers_forSortQueryWithNestedFieldPath() {
     var query = "{beers(sort: BREWERY_CITY){ identifier_beer name }}";
 

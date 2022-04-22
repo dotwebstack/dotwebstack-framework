@@ -313,12 +313,20 @@ class BackendRequestFactoryTest {
         .segment("a");
     lenient().when(executionStepInfo.getPath())
         .thenReturn(resultPath);
-    var objectType = mock(GraphQLObjectType.class);
-    lenient().when(objectType.getName())
-        .thenReturn("Brewery");
+
+    var objectType = GraphQLObjectType.newObject()
+        .name("Brewery")
+        .build();
+    var listType = GraphQLList.list(objectType);
 
     lenient().when(executionStepInfo.getType())
-        .thenReturn(objectType);
+        .thenReturn(listType);
+
+    var queryType = GraphQLObjectType.newObject()
+        .name("Query")
+        .build();
+    lenient().when(executionStepInfo.getObjectType())
+        .thenReturn(queryType);
 
     var date = LocalDate.of(2021, 1, 1);
     Map<String, Object> data = new HashMap<>();

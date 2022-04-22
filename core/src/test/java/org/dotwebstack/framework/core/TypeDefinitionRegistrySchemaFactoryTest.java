@@ -36,6 +36,7 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.Type;
 import graphql.language.TypeName;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeUtil;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -86,14 +87,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType(QUERY_TYPE_NAME)
-        .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
-        .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(3));
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
@@ -134,14 +128,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType(QUERY_TYPE_NAME)
-        .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
-        .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(2));
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
@@ -171,14 +158,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType(QUERY_TYPE_NAME)
-        .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
-        .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(2));
 
     var breweryFieldDefinition = fieldDefinitions.get(0);
@@ -233,16 +213,14 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType(QUERY_TYPE_NAME)
-        .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
-        .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(1));
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
+    assertThat(fieldDefinitions.size(), is(2));
 
+    assertBreweryCollection(registry, fieldDefinitions);
+    assertAddressCollection(registry, fieldDefinitions);
+  }
+
+  private void assertBreweryCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
     var breweryCollectionFieldDefinition = fieldDefinitions.get(0);
     assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
     assertNonNullListType(breweryCollectionFieldDefinition.getType(), "Brewery");
@@ -271,6 +249,36 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .collect(Collectors.toList()), equalTo(List.of("NAME", "ADDRESS")));
   }
 
+
+  private void assertAddressCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
+    var addressCollectionFieldDefinition = fieldDefinitions.get(1);
+    assertThat(addressCollectionFieldDefinition.getName(), is("addressCollection"));
+    assertNonNullListType(addressCollectionFieldDefinition.getType(), "Address");
+
+    assertThat(addressCollectionFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+
+    var inputValueDefinition = addressCollectionFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(inputValueDefinition.getName(), is("sort"));
+    assertThat(inputValueDefinition.getDefaultValue(), instanceOf(EnumValue.class));
+    assertThat(((EnumValue) inputValueDefinition.getDefaultValue()).getName(), is("CITY"));
+
+    assertThat(inputValueDefinition.getType(), instanceOf(TypeName.class));
+    assertThat(((TypeName) inputValueDefinition.getType()).getName(), equalTo("AddressCollectionOrder"));
+
+    var sortTypeDefinition = (EnumTypeDefinition) registry.getType(inputValueDefinition.getType())
+        .orElse(null);
+
+    assertThat(sortTypeDefinition, notNullValue());
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .size(), is(1));
+    assertThat(sortTypeDefinition.getEnumValueDefinitions()
+        .stream()
+        .map(EnumValueDefinition::getName)
+        .collect(Collectors.toList()), equalTo(List.of("CITY")));
+  }
+
   @Test
   void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-no-queries.yaml");
@@ -278,14 +286,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType(QUERY_TYPE_NAME)
-        .isPresent(), is(true));
-    var queryTypeDefinition = registry.getType(QUERY_TYPE_NAME)
-        .orElseThrow();
-    assertThat(queryTypeDefinition.getName(), is(QUERY_TYPE_NAME));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(1));
   }
 
@@ -296,14 +297,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Subscription")
-        .isPresent(), is(true));
-    var subscriptionTypeDefinition = registry.getType("Subscription")
-        .orElseThrow();
-    assertThat(subscriptionTypeDefinition.getName(), is("Subscription"));
-    assertThat(subscriptionTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) subscriptionTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Subscription");
     assertThat(fieldDefinitions.size(), is(1));
 
     var brewerySubscriptionFieldDefinition = fieldDefinitions.get(0);
@@ -319,14 +313,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Subscription")
-        .isPresent(), is(true));
-    var subscriptionTypeDefinition = registry.getType("Subscription")
-        .orElseThrow();
-    assertThat(subscriptionTypeDefinition.getName(), is("Subscription"));
-    assertThat(subscriptionTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) subscriptionTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Subscription");
     assertThat(fieldDefinitions.size(), is(1));
 
     var brewerySubscriptionFieldDefinition = fieldDefinitions.get(0);
@@ -397,14 +384,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Brewery")
-        .isPresent(), is(true));
-    var breweryTypeDefinition = registry.getType("Brewery")
-        .orElseThrow();
-    assertThat(breweryTypeDefinition.getName(), is("Brewery"));
-    assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Brewery");
     assertThat(fieldDefinitions.size(), is(6));
 
     var identifierFieldDefinition = fieldDefinitions.get(0);
@@ -433,14 +413,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    assertThat(registry, is(notNullValue()));
-    assertThat(registry.getType("Brewery")
-        .isPresent(), is(true));
-    var breweryTypeDefinition = registry.getType("Brewery")
-        .orElseThrow();
-    assertThat(breweryTypeDefinition.getName(), is("Brewery"));
-    assertThat(breweryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-    var fieldDefinitions = ((ObjectTypeDefinition) breweryTypeDefinition).getFieldDefinitions();
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Brewery");
     assertThat(fieldDefinitions.size(), is(7));
 
     assertGeometryFieldDefinition(fieldDefinitions.get(1));
@@ -472,6 +445,20 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var beerAggFieldDefinition = fieldDefinitions.get(6);
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
+  }
+
+  private List<FieldDefinition> getFieldDefinitions(TypeDefinitionRegistry registry, String expectedTypeName) {
+    assertThat(registry, is(notNullValue()));
+    assertThat(registry.getType(expectedTypeName)
+        .isPresent(), is(true));
+
+    var queryTypeDefinition = registry.getType(expectedTypeName)
+        .orElseThrow();
+
+    assertThat(queryTypeDefinition.getName(), is(expectedTypeName));
+    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
+
+    return ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
   }
 
   private void assertGeometryFieldDefinition(FieldDefinition geometryFieldDefinition) {

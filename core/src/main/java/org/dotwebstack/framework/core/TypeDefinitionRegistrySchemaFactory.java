@@ -69,6 +69,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
@@ -151,7 +152,15 @@ public class TypeDefinitionRegistrySchemaFactory {
         .forEach((name, objectType) -> {
           if (!objectType.getSortableBy()
               .isEmpty()) {
-            typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType));
+            typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, objectType.getSortableBy()));
+          }
+        });
+
+    schema.getQueries()
+        .forEach((name, query) -> {
+          if (!query.getSortableBy()
+              .isEmpty()) {
+            typeDefinitionRegistry.add(createSortableByObjectTypeDefinition(name, query.getSortableBy()));
           }
         });
   }
@@ -255,19 +264,20 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName, ObjectType<?> objectType) {
+  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName,
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
     var orderName = createOrderName(objectTypeName);
 
-    List<EnumValueDefinition> enumValueDefinitions = getEnumValueDefinitions(objectType);
+    List<EnumValueDefinition> enumValueDefinitions = getEnumValueDefinitions(sortableByConfig);
 
     return newEnumTypeDefinition().name(orderName)
         .enumValueDefinitions(enumValueDefinitions)
         .build();
   }
 
-  private List<EnumValueDefinition> getEnumValueDefinitions(ObjectType<?> objectType) {
-    return objectType.getSortableBy()
-        .keySet()
+  private List<EnumValueDefinition> getEnumValueDefinitions(
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
+    return sortableByConfig.keySet()
         .stream()
         .map(key -> newEnumValueDefinition().name(formatSortEnumName(key))
             .build())
@@ -379,7 +389,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
       createFilterArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
 
-      createSortArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
+      createSortArgument(objectField.getType(), objectType.getSortableBy()).ifPresent(inputValueDefinitions::add);
 
       if (objectField.isPageable() && objectField.isList()) {
         createFirstArgument().ifPresent(inputValueDefinitions::add);
@@ -468,7 +478,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     inputValueDefinitions.addAll(createKeyArguments(query, objectType));
     inputValueDefinitions.addAll(createPagingArguments(query));
     createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
-    createSortArgument(query, objectType).ifPresent(inputValueDefinitions::add);
+
+    createSortArgument(queryName, query, objectType).ifPresent(inputValueDefinitions::add);
 
     if (isNotBlank(query.getContext())) {
       addOptionalContext(query.getContext(), inputValueDefinitions);
@@ -524,24 +535,27 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Optional.empty();
   }
 
-  private Optional<InputValueDefinition> createSortArgument(Query query, ObjectType<?> objectType) {
-    if (query.isList()) {
-      return createSortArgument(query.getType(), objectType);
+  private Optional<InputValueDefinition> createSortArgument(String queryName, Query query, ObjectType<?> objectType) {
+    if (!query.isList()) {
+      return Optional.empty();
     }
-    return Optional.empty();
+    if (query.getSortableBy()
+        .isEmpty()) {
+      return createSortArgument(query.getType(), objectType.getSortableBy());
+    }
+    return createSortArgument(queryName, query.getSortableBy());
   }
 
   private Optional<InputValueDefinition> createSortArgument(Subscription subscription, ObjectType<?> objectType) {
-    return createSortArgument(subscription.getType(), objectType);
+    return createSortArgument(subscription.getType(), objectType.getSortableBy());
   }
 
-  private Optional<InputValueDefinition> createSortArgument(String typeName, ObjectType<?> objectType) {
-    if (!objectType.getSortableBy()
-        .isEmpty()) {
+  private Optional<InputValueDefinition> createSortArgument(String typeName,
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
+    if (!sortableByConfig.isEmpty()) {
       var orderName = createOrderName(typeName);
 
-      var firstArgument = objectType.getSortableBy()
-          .keySet()
+      var firstArgument = sortableByConfig.keySet()
           .stream()
           .findFirst()
           .map(this::formatSortEnumName)

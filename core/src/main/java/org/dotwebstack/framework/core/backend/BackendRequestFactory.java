@@ -18,6 +18,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getQueryName;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
@@ -50,6 +51,7 @@ import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.ObjectType;
+import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -98,7 +100,7 @@ public class BackendRequestFactory {
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
         .filterCriteria(filterCriteria.orElse(null))
-        .sortCriterias(createSortCriteria(objectType, executionStepInfo.getArgument(SORT_ARGUMENT_NAME)))
+        .sortCriterias(createSortCriteria(executionStepInfo, objectType))
         .build();
   }
 
@@ -337,15 +339,21 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private List<SortCriteria> createSortCriteria(ObjectType<?> objectType, String sortArgument) {
-    var sortableBy = objectType.getSortableBy();
+  private List<SortCriteria> createSortCriteria(ExecutionStepInfo executionStepInfo, ObjectType<?> objectType) {
+    var sortArgument = executionStepInfo.getArgument(SORT_ARGUMENT_NAME);
+
+    var sortableBy = getQueryName(executionStepInfo).map(queryName -> schema.getQueries()
+        .get(queryName))
+        .filter(query -> !query.getSortableBy()
+            .isEmpty())
+        .map(Query::getSortableBy)
+        .orElse(objectType.getSortableBy());
 
     if (sortableBy.isEmpty()) {
       return List.of();
     }
 
-    var sortableByConfig = objectType.getSortableBy()
-        .entrySet()
+    var sortableByConfig = sortableBy.entrySet()
         .stream()
         .filter(entry -> formatSortEnumName(entry.getKey()).toUpperCase()
             .equals(sortArgument))

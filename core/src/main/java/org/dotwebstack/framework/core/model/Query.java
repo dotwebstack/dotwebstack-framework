@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 
 @Data
 public class Query {
@@ -26,6 +27,8 @@ public class Query {
   private boolean batch = false;
 
   private String context;
+
+  private Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
 
   public Map<String, String> getKeyMap() {
     return keys.stream()

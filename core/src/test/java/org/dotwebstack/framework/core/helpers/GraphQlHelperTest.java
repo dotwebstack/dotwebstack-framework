@@ -8,6 +8,7 @@ import static graphql.schema.GraphQLScalarType.newScalar;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getQueryName;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
@@ -432,4 +433,37 @@ class GraphQlHelperTest {
     assertThat(result, is(Optional.of("testvalue")));
   }
 
+  @Test
+  void getQueryName_returnsQueryName_forQuery() {
+    var request = mock(ExecutionStepInfo.class);
+    var objectType = mock(GraphQLObjectType.class);
+    var fieldDefinition = newFieldDefinition().name("queryDefA")
+        .type(GraphQLList.list(Scalars.GraphQLString))
+        .build();
+
+    when(request.getObjectType()).thenReturn(objectType);
+    when(objectType.getName()).thenReturn("Query");
+    when(request.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    var result = getQueryName(request);
+
+    assertThat(result, is(Optional.of("queryDefA")));
+  }
+
+  @Test
+  void getQueryName_returnsOptionalEmpty_forScalar() {
+    var request = mock(ExecutionStepInfo.class);
+    var objectType = mock(GraphQLObjectType.class);
+    var fieldDefinition = newFieldDefinition().name("queryDefA")
+        .type(Scalars.GraphQLString)
+        .build();
+
+    when(request.getObjectType()).thenReturn(objectType);
+    when(objectType.getName()).thenReturn("test");
+    when(request.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    var result = getQueryName(request);
+
+    assertThat(result, is(Optional.empty()));
+  }
 }

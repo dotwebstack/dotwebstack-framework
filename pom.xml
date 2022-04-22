@@ -4,7 +4,7 @@
 
   <groupId>org.dotwebstack.framework</groupId>
   <artifactId>dotwebstack-framework</artifactId>
-  <version>0.3.114-SNAPSHOT</version>
+  <version>0.3.115-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>DotWebStack Framework</name>
@@ -53,7 +53,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring-boot.version>2.6.6</spring-boot.version>
-    <rdf4j.version>3.7.6</rdf4j.version>
+    <rdf4j.version>3.7.7</rdf4j.version>
     <graphql.java.version>18.0</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.17</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
@@ -61,11 +61,11 @@
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
     <swagger-parser.version>2.0.32</swagger-parser.version>
-    <lombok.version>1.18.22</lombok.version>
+    <lombok.version>1.18.24</lombok.version>
     <guava.version>31.1-jre</guava.version>
     <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
     <json-path.version>2.7.0</json-path.version>
-    <testcontainers.version>1.16.3</testcontainers.version>
+    <testcontainers.version>1.17.1</testcontainers.version>
     <jts-io-common.version>1.18.2</jts-io-common.version>
     <carml.version>0.4.0-beta-5</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>

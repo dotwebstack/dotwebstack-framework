@@ -50,6 +50,13 @@ queries:
     keys:
       - identifier_brewery
       - city: postalAddress.city
+  ingredients:
+    type: Ingredient
+    list: true
+    sortableBy:
+      name:
+        - field: name
+          direction: ASC
   ingredient:
     type: Ingredient
     keys:
