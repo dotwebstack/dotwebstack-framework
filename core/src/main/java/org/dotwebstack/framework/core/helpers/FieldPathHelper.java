@@ -68,7 +68,7 @@ public class FieldPathHelper {
             .equals(REF));
   }
 
-  public static ObjectType<? extends ObjectField> getObjectType(ObjectType objectType, String keyPath) {
+  public static ObjectType<?> getObjectType(ObjectType<?> objectType, String keyPath) {
     var fieldPath = createFieldPath(objectType, keyPath);
     if (fieldPath.size() > 1) {
       return fieldPath.get(fieldPath.size() - 2)

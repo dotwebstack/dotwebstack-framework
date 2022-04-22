@@ -256,8 +256,6 @@ class SelectBuilderTest {
     assertThat(result.toString(), is(expectedQuery));
   }
 
-
-
   @Test
   void build_returnsSelectQuery_forCollectionRequest() {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");

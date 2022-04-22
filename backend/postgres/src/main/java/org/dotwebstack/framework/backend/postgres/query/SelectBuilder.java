@@ -47,6 +47,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -345,7 +346,7 @@ class SelectBuilder {
       if (parentOfRefField.isPresent()) {
         sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
       } else {
-        throw new IllegalStateException("The parent of the ref field should be present");
+        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present",fieldPath);
       }
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
