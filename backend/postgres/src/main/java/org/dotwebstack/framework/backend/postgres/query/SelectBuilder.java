@@ -346,7 +346,7 @@ class SelectBuilder {
       if (parentOfRefField.isPresent()) {
         sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
       } else {
-        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present",fieldPath);
+        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present", fieldPath);
       }
     } else {
       sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
