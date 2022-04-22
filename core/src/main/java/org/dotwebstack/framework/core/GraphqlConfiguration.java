@@ -1,12 +1,14 @@
 package org.dotwebstack.framework.core;
 
 import graphql.GraphQL;
+import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.WiringFactory;
+
 import java.util.Collection;
 import java.util.List;
 import lombok.NonNull;
@@ -15,6 +17,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import javax.annotation.Nullable;
 
 @Slf4j
 @Configuration
@@ -44,8 +48,13 @@ public class GraphqlConfiguration {
   }
 
   @Bean
-  public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema) {
-    return GraphQL.newGraphQL(graphqlSchema)
-        .build();
+  public GraphQL graphql(@NonNull GraphQLSchema graphqlSchema, @Nullable List<Instrumentation> instrumentations) {
+    var builder = GraphQL.newGraphQL(graphqlSchema);
+
+    if (instrumentations != null) {
+      instrumentations.forEach(builder::instrumentation);
+    }
+
+    return builder.build();
   }
 }
