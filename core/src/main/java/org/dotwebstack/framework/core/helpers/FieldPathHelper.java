@@ -68,7 +68,7 @@ public class FieldPathHelper {
             .equals(REF));
   }
 
-  @SuppressWarnings("squid: S1452")
+  @SuppressWarnings("squid:S1452")
   public static ObjectType<? extends ObjectField> getObjectType(ObjectType<?> objectType, String keyPath) {
     var fieldPath = createFieldPath(objectType, keyPath);
     if (fieldPath.size() > 1) {
