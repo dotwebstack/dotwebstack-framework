@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
@@ -21,6 +22,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,7 +50,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -337,22 +339,35 @@ class SelectBuilder {
 
     var fieldPath = keyCriteria.getFieldPath();
 
-    Field<Object> sqlField;
+    AtomicReference<Field<Object>> sqlField = new AtomicReference<>();
     if (fieldPath.size() > 1 && !isNested(fieldPath)) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
-      sqlField = column(null, leafFieldMapper.getAlias());
+      sqlField.set(column(null, leafFieldMapper.getAlias()));
     } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
-      var parentOfRefField = getParentOfRefField(fieldPath);
-      if (parentOfRefField.isPresent()) {
-        sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
-      } else {
-        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present", fieldPath);
-      }
+      getParentOfRefField(fieldPath).ifPresentOrElse(parentOfRefField -> {
+        var parentOfRefFieldJoinColumns = ((PostgresObjectField) parentOfRefField).getJoinColumns();
+
+        var joinColumn = parentOfRefFieldJoinColumns.stream()
+            .filter(jc -> nonNull(jc.getReferencedField()))
+            .filter(jc -> jc.getReferencedField()
+                .endsWith(fieldPath.get(fieldPath.size() - 1)
+                    .getName()))
+            .findFirst()
+            .orElseThrow(() -> illegalStateException(
+                "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+                    + "or the joinColumn does not match the referencedField.",
+                fieldPath));
+
+        sqlField.set(column(table, joinColumn.getName()));
+      }, () -> {
+        throw new IllegalStateException(String.format("The parent of the ref field '%s' should be present", fieldPath));
+      });
     } else {
-      sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
+      sqlField.set(column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn()));
     }
 
-    var condition = sqlField.equal(keyCriteria.getValue());
+    var condition = sqlField.get()
+        .equal(keyCriteria.getValue());
 
     return Optional.of(JoinHelper.andCondition(List.of(condition)));
   }

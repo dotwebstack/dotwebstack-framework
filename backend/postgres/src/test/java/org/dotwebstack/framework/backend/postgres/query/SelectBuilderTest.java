@@ -1,12 +1,14 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
+import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -23,7 +25,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.FieldPathHelper;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -193,8 +194,8 @@ class SelectBuilderTest {
     var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
     var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
         .orElseThrow();
-    var identifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
-    var cityFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.node.city");
+    var identifierFieldPath = createFieldPath(breweryObjectType, "identifier");
+    var cityFieldPath = createFieldPath(breweryObjectType, "postalAddress.node.city");
 
     var objectRequest = ObjectRequest.builder()
         .objectType(breweryObjectType)
@@ -228,8 +229,8 @@ class SelectBuilderTest {
     var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
     var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
         .orElseThrow();
-    var breweryIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "identifier");
-    var addressIdentifierFieldPath = FieldPathHelper.createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
+    var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
+    var addressIdentifierFieldPath = createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
 
     var objectRequest = ObjectRequest.builder()
         .objectType(breweryObjectType)
@@ -242,8 +243,8 @@ class SelectBuilderTest {
             .value("id-1")
             .build(),
             KeyCriteria.builder()
-                .fieldPath(addressIdentifierFieldPath)
                 .value("id-2")
+                .fieldPath(addressIdentifierFieldPath)
                 .build()))
         .build();
 
@@ -254,6 +255,87 @@ class SelectBuilderTest {
         + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x1\".\"postal_address\" = 'id-2'\n" + ")";
     assertThat(result, notNullValue());
     assertThat(result.toString(), is(expectedQuery));
+  }
+
+  @Test
+  void build_throwsException_forObjectRequestWithKeyCriteriaNotMatchingReferencedField() {
+    var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
+
+    var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
+    var addressIdentifierFieldPath = createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
+
+    // change name to force mismatch
+    addressIdentifierFieldPath.get(2)
+        .setName("id");
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(breweryIdentifierFieldPath)
+            .value("id-1")
+            .build(),
+            KeyCriteria.builder()
+                .value("id-2")
+                .fieldPath(addressIdentifierFieldPath)
+                .build()))
+        .build();
+
+    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest));
+
+    assertThat(result.getMessage(),
+        is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
+            + "columnPrefix=null, joinColumns=[JoinColumn(name=postal_address, referencedField=ref.identifier, "
+            + "referencedColumn=null)], joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, "
+            + "spatial=null), PostgresObjectField(column=ref, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
+            + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
+            + "The joinColumn is either empty or the joinColumn does not match the referencedField."));
+  }
+
+  @Test
+  void build_throwsException_forObjectRequestWithKeyCriteriaEmptyJoinColumns() {
+    var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
+
+    var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
+    var addressIdentifierFieldPath = createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
+
+    ((PostgresObjectField) breweryObjectType.getField("postalAddress")).setJoinColumns(List.of());
+
+    var objectRequest = ObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
+        .keyCriterias(List.of(KeyCriteria.builder()
+            .fieldPath(breweryIdentifierFieldPath)
+            .value("id-1")
+            .build(),
+            KeyCriteria.builder()
+                .value("id-2")
+                .fieldPath(addressIdentifierFieldPath)
+                .build()))
+        .build();
+
+    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest));
+
+    assertThat(result.getMessage(),
+        is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
+            + "columnPrefix=null, joinColumns=[], joinTable=null, mappedBy=null, mappedByObjectField=null, "
+            + "presenceColumn=null, spatial=null), PostgresObjectField(column=ref, columnPrefix=null, joinColumns=[], "
+            + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
+            + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
+            + "The joinColumn is either empty or the joinColumn does not match the referencedField."));
   }
 
   @Test
