@@ -397,6 +397,10 @@ class FilterConditionBuilder {
       return DSL.param(createDataType(Boolean.class));
     }
 
+    if (objectField == null) {
+      return DSL.val(value);
+    }
+
     return getFieldValue(objectField, value);
   }
 
