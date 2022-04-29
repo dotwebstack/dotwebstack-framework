@@ -13,7 +13,9 @@ import static org.mockito.Mockito.when;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
@@ -74,5 +76,22 @@ class QueryHelperTest {
     assertThat(result.getName(), equalTo(aliasName));
 
     verify(query, times(1)).addFrom(ArgumentMatchers.any(Table.class));
+  }
+
+  @Test
+  void getFieldValue_returnsValue_forStringField() {
+    var field = new PostgresObjectField();
+    var fieldValue = QueryHelper.getFieldValue(field, "foo");
+    assertThat(fieldValue.toString(), equalTo("'foo'"));
+  }
+
+  @Test
+  void getFieldValue_returnsCastedValue_forStringEnumField() {
+    var enumConfig = new FieldEnumConfiguration();
+    enumConfig.setType("foo_type");
+    var field = new PostgresObjectField();
+    field.setEnumeration(enumConfig);
+    var fieldValue = QueryHelper.getFieldValue(field, "foo");
+    assertThat(fieldValue.toString(), equalTo("cast('foo' as foo_type)"));
   }
 }

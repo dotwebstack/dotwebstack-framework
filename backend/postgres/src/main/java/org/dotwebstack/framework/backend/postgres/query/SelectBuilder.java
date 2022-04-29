@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
@@ -9,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHel
 import static org.dotwebstack.framework.backend.postgres.query.BatchQueryBuilder.newBatchQuery;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCondition;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.getExistFieldForRelationObject;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
@@ -17,10 +19,12 @@ import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.new
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFieldValue;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
@@ -47,7 +51,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.ExceptionHelper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -337,24 +341,43 @@ class SelectBuilder {
 
     var fieldPath = keyCriteria.getFieldPath();
 
-    Field<Object> sqlField;
     if (fieldPath.size() > 1 && !isNested(fieldPath)) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
-      sqlField = column(null, leafFieldMapper.getAlias());
+
+      return getEqualCondition(keyCriteria, column(null, leafFieldMapper.getAlias()));
     } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
-      var parentOfRefField = getParentOfRefField(fieldPath);
-      if (parentOfRefField.isPresent()) {
-        sqlField = column(table, ((PostgresObjectField) parentOfRefField.get()).getColumn());
-      } else {
-        throw ExceptionHelper.illegalStateException("The parent of the ref field '{}' should be present", fieldPath);
-      }
-    } else {
-      sqlField = column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn());
+      return getParentOfRefField(fieldPath).flatMap(parentOfRefField -> {
+        var joinColumn = getJoinColumnForRefObject(fieldPath, (PostgresObjectField) parentOfRefField);
+
+        return getEqualCondition(keyCriteria, column(table, joinColumn.getName()));
+      });
     }
 
+    var keyField = (PostgresObjectField) getLeaf(fieldPath);
+    var keyFieldValue = getFieldValue(keyField, keyCriteria.getValue());
+
+    return Optional.of(column(table, keyField.getColumn()).equal(keyFieldValue));
+  }
+
+  private JoinColumn getJoinColumnForRefObject(List<ObjectField> fieldPath, PostgresObjectField parentOfRefField) {
+    var parentOfRefFieldJoinColumns = parentOfRefField.getJoinColumns();
+
+    return parentOfRefFieldJoinColumns.stream()
+        .filter(jc -> nonNull(jc.getReferencedField()))
+        .filter(jc -> jc.getReferencedField()
+            .endsWith(fieldPath.get(fieldPath.size() - 1)
+                .getName()))
+        .findFirst()
+        .orElseThrow(() -> illegalStateException(
+            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+                + "or does not match the referencedField.",
+            fieldPath));
+  }
+
+  private Optional<Condition> getEqualCondition(KeyCriteria keyCriteria, Field<Object> sqlField) {
     var condition = sqlField.equal(keyCriteria.getValue());
 
-    return Optional.of(JoinHelper.andCondition(List.of(condition)));
+    return Optional.of(andCondition(List.of(condition)));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
