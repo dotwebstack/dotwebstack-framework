@@ -19,6 +19,7 @@ import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.new
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFieldValue;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
@@ -352,7 +353,10 @@ class SelectBuilder {
       });
     }
 
-    return getEqualCondition(keyCriteria, column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn()));
+    var keyField = (PostgresObjectField) getLeaf(fieldPath);
+    var keyFieldValue = getFieldValue(keyField, keyCriteria.getValue());
+
+    return Optional.of(column(table, keyField.getColumn()).equal(keyFieldValue));
   }
 
   private JoinColumn getJoinColumnForRefObject(List<ObjectField> fieldPath, PostgresObjectField parentOfRefField) {

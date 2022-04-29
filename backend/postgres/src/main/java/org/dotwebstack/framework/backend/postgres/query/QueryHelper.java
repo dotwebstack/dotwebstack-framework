@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -10,11 +11,14 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
+import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
+import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -104,5 +108,17 @@ class QueryHelper {
       query.addFrom(requestedTable);
       return requestedTable;
     };
+  }
+
+  public static Field<Object> getFieldValue(PostgresObjectField field, Object fieldValue) {
+    return Optional.of(field)
+        .map(AbstractObjectField::getEnumeration)
+        .map(FieldEnumConfiguration::getType)
+        .map(type -> {
+          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
+          return DSL.val(fieldValue)
+              .cast(dataType);
+        })
+        .orElse(DSL.val(fieldValue));
   }
 }

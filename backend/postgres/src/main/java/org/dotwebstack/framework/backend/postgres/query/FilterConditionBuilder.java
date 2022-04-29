@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCon
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
+import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFieldValue;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
@@ -50,7 +51,6 @@ import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
-import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
@@ -397,16 +397,7 @@ class FilterConditionBuilder {
       return DSL.param(createDataType(Boolean.class));
     }
 
-    var field = DSL.val(value);
-
-    return Optional.ofNullable(objectField)
-        .map(AbstractObjectField::getEnumeration)
-        .map(FieldEnumConfiguration::getType)
-        .map(type -> {
-          var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
-          return field.cast(dataType);
-        })
-        .orElse(field);
+    return getFieldValue(objectField, value);
   }
 
   private DataType<?> createDataType(Class<?> dataType) {
