@@ -192,7 +192,7 @@ class SpatialDataFetcherTest {
     assertThat(value, is(notNullValue()));
     assertThat(value, instanceOf(String.class));
     String stringValue = (String) value;
-    assertThat(stringValue, is("ACAAAAMAAAAAAAAAAQAAAAA="));
+    assertThat(stringValue, is("ACAAAAMAAAAAAAAAAA=="));
   }
 
   @Test

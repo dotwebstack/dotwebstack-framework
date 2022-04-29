@@ -48,7 +48,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring-boot.version>2.6.7</spring-boot.version>
-    <rdf4j.version>3.7.7</rdf4j.version>
+    <rdf4j.version>4.0.0</rdf4j.version>
     <graphql.java.version>18.0</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.18</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
@@ -61,7 +61,7 @@
     <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
     <json-path.version>2.7.0</json-path.version>
     <testcontainers.version>1.17.1</testcontainers.version>
-    <jts-io-common.version>1.18.2</jts-io-common.version>
+    <jts.version>1.18.2</jts.version>
     <carml.version>0.4.0-beta-5</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
@@ -197,9 +197,14 @@
         <version>${testcontainers.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.locationtech.jts</groupId>
+        <artifactId>jts-core</artifactId>
+        <version>${jts.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.locationtech.jts.io</groupId>
         <artifactId>jts-io-common</artifactId>
-        <version>${jts-io-common.version}</version>
+        <version>${jts.version}</version>
       </dependency>
       <dependency>
         <groupId>com.taxonic.carml</groupId>
