@@ -12,7 +12,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
-import org.dotwebstack.framework.core.model.AbstractObjectField;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.jooq.Field;
@@ -110,9 +110,9 @@ class QueryHelper {
     };
   }
 
-  public static Field<Object> getFieldValue(PostgresObjectField field, Object fieldValue) {
+  public static Field<Object> getFieldValue(ObjectField field, Object fieldValue) {
     return Optional.of(field)
-        .map(AbstractObjectField::getEnumeration)
+        .map(ObjectField::getEnumeration)
         .map(FieldEnumConfiguration::getType)
         .map(type -> {
           var dataType = getDefaultDataType(SQLDialect.POSTGRES, type);
