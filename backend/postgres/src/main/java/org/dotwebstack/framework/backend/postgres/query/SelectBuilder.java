@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.backend.postgres.query.AggregateFieldHel
 import static org.dotwebstack.framework.backend.postgres.query.BatchQueryBuilder.newBatchQuery;
 import static org.dotwebstack.framework.backend.postgres.query.FilterConditionBuilder.newFiltering;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
+import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.andCondition;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.getExistFieldForRelationObject;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
@@ -37,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +50,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
@@ -339,37 +340,40 @@ class SelectBuilder {
 
     var fieldPath = keyCriteria.getFieldPath();
 
-    AtomicReference<Field<Object>> sqlField = new AtomicReference<>();
     if (fieldPath.size() > 1 && !isNested(fieldPath)) {
       var leafFieldMapper = fieldMapper.getLeafFieldMapper(fieldPath);
-      sqlField.set(column(null, leafFieldMapper.getAlias()));
+
+      return getEqualCondition(keyCriteria, column(null, leafFieldMapper.getAlias()));
     } else if (fieldPath.size() > 1 && fieldPathContainsRef(fieldPath)) {
-      getParentOfRefField(fieldPath).ifPresentOrElse(parentOfRefField -> {
-        var parentOfRefFieldJoinColumns = ((PostgresObjectField) parentOfRefField).getJoinColumns();
+      return getParentOfRefField(fieldPath).flatMap(parentOfRefField -> {
+        var joinColumn = getJoinColumnForRefObject(fieldPath, (PostgresObjectField) parentOfRefField);
 
-        var joinColumn = parentOfRefFieldJoinColumns.stream()
-            .filter(jc -> nonNull(jc.getReferencedField()))
-            .filter(jc -> jc.getReferencedField()
-                .endsWith(fieldPath.get(fieldPath.size() - 1)
-                    .getName()))
-            .findFirst()
-            .orElseThrow(() -> illegalStateException(
-                "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
-                    + "or does not match the referencedField.",
-                fieldPath));
-
-        sqlField.set(column(table, joinColumn.getName()));
-      }, () -> {
-        throw new IllegalStateException(String.format("The parent of the ref field '%s' should be present", fieldPath));
+        return getEqualCondition(keyCriteria, column(table, joinColumn.getName()));
       });
-    } else {
-      sqlField.set(column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn()));
     }
 
-    var condition = sqlField.get()
-        .equal(keyCriteria.getValue());
+    return getEqualCondition(keyCriteria, column(table, ((PostgresObjectField) getLeaf(fieldPath)).getColumn()));
+  }
 
-    return Optional.of(JoinHelper.andCondition(List.of(condition)));
+  private JoinColumn getJoinColumnForRefObject(List<ObjectField> fieldPath, PostgresObjectField parentOfRefField) {
+    var parentOfRefFieldJoinColumns = parentOfRefField.getJoinColumns();
+
+    return parentOfRefFieldJoinColumns.stream()
+        .filter(jc -> nonNull(jc.getReferencedField()))
+        .filter(jc -> jc.getReferencedField()
+            .endsWith(fieldPath.get(fieldPath.size() - 1)
+                .getName()))
+        .findFirst()
+        .orElseThrow(() -> illegalStateException(
+            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+                + "or does not match the referencedField.",
+            fieldPath));
+  }
+
+  private Optional<Condition> getEqualCondition(KeyCriteria keyCriteria, Field<Object> sqlField) {
+    var condition = sqlField.equal(keyCriteria.getValue());
+
+    return Optional.of(andCondition(List.of(condition)));
   }
 
   private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
