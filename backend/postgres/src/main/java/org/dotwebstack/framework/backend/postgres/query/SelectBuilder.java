@@ -355,7 +355,7 @@ class SelectBuilder {
             .findFirst()
             .orElseThrow(() -> illegalStateException(
                 "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
-                    + "or the joinColumn does not match the referencedField.",
+                    + "or does not match the referencedField.",
                 fieldPath));
 
         sqlField.set(column(table, joinColumn.getName()));

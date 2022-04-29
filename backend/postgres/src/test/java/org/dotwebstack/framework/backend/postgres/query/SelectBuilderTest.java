@@ -296,7 +296,7 @@ class SelectBuilderTest {
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
             + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
-            + "The joinColumn is either empty or the joinColumn does not match the referencedField."));
+            + "The joinColumn is either empty or does not match the referencedField."));
   }
 
   @Test
@@ -335,7 +335,7 @@ class SelectBuilderTest {
             + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
             + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
-            + "The joinColumn is either empty or the joinColumn does not match the referencedField."));
+            + "The joinColumn is either empty or does not match the referencedField."));
   }
 
   @Test

@@ -329,7 +329,7 @@ public class BackendRequestFactory {
       GraphQLArgument argument) {
     var keyPath = requireNonNull(argument.getDefinition()).getAdditionalData()
         .get(KEY_PATH);
-    // identificatieVanLigplaats: identificatieVanLigplaats.ref.identificatie
+
     var fieldPath = createFieldPath(objectType, keyPath);
     var value = argumentMap.get(argument.getName());
 
