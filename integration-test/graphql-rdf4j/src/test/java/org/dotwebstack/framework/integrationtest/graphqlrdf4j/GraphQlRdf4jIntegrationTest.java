@@ -114,7 +114,7 @@ class GraphQlRdf4jIntegrationTest {
             ImmutableMap.of(BREWERY_IDENTIFIER_FIELD, BREWERY_IDENTIFIER_EXAMPLE_1.stringValue(), BREWERY_NAME_FIELD,
                 BREWERY_NAME_EXAMPLE_1.stringValue(), BREWERY_GEOMETRY_FIELD,
                 ImmutableMap.of("type", "MULTIPOINT", "asWKT", "MULTIPOINT ((5.979274334569982 52.21715768613606))",
-                    "asWKB", "ACAAAAQAAAAAAAAAAQAgAAABAAAAAEAX6sbkIykzQEoby9K0A8Q="))));
+                    "asWKB", "ACAAAAQAAAAAAAAAAQAAAAABQBfqxuQjKTNAShvL0rQDxA=="))));
   }
 
   private void assertResultHasNoErrors(ExecutionResult result) {
