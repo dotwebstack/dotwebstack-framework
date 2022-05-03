@@ -1184,8 +1184,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.get(client, query, null, variables);
 
-    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining
-        .hasItems(hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
+    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining.hasItems(hasEntry("message",
+        "Variable 'identifier' has an invalid value: Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
@@ -1244,8 +1244,8 @@ class GraphQlPostgresIntegrationTest {
 
     var response = WebTestClientHelper.post(client, body, MediaType.APPLICATION_JSON_VALUE);
 
-    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining
-        .hasItems(hasEntry("message", "Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
+    Assert.assertThat(response, hasEntry(equalTo("errors"), IsIterableContaining.hasItems(hasEntry("message",
+        "Variable 'identifier' has an invalid value: Variable 'identifier' has coerced Null value for NonNull type 'ID!'"))));
   }
 
   @Test
