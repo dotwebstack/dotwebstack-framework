@@ -273,13 +273,16 @@ class FilterConditionBuilder {
         .flatMap(entry -> Optional
             .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
             .map(filterOperator -> {
+
+              if (NOT == filterOperator) {
+                return Stream.of(createNotCondition(objectField, filterCriteria, castToMap(entry.getValue())));
+              }
+
               if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
                 return createGeometryCondition(objectField, filterOperator, entry.getValue(), getRequestedSrid(values))
                     .stream();
               }
-              if (NOT == filterOperator) {
-                return Stream.of(createNotCondition(objectField, filterCriteria, castToMap(entry.getValue())));
-              }
+
               return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
             })
             .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
@@ -375,11 +378,19 @@ class FilterConditionBuilder {
 
   private Condition createNotCondition(PostgresObjectField objectField, ObjectFieldFilterCriteria filterCriteria,
       Map<String, Object> values) {
+
     var conditions = values.entrySet()
         .stream()
         .map(entry -> Optional
             .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
-            .map(filterOperator1 -> createCondition(objectField, filterOperator1, entry.getValue()))
+            .map(filterOperator1 -> {
+              if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
+                return createGeometryCondition(objectField, filterOperator1, entry.getValue(), getRequestedSrid(values))
+                    .orElseThrow();
+              }
+
+              return createCondition(objectField, filterOperator1, entry.getValue());
+            })
             .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
         .collect(Collectors.toList());
 
