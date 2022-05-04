@@ -383,13 +383,13 @@ class FilterConditionBuilder {
         .stream()
         .map(entry -> Optional
             .ofNullable(FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive()))
-            .map(filterOperator1 -> {
+            .map(filterOperator -> {
               if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
-                return createGeometryCondition(objectField, filterOperator1, entry.getValue(), getRequestedSrid(values))
+                return createGeometryCondition(objectField, filterOperator, entry.getValue(), getRequestedSrid(values))
                     .orElseThrow();
               }
 
-              return createCondition(objectField, filterOperator1, entry.getValue());
+              return createCondition(objectField, filterOperator, entry.getValue());
             })
             .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
         .collect(Collectors.toList());
