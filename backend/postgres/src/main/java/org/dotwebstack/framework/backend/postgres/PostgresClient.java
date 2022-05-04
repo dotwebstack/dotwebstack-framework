@@ -52,11 +52,21 @@ public class PostgresClient {
 
           return Mono.from(statement.execute())
               .flatMapMany(result -> result.map(PostgresClient::rowToMap))
-              .doOnCancel(() -> unwrap(connection).cancelRequest()
-                  .subscribe())
+              .doOnCancel(() -> {
+                LOG.debug("Cancelling request...");
+                unwrap(connection).cancelRequest()
+                    .doOnError(e -> LOG.error("Request cancellation failed: {}", e.getMessage()))
+                    .doOnSuccess(v -> LOG.debug("Successfully cancelled request."))
+                    .subscribe();
+              })
               .map(rowMapper)
-              .doFinally(signalType -> Mono.from(connection.close())
-                  .subscribe());
+              .doFinally(signalType -> {
+                LOG.debug("Closing connection...");
+                Mono.from(connection.close())
+                    .doOnError(e -> LOG.error("Connection close failed: {}", e.getMessage()))
+                    .doOnSuccess(v -> LOG.debug("Successfully closed connection."))
+                    .subscribe();
+              });
         });
   }
 
