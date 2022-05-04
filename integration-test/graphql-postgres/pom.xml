@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>integration-test</artifactId>
-    <version>0.3.118</version>
+    <version>0.3.119-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -43,8 +43,4 @@
       <artifactId>lombok</artifactId>
     </dependency>
   </dependencies>
-
-  <scm>
-    <tag>v0.3.118</tag>
-  </scm>
 </project>
