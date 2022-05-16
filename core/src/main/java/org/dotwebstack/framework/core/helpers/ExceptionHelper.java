@@ -63,12 +63,6 @@ public class ExceptionHelper {
     return new InternalServerErrorException("An internal server error has occurred!");
   }
 
-  public static InternalServerErrorException internalServerErrorException(Throwable throwable, ExecutionInput executionInput) {
-    LOG.error("Internal server error occurred: {} for executionInput: {}", throwable.getMessage(), executionInput);
-
-    return new InternalServerErrorException(throwable.getMessage(), executionInput);
-  }
-
   public static RequestValidationException requestValidationException(String message, Object... arguments) {
     return new RequestValidationException(formatMessage(message, arguments), findCause(arguments));
   }
