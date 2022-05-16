@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -179,7 +178,7 @@ class AggregateFieldHelperTest {
       case FLOAT:
         return BigDecimal.class;
       default:
-        throw illegalArgumentException("Type {} is not supported", scalarType);
+        throw new IllegalArgumentException(String.format("Type {} is not supported", scalarType));
     }
   }
 

@@ -11,7 +11,7 @@ import org.dotwebstack.framework.core.RequestValidationException;
 @Slf4j
 public class ExceptionHelper {
 
-  public static final String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '{}'";
+  public static final String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '%s'";
 
   protected ExceptionHelper() {}
 
@@ -43,10 +43,6 @@ public class ExceptionHelper {
 
   public static IllegalStateException illegalStateException(String message, Object... arguments) {
     return new IllegalStateException(formatMessage(message, arguments), findCause(arguments));
-  }
-
-  public static IllegalArgumentException illegalArgumentException(String message, Object... arguments) {
-    return new IllegalArgumentException(formatMessage(message, arguments), findCause(arguments));
   }
 
   public static UnsupportedOperationException unsupportedOperationException(String message, Object... arguments) {

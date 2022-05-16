@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Map;
 import java.util.Objects;
@@ -31,7 +30,7 @@ public class QueryUtil {
         geometry.setSRID(WGS84_CRS);
         return geometry;
       } catch (ParseException ignore) {
-        throw illegalArgumentException("invalid wkt string");
+        throw new IllegalArgumentException("invalid wkt string");
       }
     }
 

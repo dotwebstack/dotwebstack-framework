@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,7 @@ class QueryHelper {
     var objectType = objectRequest.getObjectType();
 
     if (!(objectType instanceof Rdf4jObjectType)) {
-      throw illegalArgumentException("Object type has wrong type.");
+      throw new IllegalArgumentException("Object type has wrong type.");
     }
 
     return ((Rdf4jObjectType) objectType).getField(name);

@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.SCALAR_LIST_FILTER_POSTFIX;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -53,7 +52,7 @@ public final class FilterHelper {
       return fieldFilterMap.get(typeName);
     }
 
-    throw illegalArgumentException("Type name '{}' has no corresponding filter.", typeName);
+    throw new IllegalArgumentException(String.format("Type name '%s' has no corresponding filter.", typeName));
   }
 
   private static FilterItem createFilterItem(String filterName, FilterConfiguration filterConfiguration) {

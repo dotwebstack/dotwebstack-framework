@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.ArrayList;
@@ -60,7 +59,7 @@ class QueryHelper {
     var objectType = objectRequest.getObjectType();
 
     if (!(objectType instanceof PostgresObjectType)) {
-      throw illegalArgumentException("Object type has wrong type.");
+      throw new IllegalArgumentException("Object type has wrong type.");
     }
 
     return (PostgresObjectType) objectType;

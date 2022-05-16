@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Collection;
 import java.util.List;
@@ -165,7 +164,7 @@ public class JoinHelper {
       return DSL.and(conditions);
     }
 
-    throw illegalArgumentException("And condition called for empty condition list!");
+    throw new IllegalArgumentException("And condition called for empty condition list!");
   }
 
   public static Field<Object> getExistFieldForRelationObject(List<JoinColumn> joinColumns, Table<Record> table,
@@ -175,6 +174,7 @@ public class JoinHelper {
         .findFirst()
         .map(joinColumn -> DSL.field(DSL.name(table.getName(), joinColumn.getName()))
             .as(alias))
-        .orElseThrow(() -> illegalArgumentException("Expected a joinColumn with a referencedField but got nothing!"));
+        .orElseThrow(
+            () -> new IllegalArgumentException("Expected a joinColumn with a referencedField but got nothing!"));
   }
 }

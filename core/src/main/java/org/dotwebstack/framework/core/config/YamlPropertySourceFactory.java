@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.config;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 
 import lombok.NonNull;
@@ -27,7 +26,7 @@ public class YamlPropertySourceFactory implements PropertySourceFactory {
         .getFilename();
 
     if (filename == null) {
-      throw illegalArgumentException("Resource filename is null!");
+      throw new IllegalArgumentException("Resource filename is null!");
     }
 
     return new PropertiesPropertySource(filename, properties);

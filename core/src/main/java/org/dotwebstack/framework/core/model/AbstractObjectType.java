@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.model;
 
 import static java.util.Optional.ofNullable;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +27,8 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
   protected Map<String, FilterConfiguration> filters = new HashMap<>();
 
   public T getField(String name) {
-    return ofNullable(fields.get(name))
-        .orElseThrow(() -> illegalArgumentException("Field '{}' does not exist in object type '{}'.", name, getName()));
+    return ofNullable(fields.get(name)).orElseThrow(() -> new IllegalArgumentException(
+        String.format("Field '%s' does not exist in object type '%s'.", name, getName())));
   }
 
   @Override

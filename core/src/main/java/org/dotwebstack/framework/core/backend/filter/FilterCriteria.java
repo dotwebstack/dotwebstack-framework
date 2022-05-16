@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.core.backend.filter;
 
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 public interface FilterCriteria {
 
@@ -14,7 +13,7 @@ public interface FilterCriteria {
       return (GroupFilterCriteria) this;
     }
 
-    throw illegalArgumentException("Not a group filter!");
+    throw new IllegalArgumentException("Not a group filter!");
   }
 
   default boolean isObjectFieldFilter() {
@@ -26,6 +25,6 @@ public interface FilterCriteria {
       return (ObjectFieldFilterCriteria) this;
     }
 
-    throw illegalArgumentException("Not a scalar field filter!");
+    throw new IllegalArgumentException("Not a scalar field filter!");
   }
 }

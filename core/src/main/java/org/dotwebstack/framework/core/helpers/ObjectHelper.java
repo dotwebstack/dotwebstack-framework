@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.helpers;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -15,8 +14,8 @@ public class ObjectHelper {
       throw new IllegalArgumentException("Object null!");
     }
     if (!(clazz.isAssignableFrom(value.getClass()))) {
-      throw illegalArgumentException("Object class '{}' not instance of {}!", value.getClass()
-          .getSimpleName(), clazz.getSimpleName());
+      throw new IllegalArgumentException(String.format("Object class '%s' not instance of %s!", value.getClass()
+          .getSimpleName(), clazz.getSimpleName()));
     }
 
     return clazz.cast(value);
@@ -48,7 +47,7 @@ public class ObjectHelper {
     } else if (type.equals("Float")) {
       return castToArray(value, Float.class, false);
     }
-    throw illegalArgumentException("Object with type '{}' can not be casted to an array.", type);
+    throw new IllegalArgumentException(String.format("Object with type '%s' can not be casted to an array.", type));
   }
 
   @SuppressWarnings("unchecked")

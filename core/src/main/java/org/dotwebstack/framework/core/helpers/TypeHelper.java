@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.helpers;
 
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.language.ListType;
 import graphql.language.NonNullType;
@@ -39,7 +38,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return false;
     } else {
-      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      throw new IllegalArgumentException(String.format(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass()));
     }
   }
 
@@ -78,7 +77,7 @@ public class TypeHelper {
     } else if (type instanceof TypeName) {
       return ((TypeName) type).getName();
     } else {
-      throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
+      throw new IllegalArgumentException(String.format(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass()));
     }
   }
 

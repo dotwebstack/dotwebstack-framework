@@ -11,7 +11,6 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIE
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
@@ -125,9 +124,9 @@ public class GraphQlHelper {
   public static FieldDefinition getFieldDefinition(SelectedField selectedField) {
     if (selectedField.getFieldDefinitions()
         .size() > 1) {
-      throw illegalArgumentException("SelectedField '{}' has {} fieldDefinitions but expected one!",
+      throw new IllegalArgumentException(String.format("SelectedField '%s' has %s fieldDefinitions but expected one!",
           selectedField.getName(), selectedField.getFieldDefinitions()
-              .size());
+              .size()));
     }
     return selectedField.getFieldDefinitions()
         .stream()

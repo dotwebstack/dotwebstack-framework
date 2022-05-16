@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.backend.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ObjectFieldHelper.createSystemAlias;
 
@@ -54,7 +53,7 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
       return (ScalarFieldMapper<T>) fieldMapper;
     }
 
-    throw illegalArgumentException("Scalar field mapper {} not found.", finalField.getName());
+    throw new IllegalArgumentException(String.format("Scalar field mapper %s not found.", finalField.getName()));
   }
 
   private FieldMapper<T, ?> getNestedFieldMapper(ObjectFieldMapper<T> current, ObjectField objectField) {

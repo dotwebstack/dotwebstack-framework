@@ -2,7 +2,6 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.function.Function;
 import javax.validation.constraints.NotNull;
@@ -76,8 +75,8 @@ class JoinBuilder {
       return leftSide;
     }
 
-    throw illegalArgumentException("Object field '{}' has no relation configuration!",
-        joinConfiguration.getObjectField()
-            .getName());
+    throw new IllegalArgumentException(
+        String.format("Object field '%s' has no relation configuration!", joinConfiguration.getObjectField()
+            .getName()));
   }
 }

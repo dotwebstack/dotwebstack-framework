@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_TYPE;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
@@ -36,7 +35,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
     }
 
     if (!(dataFetchingEnvironment.getSource() instanceof Geometry)) {
-      throw illegalArgumentException("Source is not an instance of Geometry");
+      throw new IllegalArgumentException("Source is not an instance of Geometry");
     }
 
     var geometry = (Geometry) dataFetchingEnvironment.getSource();
@@ -65,7 +64,7 @@ public class SpatialDataFetcher implements DataFetcher<Object> {
       case AS_GEOJSON:
         return createGeoJson(geometry);
       default:
-        throw illegalArgumentException("Invalid fieldName {}", fieldName);
+        throw new IllegalArgumentException(String.format("Invalid fieldName %s", fieldName));
     }
   }
 
