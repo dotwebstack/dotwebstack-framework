@@ -114,9 +114,13 @@ class GraphqlController {
 
     if (throwable instanceof DotWebStackRuntimeException) {
       throw ((DotWebStackRuntimeException) throwable);
+    } else if (throwable instanceof RuntimeException) {
+      throw (RuntimeException) throwable;
     }
 
     return Mono.error(internalServerErrorException(executionInput));
+
+
   }
 
   private void validateOperationNameIsNotEmptyString(String operationName) {
