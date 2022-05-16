@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.core.backend.query;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ObjectFieldHelper.createSystemAlias;
 
 import java.util.ArrayList;
@@ -43,7 +42,7 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
       if (nestedFieldMapper instanceof ObjectFieldMapper) {
         current = (ObjectFieldMapper<T>) nestedFieldMapper;
       } else {
-        throw illegalStateException("Non-final path segments must have an object field mapper.");
+        throw new IllegalStateException("Non-final path segments must have an object field mapper.");
       }
     }
 

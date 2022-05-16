@@ -41,10 +41,6 @@ public class ExceptionHelper {
     return newArguments;
   }
 
-  public static IllegalStateException illegalStateException(String message, Object... arguments) {
-    return new IllegalStateException(formatMessage(message, arguments), findCause(arguments));
-  }
-
   public static UnsupportedOperationException unsupportedOperationException(String message, Object... arguments) {
     return new UnsupportedOperationException(formatMessage(message, arguments), findCause(arguments));
   }

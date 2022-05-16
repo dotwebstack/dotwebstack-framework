@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.openapi.response;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.jexl.JexlHelper.getJexlContext;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.getJexlExpression;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.resolveDwsName;
@@ -114,7 +113,7 @@ public class JsonBodyMapper implements BodyMapper {
       try {
         dataMap = new ObjectMapper().convertValue(data, Map.class);
       } catch (IllegalArgumentException e) {
-        throw illegalStateException("Data is not compatible with object schema.", e);
+        throw new IllegalStateException("Data is not compatible with object schema.", e);
       }
     } else {
       dataMap = (Map<String, Object>) data;
@@ -159,7 +158,7 @@ public class JsonBodyMapper implements BodyMapper {
             nestedValue = mapSchema(nestedSchema, fieldDefinition, data, jexlContext);
           } else {
             if (!(data instanceof Map)) {
-              throw illegalStateException("Data is not compatible with object schema.");
+              throw new IllegalStateException("Data is not compatible with object schema.");
             }
 
             var dataMap = (Map<String, Object>) data;
@@ -256,14 +255,14 @@ public class JsonBodyMapper implements BodyMapper {
 
     if (MapperUtils.isPageableField(fieldDefinition)) {
       if (!(data instanceof Map)) {
-        throw illegalStateException("Data is not compatible with pageable array schema.");
+        throw new IllegalStateException("Data is not compatible with pageable array schema.");
       }
 
       var dataMap = (Map<String, Object>) data;
       var items = dataMap.get(PagingConstants.NODES_FIELD_NAME);
 
       if (!(items instanceof Collection)) {
-        throw illegalStateException("Data is not compatible with array schema.");
+        throw new IllegalStateException("Data is not compatible with array schema.");
       }
 
       return ((Collection<Object>) items).stream()
@@ -273,7 +272,7 @@ public class JsonBodyMapper implements BodyMapper {
     }
 
     if (!(data instanceof Collection)) {
-      throw illegalStateException("Data is not compatible with array schema.");
+      throw new IllegalStateException("Data is not compatible with array schema.");
     }
 
     return ((Collection<Object>) data).stream()
