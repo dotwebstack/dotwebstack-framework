@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.common.collect.HashBiMap;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,7 +44,7 @@ class PostgresSpatialHelperTest {
     PostgresSpatial spatial = createSpatial();
 
     var exception =
-        assertThrows(IllegalArgumentException.class, () -> PostgresSpatialHelper.getColumnName(spatial, 1234));
+        assertThrows(RequestValidationException.class, () -> PostgresSpatialHelper.getColumnName(spatial, 1234));
 
     assertThat(exception.getMessage(), is("Srid 1234 is unknown. Valid srid values are 7415, 7931, 9067, 28992."));
   }

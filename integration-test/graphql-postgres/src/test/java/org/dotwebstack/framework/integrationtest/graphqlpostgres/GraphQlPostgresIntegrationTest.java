@@ -36,6 +36,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -1478,6 +1479,19 @@ class GraphQlPostgresIntegrationTest {
     assertThat(breweries.size(), is(1));
 
     assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery S")));
+  }
+
+  @Test
+  void postRequest_returnsBadRequest_forInvalidGeometryFilterQueryGeoJson() {
+    var query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
+        + "\\\"coordinates\\\": [[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"
+        + "[206392.4175,447767.804],[206391.3745,447770.732],[206387.0439,447771.0547]]],"
+        + "\\\"crs\\\":{\\\"type\\\":\\\"name\\\",\\\"properties\\\":"
+        + "{\\\"name\\\":\\\"EPSG:28992\\\"}}}\"}}}) { identifier_brewery name }}";
+
+    var result = WebTestClientHelper.post(client, query);
+    assertThat(result.get("status"), is(HttpStatus.BAD_REQUEST.value()));
+    assertThat(result.get("detail"), is("The filter input GeoJSON is invalid!"));
   }
 
   @Test

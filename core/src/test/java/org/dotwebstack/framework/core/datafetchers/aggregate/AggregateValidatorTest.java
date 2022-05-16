@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.schema.SelectedField;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.config.EnumerationConfiguration;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
@@ -71,8 +72,8 @@ class AggregateValidatorTest {
   void validate_shouldThrowException_forNotNumericFields() {
     mockArguments(GraphQLString.getName(), INT_MIN_FIELD);
 
-    var thrown =
-        assertThrows(IllegalArgumentException.class, () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
+    var thrown = assertThrows(RequestValidationException.class,
+        () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
 
     assertThat(thrown.getMessage(),
         is(String.format("Numeric aggregation for non-numeric field %s is not supported.", FIELD_NAME)));
@@ -82,8 +83,8 @@ class AggregateValidatorTest {
   void validate_shouldThrowException_forUnsupportedAggregationFunction() {
     mockArguments(GraphQLInt.getName(), "intRange");
 
-    var thrown =
-        assertThrows(IllegalArgumentException.class, () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
+    var thrown = assertThrows(RequestValidationException.class,
+        () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
 
     assertThat(thrown.getMessage(), is("Unsupported aggregation function: intRange."));
   }
@@ -114,8 +115,8 @@ class AggregateValidatorTest {
   void validate_shouldThrowException_forNotTextFields() {
     mockArguments(GraphQLInt.getName(), STRING_JOIN_FIELD);
 
-    var thrown =
-        assertThrows(IllegalArgumentException.class, () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
+    var thrown = assertThrows(RequestValidationException.class,
+        () -> validate(EMPTY_ENUM_CONFIG_MAP, objectType, selectedField));
 
     assertThat(thrown.getMessage(),
         is(String.format("String aggregation for non-text field %s is not supported.", FIELD_NAME)));

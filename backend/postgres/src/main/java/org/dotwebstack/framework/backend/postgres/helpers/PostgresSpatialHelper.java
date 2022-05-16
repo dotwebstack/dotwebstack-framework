@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.helpers;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 
@@ -40,7 +41,7 @@ public final class PostgresSpatialHelper {
 
   private static Integer determineSridForColumnName(PostgresSpatial spatial, Integer requestedSrid) {
     return determineSridFromSrs(spatial, requestedSrid).or(() -> determineSridFromEquivalents(spatial, requestedSrid))
-        .orElseThrow(() -> illegalArgumentException("Srid {} is unknown. Valid srid values are {}.", requestedSrid,
+        .orElseThrow(() -> requestValidationException("Srid {} is unknown. Valid srid values are {}.", requestedSrid,
             getValidSrids(spatial)));
   }
 

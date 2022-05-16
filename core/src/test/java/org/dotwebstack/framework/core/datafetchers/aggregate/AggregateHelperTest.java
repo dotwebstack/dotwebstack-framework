@@ -30,6 +30,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.SelectedField;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.ScalarType;
@@ -127,7 +128,7 @@ class AggregateHelperTest {
     var selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn("intRange");
 
-    var thrown = assertThrows(IllegalArgumentException.class, () -> getAggregateScalarType(selectedField));
+    var thrown = assertThrows(RequestValidationException.class, () -> getAggregateScalarType(selectedField));
 
     assertThat(thrown.getMessage(), is("Aggregate function intRange is not supported"));
   }
@@ -149,7 +150,7 @@ class AggregateHelperTest {
     var selectedField = mock(SelectedField.class);
     when(selectedField.getName()).thenReturn("intRange");
 
-    var thrown = assertThrows(IllegalArgumentException.class, () -> getAggregateFunctionType(selectedField));
+    var thrown = assertThrows(RequestValidationException.class, () -> getAggregateFunctionType(selectedField));
 
     assertThat(thrown.getMessage(), is("Aggregate function intRange is not supported"));
   }

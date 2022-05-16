@@ -75,7 +75,7 @@ class GraphqlControllerTest {
     var query = "{beers{identifier_beer name}}";
 
     Throwable throwable =
-        assertThrows(IllegalArgumentException.class, () -> graphqlController.handleGet(query, null, ""));
+        assertThrows(RequestValidationException.class, () -> graphqlController.handleGet(query, null, ""));
 
     assertThat(throwable.getMessage(), is("Could not convert variables GET parameter: expected a JSON map"));
   }
@@ -86,7 +86,7 @@ class GraphqlControllerTest {
         "query beerCollection{beers{identifier_beer name}} query breweryCollection{breweries{identifier_brewery name}}";
 
     Throwable throwable =
-        assertThrows(IllegalArgumentException.class, () -> graphqlController.handleGet(query, "", null));
+        assertThrows(RequestValidationException.class, () -> graphqlController.handleGet(query, "", null));
 
     assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
   }
@@ -211,7 +211,7 @@ class GraphqlControllerTest {
   void handlePost_shouldThrowException_whenQueryIsMissing() {
     var body = Map.of("operationName", "", "variables", Map.of());
 
-    Throwable throwable = assertThrows(IllegalArgumentException.class, () -> graphqlController.handlePost(body));
+    Throwable throwable = assertThrows(RequestValidationException.class, () -> graphqlController.handlePost(body));
 
     assertThat(throwable.getMessage(), is("Required parameter 'query' is not present."));
   }
@@ -220,7 +220,7 @@ class GraphqlControllerTest {
   void handlePost_shouldThrowException_whenQueryIsEmptyString() {
     var body = Map.of("query", "", "operationName", "", "variables", Map.of());
 
-    Throwable throwable = assertThrows(IllegalArgumentException.class, () -> graphqlController.handlePost(body));
+    Throwable throwable = assertThrows(RequestValidationException.class, () -> graphqlController.handlePost(body));
 
     assertThat(throwable.getMessage(), is("Required parameter 'query' can not be empty."));
   }
@@ -232,7 +232,7 @@ class GraphqlControllerTest {
             + "query breweryCollection{breweries{identifier_brewery name}}",
         "operationName", "", "variables", Map.of());
 
-    Throwable throwable = assertThrows(IllegalArgumentException.class, () -> graphqlController.handlePost(body));
+    Throwable throwable = assertThrows(RequestValidationException.class, () -> graphqlController.handlePost(body));
 
     assertThat(throwable.getMessage(), is("Must provide operation name if query contains multiple operations."));
   }

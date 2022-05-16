@@ -6,6 +6,7 @@ import static graphql.Scalars.GraphQLString;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.COUNT_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.NUMERIC_FUNCTIONS;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 
 import graphql.schema.SelectedField;
 import java.util.Map;
@@ -35,7 +36,7 @@ public class AggregateValidator {
 
   private static void validateNumericField(ObjectField objectField) {
     if (isNotNumeric(objectField)) {
-      throw new IllegalArgumentException(
+      throw requestValidationException(
           String.format("Numeric aggregation for non-numeric field %s is not supported.", objectField.getName()));
     }
   }
@@ -57,7 +58,7 @@ public class AggregateValidator {
         // no additional validation needed
         break;
       default:
-        throw new IllegalArgumentException(
+        throw requestValidationException(
             String.format("Unsupported aggregation function: %s.", selectedField.getName()));
     }
   }
@@ -65,7 +66,7 @@ public class AggregateValidator {
   private static void validateStringJoinField(Map<String, EnumerationConfiguration> enumerations,
       ObjectField objectField) {
     if (isNotText(enumerations, objectField)) {
-      throw new IllegalArgumentException(
+      throw requestValidationException(
           String.format("String aggregation for non-text field %s is not supported.", objectField.getName()));
     }
   }

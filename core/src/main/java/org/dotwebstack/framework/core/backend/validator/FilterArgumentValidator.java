@@ -1,8 +1,7 @@
 package org.dotwebstack.framework.core.backend.validator;
 
 import static java.util.function.Predicate.not;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.ModelHelper.createObjectFieldPath;
 import static org.dotwebstack.framework.core.helpers.ModelHelper.getObjectType;
 
@@ -83,7 +82,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var field = getField(objectType, filterName);
 
     if (isNullNotAllowed(field, entry) && entry.getValue() == null) {
-      throw illegalArgumentException(
+      throw requestValidationException(
           String.format("Filter value for filter '%s' for operator '%s' can't be null.", filterName, entry.getKey()));
     }
   }
@@ -106,7 +105,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
 
     if (!hasValidValue) {
       var validValuesAsString = getValidEnumValuesAsString(validValues);
-      throw illegalArgumentException(String.format("Invalid filter value for filter '%s'. Valid values are: [%s]",
+      throw requestValidationException(String.format("Invalid filter value for filter '%s'. Valid values are: [%s]",
           filterName, validValuesAsString));
     }
   }
@@ -140,6 +139,6 @@ public class FilterArgumentValidator implements GraphQlValidator {
         .map(FilterConfiguration::getField)
         .map(filterFieldPath -> createObjectFieldPath(schema, objectType, filterFieldPath))
         .map(Iterables::getLast)
-        .orElseThrow(() -> illegalStateException("No corresponding field found for Filter name {}.", filterName));
+        .orElseThrow(() -> requestValidationException("No corresponding field found for Filter name {}.", filterName));
   }
 }
