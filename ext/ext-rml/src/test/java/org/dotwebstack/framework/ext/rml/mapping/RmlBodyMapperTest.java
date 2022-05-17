@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
@@ -189,8 +190,8 @@ class RmlBodyMapperTest {
     BodyMapper bodyMapper = new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, Map.of(), Set.of());
     Object input = Set.of();
 
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> bodyMapper.map(OPERATION_REQUEST, input));
+    Exception exception =
+        assertThrows(RequestValidationException.class, () -> bodyMapper.map(OPERATION_REQUEST, input));
 
     assertThat(exception.getMessage(), startsWith("Input can only be of type Map, but was"));
   }

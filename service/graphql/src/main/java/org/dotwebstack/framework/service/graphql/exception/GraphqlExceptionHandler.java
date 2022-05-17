@@ -19,16 +19,6 @@ import reactor.core.publisher.Mono;
 @ControllerAdvice
 public class GraphqlExceptionHandler implements ProblemHandling {
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public Mono<ResponseEntity<Problem>> handleIllegalArgumentException(IllegalArgumentException exception,
-      ServerWebExchange request) {
-    LOG.error(exception.getMessage());
-
-    var problem = getThrowableProblem(BAD_REQUEST, exception.getMessage());
-
-    return create(problem, request);
-  }
-
   @ExceptionHandler(UnknownOperationException.class)
   public Mono<ResponseEntity<Problem>> handleUnknownOperationException(UnknownOperationException exception,
       ServerWebExchange request) {

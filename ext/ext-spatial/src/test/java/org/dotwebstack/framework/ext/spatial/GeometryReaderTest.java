@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
 import java.util.Map;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.locationtech.jts.geom.Geometry;
@@ -90,7 +91,7 @@ class GeometryReaderTest {
     var wkt = "POINT (194936.73 470973.96";
     Map<String, Object> data = Map.of(FROM_WKT, wkt);
 
-    assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
+    assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
   }
 
   @Test
@@ -98,7 +99,7 @@ class GeometryReaderTest {
     var wkb = "blablabla";
     Map<String, Object> data = Map.of(FROM_WKB, wkb);
 
-    assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
+    assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
   }
 
   @Test
@@ -106,7 +107,7 @@ class GeometryReaderTest {
     var geoJson = "blablabla";
     Map<String, Object> data = Map.of(FROM_GEOJSON, geoJson);
 
-    assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
+    assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
   }
 
   @Test
@@ -115,13 +116,13 @@ class GeometryReaderTest {
     var wkb = "ACAAAAEAAHFAQQfLxdcKPXFBHL731wo9cQ==";
     Map<String, Object> data = Map.of(FROM_WKT, wkt, FROM_WKB, wkb);
 
-    assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
+    assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
   }
 
   @Test
   void readGeometry_forNoFilter_returnsException() {
     Map<String, Object> data = Collections.emptyMap();
 
-    assertThrows(IllegalArgumentException.class, () -> GeometryReader.readGeometry(data));
+    assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
   }
 }

@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.ext.spatial;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
@@ -42,12 +42,12 @@ public class GeometryReader {
         .collect(Collectors.toList());
 
     if (foundFilters.isEmpty()) {
-      throw illegalArgumentException("The geometry filter does not contain one of the following methods: %s.",
+      throw requestValidationException("The geometry filter does not contain one of the following methods: {}.",
           String.join(" or ", filters));
     }
 
     if (foundFilters.size() > 1) {
-      throw illegalArgumentException("The geometry filter can only contain one of the following methods: %s.",
+      throw requestValidationException("The geometry filter can only contain one of the following methods: {}.",
           String.join(" or ", filters));
     }
   }
@@ -57,7 +57,7 @@ public class GeometryReader {
     try {
       return wktReader.read(wkt);
     } catch (ParseException e) {
-      throw illegalArgumentException("The filter input WKT is invalid!", e);
+      throw requestValidationException("The filter input WKT is invalid!", e);
     }
   }
 
@@ -67,7 +67,7 @@ public class GeometryReader {
       return wkbReader.read(Base64.getDecoder()
           .decode(wkb));
     } catch (ParseException | IllegalArgumentException e) {
-      throw illegalArgumentException("The filter input WKB is invalid!", e);
+      throw requestValidationException("The filter input WKB is invalid!", e);
     }
   }
 
@@ -76,7 +76,7 @@ public class GeometryReader {
     try {
       return geoJsonReader.read(geoJson);
     } catch (ParseException e) {
-      throw illegalArgumentException("The filter input GeoJSON is invalid!", e);
+      throw requestValidationException("The filter input GeoJSON is invalid!", e);
     }
   }
 }

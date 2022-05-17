@@ -1,6 +1,5 @@
 package org.dotwebstack.framework.service.graphql.exception;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,26 +25,6 @@ class GraphqlExceptionHandlerTest {
   @BeforeEach
   void init() {
     this.handler = new GraphqlExceptionHandler();
-  }
-
-  @Test
-  void handleIllegalArgumentException_shouldReturnProblemJson_default() {
-    IllegalArgumentException exception = illegalArgumentException("Illegal argument");
-
-    ServerWebExchange exchange =
-        MockServerWebExchange.from(MockServerHttpRequest.get("/?query=%7Bbeers%7Bidentifier_beer%20name%7D%7D")
-            .build());
-
-    Mono<ResponseEntity<Problem>> problem = handler.handleIllegalArgumentException(exception, exchange);
-
-    StepVerifier.create(problem)
-        .assertNext(result -> {
-          assertThat(Objects.requireNonNull(result.getBody())
-              .getStatus(), is(BAD_REQUEST));
-          assertThat(result.getBody()
-              .getDetail(), is("Illegal argument"));
-        })
-        .verifyComplete();
   }
 
   @Test

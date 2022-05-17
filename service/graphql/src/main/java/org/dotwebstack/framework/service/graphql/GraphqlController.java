@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.service.graphql;
 
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.internalServerErrorException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -68,12 +68,12 @@ class GraphqlController {
   public Mono<Map<String, Object>> handlePost(@RequestBody Map<String, Object> requestBody) {
 
     if (!requestBody.containsKey(QUERY)) {
-      throw illegalArgumentException("Required parameter 'query' is not present.");
+      throw requestValidationException("Required parameter 'query' is not present.");
     }
 
     if (StringUtils.isBlank(requestBody.get(QUERY)
         .toString())) {
-      throw illegalArgumentException("Required parameter 'query' can not be empty.");
+      throw requestValidationException("Required parameter 'query' can not be empty.");
     }
 
     if (requestBody.containsKey(OPERATION_NAME)) {
@@ -121,7 +121,7 @@ class GraphqlController {
 
   private void validateOperationNameIsNotEmptyString(String operationName) {
     if (operationName.equals("")) {
-      throw illegalArgumentException("Must provide operation name if query contains multiple operations.");
+      throw requestValidationException("Must provide operation name if query contains multiple operations.");
     }
   }
 
@@ -134,7 +134,7 @@ class GraphqlController {
     try {
       return objectMapper.readValue(jsonMap, Map.class);
     } catch (IOException e) {
-      throw illegalArgumentException("Could not convert variables GET parameter: expected a JSON map");
+      throw requestValidationException("Could not convert variables GET parameter: expected a JSON map");
     }
   }
 

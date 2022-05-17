@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.backend.BackendExecutionStepInfo;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterConfiguration;
@@ -72,7 +73,7 @@ class FilterArgumentValidatorTest {
     var schema = getSchema();
 
     var filterArgumentValidator = new FilterArgumentValidator(schema, backendExecutionStepInfo);
-    var exception = assertThrows(IllegalArgumentException.class, () -> filterArgumentValidator.validate(environment));
+    var exception = assertThrows(RequestValidationException.class, () -> filterArgumentValidator.validate(environment));
 
     assertThat(exception.getMessage(),
         is("Invalid filter value for filter 'BarFilter'. Valid values are: [waldo,fred,plugh]"));
@@ -109,7 +110,7 @@ class FilterArgumentValidatorTest {
     var schema = getSchema();
 
     var filterArgumentValidator = new FilterArgumentValidator(schema, backendExecutionStepInfo);
-    var exception = assertThrows(IllegalArgumentException.class, () -> filterArgumentValidator.validate(environment));
+    var exception = assertThrows(RequestValidationException.class, () -> filterArgumentValidator.validate(environment));
 
     assertThat(exception.getMessage(), is(String
         .format("Filter value for filter 'ThudFilter' for operator '%s' can't be null.", expectedOperatorInException)));

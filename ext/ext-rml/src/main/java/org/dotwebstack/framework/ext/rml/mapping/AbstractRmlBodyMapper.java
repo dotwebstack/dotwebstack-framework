@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.formatMessage;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.notFoundException;
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getObjectField;
 
@@ -111,7 +111,7 @@ abstract class AbstractRmlBodyMapper implements BodyMapper {
             return modelToString(model);
           });
     } else {
-      throw illegalArgumentException("Input can only be of type Map, but was {}", result.getClass()
+      throw requestValidationException("Input can only be of type Map, but was {}", result.getClass()
           .getCanonicalName());
     }
   }
