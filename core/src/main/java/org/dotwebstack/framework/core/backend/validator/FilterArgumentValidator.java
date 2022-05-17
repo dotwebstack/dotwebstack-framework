@@ -82,8 +82,8 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var field = getField(objectType, filterName);
 
     if (isNullNotAllowed(field, entry) && entry.getValue() == null) {
-      throw requestValidationException(
-          String.format("Filter value for filter '%s' for operator '%s' can't be null.", filterName, entry.getKey()));
+      throw requestValidationException("Filter value for filter '{}' for operator '{}' can't be null.", filterName,
+          entry.getKey());
     }
   }
 
@@ -105,8 +105,8 @@ public class FilterArgumentValidator implements GraphQlValidator {
 
     if (!hasValidValue) {
       var validValuesAsString = getValidEnumValuesAsString(validValues);
-      throw requestValidationException(String.format("Invalid filter value for filter '%s'. Valid values are: [%s]",
-          filterName, validValuesAsString));
+      throw requestValidationException("Invalid filter value for filter '{}'. Valid values are: [{}]", filterName,
+          validValuesAsString);
     }
   }
 
