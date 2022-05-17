@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -76,8 +77,8 @@ class SpatialColumnMapper extends ColumnMapper {
         .map(equivalents -> equivalents.get(currentSrid))
         .filter(equivalentSrid -> equivalentSrid.equals(requestedSrid))
         .map(srid -> reprojectTo2d(geometry))
-        .orElseThrow(() -> new IllegalArgumentException(
-            String.format("Can't reproject geometry from %s to %s.", currentSrid, requestedSrid)));
+        .orElseThrow(
+            () -> illegalArgumentException("Can't reproject geometry from {} to {}.", currentSrid, requestedSrid));
   }
 
   private Geometry reprojectTo2d(Geometry geometry) {

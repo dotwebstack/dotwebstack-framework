@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j.query;
 
 import static org.dotwebstack.framework.backend.rdf4j.query.GraphPatternBuilder.newGraphPattern;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class Query {
 
   private OrderBy createOrderBy(List<SortCriteria> sortCriterias) {
     if (sortCriterias.isEmpty()) {
-      throw new IllegalArgumentException("Sort criteria is empty.");
+      throw illegalArgumentException("Sort criteria is empty.");
     }
 
     var orderables = sortCriterias.stream()

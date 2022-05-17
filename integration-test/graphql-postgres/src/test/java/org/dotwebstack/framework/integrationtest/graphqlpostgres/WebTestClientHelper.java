@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -89,7 +90,7 @@ class WebTestClientHelper {
     try {
       return objectMapper.readValue(result, Map.class);
     } catch (JsonProcessingException exception) {
-      throw new IllegalArgumentException(String.format("Failed to parse string to json: %s", result));
+      throw illegalArgumentException(String.format("Failed to parse string to json: %s", result));
     }
   }
 }

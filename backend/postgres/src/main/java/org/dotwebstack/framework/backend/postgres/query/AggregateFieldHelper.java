@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.math.BigDecimal;
@@ -49,8 +50,7 @@ public final class AggregateFieldHelper {
             .cast(getNumericType(aggregateField.getType()));
         break;
       default:
-        throw new IllegalArgumentException(
-            String.format("Aggregate function %s is not supported", aggregateField.getFunctionType()));
+        throw illegalArgumentException("Aggregate function {} is not supported", aggregateField.getFunctionType());
     }
     return result;
   }
@@ -97,7 +97,7 @@ public final class AggregateFieldHelper {
       case FLOAT:
         return BigDecimal.class;
       default:
-        throw new IllegalArgumentException(String.format("Type %s is not supported", scalarType));
+        throw illegalArgumentException("Type {} is not supported", scalarType);
     }
   }
 }

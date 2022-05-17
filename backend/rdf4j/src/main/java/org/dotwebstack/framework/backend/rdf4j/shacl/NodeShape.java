@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.rdf4j.shacl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import graphql.schema.GraphQLFieldDefinition;
 import java.util.HashMap;
@@ -58,9 +59,9 @@ public final class NodeShape {
         .or(() -> {
           if (fieldPath.size() > 1) {
             // this means that we have found a scalar field -> we cannot go any level deeper anymore
-            throw new IllegalArgumentException(String.format("Cannot get child shape '{}' from '{}'", fieldPath.stream()
+            throw illegalArgumentException("Cannot get child shape '{}' from '{}'", fieldPath.stream()
                 .map(GraphQLFieldDefinition::getName)
-                .collect(Collectors.joining(".")), getIdentifier().stringValue()));
+                .collect(Collectors.joining(".")), getIdentifier().stringValue());
           }
           return Optional.empty();
         });

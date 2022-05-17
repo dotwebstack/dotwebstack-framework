@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core.jexl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.cast;
 
@@ -101,8 +102,8 @@ public class JexlHelper {
     if (Objects.isNull(evaluated)) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {
-      throw new IllegalArgumentException(String.format(
-          "Jexl evaluateDirectiveArgument type mismatch: expected[%s], but was [%s].", clazz, evaluated.getClass()));
+      throw illegalArgumentException("Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].", clazz,
+          evaluated.getClass());
     } else {
       return Optional.of(cast(clazz, evaluated));
     }
@@ -114,8 +115,8 @@ public class JexlHelper {
     if (evaluated == null) {
       return Optional.empty();
     } else if (!clazz.isInstance(evaluated)) {
-      throw new IllegalArgumentException(String.format(
-          "Jexl evaluateDirectiveArgument type mismatch: expected[%s], but was [%s].", clazz, evaluated.getClass()));
+      throw illegalArgumentException("Jexl evaluateDirectiveArgument type mismatch: expected[{}], but was [{}].", clazz,
+          evaluated.getClass());
     } else {
       return Optional.of(cast(clazz, evaluated));
     }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.helpers;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
@@ -76,8 +77,7 @@ public final class PostgresSpatialHelper {
             .containsKey(columnName))
         .map(spatialReferenceSystems -> spatialReferenceSystems.inverse()
             .get(columnName))
-        .orElseThrow(
-            () -> new IllegalArgumentException(String.format("Geometry column name %s is unknown.", columnName)));
+        .orElseThrow(() -> illegalArgumentException("Geometry column name {} is unknown.", columnName));
   }
 
   public static Integer getRequestedSrid(FieldRequest fieldRequest) {

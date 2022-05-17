@@ -25,6 +25,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
@@ -200,7 +201,7 @@ class FilterConditionBuilder {
       return createConditionsForMatchingNestedReference(filterCriteria, objectField, referencedField);
     }
 
-    throw createIllegalArgumentException("ObjectField '{}' in ObjectType '{}' has no join configuration",
+    throw illegalArgumentException("ObjectField '{}' in ObjectType '{}' has no join configuration",
         objectField.getName(), objectField.getObjectType()
             .getName());
   }
@@ -284,8 +285,7 @@ class FilterConditionBuilder {
 
               return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
             })
-            .orElseThrow(() -> new IllegalArgumentException(
-                String.format(ERROR_MESSAGE, entry.getKey(), objectField.getType()))))
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
         .collect(Collectors.toList());
 
     return andCondition(conditions);
@@ -318,7 +318,7 @@ class FilterConditionBuilder {
       return PostgresDSL.arrayOverlap(field, getArrayValue(objectField, value));
     }
 
-    throw createIllegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
   @SuppressWarnings("squid:S3776")
@@ -368,7 +368,7 @@ class FilterConditionBuilder {
       return lowerField.in(arrayValues);
     }
 
-    throw createIllegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
   private boolean isInIgnoreCaseAndOfTypeString(FilterOperator operator, PostgresObjectField objectField) {
@@ -391,7 +391,7 @@ class FilterConditionBuilder {
 
               return createCondition(objectField, filterOperator, entry.getValue());
             })
-            .orElseThrow(() -> createIllegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
+            .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
         .collect(Collectors.toList());
 
     return DSL.not(andCondition(conditions));
@@ -435,7 +435,7 @@ class FilterConditionBuilder {
           return field.cast(dataType.getArrayDataType());
         })
         .orElseThrow(
-            () -> createIllegalArgumentException("Field '%s' is not a list of enumerations.", objectField.getName()));
+            () -> illegalArgumentException("Field '%s' is not a list of enumerations.", objectField.getName()));
   }
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
@@ -466,7 +466,7 @@ class FilterConditionBuilder {
       case TOUCHES:
         return Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoField));
       default:
-        throw new IllegalArgumentException("Unsupported geometry filter operation");
+        throw illegalArgumentException("Unsupported geometry filter operation");
     }
   }
 
@@ -476,9 +476,5 @@ class FilterConditionBuilder {
     result = result.replace("_", LIKE_ESCAPE_CHARACTER + "_");
     result = result.replace("%", LIKE_ESCAPE_CHARACTER + "%");
     return result;
-  }
-
-  private IllegalArgumentException createIllegalArgumentException(String message, Object... arguments) {
-    return new IllegalArgumentException(String.format(message, arguments));
   }
 }

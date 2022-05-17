@@ -13,6 +13,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.SEPARATOR_ARGUMENT;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 
 import graphql.schema.SelectedField;
@@ -36,9 +37,8 @@ public class AggregateHelper {
 
     return TypeHelper.getTypeName(selectedField.getType())
         .map(AggregateConstants.AGGREGATE_TYPE::equals)
-        .orElseThrow(
-            () -> new IllegalArgumentException(String.format(UNSUPPORTED_TYPE_ERROR_TEXT, selectedField.getType()
-                .getClass())));
+        .orElseThrow(() -> illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, selectedField.getType()
+            .getClass()));
   }
 
   public static boolean isAggregate(ObjectField objectField) {
@@ -62,7 +62,7 @@ public class AggregateHelper {
       case FLOAT_AVG_FIELD:
         return ScalarType.FLOAT;
       default:
-        throw requestValidationException("Aggregate function %s is not supported", aggregateFunction);
+        throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
     }
   }
 
@@ -86,7 +86,7 @@ public class AggregateHelper {
       case FLOAT_AVG_FIELD:
         return AggregateFunctionType.AVG;
       default:
-        throw requestValidationException("Aggregate function %s is not supported", aggregateFunction);
+        throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
     }
   }
 

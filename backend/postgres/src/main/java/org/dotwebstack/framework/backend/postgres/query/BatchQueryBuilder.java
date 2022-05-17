@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.invert
 import static org.dotwebstack.framework.backend.postgres.query.Query.EXISTS_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -100,9 +101,9 @@ class BatchQueryBuilder {
       return batchQueryWithJoinTable();
     }
 
-    throw new IllegalArgumentException(
-        String.format("Object field '%s' has no relation configuration!", joinConfiguration.getObjectField()
-            .getName()));
+    throw illegalArgumentException("Object field '{}' has no relation configuration!",
+        joinConfiguration.getObjectField()
+            .getName());
   }
 
   private SelectQuery<Record> batchQueryWithKeys() {

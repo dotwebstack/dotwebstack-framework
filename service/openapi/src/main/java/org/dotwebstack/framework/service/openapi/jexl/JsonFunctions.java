@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.service.openapi.jexl;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dotwebstack.framework.core.jexl.JexlFunction;
@@ -22,7 +24,7 @@ public class JsonFunctions implements JexlFunction {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
     } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException(String.format("Object %s could not be converted to json string", object), e);
+      throw illegalArgumentException("Object {} could not be converted to json string", object, e);
     }
   }
 }

@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.integrationtest.rmlpostgres;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -99,8 +100,8 @@ class RmlPostgresIntegrationTest {
   void dereference_returnsExpectedResult_forRequest(MediaType mediaType, String expectedResultFileName)
       throws IOException {
     RDFFormat rdfFormat = Rio.getParserFormatForFileName(expectedResultFileName)
-        .orElseThrow(() -> new IllegalArgumentException(
-            String.format("could not determine rdf format from filename: %s", expectedResultFileName)));
+        .orElseThrow(
+            () -> illegalArgumentException("could not determine rdf format from filename: {}", expectedResultFileName));
     Model expected = Rio.parse(getFileInputStream(expectedResultFileName), rdfFormat);
 
     String responseBody = client.get()

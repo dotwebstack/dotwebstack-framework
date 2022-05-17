@@ -2,7 +2,7 @@ package org.dotwebstack.framework.service.openapi.param;
 
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toList;
-import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
 import com.google.common.collect.ImmutableList;

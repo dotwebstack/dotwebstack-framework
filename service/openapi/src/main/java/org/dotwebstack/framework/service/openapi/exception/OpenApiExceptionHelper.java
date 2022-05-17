@@ -39,8 +39,4 @@ public class OpenApiExceptionHelper extends ExceptionHelper {
       Object... arguments) {
     return new InvalidOpenApiConfigurationException(formatMessage(message, arguments), findCause(arguments));
   }
-
-  public static IllegalArgumentException illegalArgumentException(String message, Object... arguments) {
-    return new IllegalArgumentException(formatMessage(message, arguments), findCause(arguments));
-  }
 }

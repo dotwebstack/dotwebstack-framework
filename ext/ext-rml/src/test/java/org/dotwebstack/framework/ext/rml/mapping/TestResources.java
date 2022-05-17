@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
@@ -25,7 +27,7 @@ class TestResources {
           .getResource(path)
           .getFile()), "UTF-8");
     } catch (IOException e) {
-      throw new IllegalArgumentException(String.format("Resource %s not found.", path));
+      throw illegalArgumentException("Resource {} not found.", path);
     }
   }
 
