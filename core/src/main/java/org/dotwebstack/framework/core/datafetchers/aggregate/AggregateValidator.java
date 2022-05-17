@@ -65,7 +65,7 @@ public class AggregateValidator {
   private static void validateStringJoinField(Map<String, EnumerationConfiguration> enumerations,
       ObjectField objectField) {
     if (isNotText(enumerations, objectField)) {
-      throw requestValidationException("String aggregation for non-text field %s is not supported.",
+      throw requestValidationException("String aggregation for non-text field {} is not supported.",
           objectField.getName());
     }
   }
