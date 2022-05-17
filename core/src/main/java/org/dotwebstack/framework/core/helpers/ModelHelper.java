@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -37,11 +39,10 @@ public final class ModelHelper {
     var rawType = GraphQLTypeUtil.unwrapAll(type);
 
     if (!(rawType instanceof GraphQLObjectType)) {
-      throw new IllegalStateException("Not an object type.");
+      throw illegalStateException("Not an object type.");
     }
 
     return schema.getObjectType(rawType.getName())
-        .orElseThrow(
-            () -> new IllegalStateException(String.format("No objectType with name '%s' found!", rawType.getName())));
+        .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
   }
 }

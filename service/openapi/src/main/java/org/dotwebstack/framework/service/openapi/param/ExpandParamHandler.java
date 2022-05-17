@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.service.openapi.param;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.isTransient;
 import static org.dotwebstack.framework.service.openapi.helper.DwsExtensionHelper.supportsDwsType;
@@ -157,7 +158,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
       return composedSchema.getOneOf();
     }
 
-    throw new IllegalStateException("Composed Schema is empty!");
+    throw illegalStateException("Composed Schema is empty!");
   }
 
   private void validateExpandParam(GraphQlField graphQlField, String expandValue, String pathName) {

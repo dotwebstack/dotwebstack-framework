@@ -24,6 +24,7 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getOb
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOfRefField;
@@ -367,9 +368,10 @@ class SelectBuilder {
             .endsWith(fieldPath.get(fieldPath.size() - 1)
                 .getName()))
         .findFirst()
-        .orElseThrow(() -> new IllegalStateException(
-            String.format("Can't find a valid joinColumn configuration for '%s'. The joinColumn is either empty "
-                + "or does not match the referencedField.", fieldPath)));
+        .orElseThrow(() -> illegalStateException(
+            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+                + "or does not match the referencedField.",
+            fieldPath));
   }
 
   private Optional<Condition> getEqualCondition(KeyCriteria keyCriteria, Field<Object> sqlField) {

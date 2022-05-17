@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.config;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+
 import lombok.NonNull;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -17,7 +19,7 @@ public class YamlPropertySourceFactory implements PropertySourceFactory {
     var properties = factory.getObject();
 
     if (properties == null) {
-      throw new IllegalStateException("Unable to get properties from factory!");
+      throw illegalStateException("Unable to get properties from factory!");
     }
 
     var filename = encodedResource.getResource()

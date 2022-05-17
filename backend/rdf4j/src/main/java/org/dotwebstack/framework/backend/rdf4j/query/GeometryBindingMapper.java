@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.rdf4j.query;
 
 import java.util.Objects;
 import lombok.Getter;
+import org.dotwebstack.framework.core.helpers.ExceptionHelper;
 import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.sparqlbuilder.core.Variable;
 import org.locationtech.jts.io.ParseException;
@@ -25,7 +26,7 @@ class GeometryBindingMapper extends BindingMapper {
     try {
       return wktReader.read(Objects.toString(super.apply(bindings)));
     } catch (ParseException e) {
-      throw new IllegalStateException("Unable to read wkt geometry", e);
+      throw ExceptionHelper.illegalStateException("Unable to read wkt geometry", e);
     }
   }
 }

@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIE
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getQueryName;
@@ -381,11 +382,10 @@ public class BackendRequestFactory {
     var rawType = unwrapAll(type);
 
     if (!(rawType instanceof GraphQLObjectType)) {
-      throw new IllegalStateException("Not an object type.");
+      throw illegalStateException("Not an object type.");
     }
 
     return schema.getObjectType(rawType.getName())
-        .orElseThrow(
-            () -> new IllegalStateException(String.format("No objectType with name '%s' found!", rawType.getName())));
+        .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
   }
 }

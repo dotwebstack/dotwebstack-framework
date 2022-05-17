@@ -4,6 +4,7 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
@@ -74,7 +75,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     }
 
     if (backendLoader == null) {
-      throw new IllegalStateException("BackendLoader can't be null.");
+      throw illegalStateException("BackendLoader can't be null.");
     }
 
     graphQlValidators.forEach(validator -> validator.validate(environment));
@@ -169,7 +170,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .filter(TypeHelper::isListType)
         .map(GraphQLTypeUtil::unwrapNonNull)
         .map(GraphQLList.class::cast)
-        .orElseThrow(() -> new IllegalStateException("Batch output type needs to be a list!"));
+        .orElseThrow(() -> illegalStateException("Batch output type needs to be a list!"));
 
     if (isListType(unwrapNonNull(outputType.getWrappedType()))) {
       batchLoader = createManyBatchLoader(environment, requestContext, null);

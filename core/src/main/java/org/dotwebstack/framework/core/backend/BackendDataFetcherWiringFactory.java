@@ -4,6 +4,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.getTypeName;
 
@@ -53,7 +54,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     var typeName = getTypeName(environment.getFieldType()).orElseThrow();
 
     if (typeName.isEmpty()) {
-      throw new IllegalStateException(String.format("Unknown ObjectType: %s", typeName));
+      throw illegalStateException("Unknown ObjectType: %s", typeName);
     }
 
     if (isCustomValueField(environment)) {
@@ -73,12 +74,12 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     var typeName = getTypeName(environment.getFieldType()).orElseThrow();
 
     if (typeName.isEmpty()) {
-      throw new IllegalStateException(String.format("Unknown ObjectType: %s", typeName));
+      throw illegalStateException("Unknown ObjectType: %s", typeName);
     }
 
     if (isCustomValueField(environment)) {
       if (customValueFetcherDispatcher == null) {
-        throw new IllegalStateException("Missing CustomValueFetcherDispatcher bean!");
+        throw illegalStateException("Missing CustomValueFetcherDispatcher bean!");
       }
       return new CustomValueDataFetcher(customValueFetcherDispatcher);
     }
