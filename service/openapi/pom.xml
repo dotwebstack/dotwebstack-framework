@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>service</artifactId>
-    <version>0.3.119-SNAPSHOT</version>
+    <version>0.3.119</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -45,4 +45,8 @@
       <artifactId>lombok</artifactId>
     </dependency>
   </dependencies>
+
+  <scm>
+    <tag>v0.3.119</tag>
+  </scm>
 </project>
