@@ -42,12 +42,12 @@ public class GeometryReader {
         .collect(Collectors.toList());
 
     if (foundFilters.isEmpty()) {
-      throw requestValidationException("The geometry filter does not contain one of the following methods: %s.",
+      throw requestValidationException("The geometry filter does not contain one of the following methods: {}.",
           String.join(" or ", filters));
     }
 
     if (foundFilters.size() > 1) {
-      throw requestValidationException("The geometry filter can only contain one of the following methods: %s.",
+      throw requestValidationException("The geometry filter can only contain one of the following methods: {}.",
           String.join(" or ", filters));
     }
   }

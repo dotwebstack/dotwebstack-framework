@@ -36,8 +36,8 @@ public class AggregateValidator {
 
   private static void validateNumericField(ObjectField objectField) {
     if (isNotNumeric(objectField)) {
-      throw requestValidationException(
-          String.format("Numeric aggregation for non-numeric field %s is not supported.", objectField.getName()));
+      throw requestValidationException("Numeric aggregation for non-numeric field {} is not supported.",
+          objectField.getName());
     }
   }
 
@@ -58,16 +58,15 @@ public class AggregateValidator {
         // no additional validation needed
         break;
       default:
-        throw requestValidationException(
-            String.format("Unsupported aggregation function: %s.", selectedField.getName()));
+        throw requestValidationException("Unsupported aggregation function: {}.", selectedField.getName());
     }
   }
 
   private static void validateStringJoinField(Map<String, EnumerationConfiguration> enumerations,
       ObjectField objectField) {
     if (isNotText(enumerations, objectField)) {
-      throw requestValidationException(
-          String.format("String aggregation for non-text field %s is not supported.", objectField.getName()));
+      throw requestValidationException("String aggregation for non-text field %s is not supported.",
+          objectField.getName());
     }
   }
 
