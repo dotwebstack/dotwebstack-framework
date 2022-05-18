@@ -31,6 +31,8 @@ The following snippet from an `dotwebstack.yaml` file shows the `filters` config
 
 The `field` and `default` properties within the `filters` configuration property are both optional. When the `field` property isn't supplied, the `filter` name needs to correspond with an existing field.
 
+The `dependsOn` property can be used when a filter depends on another filter. This will make the depends on filter mandatory.
+
 ```yaml
 queries:
   beers:
@@ -82,7 +84,19 @@ objectTypes:
       multinational:
         default: true
       beers: {}
-      
+
+  Address:
+    fields:
+      identifier:
+        type: ID
+      street:
+        type: String
+      city:
+        type: String
+    filters:
+      street: {}
+      city:
+        dependsOn: street
 ```
 
 ### Equals filter

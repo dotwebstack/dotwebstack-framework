@@ -2,18 +2,22 @@ package org.dotwebstack.framework.core.backend.validator;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.util.StringUtils.capitalize;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.backend.BackendExecutionStepInfo;
@@ -23,6 +27,7 @@ import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.testhelpers.TestObjectField;
 import org.dotwebstack.framework.core.testhelpers.TestObjectType;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -54,7 +59,7 @@ class FilterArgumentValidatorTest {
     mockEnvironment(argumentValues);
     var schema = getSchema();
 
-    new FilterArgumentValidator(schema, backendExecutionStepInfo).validate(environment);
+    assertDoesNotThrow(() -> new FilterArgumentValidator(schema, backendExecutionStepInfo).validate(environment));
   }
 
   public static Stream<Arguments> getInvalidEnumArguments() {
@@ -93,7 +98,7 @@ class FilterArgumentValidatorTest {
     mockEnvironment(argumentValues);
     var schema = getSchema();
 
-    new FilterArgumentValidator(schema, backendExecutionStepInfo).validate(environment);
+    assertDoesNotThrow(() -> new FilterArgumentValidator(schema, backendExecutionStepInfo).validate(environment));
   }
 
   public static Stream<Arguments> getInvalidOperatorArguments() {
@@ -114,6 +119,37 @@ class FilterArgumentValidatorTest {
 
     assertThat(exception.getMessage(), is(String
         .format("Filter value for filter 'ThudFilter' for operator '%s' can't be null.", expectedOperatorInException)));
+  }
+
+  @Test
+  void validate_valid_forDependsOnFilter() {
+    Map<String, Object> arguments =
+        Map.of("QuuxFilter", map("eq", "Fred"), "QuuzFilter", map("eq", "Fred"), "QuxFilter", map("eq", "Fred"));
+    mockEnvironment(arguments);
+    var schema = getSchema();
+
+    assertDoesNotThrow(() -> new FilterArgumentValidator(schema, backendExecutionStepInfo).validate(environment));
+  }
+
+  public static Stream<Arguments> getMissingDependsOnFilters() {
+    return Stream.of(arguments(new String[] {"QuuxFilter"}, "QuxFilter"),
+        arguments(new String[] {"QuuzFilter"}, "QuuxFilter"),
+        arguments(new String[] {"QuuxFilter", "QuuzFilter"}, "QuxFilter"));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getMissingDependsOnFilters")
+  void validate_invalid_forMissingDependsOnFilter(String[] filterArguments, String expectedDependsOnException) {
+    Map<String, Object> arguments = Arrays.stream(filterArguments)
+        .collect(Collectors.toMap(x -> x, x -> map("eq", "Fred")));
+    mockEnvironment(arguments);
+    var schema = getSchema();
+
+    var filterArgumentValidator = new FilterArgumentValidator(schema, backendExecutionStepInfo);
+    var exception = assertThrows(RequestValidationException.class, () -> filterArgumentValidator.validate(environment));
+
+    assertThat(exception.getMessage(), is(String.format("Filter value for filter '%s' depends on filter '%s'.",
+        filterArguments[0], expectedDependsOnException)));
   }
 
   private static Map<String, Object> map(String key, Object value) {
@@ -142,22 +178,19 @@ class FilterArgumentValidatorTest {
   }
 
   private TestObjectType createFooObjectType() {
-    var filterConfigurationBar = new FilterConfiguration();
-    filterConfigurationBar.setField("bar");
-
-    var filterConfigurationBaz = new FilterConfiguration();
-    filterConfigurationBaz.setField("baz");
-
-    var filterConfigurationThud = new FilterConfiguration();
-    filterConfigurationThud.setField("thud");
+    FilterConfiguration filterConfigurationBar = createFilterConfiguration("bar", null);
+    FilterConfiguration filterConfigurationBaz = createFilterConfiguration("baz", null);
+    FilterConfiguration filterConfigurationThud = createFilterConfiguration("thud", null);
+    FilterConfiguration filterConfigurationQux = createFilterConfiguration("qux", null);
+    FilterConfiguration filterConfigurationQuux = createFilterConfiguration("quux", "QuxFilter");
+    FilterConfiguration filterConfigurationQuuz = createFilterConfiguration("quuz", "QuuxFilter");
 
     var objectTypeFoo = new TestObjectType();
     objectTypeFoo.setFilters(Map.of("BarFilter", filterConfigurationBar, "BazFilter", filterConfigurationBaz,
-        "ThudFilter", filterConfigurationThud));
+        "ThudFilter", filterConfigurationThud, "QuxFilter", filterConfigurationQux, "QuuxFilter",
+        filterConfigurationQuux, "QuuzFilter", filterConfigurationQuuz));
 
-    var objectFieldBar = new TestObjectField();
-    objectFieldBar.setType("String");
-    objectFieldBar.setName("bar");
+    var objectFieldBar = createObjectField("String", "bar");
     objectFieldBar.setNullable(true);
 
     var fieldEnumConfiguration = new FieldEnumConfiguration();
@@ -165,16 +198,31 @@ class FilterArgumentValidatorTest {
     fieldEnumConfiguration.setValues(List.of("waldo", "fred", "plugh"));
     objectFieldBar.setEnumeration(fieldEnumConfiguration);
 
-    var objectFieldBaz = new TestObjectField();
-    objectFieldBaz.setType("String");
-    objectFieldBaz.setName("baz");
+    var objectFieldBaz = createObjectField("String", "baz");
     objectFieldBaz.setNullable(true);
 
-    var objectFieldThud = new TestObjectField();
-    objectFieldThud.setType("int");
-    objectFieldThud.setName("thud");
+    var objectFieldThud = createObjectField("int", "thud");
+    var objectFieldQux = createObjectField("String", "qux");
+    var objectFieldQuux = createObjectField("String", "quux");
+    var objectFieldQuuz = createObjectField("String", "quuz");
 
-    objectTypeFoo.setFields(Map.of("bar", objectFieldBar, "baz", objectFieldBaz, "thud", objectFieldThud));
+    objectTypeFoo.setFields(Map.of("bar", objectFieldBar, "baz", objectFieldBaz, "thud", objectFieldThud, "qux",
+        objectFieldQux, "quux", objectFieldQuux, "quuz", objectFieldQuuz));
     return objectTypeFoo;
+  }
+
+  private FilterConfiguration createFilterConfiguration(String name, String dependsOn) {
+    var filterConfiguration = new FilterConfiguration();
+    filterConfiguration.setName(String.format("%sFilter", capitalize(name)));
+    filterConfiguration.setField(name);
+    filterConfiguration.setDependsOn(dependsOn);
+    return filterConfiguration;
+  }
+
+  private TestObjectField createObjectField(String type, String name) {
+    var objectField = new TestObjectField();
+    objectField.setType(type);
+    objectField.setName(name);
+    return objectField;
   }
 }

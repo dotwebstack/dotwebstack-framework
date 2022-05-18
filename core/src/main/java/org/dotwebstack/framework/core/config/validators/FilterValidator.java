@@ -25,8 +25,8 @@ public class FilterValidator implements SchemaValidator {
   public void validate(Schema schema) {
     Map<String, Map<String, FilterConfiguration>> filtersPerObjectTypeName = getFiltersPerObjectTypeName(schema);
 
-    filtersPerObjectTypeName.forEach((objectTypeName, filters) -> filters.entrySet()
-        .forEach(filterEntry -> validateFilterField(schema, objectTypeName, filterEntry)));
+    filtersPerObjectTypeName.forEach((objectTypeName, filters) -> filters
+        .forEach((key, value) -> validateFilterField(schema, objectTypeName, value)));
   }
 
   private Map<String, Map<String, FilterConfiguration>> getFiltersPerObjectTypeName(Schema schema) {
@@ -48,9 +48,8 @@ public class FilterValidator implements SchemaValidator {
         .getFilters();
   }
 
-  private void validateFilterField(Schema schema, String objectTypeName,
-      Map.Entry<String, FilterConfiguration> filterEntry) {
-    String filterFieldName = getFilterField(filterEntry);
+  private void validateFilterField(Schema schema, String objectTypeName, FilterConfiguration filter) {
+    var filterFieldName = getFilterField(filter);
 
     ObjectField objectField = schema.getObjectType(objectTypeName)
         .filter(objectType -> objectType.getFields()
@@ -59,31 +58,52 @@ public class FilterValidator implements SchemaValidator {
         .orElseThrow(() -> invalidConfigurationException("Filter field '{}' not found in object type '{}'.",
             filterFieldName, objectTypeName));
 
-    var filterConfiguration = filterEntry.getValue();
-    if (!filterConfiguration.isCaseSensitive()) {
-      if (objectField.isEnumeration()) {
-        throw invalidConfigurationException(
-            "Filter '{}' with property 'caseSensitive' is 'false' not valid for enumerations.", filterEntry.getKey());
-      }
+    validateCaseSensitive(filter, objectField);
+    validatePartialType(filter, objectField);
+    validateDependsOn(filter, objectField);
+  }
 
-      if (!Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
-        throw invalidConfigurationException(
-            "Filter '{}' with property 'caseSensitive' is 'false' not valid for type '{}'.", filterEntry.getKey(),
-            objectField.getType());
-      }
+  private String getFilterField(FilterConfiguration filter) {
+    return Optional.ofNullable(filter.getField())
+        .orElse(filter.getName());
+  }
+
+  private void validateCaseSensitive(FilterConfiguration filter, ObjectField objectField) {
+    if (filter.isCaseSensitive()) {
+      return;
     }
-
-    if (FilterType.PARTIAL.equals(filterConfiguration.getType())
-        && !Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
+    if (objectField.isEnumeration()) {
       throw invalidConfigurationException(
-          "Filter '{}' of type 'Partial' in object type '{}' doesn´t refer to a 'String' field type.",
-          filterEntry.getKey(), objectTypeName);
+          "Filter '{}' with property 'caseSensitive' is 'false' not valid for enumerations.", filter.getName());
+    }
+    if (!Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
+      throw invalidConfigurationException(
+          "Filter '{}' with property 'caseSensitive' is 'false' not valid for type '{}'.", filter.getName(),
+          objectField.getType());
     }
   }
 
-  private String getFilterField(Map.Entry<String, FilterConfiguration> filterEntry) {
-    return Optional.ofNullable(filterEntry.getValue()
-        .getField())
-        .orElse(filterEntry.getKey());
+  private void validatePartialType(FilterConfiguration filter, ObjectField objectField) {
+    if (FilterType.PARTIAL.equals(filter.getType())
+        && !Objects.equals(objectField.getType(), Scalars.GraphQLString.getName())) {
+      throw invalidConfigurationException("Filter '{}' of type 'Partial' doesn´t refer to a 'String' field type.",
+          filter.getName());
+    }
+  }
+
+  private void validateDependsOn(FilterConfiguration filter, ObjectField objectField) {
+    if (filter.getDependsOn() == null) {
+      return;
+    }
+    if (filter.getDependsOn()
+        .equals(filter.getName())) {
+      throw invalidConfigurationException("Filter '{}' can't refer to oneself.", filter.getName());
+    }
+    FilterConfiguration dependsOn = Optional.ofNullable(objectField.getObjectType()
+        .getFilters()
+        .get(filter.getDependsOn()))
+        .orElseThrow(() -> invalidConfigurationException("Filter '{}' depends on non existing filter '{}'.",
+            filter.getName(), filter.getDependsOn()));
+    validateDependsOn(dependsOn, objectField);
   }
 }

@@ -43,6 +43,25 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var objectType = getObjectType(schema, unwrappedType);
 
     validateFilters(objectType, filterArgument);
+    validateDependsOnFilters(objectType, filterArgument);
+  }
+
+  private void validateDependsOnFilters(ObjectType<?> objectType, Map<String, Object> filterArguments) {
+    if (filterArguments != null && objectType.getFilters() != null) {
+      filterArguments.keySet()
+          .forEach(filterName -> {
+            var dependsOn = Optional.ofNullable(objectType.getFilters())
+                .map(map -> map.get(filterName))
+                .map(FilterConfiguration::getDependsOn);
+
+            if (dependsOn.isPresent() && !filterArguments.containsKey(dependsOn.get())) {
+              throw requestValidationException("Filter value for filter '{}' depends on filter '{}'.", filterName,
+                  objectType.getFilters()
+                      .get(filterName)
+                      .getDependsOn());
+            }
+          });
+    }
   }
 
   private void validateFilters(ObjectType<?> objectType, Map<String, Object> filterArguments) {
