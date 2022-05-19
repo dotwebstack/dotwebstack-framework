@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>backend</artifactId>
-    <version>0.3.120</version>
+    <version>0.3.121-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -85,9 +85,5 @@
       <artifactId>commons-text</artifactId>
     </dependency>
   </dependencies>
-
-  <scm>
-    <tag>v0.3.120</tag>
-  </scm>
 </project>
 
