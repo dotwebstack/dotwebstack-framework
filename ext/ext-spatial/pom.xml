@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>ext</artifactId>
-    <version>0.3.120-SNAPSHOT</version>
+    <version>0.3.120</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -49,4 +49,8 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <scm>
+    <tag>v0.3.120</tag>
+  </scm>
 </project>
