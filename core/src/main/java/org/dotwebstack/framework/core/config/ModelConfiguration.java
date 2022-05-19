@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
@@ -100,14 +101,21 @@ public class ModelConfiguration {
       if (objectType.getFilters() != null) {
         objectType.getFilters()
             .entrySet()
-            .stream()
-            .filter(entry -> Objects.isNull(entry.getValue()
-                .getField()))
-            .forEach(entry -> entry.getValue()
-                .setField(entry.getKey()));
+            .forEach(this::setFilterProperties);
       }
 
       return objectType;
+    }
+
+    private void setFilterProperties(Map.Entry<String, FilterConfiguration> filterEntry) {
+      var filter = filterEntry.getValue();
+      var filterName = filterEntry.getKey();
+
+      filter.setName(filterName);
+
+      if (Objects.isNull(filter.getField())) {
+        filter.setField(filterName);
+      }
     }
   }
 }
