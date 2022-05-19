@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.BackendExecutionStepInfo;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
@@ -47,7 +48,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
   }
 
   private void validateDependsOnFilters(ObjectType<?> objectType, Map<String, Object> filterArguments) {
-    if (filterArguments != null && objectType.getFilters() != null) {
+    if (ObjectUtils.allNotNull(filterArguments, objectType.getFilters())) {
       filterArguments.keySet()
           .forEach(filterName -> {
             var dependsOn = Optional.ofNullable(objectType.getFilters())
