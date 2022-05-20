@@ -16,6 +16,8 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 
 public class ContextCriteriaHelper {
 
+  private ContextCriteriaHelper() {}
+
   public static Optional<String> getContextName(Schema schema, ExecutionStepInfo requestStepInfo) {
     var parentType = requestStepInfo.getParent()
         .getType();
