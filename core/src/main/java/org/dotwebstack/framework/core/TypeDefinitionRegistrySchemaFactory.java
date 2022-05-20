@@ -40,6 +40,8 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.SUBSCRIPTION_TYPE_NAME;
 
 import com.google.common.base.CaseFormat;
 import graphql.language.BooleanValue;
@@ -88,10 +90,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Conditional(OnLocalSchema.class)
 public class TypeDefinitionRegistrySchemaFactory {
-
-  private static final String QUERY_TYPE_NAME = "Query";
-
-  private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
 
   private static final String GEOMETRY_TYPE = "Geometry";
 
@@ -169,6 +167,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getContexts()
         .entrySet()
         .stream()
+        .filter(entry -> !entry.getValue()
+            .getFields()
+            .isEmpty())
         .map(entry -> createContextInputObjectTypeDefinition(entry.getKey(), entry.getValue()))
         .forEach(typeDefinitionRegistry::add);
   }
@@ -481,7 +482,10 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     createSortArgument(queryName, query, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (isNotBlank(query.getContext())) {
+    if (isNotBlank(query.getContext()) && schema.getContext(query.getContext())
+        .filter(c -> !c.getFields()
+            .isEmpty())
+        .isPresent()) {
       addOptionalContext(query.getContext(), inputValueDefinitions);
     }
 

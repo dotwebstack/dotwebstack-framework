@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.backend;
 
 import static graphql.execution.ExecutionStepInfo.newExecutionStepInfo;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -57,10 +58,15 @@ class BackendRequestFactoryTest {
 
   private TestHelper testHelper;
 
+  private ExecutionStepInfo queryExecutionStepInfo;
+
   @BeforeEach
   void setUp() {
     var backendModule = new TestBackendModule(new TestBackendLoaderFactory(databaseClient));
     testHelper = new TestHelper(backendModule);
+    queryExecutionStepInfo = newExecutionStepInfo().type(newObject().name("Query")
+        .build())
+        .build();
   }
 
   @Test
@@ -99,6 +105,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = newExecutionStepInfo().fieldDefinition(fieldDefinition)
         .fieldContainer(objectType2)
         .type(fieldDefinition.getType())
+        .parentInfo(queryExecutionStepInfo)
         .build();
 
     var selectionSet = mock(DataFetchingFieldSelectionSet.class);
@@ -144,6 +151,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
+        .parentInfo(queryExecutionStepInfo)
         .build();
 
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
@@ -194,6 +202,7 @@ class BackendRequestFactoryTest {
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
         .arguments(() -> Map.of("identifier", "id-1"))
+        .parentInfo(queryExecutionStepInfo)
         .build();
 
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
@@ -310,20 +319,18 @@ class BackendRequestFactoryTest {
   private ExecutionStepInfo initExecutionStepInfoMock() {
     var executionStepInfo = mock(ExecutionStepInfo.class);
     var resultPath = ResultPath.rootPath()
-        .segment("a");
+        .segment("brewery");
     lenient().when(executionStepInfo.getPath())
         .thenReturn(resultPath);
 
-    var objectType = GraphQLObjectType.newObject()
-        .name("Brewery")
+    var objectType = newObject().name("Brewery")
         .build();
     var listType = GraphQLList.list(objectType);
 
     lenient().when(executionStepInfo.getType())
         .thenReturn(listType);
 
-    var queryType = GraphQLObjectType.newObject()
-        .name("Query")
+    var queryType = newObject().name("Query")
         .build();
     lenient().when(executionStepInfo.getObjectType())
         .thenReturn(queryType);
@@ -345,13 +352,14 @@ class BackendRequestFactoryTest {
     var fieldDefinitionBuilder = newFieldDefinition();
     List<GraphQLArgument> argumentList = new ArrayList<>();
     fieldDefinitionBuilder.arguments(argumentList);
-    fieldDefinitionBuilder.name("a");
+    fieldDefinitionBuilder.name("brewery");
     fieldDefinitionBuilder.description("any");
     fieldDefinitionBuilder.type(mock(GraphQLOutputType.class));
     fieldDefinitionBuilder.definition(FieldDefinition.newFieldDefinition()
         .build());
 
     when(executionStepInfo.getFieldDefinition()).thenReturn(fieldDefinitionBuilder.build());
+    when(executionStepInfo.getParent()).thenReturn(queryExecutionStepInfo);
 
     return executionStepInfo;
   }

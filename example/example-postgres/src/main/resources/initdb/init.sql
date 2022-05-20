@@ -144,3 +144,7 @@ $$ language SQL immutable;
 CREATE FUNCTION dbeerpedia.beers_ingredients_history_ctx(date,timestamp with time zone) RETURNS SETOF dbeerpedia.beers_ingredients AS $$
    SELECT * FROM dbeerpedia.beers_ingredients
 $$ language SQL immutable;
+
+CREATE FUNCTION dbeerpedia.beers_nfc_ctx() RETURNS SETOF dbeerpedia.beers AS $$
+   SELECT * FROM dbeerpedia.beers WHERE name ~ 'Beer 1'
+$$ language SQL immutable;

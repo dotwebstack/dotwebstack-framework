@@ -15,6 +15,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIE
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
+import static org.dotwebstack.framework.core.helpers.ContextCriteriaHelper.createContextCriteria;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
@@ -25,7 +26,6 @@ import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospecti
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
-import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnectionType;
 
 import com.google.common.base.CaseFormat;
@@ -46,7 +46,6 @@ import javax.annotation.Nullable;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
-import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
@@ -57,7 +56,6 @@ import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
@@ -124,7 +122,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectionSet))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
-        .contextCriteria(createContextCriteria(getRequestStepInfo(executionStepInfo)))
+        .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
         .build();
   }
@@ -143,7 +141,7 @@ public class BackendRequestFactory {
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
         .objectFields(getObjectFields(selectedField.getSelectionSet(), executionStepInfo))
         .objectListFields(getObjectListFields(selectedField.getSelectionSet(), executionStepInfo))
-        .contextCriteria(createContextCriteria(getRequestStepInfo(executionStepInfo)))
+        .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
   }
@@ -163,35 +161,6 @@ public class BackendRequestFactory {
         .objectField(objectField)
         .source(source)
         .build();
-  }
-
-  private ContextCriteria createContextCriteria(ExecutionStepInfo executionStepInfo) {
-    var contextName = executionStepInfo.getFieldDefinition()
-        .getArguments()
-        .stream()
-        .flatMap(graphQLArgument -> graphQLArgument.getDefinition()
-            .getAdditionalData()
-            .entrySet()
-            .stream())
-        .filter(entry -> "contextName".equals(entry.getKey()))
-        .map(Map.Entry::getValue)
-        .findFirst();
-
-    if (contextName.isPresent()) {
-      var context = schema.getContext(contextName.get());
-
-      Map<String, Object> arguments =
-          getNestedMap(executionStepInfo.getArguments(), ContextConstants.CONTEXT_ARGUMENT_NAME);
-
-      return context.map(c -> ContextCriteria.builder()
-          .name(contextName.get())
-          .context(c)
-          .values(arguments)
-          .build())
-          .orElseThrow();
-    }
-
-    return null;
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {

@@ -13,6 +13,7 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import java.util.Optional;
@@ -21,10 +22,24 @@ import lombok.NonNull;
 @SuppressWarnings("rawtypes")
 public class TypeHelper {
 
+  public static final String QUERY_TYPE_NAME = "Query";
+
+  public static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
+
   private TypeHelper() {}
 
   public static boolean isSubscription(OperationDefinition operation) {
     return SUBSCRIPTION.equals(operation.getOperation());
+  }
+
+  public static boolean isSubscription(GraphQLOutputType type) {
+    return getTypeName(type).filter(SUBSCRIPTION_TYPE_NAME::equals)
+        .isPresent();
+  }
+
+  public static boolean isQuery(GraphQLOutputType type) {
+    return getTypeName(type).filter(QUERY_TYPE_NAME::equals)
+        .isPresent();
   }
 
   public static boolean isListType(GraphQLType type) {
