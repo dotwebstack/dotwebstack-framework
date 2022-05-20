@@ -64,8 +64,8 @@ class ContextCriteriaHelperTest {
 
     when(requestStepInfo.getParent()).thenReturn(container);
 
-    var thrown =
-        assertThrows(IllegalArgumentException.class, () -> ContextCriteriaHelper.createContextCriteria(schema, requestStepInfo));
+    var thrown = assertThrows(IllegalArgumentException.class,
+        () -> ContextCriteriaHelper.createContextCriteria(schema, requestStepInfo));
     assertThat(thrown.getMessage(),
         equalTo("The parent type of the given requestStepInfo is not of type 'Query' or 'Subscription"));
   }

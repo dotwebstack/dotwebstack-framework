@@ -9,7 +9,6 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 import graphql.execution.ExecutionStepInfo;
 import java.util.Map;
 import java.util.Optional;
-import org.dotwebstack.framework.core.datafetchers.ContextConstants;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.model.Subscription;
@@ -48,8 +47,7 @@ public class ContextCriteriaHelper {
           .name(name)
           .context(context);
 
-      Map<String, Object> arguments =
-          getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
+      Map<String, Object> arguments = getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
 
       builder.values(arguments);
 

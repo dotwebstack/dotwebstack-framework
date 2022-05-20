@@ -482,10 +482,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     createSortArgument(queryName, query, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (isNotBlank(query.getContext()) && schema.getContext(query.getContext())
-        .filter(c -> !c.getFields()
-            .isEmpty())
-        .isPresent()) {
+    if (hasContextWithFields(query)) {
       addOptionalContext(query.getContext(), inputValueDefinitions);
     }
 
@@ -494,6 +491,13 @@ public class TypeDefinitionRegistrySchemaFactory {
         .inputValueDefinitions(inputValueDefinitions)
         .additionalData(createQueryAdditionalData(query))
         .build();
+  }
+
+  private boolean hasContextWithFields(Query query) {
+    return isNotBlank(query.getContext()) && schema.getContext(query.getContext())
+        .filter(c -> !c.getFields()
+            .isEmpty())
+        .isPresent();
   }
 
   private Map<String, String> createQueryAdditionalData(Query query) {
