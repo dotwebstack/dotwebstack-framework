@@ -490,13 +490,6 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private boolean hasContextWithFields(String context) {
-    return schema.getContext(context)
-        .map(Context::getFields)
-        .filter(not(Map::isEmpty))
-        .isPresent();
-  }
-
   private Map<String, String> createQueryAdditionalData(Query query) {
     if (query.isBatch()) {
       return Map.of(IS_BATCH_KEY_QUERY, TRUE.toString());
@@ -594,6 +587,13 @@ public class TypeDefinitionRegistrySchemaFactory {
               .build())
           .build());
     }
+  }
+
+  private boolean hasContextWithFields(String context) {
+    return schema.getContext(context)
+        .map(Context::getFields)
+        .filter(not(Map::isEmpty))
+        .isPresent();
   }
 
   private List<InputValueDefinition> createPagingArguments(Query query) {
