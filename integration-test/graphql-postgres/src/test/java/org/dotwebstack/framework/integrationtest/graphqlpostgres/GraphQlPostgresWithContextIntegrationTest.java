@@ -154,6 +154,19 @@ class GraphQlPostgresWithContextIntegrationTest {
   }
 
   @Test
+  void getRequest_returnBeers_forNoFieldsContext() {
+    var query = "{\n" + "  beersNoFields {\n" + "    \tnodes {\n" + "        name\n" + "        soldPerYear\n"
+        + "      }\n" + "  }\n" + "}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, hasEntry(equalTo("beersNoFields"), hasEntry(equalTo("nodes"), hasItems(
+        hasEntry(equalTo("name"), equalTo("Beer 1 validStart: 2018-01-01, availableStart: 2018-02-01T12:00:00Z")),
+        hasEntry(equalTo("name"), equalTo("Beer 1 validStart: 2018-01-01, availableStart: 2019-04-01T12:00:00Z")),
+        hasEntry(equalTo("name"), equalTo("Beer 1 validStart: 2019-01-01, availableStart: 2019-04-01T12:00:00Z"))))));
+  }
+
+  @Test
   void postRequest_returnsBreweries_forFilterQueryWithNestedListFieldPath() {
     String query =
         "{breweries(context: {}, filter: {beers: {brewery: {name: {eq: \"Brewery X\"}}}}){ nodes { name } }}";

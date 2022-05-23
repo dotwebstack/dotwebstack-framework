@@ -13,6 +13,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static java.lang.Boolean.TRUE;
+import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
@@ -40,6 +41,8 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.SUBSCRIPTION_TYPE_NAME;
 
 import com.google.common.base.CaseFormat;
 import graphql.language.BooleanValue;
@@ -88,10 +91,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Conditional(OnLocalSchema.class)
 public class TypeDefinitionRegistrySchemaFactory {
-
-  private static final String QUERY_TYPE_NAME = "Query";
-
-  private static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
 
   private static final String GEOMETRY_TYPE = "Geometry";
 
@@ -169,6 +168,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getContexts()
         .entrySet()
         .stream()
+        .filter(entry -> !entry.getValue()
+            .getFields()
+            .isEmpty())
         .map(entry -> createContextInputObjectTypeDefinition(entry.getKey(), entry.getValue()))
         .forEach(typeDefinitionRegistry::add);
   }
@@ -459,9 +461,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     createSortArgument(subscription, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (isNotBlank(subscription.getContext())) {
-      addOptionalContext(subscription.getContext(), inputValueDefinitions);
-    }
+    addOptionalContext(subscription.getContext(), inputValueDefinitions);
 
     return newFieldDefinition().name(queryName)
         .type(createType(subscription))
@@ -481,9 +481,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     createSortArgument(queryName, query, objectType).ifPresent(inputValueDefinitions::add);
 
-    if (isNotBlank(query.getContext())) {
-      addOptionalContext(query.getContext(), inputValueDefinitions);
-    }
+    addOptionalContext(query.getContext(), inputValueDefinitions);
 
     return newFieldDefinition().name(queryName)
         .type(createTypeForQuery(query))
@@ -582,12 +580,20 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private void addOptionalContext(String contextName, List<InputValueDefinition> inputValueDefinitions) {
-    inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
-        .type(newType(formatContextTypeName(contextName)))
-        .defaultValue(ObjectValue.newObjectValue()
-            .build())
-        .additionalData("contextName", contextName)
-        .build());
+    if (hasContextWithFields(contextName)) {
+      inputValueDefinitions.add(newInputValueDefinition().name(CONTEXT_ARGUMENT_NAME)
+          .type(newType(formatContextTypeName(contextName)))
+          .defaultValue(ObjectValue.newObjectValue()
+              .build())
+          .build());
+    }
+  }
+
+  private boolean hasContextWithFields(String context) {
+    return schema.getContext(context)
+        .map(Context::getFields)
+        .filter(not(Map::isEmpty))
+        .isPresent();
   }
 
   private List<InputValueDefinition> createPagingArguments(Query query) {

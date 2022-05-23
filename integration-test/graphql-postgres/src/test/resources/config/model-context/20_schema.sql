@@ -69,6 +69,10 @@ CREATE FUNCTION db.beer_v_history_ctx(date,timestamp with time zone) RETURNS SET
    SELECT * FROM db.beer_v WHERE daterange(valid_start, valid_end) @> $1 and tstzrange(available_start, available_end) @> $2
 $$ language SQL immutable;
 
+CREATE FUNCTION db.beer_v_nfc_ctx() RETURNS SETOF db.beer_v AS $$
+   SELECT * FROM db.beer_v WHERE name ~ 'Beer 1'
+$$ language SQL immutable;
+
 CREATE FUNCTION db.address_v_history_ctx(date,timestamp with time zone) RETURNS SETOF db.address_v AS $$
    SELECT * FROM db.address_v
 $$ language SQL immutable;

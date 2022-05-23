@@ -28,11 +28,18 @@ contexts:
       availableOn:
         type: DateTime
         default: NOW
+  nfc:
+    fields: { }
 
 queries:
   beers:
     type: Beer
     context: history
+    list: true
+    pageable: true
+  beersNoFields:
+    type: Beer
+    context: nfc
     list: true
     pageable: true
   beer:
