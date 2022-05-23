@@ -20,7 +20,7 @@ import java.util.Optional;
 import lombok.NonNull;
 
 @SuppressWarnings("rawtypes")
-public class TypeHelper {
+public final class TypeHelper {
 
   public static final String QUERY_TYPE_NAME = "Query";
 
