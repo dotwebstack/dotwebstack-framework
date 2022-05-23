@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECT
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.BooleanValue;
@@ -39,8 +40,6 @@ import java.util.stream.Collectors;
 import lombok.NonNull;
 
 public class GraphQlHelper {
-
-  private static final String QUERY_TYPE_NAME = "Query";
 
   private GraphQlHelper() {}
 

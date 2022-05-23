@@ -10,6 +10,7 @@ import static graphql.language.StringValue.newStringValue;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newType;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -61,8 +62,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.r2dbc.core.DatabaseClient;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
-
-  private static final String QUERY_TYPE_NAME = "Query";
 
   private SchemaReader schemaReader;
 
