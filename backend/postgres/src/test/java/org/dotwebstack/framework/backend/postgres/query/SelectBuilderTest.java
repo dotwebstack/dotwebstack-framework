@@ -806,7 +806,33 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_returnsSelectQuery_forCollectionRequestWithAggregate() {
+  void build_returnsSelectQuery_forCollectionRequestWithSumAggregate() {
+    var expectedResult = "select \"x5\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
+        + "    select cast(sum(\"x2\".\"weight_column\") as int) as \"x3\"\n" + "    from\n"
+        + "      \"ingredient\" as \"x2\",\n" + "      \"beer_ingredient\" as \"x4\"\n" + "    where (\n"
+        + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
+        + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n" + "    )\n" + "  ) as \"x5\"\n"
+        + "    on true";
+
+    build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.SUM, ScalarType.INT, "weight",
+        expectedResult);
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithStringJoinAggregate() {
+    var expectedResult = "select \"x5\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
+        + "    select string_agg(cast(\"x2\".\"name_column\" as varchar), ',') as \"x3\"\n" + "    from\n"
+        + "      \"ingredient\" as \"x2\",\n" + "      \"beer_ingredient\" as \"x4\"\n" + "    where (\n"
+        + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
+        + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n" + "    )\n" + "  ) as \"x5\"\n"
+        + "    on true";
+
+    build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
+        expectedResult);
+  }
+
+  private void build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType functionType,
+      ScalarType fieldType, String fieldName, String expectedResult) {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
     var ingredientObjectType = createObjectType("ingredient", "identifier", "name", "weight");
@@ -825,9 +851,9 @@ class SelectBuilderTest {
     aggregateObjectField.setObjectType(objectType);
 
     var aggregateField = AggregateField.builder()
-        .functionType(AggregateFunctionType.SUM)
-        .type(ScalarType.INT)
-        .field(ingredientObjectType.getField("weight"))
+        .functionType(functionType)
+        .type(fieldType)
+        .field(ingredientObjectType.getField(fieldName))
         .build();
 
     var aggregateObjectRequest = AggregateObjectRequest.builder()
@@ -847,13 +873,7 @@ class SelectBuilderTest {
     var result = selectBuilder.build(collectionRequest, null);
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(),
-        equalTo("select \"x5\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n"
-            + "    select cast(sum(\"x2\".\"weight_column\") as int) as \"x3\"\n" + "    from\n"
-            + "      \"ingredient\" as \"x2\",\n" + "      \"beer_ingredient\" as \"x4\"\n" + "    where (\n"
-            + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
-            + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n" + "    )\n"
-            + "  ) as \"x5\"\n" + "    on true"));
+    assertThat(result.toString(), equalTo(expectedResult));
   }
 
   @Test
