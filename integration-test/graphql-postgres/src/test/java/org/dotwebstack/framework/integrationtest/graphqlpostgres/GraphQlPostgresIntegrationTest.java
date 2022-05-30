@@ -821,8 +821,7 @@ class GraphQlPostgresIntegrationTest {
   @Test
   void getRequest_returnsBeerWithStringJoinAggregateType_forString() {
     var query = "{beer(identifier_beer : \"b0e7cf18-e3ce-439b-a63e-034c8452f59c\")"
-        + "{name ingredientAgg{ totalCount : count( field : \"weight\" )"
-        + "names : stringJoin( field : \"name\", distinct : false, separator : \"*\" )  } } }";
+        + "{name ingredientAgg{ names : stringJoin( field : \"name\", separator : \"*\" )  } } }";
 
     var data = WebTestClientHelper.get(client, query);
 
@@ -831,9 +830,8 @@ class GraphQlPostgresIntegrationTest {
     Map<String, Object> beer = getNestedObject(data, BEER);
     assertThat(beer.containsKey(INGREDIENT_AGG), is(true));
     Map<String, Object> ingredientAgg = getNestedObject(beer, INGREDIENT_AGG);
-    assertThat(ingredientAgg.size(), is(2));
+    assertThat(ingredientAgg.size(), is(1));
     assertThat(ingredientAgg.get("names"), is("Water*Hop*Barley*Yeast*Orange*Caramel"));
-    assertThat(ingredientAgg.get("totalCount"), is(6));
   }
 
   @Test

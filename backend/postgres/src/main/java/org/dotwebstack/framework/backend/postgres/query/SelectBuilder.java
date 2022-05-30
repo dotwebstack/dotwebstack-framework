@@ -283,10 +283,16 @@ class SelectBuilder {
         .map(aggregateField -> processAggregateFields(objectField, List.of(aggregateField), aggregateObjectMapper,
             table, objectRequest.getContextCriteria()));
 
-    var otherResult = Stream.of(processAggregateFields(objectField, aggregateObjectRequest.getAggregateFields()
+    var nonStringJoinAggregateFields = aggregateObjectRequest.getAggregateFields()
         .stream()
         .filter(not(isStringJoin))
-        .collect(Collectors.toList()), aggregateObjectMapper, table, objectRequest.getContextCriteria()));
+        .collect(Collectors.toList());
+
+    var otherResult = Optional.of(nonStringJoinAggregateFields)
+        .filter(not(List::isEmpty))
+        .map(aggregateFields -> processAggregateFields(objectField, aggregateFields, aggregateObjectMapper, table,
+            objectRequest.getContextCriteria()))
+        .stream();
 
     return Stream.concat(stringJoinResult, otherResult);
   }
