@@ -49,6 +49,7 @@ import org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.model.ObjectField;
@@ -277,11 +278,13 @@ class SelectBuilder {
 
     var objectField = (PostgresObjectField) aggregateObjectRequest.getObjectField();
 
+    var filterCriteria = Optional.ofNullable(aggregateObjectRequest.getFilterCriteria());
+
     var stringJoinResult = aggregateObjectRequest.getAggregateFields()
         .stream()
         .filter(isStringJoin)
         .map(aggregateField -> processAggregateFields(objectField, List.of(aggregateField), aggregateObjectMapper,
-            table, objectRequest.getContextCriteria()));
+            table, objectRequest.getContextCriteria(), filterCriteria));
 
     var nonStringJoinAggregateFields = aggregateObjectRequest.getAggregateFields()
         .stream()
@@ -291,7 +294,7 @@ class SelectBuilder {
     var otherResult = Optional.of(nonStringJoinAggregateFields)
         .filter(not(List::isEmpty))
         .map(aggregateFields -> processAggregateFields(objectField, aggregateFields, aggregateObjectMapper, table,
-            objectRequest.getContextCriteria()))
+            objectRequest.getContextCriteria(), filterCriteria))
         .stream();
 
     return Stream.concat(stringJoinResult, otherResult);
@@ -299,7 +302,7 @@ class SelectBuilder {
 
   private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField,
       List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper, Table<Record> table,
-      ContextCriteria contextCriteria) {
+      ContextCriteria contextCriteria, Optional<GroupFilterCriteria> filterCriterias) {
     var aggregateObjectType = (PostgresObjectType) objectField.getTargetType();
 
     var aliasedAggregateTable =
@@ -317,6 +320,19 @@ class SelectBuilder {
         .build();
 
     subSelect.addConditions(joinConditions);
+
+    if (filterCriterias.isPresent()) {
+      var filterConditions = filterCriterias.get()
+          .getFilterCriterias()
+          .stream()
+          .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+              .filterCriteria(filterCriteria)
+              .table(aliasedAggregateTable)
+              .build())
+          .collect(Collectors.toList());
+
+      subSelect.addConditions(filterConditions);
+    }
 
     return subSelect;
   }

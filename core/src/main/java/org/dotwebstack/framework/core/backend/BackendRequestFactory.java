@@ -40,6 +40,7 @@ import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -88,12 +89,7 @@ public class BackendRequestFactory {
 
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
 
-    var filterCriteria = ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
-        .argument(argument)
-        .maxDepth(schema.getSettings()
-            .getMaxFilterDepth())
-        .build())
-        .map(GroupFilterCriteria.class::cast);
+    Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
@@ -229,9 +225,15 @@ public class BackendRequestFactory {
 
           String resultKey = createResultKey(selectedField);
 
+          Map<String, Object> filterArgument = (Map<String, Object>) selectedField.getArguments()
+              .get(FilterConstants.FILTER_ARGUMENT_NAME);
+
+          Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
+
           return AggregateObjectRequest.builder()
               .objectField(objectField)
               .key(resultKey)
+              .filterCriteria(filterCriteria.orElse(null))
               .aggregateFields(getAggregateFields(aggregationObjectType, selectedField.getSelectionSet()))
               .build();
         })
@@ -274,6 +276,15 @@ public class BackendRequestFactory {
         .distinct(distinct)
         .separator(separator)
         .build();
+  }
+
+  private Optional<GroupFilterCriteria> getFilterCriteria(Map<String, Object> filterArgument, ObjectType objectType) {
+    return ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
+        .argument(argument)
+        .maxDepth(schema.getSettings()
+            .getMaxFilterDepth())
+        .build())
+        .map(GroupFilterCriteria.class::cast);
   }
 
   private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, GraphQLFieldDefinition fieldDefinition,
