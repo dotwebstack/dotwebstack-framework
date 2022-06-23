@@ -62,7 +62,7 @@
     <json-path.version>2.7.0</json-path.version>
     <testcontainers.version>1.17.2</testcontainers.version>
     <jts.version>1.18.2</jts.version>
-    <carml.version>0.4.0-beta-5</carml.version>
+    <carml.version>0.4.0</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
@@ -207,14 +207,20 @@
         <version>${jts.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.taxonic.carml</groupId>
+        <groupId>io.carml</groupId>
         <artifactId>carml-engine</artifactId>
         <version>${carml.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.taxonic.carml</groupId>
-        <artifactId>carml-logical-source-resolver-jsonpath-jayway-jackson</artifactId>
+        <groupId>io.carml</groupId>
+        <artifactId>carml-logical-source-resolver-jsonpath</artifactId>
         <version>${carml.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
     </dependencies>
   </dependencyManagement>

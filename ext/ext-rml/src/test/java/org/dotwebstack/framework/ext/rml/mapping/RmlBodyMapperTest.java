@@ -5,19 +5,18 @@ import static org.dotwebstack.framework.ext.rml.mapping.TurtleRmlBodyMapper.TURT
 import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.getHandleableResponseEntry;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.text.IsEqualCompressingWhiteSpace.equalToCompressingWhiteSpace;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.taxonic.carml.engine.rdf.RdfRmlMapper;
-import com.taxonic.carml.model.TriplesMap;
-import com.taxonic.carml.model.impl.CarmlTriplesMap;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.carml.engine.rdf.RdfRmlMapper;
+import io.carml.model.TriplesMap;
+import io.carml.model.impl.CarmlTriplesMap;
 import io.swagger.v3.oas.models.Operation;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
-import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
@@ -79,19 +77,22 @@ class RmlBodyMapperTest {
 
   private static Stream<Arguments> createBodyMappersWithOutputMimeType() {
     var graphQl = TestResources.graphQl();
+    var objectMapperBuilder = TestResources.objectMapperBuilder();
 
     return Stream.of(
-        Arguments.of(new Notation3RmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+        Arguments.of(new Notation3RmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
             Notation3RmlBodyMapper.N3_MEDIA_TYPE),
-        Arguments.of(new TurtleRmlBodyMapper(graphQl, null, Map.of(), Set.of()), TURTLE_MEDIA_TYPE),
-        Arguments.of(new RdfXmlRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+        Arguments.of(new TurtleRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
+            TURTLE_MEDIA_TYPE),
+        Arguments.of(new RdfXmlRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
             RdfXmlRmlBodyMapper.RDF_XML_MEDIA_TYPE),
-        Arguments.of(new JsonLdRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+        Arguments.of(new JsonLdRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
             JsonLdRmlBodyMapper.JSON_LD_MEDIA_TYPE),
-        Arguments.of(new TrigRmlBodyMapper(graphQl, null, Map.of(), Set.of()), TrigRmlBodyMapper.TRIG_MEDIA_TYPE),
-        Arguments.of(new NQuadsRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+        Arguments.of(new TrigRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
+            TrigRmlBodyMapper.TRIG_MEDIA_TYPE),
+        Arguments.of(new NQuadsRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
             NQuadsRmlBodyMapper.N_QUADS_MEDIA_TYPE),
-        Arguments.of(new NTriplesRmlBodyMapper(graphQl, null, Map.of(), Set.of()),
+        Arguments.of(new NTriplesRmlBodyMapper(objectMapperBuilder, graphQl, null, Map.of(), Set.of()),
             NTriplesRmlBodyMapper.N_TRIPLES_MEDIA_TYPE));
   }
 
@@ -111,25 +112,34 @@ class RmlBodyMapperTest {
   private static Stream<Arguments> createBodyMappersWithExpectedResultFileName() throws Exception {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
+    when(rdfRmlMapper.mapRecord(any(), any(), any()))
+        .thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     Map<Operation, Set<TriplesMap>> mappingsPerOperation = Map.of(OPERATION, Set.of());
     Set<Namespace> namespaces = Set.of(new SimpleNamespace("beer", "http://dotwebstack.org/def/beer#"));
     var graphQl = TestResources.graphQl();
+    var objectMapperBuilder = TestResources.objectMapperBuilder();
 
     return Stream.of(
-        Arguments.of(new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new Notation3RmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.n3"),
-        Arguments.of(new TurtleRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new TurtleRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.ttl"),
-        Arguments.of(new RdfXmlRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new RdfXmlRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.xml"),
-        Arguments.of(new JsonLdRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new JsonLdRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.ld.json"),
-        Arguments.of(new TrigRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new TrigRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.trig"),
-        Arguments.of(new NQuadsRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new NQuadsRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.nq"),
-        Arguments.of(new NTriplesRmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
+        Arguments.of(
+            new NTriplesRmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces),
             "output-response-mapper.nt"));
   }
 
@@ -143,10 +153,12 @@ class RmlBodyMapperTest {
   void map_selectsCorrectMapping_forOperationRequest() throws IOException {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     Model model = Rio.parse(getFileInputStream("beer.trig"), "", RDFFormat.TRIG);
-    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
+    when(rdfRmlMapper.mapRecord(any(), any(), any()))
+        .thenReturn(Flux.fromIterable(model.getStatements(null, null, null)));
     Operation otherOperation = new Operation();
     otherOperation.operationId("other");
     var graphQl = TestResources.graphQl();
+    var objectMapperBuilder = TestResources.objectMapperBuilder();
 
     TriplesMap triplesMap = CarmlTriplesMap.builder()
         .id("test")
@@ -158,23 +170,28 @@ class RmlBodyMapperTest {
     Map<Operation, Set<TriplesMap>> mappingsPerOperation =
         Map.of(OPERATION, Set.of(triplesMap), otherOperation, Set.of(otherTriplesMap));
 
-    BodyMapper bodyMapper = new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, Set.of());
+    BodyMapper bodyMapper =
+        new Notation3RmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, Set.of());
 
     bodyMapper.map(OPERATION_REQUEST, Map.of(NODES_FIELD_NAME, List.of("foo", Map.of())))
         .block();
 
-    verify(rdfRmlMapper, times(1)).mapItem(Map.of(NODES_FIELD_NAME, List.of("foo", Map.of())), Set.of(triplesMap));
-    verify(rdfRmlMapper, times(0)).mapItem(Map.of(NODES_FIELD_NAME, List.of("foo", Map.of())), Set.of(otherTriplesMap));
+    var jsonNode = objectMapperBuilder.build()
+        .valueToTree(Map.of(NODES_FIELD_NAME, List.of("foo", Map.of())));
+    verify(rdfRmlMapper, times(1)).mapRecord(jsonNode, JsonNode.class, Set.of(triplesMap));
+    verify(rdfRmlMapper, times(0)).mapRecord(jsonNode, JsonNode.class, Set.of(otherTriplesMap));
   }
 
   @Test
   void map_appliesNamespacesToModel_givenNamespaces() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
-    when(rdfRmlMapper.mapItem(any(), any())).thenReturn(Flux.empty());
+    when(rdfRmlMapper.mapRecord(any(), any(), any())).thenReturn(Flux.empty());
     Map<Operation, Set<TriplesMap>> mappingsPerOperation = Map.of(OPERATION, Set.of());
     Set<Namespace> namespaces = Set.of(RDFS.NS, OWL.NS);
     var graphQl = TestResources.graphQl();
-    BodyMapper bodyMapper = new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, mappingsPerOperation, namespaces);
+    var objectMapperBuilder = TestResources.objectMapperBuilder();
+    BodyMapper bodyMapper =
+        new Notation3RmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, mappingsPerOperation, namespaces);
 
     var response = bodyMapper.map(OPERATION_REQUEST, Map.of(NODES_FIELD_NAME, List.of("foo", Map.of())))
         .block();
@@ -184,23 +201,11 @@ class RmlBodyMapperTest {
   }
 
   @Test
-  void map_throwsException_forUnsupportedInputObject() {
-    RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
-    var graphQl = TestResources.graphQl();
-    BodyMapper bodyMapper = new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, Map.of(), Set.of());
-    Object input = Set.of();
-
-    Exception exception =
-        assertThrows(RequestValidationException.class, () -> bodyMapper.map(OPERATION_REQUEST, input));
-
-    assertThat(exception.getMessage(), startsWith("Input can only be of type Map, but was"));
-  }
-
-  @Test
   void map_returnsErrorMono_forEmptyPagedResult() {
     RdfRmlMapper rdfRmlMapper = mock(RdfRmlMapper.class);
     var graphQl = TestResources.graphQl();
-    BodyMapper bodyMapper = new Notation3RmlBodyMapper(graphQl, rdfRmlMapper, Map.of(), Set.of());
+    var objectMapperBuilder = TestResources.objectMapperBuilder();
+    BodyMapper bodyMapper = new Notation3RmlBodyMapper(objectMapperBuilder, graphQl, rdfRmlMapper, Map.of(), Set.of());
     Object input = Map.of(NODES_FIELD_NAME, List.of());
 
     Mono<Object> response = bodyMapper.map(OPERATION_REQUEST, input);
