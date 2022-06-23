@@ -853,6 +853,27 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsBeersWithStringJoinAggregateTypeWithFilterOnAggregate_forStringArray() {
+    var query = "{breweries"
+        + "{name beerAgg(filter: {taste: {containsAnyOf: [\"MEATY\", \"FRUITY\"]}}){ totalBeersWithTastes :"
+        + " count( field : \"identifier_beer\" ) " + "tastes : stringJoin( field : \"taste\", distinct : true ) } } }";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    Assert.assertThat(data, equalTo(Map.of(BREWERIES,
+        List.of(Map.of("name", "Brewery S", "beerAgg", Map.of("totalBeersWithTastes", 1, "tastes", "MEATY,WATERY")),
+            Map.of("name", "Brewery X", "beerAgg",
+                Map.of("totalBeersWithTastes", 2, "tastes", "FRUITY,MEATY,SMOKY,WATERY")),
+            Map.of("name", "Brewery Y", "beerAgg", Map.of("totalBeersWithTastes", 2, "tastes", "MEATY,SMOKY,SPICY")),
+            Map.of("name", "Brewery Z", "beerAgg", new HashMap<String, Object>() {
+              {
+                put("totalBeersWithTastes", 0);
+                put("tastes", null);
+              }
+            })))));
+  }
+
+  @Test
   void getRequest_returnsBreweryWithPostalAddressAndUnknownVisitAddress_forBreweryWithoutVisitAddres() {
     var query = "{brewery (identifier_brewery : \"6e8f89da-9676-4cb9-801b-aeb6e2a59ac9\")"
         + "{name beerAgg{ totalCount : count( field : \"soldPerYear\" ) "

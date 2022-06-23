@@ -228,7 +228,7 @@ public class BackendRequestFactory {
           Map<String, Object> filterArgument = (Map<String, Object>) selectedField.getArguments()
               .get(FilterConstants.FILTER_ARGUMENT_NAME);
 
-          Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
+          Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, aggregationObjectType);
 
           return AggregateObjectRequest.builder()
               .objectField(objectField)
@@ -278,7 +278,8 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Optional<GroupFilterCriteria> getFilterCriteria(Map<String, Object> filterArgument, ObjectType objectType) {
+  private Optional<GroupFilterCriteria> getFilterCriteria(Map<String, Object> filterArgument,
+      ObjectType<?> objectType) {
     return ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
         .argument(argument)
         .maxDepth(schema.getSettings()
