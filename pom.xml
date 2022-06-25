@@ -47,7 +47,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>2.7.0</spring-boot.version>
+    <spring-boot.version>2.7.1</spring-boot.version>
     <rdf4j.version>4.0.2</rdf4j.version>
     <graphql.java.version>18.1</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.19</graphql.java.orchestrate.version>
@@ -55,13 +55,13 @@
     <commons.text.version>1.9</commons.text.version>
     <commons.lang3.version>3.12.0</commons.lang3.version>
     <pebble.version>3.1.5</pebble.version>
-    <swagger-parser.version>2.0.33</swagger-parser.version>
+    <swagger-parser.version>2.1.1</swagger-parser.version>
     <lombok.version>1.18.24</lombok.version>
     <guava.version>31.1-jre</guava.version>
     <problem.spring.webflux.version>0.27.0</problem.spring.webflux.version>
     <json-path.version>2.7.0</json-path.version>
     <testcontainers.version>1.17.2</testcontainers.version>
-    <jts.version>1.18.2</jts.version>
+    <jts.version>1.19.0</jts.version>
     <carml.version>0.4.0</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
