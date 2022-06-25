@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.integrationtest.rmlpostgres;
 
-import com.taxonic.carml.engine.function.FnoFunction;
-import com.taxonic.carml.engine.function.FnoParam;
+import io.carml.engine.function.FnoFunction;
+import io.carml.engine.function.FnoParam;
 
 public class IndicatieFunction {
 

@@ -2,6 +2,8 @@ package org.dotwebstack.framework.ext.rml.mapping;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
@@ -11,8 +13,11 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.zalando.problem.jackson.ProblemModule;
 
 class TestResources {
 
@@ -41,5 +46,14 @@ class TestResources {
         .getResourceAsStream("config/schema.graphql")));
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.MOCKED_WIRING);
+  }
+
+  public static Jackson2ObjectMapperBuilder objectMapperBuilder() {
+    var builder = new Jackson2ObjectMapperBuilder();
+    builder.featuresToEnable(SerializationFeature.INDENT_OUTPUT)
+        .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        .modules(List.of(new JavaTimeModule(), new ProblemModule()));
+
+    return builder;
   }
 }

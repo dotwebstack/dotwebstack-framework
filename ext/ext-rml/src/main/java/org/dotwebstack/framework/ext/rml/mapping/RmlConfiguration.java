@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.ext.rml.mapping;
 
-import com.taxonic.carml.engine.rdf.RdfRmlMapper;
-import com.taxonic.carml.logicalsourceresolver.JaywayJacksonJsonPathResolver;
-import com.taxonic.carml.model.TriplesMap;
-import com.taxonic.carml.vocab.Rdf;
+import io.carml.engine.rdf.RdfRmlMapper;
+import io.carml.logicalsourceresolver.JsonPathResolver;
+import io.carml.model.TriplesMap;
+import io.carml.vocab.Rdf;
 import io.swagger.v3.oas.models.Operation;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +52,7 @@ public class RmlConfiguration {
       @NonNull List<RmlMapperConfigurer> rmlMapperConfigurers) {
 
     RdfRmlMapper.Builder mapperBuilder = RdfRmlMapper.builder()
-        .setLogicalSourceResolver(Rdf.Ql.JsonPath, JaywayJacksonJsonPathResolver::getInstance)
+        .setLogicalSourceResolver(Rdf.Ql.JsonPath, JsonPathResolver::getInstance)
         .triplesMaps(mappingsPerOperation.values()
             .stream()
             .flatMap(Set::stream)

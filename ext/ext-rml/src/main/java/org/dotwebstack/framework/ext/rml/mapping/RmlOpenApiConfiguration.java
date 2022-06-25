@@ -3,9 +3,9 @@ package org.dotwebstack.framework.ext.rml.mapping;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.invalidOpenApiConfigurationException;
 
-import com.taxonic.carml.model.TriplesMap;
-import com.taxonic.carml.util.Models;
-import com.taxonic.carml.util.RmlMappingLoader;
+import io.carml.model.TriplesMap;
+import io.carml.util.Models;
+import io.carml.util.RmlMappingLoader;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;

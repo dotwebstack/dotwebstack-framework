@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.example.rmlproxy;
 
-import com.taxonic.carml.engine.function.FnoFunction;
-import com.taxonic.carml.engine.function.FnoParam;
+import io.carml.engine.function.FnoFunction;
+import io.carml.engine.function.FnoParam;
 import java.util.Objects;
 
 public class IndicatieFunction {

@@ -59,12 +59,12 @@
       <artifactId>rdf4j-rio-ntriples</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.taxonic.carml</groupId>
+      <groupId>io.carml</groupId>
       <artifactId>carml-engine</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.taxonic.carml</groupId>
-      <artifactId>carml-logical-source-resolver-jsonpath-jayway-jackson</artifactId>
+      <groupId>io.carml</groupId>
+      <artifactId>carml-logical-source-resolver-jsonpath</artifactId>
     </dependency>
     <dependency>
       <groupId>org.dotwebstack.framework</groupId>
