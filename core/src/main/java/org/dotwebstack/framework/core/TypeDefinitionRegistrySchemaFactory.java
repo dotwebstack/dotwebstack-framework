@@ -24,6 +24,7 @@ import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTE
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_TYPE_SUFFIX;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isAggregate;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.OR_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
@@ -74,7 +75,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
-import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
 import org.dotwebstack.framework.core.model.Context;
@@ -298,7 +298,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     Type<?> type;
 
     if (StringUtils.isBlank(objectField.getType())) {
-      if (AggregateHelper.isAggregate(objectField)) {
+      if (isAggregate(objectField)) {
         type = NonNullType.newNonNullType(TypeUtils.newType(AGGREGATE_TYPE))
             .build();
       } else {
@@ -397,6 +397,14 @@ public class TypeDefinitionRegistrySchemaFactory {
         createFirstArgument().ifPresent(inputValueDefinitions::add);
         createOffsetArgument().ifPresent(inputValueDefinitions::add);
       }
+    }
+
+    if (isAggregate(objectField)) {
+      var objectFieldType = objectField.getAggregationOf();
+      var objectType = schema.getObjectType(objectFieldType)
+          .orElseThrow();
+
+      createFilterArgument(objectFieldType, objectType).ifPresent(inputValueDefinitions::add);
     }
 
     return inputValueDefinitions;

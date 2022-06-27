@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.query.SelectBuilder.newSelect;
+import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
+import static org.dotwebstack.framework.core.config.FilterType.EXACT;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -23,8 +25,10 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
+import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
@@ -815,7 +819,7 @@ class SelectBuilderTest {
         + "    on true";
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.SUM, ScalarType.INT, "weight",
-        expectedResult);
+        expectedResult, null);
   }
 
   @Test
@@ -828,11 +832,39 @@ class SelectBuilderTest {
         + "    on true";
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
-        expectedResult);
+        expectedResult, null);
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithStringJoinAggregateAndAggregateFilter() {
+    var filterConfig = new FilterConfiguration();
+    filterConfig.setName("name");
+    filterConfig.setType(EXACT);
+    filterConfig.setField("name");
+    filterConfig.setCaseSensitive(true);
+
+    var ingredientObjectType = createObjectType("ingredient", "identifier", "name", "weight");
+    ingredientObjectType.setFilters(Map.of("name", filterConfig));
+
+    var filterCriteria = (GroupFilterCriteria) newFilterCriteriaBuilder().objectType(ingredientObjectType)
+        .argument(Map.of("name", Map.of("in", List.of("Water", "Caramel"))))
+        .maxDepth(2)
+        .build();
+
+    var expectedResult = "select \"x5\".*\nfrom \"beer\" as \"x1\"\n  left outer join lateral (\n"
+        + "    select string_agg(cast(\"x2\".\"name_column\" as varchar), ',') as \"x3\"\n    from\n"
+        + "      \"ingredient\" as \"x2\",\n      \"beer_ingredient\" as \"x4\"\n    where (\n"
+        + "      \"x4\".\"beer_identifier\" = \"x1\".\"identifier_column\"\n"
+        + "      and \"x4\".\"ingredient_identifier\" = \"x2\".\"identifier_column\"\n"
+        + "      and \"x2\".\"name_column\" in (\n        'Water', 'Caramel'\n      )\n    )\n  ) as \"x5\"\n"
+        + "    on true";
+
+    build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
+        expectedResult, filterCriteria);
   }
 
   private void build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType functionType,
-      ScalarType fieldType, String fieldName, String expectedResult) {
+      ScalarType fieldType, String fieldName, String expectedResult, GroupFilterCriteria filterCriteria) {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
     var ingredientObjectType = createObjectType("ingredient", "identifier", "name", "weight");
@@ -859,6 +891,7 @@ class SelectBuilderTest {
     var aggregateObjectRequest = AggregateObjectRequest.builder()
         .objectField(aggregateObjectField)
         .aggregateFields(List.of(aggregateField))
+        .filterCriteria(filterCriteria)
         .build();
 
     var objectRequest = ObjectRequest.builder()
