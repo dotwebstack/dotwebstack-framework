@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.TestHelper;
@@ -820,7 +819,7 @@ class SelectBuilderTest {
         + "    on true";
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.SUM, ScalarType.INT, "weight",
-        expectedResult, Optional.ofNullable(null));
+        expectedResult, null);
   }
 
   @Test
@@ -833,7 +832,7 @@ class SelectBuilderTest {
         + "    on true";
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
-        expectedResult, Optional.ofNullable(null));
+        expectedResult, null);
   }
 
   @Test
@@ -861,11 +860,11 @@ class SelectBuilderTest {
         + "    on true";
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
-        expectedResult, Optional.ofNullable(filterCriteria));
+        expectedResult, filterCriteria);
   }
 
   private void build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType functionType,
-      ScalarType fieldType, String fieldName, String expectedResult, Optional<GroupFilterCriteria> filterCriteria) {
+      ScalarType fieldType, String fieldName, String expectedResult, GroupFilterCriteria filterCriteria) {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
     var ingredientObjectType = createObjectType("ingredient", "identifier", "name", "weight");
@@ -892,7 +891,7 @@ class SelectBuilderTest {
     var aggregateObjectRequest = AggregateObjectRequest.builder()
         .objectField(aggregateObjectField)
         .aggregateFields(List.of(aggregateField))
-        .filterCriteria(filterCriteria.orElse(null))
+        .filterCriteria(filterCriteria)
         .build();
 
     var objectRequest = ObjectRequest.builder()

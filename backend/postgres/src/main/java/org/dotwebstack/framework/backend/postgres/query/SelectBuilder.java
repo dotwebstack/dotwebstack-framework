@@ -34,6 +34,7 @@ import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSort
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -278,7 +279,7 @@ class SelectBuilder {
 
     var objectField = (PostgresObjectField) aggregateObjectRequest.getObjectField();
 
-    var filterCriteria = Optional.ofNullable(aggregateObjectRequest.getFilterCriteria());
+    var filterCriteria = aggregateObjectRequest.getFilterCriteria();
 
     var stringJoinResult = aggregateObjectRequest.getAggregateFields()
         .stream()
@@ -302,7 +303,7 @@ class SelectBuilder {
 
   private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField,
       List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper, Table<Record> table,
-      ContextCriteria contextCriteria, Optional<GroupFilterCriteria> filterCriterias) {
+      ContextCriteria contextCriteria, GroupFilterCriteria filterCriterias) {
     var aggregateObjectType = (PostgresObjectType) objectField.getTargetType();
 
     var aliasedAggregateTable =
@@ -321,18 +322,15 @@ class SelectBuilder {
 
     subSelect.addConditions(joinConditions);
 
-    if (filterCriterias.isPresent()) {
-      var filterConditions = filterCriterias.get()
-          .getFilterCriterias()
-          .stream()
-          .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-              .filterCriteria(filterCriteria)
-              .table(aliasedAggregateTable)
-              .build())
-          .collect(Collectors.toList());
-
-      subSelect.addConditions(filterConditions);
-    }
+    Optional.ofNullable(filterCriterias)
+        .map(GroupFilterCriteria::getFilterCriterias)
+        .map(Collection::stream)
+        .map(filterCriteriaList -> filterCriteriaList.map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+            .filterCriteria(filterCriteria)
+            .table(aliasedAggregateTable)
+            .build())
+            .collect(Collectors.toList()))
+        .ifPresent(subSelect::addConditions);
 
     return subSelect;
   }
