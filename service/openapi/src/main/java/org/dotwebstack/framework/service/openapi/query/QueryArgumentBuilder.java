@@ -221,11 +221,15 @@ public class QueryArgumentBuilder {
 
   @SuppressWarnings({"unchecked", "rawtypes"})
   protected Value toArgumentValue(Object e) {
+    if (e == null) {
+      return null;
+    }
     if (e instanceof String) {
       return new StringValue((String) e);
     } else if (e instanceof List) {
       List<Value> values = ((List<Object>) e).stream()
           .map(this::toArgumentValue)
+          .filter(Objects::nonNull)
           .collect(Collectors.toList());
       return new ArrayValue(values);
     } else if (e instanceof Integer || e instanceof Long) {
