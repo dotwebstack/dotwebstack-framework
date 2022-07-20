@@ -25,6 +25,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -138,6 +139,26 @@ class QueryArgumentBuilderTest {
 
     assertThrows(IllegalArgumentException.class,
         () -> queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest));
+  }
+
+  @Test
+  void buildArguments_doesNotThrowException_forListWithNullValues() throws IOException {
+    Map<String, Map<String, Object>> filter = (Map<String, Map<String, Object>>) TestResources.filter("arrayfilter");
+    OperationRequest operationRequest = createFilterOperationRequest(filter);
+
+    List<String> ids = new ArrayList<>();
+    ids.add("id1");
+    ids.add(null);
+    Map<String, Object> parameters = Map.of("ids", ids);
+    when(operationRequest.getParameters()).thenReturn(parameters);
+
+    var fieldDefinition = createFieldDefinition(FILTER_ARGUMENT_NAME);
+
+    List<Argument> arguments = queryArgumentBuilder.buildArguments(fieldDefinition, operationRequest);
+    assertThat(arguments.size(), is(1));
+    String pretty = AstPrinter.printAst(arguments.get(0));
+
+    assertThat(pretty, is("filter: {identificatie : {in : [\"id1\"]}}"));
   }
 
   private OperationRequest createSortOperationRequest(String sort) {
