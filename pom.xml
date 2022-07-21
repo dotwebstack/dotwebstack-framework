@@ -47,7 +47,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>2.7.1</spring-boot.version>
+    <spring-boot.version>2.7.2</spring-boot.version>
     <rdf4j.version>4.0.4</rdf4j.version>
     <graphql.java.version>18.2</graphql.java.version>
     <graphql.java.orchestrate.version>0.1.20</graphql.java.orchestrate.version>
