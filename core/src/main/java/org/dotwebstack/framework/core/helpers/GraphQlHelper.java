@@ -174,7 +174,7 @@ public class GraphQlHelper {
   @SuppressWarnings("rawtypes")
   public static List<String> createBlockedPatterns(Collection<TypeDefinition> typeDefinitions) {
     return typeDefinitions.stream()
-        .filter(typeDefinition -> typeDefinition instanceof ObjectTypeDefinition)
+        .filter(ObjectTypeDefinition.class::isInstance)
         .map(ObjectTypeDefinition.class::cast)
         .flatMap(GraphQlHelper::createBlockedPatterns)
         .collect(Collectors.toList());
