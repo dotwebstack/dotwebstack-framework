@@ -8,6 +8,8 @@ public class GraphQlConstants {
 
   public static final String IS_NESTED = "isNested";
 
+  public static final String IS_VISIBLE = "isVisible";
+
   public static final String KEY_FIELD = "keyField";
 
   public static final String KEY_PATH = "keyPath";

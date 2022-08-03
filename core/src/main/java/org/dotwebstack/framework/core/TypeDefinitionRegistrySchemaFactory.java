@@ -38,6 +38,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_K
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
@@ -312,6 +313,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (isNotBlank(objectField.getValueFetcher())) {
       additionalData.put(CUSTOM_FIELD_VALUEFETCHER, objectField.getValueFetcher());
     }
+
+    additionalData.put(IS_VISIBLE, Boolean.toString(objectField.isVisible()));
 
     return Optional.of(newFieldDefinition().name(objectField.getName())
         .type(type)

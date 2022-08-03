@@ -10,6 +10,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateCon
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
@@ -20,8 +21,10 @@ import graphql.language.FieldDefinition;
 import graphql.language.FloatValue;
 import graphql.language.IntValue;
 import graphql.language.Node;
+import graphql.language.ObjectTypeDefinition;
 import graphql.language.StringValue;
 import graphql.language.Type;
+import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.GraphQLArgument;
@@ -31,12 +34,14 @@ import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLUnmodifiedType;
 import graphql.schema.SelectedField;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.NonNull;
 
 public class GraphQlHelper {
@@ -164,5 +169,34 @@ public class GraphQlHelper {
             .equals(QUERY_TYPE_NAME))
         .map(ExecutionStepInfo::getFieldDefinition)
         .map(GraphQLFieldDefinition::getName);
+  }
+
+  @SuppressWarnings("rawtypes")
+  public static List<String> createBlockedPatterns(Collection<TypeDefinition> typeDefinitions) {
+    return typeDefinitions.stream()
+        .filter(typeDefinition -> typeDefinition instanceof ObjectTypeDefinition)
+        .map(ObjectTypeDefinition.class::cast)
+        .flatMap(GraphQlHelper::createBlockedPatterns)
+        .collect(Collectors.toList());
+  }
+
+  private static Stream<String> createBlockedPatterns(ObjectTypeDefinition objectTypeDefinition) {
+    return objectTypeDefinition.getFieldDefinitions()
+        .stream()
+        .filter(fieldDefinition -> !isVisible(fieldDefinition))
+        .map(fieldDefinition -> String.format("%s.%s", objectTypeDefinition.getName(), fieldDefinition.getName()));
+  }
+
+  private static boolean isVisible(FieldDefinition fieldDefinition) {
+    if (fieldDefinition.getAdditionalData()
+        .containsKey(IS_VISIBLE)) {
+      var isVisible = fieldDefinition.getAdditionalData()
+          .get(IS_VISIBLE);
+
+      return Boolean.TRUE.toString()
+          .equalsIgnoreCase(isVisible);
+    }
+
+    return true;
   }
 }
