@@ -86,7 +86,6 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String ERRORS = "errors";
 
-
   @Autowired
   private WebTestClient client;
 
