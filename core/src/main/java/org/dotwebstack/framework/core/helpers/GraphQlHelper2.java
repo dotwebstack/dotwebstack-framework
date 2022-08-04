@@ -1,35 +1,10 @@
 package org.dotwebstack.framework.core.helpers;
 
-import static graphql.schema.GraphQLTypeUtil.isList;
-import static graphql.schema.GraphQLTypeUtil.isObjectType;
-import static graphql.schema.GraphQLTypeUtil.unwrapAll;
-import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
-import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
-import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
-
 import graphql.execution.ExecutionStepInfo;
-import graphql.language.BooleanValue;
-import graphql.language.FieldDefinition;
-import graphql.language.FloatValue;
-import graphql.language.IntValue;
-import graphql.language.Node;
-import graphql.language.StringValue;
-import graphql.language.Type;
-import graphql.language.TypeName;
-import graphql.language.Value;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLScalarType;
-import graphql.schema.GraphQLUnmodifiedType;
-import graphql.schema.SelectedField;
+import graphql.language.*;
+import graphql.schema.*;
+import lombok.NonNull;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +12,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import lombok.NonNull;
+
+import static graphql.schema.GraphQLTypeUtil.*;
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.*;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
 
 public class GraphQlHelper2 {
 
