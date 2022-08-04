@@ -1,11 +1,15 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLScalarType.newScalar;
+import static org.dotwebstack.framework.core.config.TypeUtils.newType;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.createBlockedPatterns;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getQueryName;
@@ -49,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
+import org.hamcrest.collection.IsCollectionWithSize;
 import org.junit.jupiter.api.Test;
 
 class GraphQlHelperTest {
@@ -465,5 +470,49 @@ class GraphQlHelperTest {
     var result = getQueryName(request);
 
     assertThat(result, is(Optional.empty()));
+  }
+
+  @Test
+  void createBlockedPatterns_returnsList_forInvisibleField() {
+    var objectTypeDefinition = newObjectTypeDefinition().name("TestObject")
+        .fieldDefinition(FieldDefinition.newFieldDefinition()
+            .name("invisibleField")
+            .type(newType("String"))
+            .additionalData(IS_VISIBLE, Boolean.FALSE.toString())
+            .build())
+        .build();
+
+    var patterns = createBlockedPatterns(List.of(objectTypeDefinition));
+
+    assertThat(patterns, equalTo(List.of("TestObject.invisibleField")));
+  }
+
+  @Test
+  void createBlockedPatterns_returnsList_forExplicitVisibleField() {
+    var objectTypeDefinition = newObjectTypeDefinition().name("TestObject")
+        .fieldDefinition(FieldDefinition.newFieldDefinition()
+            .name("visibleField")
+            .type(newType("String"))
+            .additionalData(IS_VISIBLE, Boolean.TRUE.toString())
+            .build())
+        .build();
+
+    var patterns = createBlockedPatterns(List.of(objectTypeDefinition));
+
+    assertThat(patterns, IsCollectionWithSize.hasSize(0));
+  }
+
+  @Test
+  void createBlockedPatterns_returnsList_forImplicitVisibleField() {
+    var objectTypeDefinition = newObjectTypeDefinition().name("TestObject")
+        .fieldDefinition(FieldDefinition.newFieldDefinition()
+            .name("visibleField")
+            .type(newType("String"))
+            .build())
+        .build();
+
+    var patterns = createBlockedPatterns(List.of(objectTypeDefinition));
+
+    assertThat(patterns, IsCollectionWithSize.hasSize(0));
   }
 }

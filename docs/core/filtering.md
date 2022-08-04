@@ -29,7 +29,8 @@ Both type and values are optional. `Type` can be used by the backends and `value
 
 The following snippet from an `dotwebstack.yaml` file shows the `filters` configuration properties. 
 
-The `field` and `default` properties within the `filters` configuration property are both optional. When the `field` property isn't supplied, the `filter` name needs to correspond with an existing field.
+The `field` and `default` properties within the `filters` configuration property are both optional. When the `field` property isn't supplied, the `filter` name needs to correspond with an existing field. An filter may also point implicit or explicit to a field that is not visible for selection. This can be configured for a object field with the `visible` configuration property. Default value is `true`
+
 
 The `dependsOn` property can be used when a filter depends on another filter. This will make the depends on filter mandatory.
 
@@ -77,12 +78,17 @@ objectTypes:
         list: true
         nullable: true
         mappedBy: brewery
+      created:
+        type: DateTime
+        nullable: true
+        visible: false
     filters:
       name:
         type: Partial
       status: {}
       multinational:
         default: true
+      created: {}
       beers: {}
 
   Address:

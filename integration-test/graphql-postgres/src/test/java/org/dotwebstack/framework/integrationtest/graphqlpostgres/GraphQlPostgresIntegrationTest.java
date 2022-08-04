@@ -84,6 +84,8 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String STATUS = "status";
 
+  private static final String ERRORS = "errors";
+
   @Autowired
   private WebTestClient client;
 
@@ -1070,6 +1072,37 @@ class GraphQlPostgresIntegrationTest {
     assertThat(beers.size(), is(2));
     assertThat(beers, is(List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
         Map.of("identifier_beer", "973832e7-1dd9-4683-a039-22390b1c1995", "name", "Beer 3"))));
+  }
+
+  @Test
+  void postRequest_returnsBreweries_withDateTimeGreaterThenEqualsFilterOnInvisibleField() {
+    var query = "{breweries(filter: {created: {gte: \"2014-08-11T10:15:30+01:00\"}}){ identifier_brewery name }}";
+
+    var data = WebTestClientHelper.post(client, query);
+
+    assertThat(data, hasEntry(equalTo(BREWERIES), Matchers.instanceOf(List.class)));
+    assertThat(data.containsKey(BREWERIES), is(true));
+
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(1));
+    assertThat(breweries,
+        is(List.of(Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666", "name", "Brewery S"))));
+  }
+
+  @Test
+  void postRequest_returnsError_forInvisibleFieldSelection() {
+    var query = "{breweries{ identifier_brewery name created }}";
+
+    var data = WebTestClientHelper.post(client, query);
+
+    assertThat(data, hasEntry(equalTo(ERRORS), Matchers.instanceOf(List.class)));
+
+    List<Map<String, Object>> errors = getNestedObjects(data, ERRORS);
+    assertThat(errors.size(), is(1));
+    assertThat(errors.get(0)
+        .get("message"),
+        equalTo("Validation error of type FieldUndefined: Field 'created' "
+            + "in type 'Brewery' is undefined @ 'breweries/created'"));
   }
 
   @Test

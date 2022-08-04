@@ -222,6 +222,10 @@ objectTypes:
       multinational:
         type: Boolean
         nullable: true
+      created:
+        type: DateTime
+        nullable: true
+        visible: false
     filters:
       name:
         field: name
@@ -235,6 +239,7 @@ objectTypes:
       beers: {}
       postalAddress: {}
       visitAddress: {}
+      created: {}
     sortableBy:
       name:
         - field: name
