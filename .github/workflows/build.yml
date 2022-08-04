@@ -3,9 +3,9 @@ name: Build
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    types: [synchronize]
+      - 'v0.3'
+      - 'v0.2'
+  pull_request: {}
 
 jobs:
   build:
