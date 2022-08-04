@@ -65,6 +65,7 @@
     <carml.version>0.4.1</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
+    <sonar.projectBaseDir>.</sonar.projectBaseDir>
   </properties>
 
   <modules>
@@ -443,6 +444,11 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.9.1.2184</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -473,6 +479,10 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.sonarsource.scanner.maven</groupId>
+        <artifactId>sonar-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
