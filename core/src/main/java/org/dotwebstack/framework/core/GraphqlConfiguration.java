@@ -1,5 +1,8 @@
 package org.dotwebstack.framework.core;
 
+import static graphql.schema.visibility.BlockedFields.newBlock;
+import static org.dotwebstack.framework.core.helpers.GraphQlHelper.createBlockedPatterns;
+
 import graphql.GraphQL;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.GraphQLSchema;
@@ -26,7 +29,13 @@ public class GraphqlConfiguration {
   @Conditional(OnLocalSchema.class)
   public GraphQLSchema graphQlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
       @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories) {
+
+    var blockedFields = newBlock().addPatterns(createBlockedPatterns(typeDefinitionRegistry.types()
+        .values()))
+        .build();
+
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
+        .fieldVisibility(blockedFields)
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));

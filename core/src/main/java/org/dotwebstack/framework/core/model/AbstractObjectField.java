@@ -25,6 +25,8 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected boolean pageable = false;
 
+  protected boolean visible = true;
+
   protected String aggregationOf;
 
   protected String keyField;

@@ -23,6 +23,8 @@ public interface ObjectField {
 
   boolean isPageable();
 
+  boolean isVisible();
+
   List<FieldArgument> getArguments();
 
   String getAggregationOf();
