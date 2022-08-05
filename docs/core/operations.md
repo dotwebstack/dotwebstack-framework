@@ -46,7 +46,7 @@ Can't be used in combination with `Keys`.<br>
 
 ## Pageable
 
-`Pageable` can only be used in combinaton with `List`. <br>
+`Pageable` can only be used in combination with `List`. <br>
 See [Paging](https://dotwebstack.org/dotwebstack-framework/#/core/paging) for more information about how paging works.
 
 ## Keys
