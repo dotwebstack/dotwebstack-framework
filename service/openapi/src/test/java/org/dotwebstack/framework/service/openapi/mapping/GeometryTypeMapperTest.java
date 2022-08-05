@@ -53,7 +53,7 @@ class GeometryTypeMapperTest {
     assertThat(fields.size(), is(1));
 
     var field = fields.get(0);
-    assertThat(AstPrinter.printAstCompact(field), is("location {asGeoJSON}"));
+    assertThat(AstPrinter.printAstCompact(field), is("location{asGeoJSON}"));
   }
 
   @Test
@@ -149,7 +149,7 @@ class GeometryTypeMapperTest {
     var fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
         Map.of("AcceptCrs", 1234));
 
-    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
+    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234){asGeoJSON}"));
   }
 
   @Test
@@ -159,7 +159,7 @@ class GeometryTypeMapperTest {
     var fields = new GeometryTypeMapper(properties).schemaToField("geo", new Schema<>().type("object"),
         Map.of("AcceptCrs", "input"));
 
-    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234) {asGeoJSON}"));
+    assertThat(AstPrinter.printAstCompact(fields.get(0)), is("geo(srid:1234){asGeoJSON}"));
   }
 
   @Test

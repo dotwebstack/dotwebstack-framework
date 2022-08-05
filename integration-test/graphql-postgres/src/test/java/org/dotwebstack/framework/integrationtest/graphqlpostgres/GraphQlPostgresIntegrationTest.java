@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.integrationtest.graphqlpostgres;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.equalToObject;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -1099,10 +1100,8 @@ class GraphQlPostgresIntegrationTest {
 
     List<Map<String, Object>> errors = getNestedObjects(data, ERRORS);
     assertThat(errors.size(), is(1));
-    assertThat(errors.get(0)
-        .get("message"),
-        equalTo("Validation error of type FieldUndefined: Field 'created' "
-            + "in type 'Brewery' is undefined @ 'breweries/created'"));
+    assertThat((String) errors.get(0)
+        .get("message"), containsString("Field 'created' in type 'Brewery' is undefined"));
   }
 
   @Test
