@@ -46,6 +46,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -57,6 +58,8 @@ import org.springframework.stereotype.Component;
 @Component
 @SuppressWarnings("rawtypes")
 public class QueryMapper {
+
+  private final PagingSettings pagingSettings;
 
   private static final String OPERATION_NAME = "Query";
 
@@ -70,11 +73,12 @@ public class QueryMapper {
   private final Map<String, TypeMapper> typeMappers;
 
   public QueryMapper(@NonNull GraphQL graphQL, @NonNull QueryArgumentBuilder queryArgumentBuilder,
-      @NonNull Collection<TypeMapper> typeMappers) {
+      @NonNull Collection<TypeMapper> typeMappers, @NonNull PagingSettings pagingSettings) {
     this.graphQlSchema = graphQL.getGraphQLSchema();
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
         .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
+    this.pagingSettings = pagingSettings;
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
@@ -304,7 +308,7 @@ public class QueryMapper {
     if (MapperUtils.isPageableField(fieldDefinition)) {
       parameters.putAll(QueryPaging.toPagingArguments(operationRequest.getContext()
           .getQueryProperties()
-          .getPaging(), operationRequest.getParameters()));
+          .getPaging(), operationRequest.getParameters(), pagingSettings));
     }
 
     List<Argument> result = fieldDefinition.getArguments()

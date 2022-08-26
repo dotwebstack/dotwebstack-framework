@@ -86,14 +86,16 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
     // Initialize BackendDataFetcher without BackendLoader to support aliases for Aggregates.
     if (isAliasedType(typeName, environment)) {
-      return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators);
+      return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators,
+          schema.getSettings());
     } else {
       var objectType = of(typeName).flatMap(schema::getObjectType)
           .orElseThrow();
 
       var backendLoader = backendModule.getBackendLoaderFactory()
           .create(objectType);
-      return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators);
+      return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators,
+          schema.getSettings());
     }
   }
 

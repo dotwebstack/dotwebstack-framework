@@ -8,6 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,10 +31,14 @@ class ConnectionDataFetcherTest {
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
 
-  private final ConnectionDataFetcher connectionDataFetcher = new ConnectionDataFetcher();
+  @Mock
+  private PagingSettings pagingSettings;
+
+  private ConnectionDataFetcher connectionDataFetcher;
 
   @BeforeEach
   void beforeEach() {
+    connectionDataFetcher = new ConnectionDataFetcher(pagingSettings);
     GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
 
     when(fieldDefinition.getArgument(FIRST_ARGUMENT_NAME)).thenReturn(newArgument().name(FIRST_ARGUMENT_NAME)
@@ -47,10 +52,15 @@ class ConnectionDataFetcherTest {
         .build());
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    lenient().when(pagingSettings.getFirstMaxValue())
+        .thenReturn(100);
+    lenient().when(pagingSettings.getOffsetMaxValue())
+        .thenReturn(10000);
   }
 
   @Test
-  void get_returnsResult_forPagingArguments() throws Exception {
+  void get_returnsResult_forPagingArguments() {
     when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, 2, OFFSET_ARGUMENT_NAME, 20));
 
     Object result = connectionDataFetcher.get(dataFetchingEnvironment);
@@ -64,7 +74,7 @@ class ConnectionDataFetcherTest {
   }
 
   @Test
-  void get_returnsResult_forDefault() throws Exception {
+  void get_returnsResult_forDefault() {
     when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of());
 
     Object result = connectionDataFetcher.get(dataFetchingEnvironment);

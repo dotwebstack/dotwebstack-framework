@@ -6,10 +6,6 @@ public final class PagingConstants {
 
   private PagingConstants() {}
 
-  public static final int FIRST_MAX_VALUE = 100;
-
-  public static final int OFFSET_MAX_VALUE = 10000;
-
   public static final String NODES_FIELD_NAME = "nodes";
 
   public static final String OFFSET_FIELD_NAME = "offset";
