@@ -66,6 +66,10 @@
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
     <sonar.projectBaseDir>.</sonar.projectBaseDir>
+    <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
+    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+    <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
+    <sonar.language>java</sonar.language>
   </properties>
 
   <modules>
@@ -378,14 +382,14 @@
           </configuration>
           <executions>
             <execution>
-              <id>default-prepare-agent</id>
+              <id>jacoco-initialize</id>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
             </execution>
             <execution>
-              <id>report</id>
-              <phase>test</phase>
+              <id>jacoco-site</id>
+              <phase>package</phase>
               <goals>
                 <goal>report</goal>
               </goals>
