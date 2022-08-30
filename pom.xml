@@ -63,6 +63,7 @@
     <testcontainers.version>1.17.3</testcontainers.version>
     <jts.version>1.19.0</jts.version>
     <carml.version>0.4.1</carml.version>
+    <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/report-aggregate/target/site/ jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
     <sonar.projectBaseDir>.</sonar.projectBaseDir>
@@ -380,14 +381,13 @@
           </configuration>
           <executions>
             <execution>
-              <id>jacoco-initialize</id>
+              <id>prepare-agent</id>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
             </execution>
             <execution>
-              <id>jacoco-site</id>
-              <phase>package</phase>
+              <id>report</id>
               <goals>
                 <goal>report</goal>
               </goals>
@@ -395,27 +395,6 @@
                 <formats>
                   <format>XML</format>
                 </formats>
-              </configuration>
-            </execution>
-            <execution>
-              <id>check</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-                <rules>
-                  <rule>
-                    <element>BUNDLE</element>
-                    <limits>
-                      <limit>
-                        <counter>INSTRUCTION</counter>
-                        <value>COVEREDRATIO</value>
-                        <minimum>0.3</minimum>
-                      </limit>
-                    </limits>
-                    <excludes />
-                  </rule>
-                </rules>
               </configuration>
             </execution>
           </executions>
