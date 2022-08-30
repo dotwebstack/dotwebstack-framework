@@ -67,8 +67,6 @@
     <sonar.organization>dotwebstack</sonar.organization>
     <sonar.projectBaseDir>.</sonar.projectBaseDir>
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-    <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
-    <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     <sonar.language>java</sonar.language>
   </properties>
 
@@ -373,8 +371,6 @@
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.8</version>
           <configuration>
-            <destFile>${sonar.coverage.jacoco.xmlReportPaths}</destFile>
-            <append>true</append>
             <excludes>
               <exclude>org/dotwebstack/framework/backend/rdf4j/**/*</exclude>
               <exclude>org/dotwebstack/framework/example/**/*</exclude>
@@ -395,6 +391,11 @@
               <goals>
                 <goal>report</goal>
               </goals>
+              <configuration>
+                <formats>
+                  <format>XML</format>
+                </formats>
+              </configuration>
             </execution>
             <execution>
               <id>check</id>
