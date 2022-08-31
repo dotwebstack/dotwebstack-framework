@@ -65,7 +65,6 @@
     <carml.version>0.4.1</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
-    <sonar.projectBaseDir>.</sonar.projectBaseDir>
   </properties>
 
   <modules>
@@ -378,17 +377,21 @@
           </configuration>
           <executions>
             <execution>
-              <id>default-prepare-agent</id>
+              <id>prepare-agent</id>
               <goals>
                 <goal>prepare-agent</goal>
               </goals>
             </execution>
             <execution>
               <id>report</id>
-              <phase>test</phase>
               <goals>
                 <goal>report</goal>
               </goals>
+              <configuration>
+                <formats>
+                  <format>XML</format>
+                </formats>
+              </configuration>
             </execution>
             <execution>
               <id>check</id>
@@ -403,7 +406,7 @@
                       <limit>
                         <counter>INSTRUCTION</counter>
                         <value>COVEREDRATIO</value>
-                        <minimum>0.3</minimum>
+                        <minimum>0.6</minimum>
                       </limit>
                     </limits>
                     <excludes />
