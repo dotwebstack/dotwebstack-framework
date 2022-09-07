@@ -1,9 +1,7 @@
 package org.dotwebstack.framework.service.openapi.query.paging;
 
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_MAX_VALUE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.service.openapi.exception.OpenApiExceptionHelper.parameterValidationException;
 
@@ -12,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,7 +20,8 @@ public class QueryPaging {
 
   private static final String PAGE = "page";
 
-  public static Map<String, Integer> toPagingArguments(QueryProperties.Paging paging, Map<String, Object> parameters) {
+  public static Map<String, Integer> toPagingArguments(QueryProperties.Paging paging, Map<String, Object> parameters,
+      PagingSettings pagingSettings) {
     Map<String, Integer> pagingArguments = new HashMap<>();
     if (paging != null) {
       var pageSizeValue = parameters.get(paging.getPageSize()
@@ -40,7 +40,7 @@ public class QueryPaging {
         throw parameterValidationException("`pageSize` parameter value should be 1 or higher, but was {}.", pageSize);
       }
 
-      if (pageSize > FIRST_MAX_VALUE) {
+      if (pageSize > pagingSettings.getFirstMaxValue()) {
         throw parameterValidationException("`pageSize` parameter value exceeds allowed value.");
       }
 
@@ -48,7 +48,7 @@ public class QueryPaging {
 
       var offset = getOffsetValue(page, pageSize);
 
-      if (offset > OFFSET_MAX_VALUE) {
+      if (offset > pagingSettings.getOffsetMaxValue()) {
         throw parameterValidationException("`page` parameter value exceeds allowed value.");
       }
 

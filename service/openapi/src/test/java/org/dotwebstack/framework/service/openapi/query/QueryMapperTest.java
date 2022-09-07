@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
 import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -35,6 +37,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 
 @ExtendWith(MockitoExtension.class)
 class QueryMapperTest {
+
+  @Mock
+  private PagingSettings pagingSettings;
 
   private OpenAPI openApi;
 
@@ -55,7 +60,12 @@ class QueryMapperTest {
     openApi = TestResources.openApi("openapi.yaml");
 
     queryFactory = new QueryMapper(TestResources.graphQl(), queryArgumentBuilder,
-        List.of(new GeometryTypeMapper(new OpenApiProperties())));
+        List.of(new GeometryTypeMapper(new OpenApiProperties())), pagingSettings);
+
+    lenient().when(pagingSettings.getFirstMaxValue())
+        .thenReturn(100);
+    lenient().when(pagingSettings.getOffsetMaxValue())
+        .thenReturn(10000);
   }
 
   static Stream<Arguments> arguments() {

@@ -28,6 +28,7 @@ import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.model.Settings;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
@@ -38,10 +39,6 @@ import reactor.util.function.Tuples;
 
 class BackendDataFetcher implements DataFetcher<Object> {
 
-  private static final int MAX_BATCH_SIZE = 250;
-
-  private static final int MAX_BATCH_KEY_SIZE = 100;
-
   private final BackendLoader backendLoader;
 
   private final BackendRequestFactory requestFactory;
@@ -50,12 +47,15 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final List<GraphQlValidator> graphQlValidators;
 
+  private final Settings settings;
+
   public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory,
-      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators) {
+      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators, Settings settings) {
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
     this.graphQlValidators = graphQlValidators;
+    this.settings = settings;
   }
 
   @Override
@@ -148,9 +148,9 @@ class BackendDataFetcher implements DataFetcher<Object> {
       throw requestValidationException("At least one key must be provided");
     }
 
-    if (keys.size() > MAX_BATCH_KEY_SIZE) {
+    if (keys.size() > settings.getMaxBatchKeySize()) {
       throw requestValidationException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
-          MAX_BATCH_KEY_SIZE);
+          settings.getMaxBatchKeySize());
     }
 
     var duplicateKeys = keys.stream()
@@ -215,7 +215,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     };
 
     return newMappedDataLoader(batchLoader, DataLoaderOptions.newOptions()
-        .setMaxBatchSize(MAX_BATCH_SIZE));
+        .setMaxBatchSize(settings.getMaxBatchSize()));
   }
 
   private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(

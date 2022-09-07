@@ -43,6 +43,7 @@ import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
+import org.dotwebstack.framework.core.model.Settings;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
@@ -80,6 +81,9 @@ class BackendDataFetcherTest {
 
   @Mock
   private List<GraphQlValidator> graphQlValidators;
+
+  @Mock
+  private Settings settings;
 
   @InjectMocks
   private BackendDataFetcher backendDataFetcher;
@@ -156,6 +160,7 @@ class BackendDataFetcherTest {
     }
 
     when(environment.getArguments()).thenReturn(Map.of("identifier", keys));
+    when(settings.getMaxBatchKeySize()).thenReturn(100);
 
     var thrown = assertThrows(RequestValidationException.class, () -> backendDataFetcher.get(environment));
 
@@ -186,6 +191,7 @@ class BackendDataFetcherTest {
     keys.add("id-1");
 
     when(environment.getArguments()).thenReturn(Map.of("identifier", keys));
+    when(settings.getMaxBatchKeySize()).thenReturn(10000);
 
     var thrown = assertThrows(RequestValidationException.class, () -> backendDataFetcher.get(environment));
 
@@ -217,6 +223,8 @@ class BackendDataFetcherTest {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(environment.getFieldType()).thenReturn(fieldDefinition.getType());
     when(environment.getArguments()).thenReturn(Map.of("identifier", List.of("id-1", "id-2")));
+
+    when(settings.getMaxBatchKeySize()).thenReturn(10000);
 
     var result = backendDataFetcher.get(environment);
 
@@ -253,6 +261,8 @@ class BackendDataFetcherTest {
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
     when(environment.getFieldType()).thenReturn(fieldDefinition.getType());
     when(environment.getArguments()).thenReturn(Map.of("identifier", List.of("id-1", "id-2")));
+
+    when(settings.getMaxBatchKeySize()).thenReturn(10000);
 
     var result = backendDataFetcher.get(environment);
 
@@ -444,7 +454,7 @@ class BackendDataFetcherTest {
   @Test
   void get_throwsException_ifBackendLoaderIsNull() {
     var dataFetcherWithoutBackendLoader =
-        new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators);
+        new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators, mock(Settings.class));
 
     mockExecutionStepInfo("a", "a");
 

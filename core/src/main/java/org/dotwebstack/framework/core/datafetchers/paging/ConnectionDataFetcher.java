@@ -2,9 +2,7 @@ package org.dotwebstack.framework.core.datafetchers.paging;
 
 import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_MAX_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_MAX_VALUE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 
@@ -17,6 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 
 public class ConnectionDataFetcher implements DataFetcher<Object> {
+
+  private final PagingSettings pagingSettings;
+
+  public ConnectionDataFetcher(PagingSettings pagingSettings) {
+    this.pagingSettings = pagingSettings;
+  }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
@@ -63,11 +67,13 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue > FIRST_MAX_VALUE) {
-      throw requestValidationException("Argument 'first' is not allowed to be higher than {}.", FIRST_MAX_VALUE);
+    if (firstArgumentValue > pagingSettings.getFirstMaxValue()) {
+      throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
+          pagingSettings.getFirstMaxValue());
     }
-    if (offsetArgumentValue > OFFSET_MAX_VALUE) {
-      throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.", OFFSET_MAX_VALUE);
+    if (offsetArgumentValue > pagingSettings.getOffsetMaxValue()) {
+      throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.",
+          pagingSettings.getOffsetMaxValue());
     }
   }
 }
