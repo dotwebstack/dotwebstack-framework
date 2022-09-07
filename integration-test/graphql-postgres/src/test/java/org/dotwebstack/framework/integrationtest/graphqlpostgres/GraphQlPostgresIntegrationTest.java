@@ -1514,6 +1514,20 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void postRequest_returnsBreweries_forGeometryFilterQueryType() {
+    var query = "{breweries(filter: {geometry: {type: POLYGON}, _or: { geometry: {type: MULTIPOLYGON}}})"
+        + " { identifier_brewery name }}";
+
+    var data = WebTestClientHelper.post(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(BREWERIES), is(true));
+
+    List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+    assertThat(breweries.size(), is(4));
+  }
+
+  @Test
   void postRequest_returnsBreweries_forGeometryFilterQueryGeoJson() {
     var query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
         + "\\\"coordinates\\\": [[[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"

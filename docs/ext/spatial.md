@@ -138,6 +138,7 @@ An field of type `Geometry` can be filtered with the following filter operations
 
 ```
 input GeometryFilter {
+  type: GeometryType!
   within: GeometryInput!
   contains: GeometryInput!
   intersects: GeometryInput!
