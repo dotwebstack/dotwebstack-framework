@@ -25,6 +25,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
@@ -444,10 +445,14 @@ class FilterConditionBuilder {
       return Optional.empty();
     }
 
-    var mapValue = ObjectHelper.castToMap(value);
-
     var columnName = getColumnName(objectField.getSpatial(), requestedSrid);
     var field = DSL.field(DSL.name(table.getName(), columnName));
+
+    if (TYPE == operator) {
+      return Optional.of(DSL.condition("GeometryType({0}) = {1}", field, value));
+    }
+
+    var mapValue = ObjectHelper.castToMap(value);
 
     var geometry = readGeometry(mapValue);
     var columnSrid = getSridOfColumnName(objectField.getSpatial(), columnName);

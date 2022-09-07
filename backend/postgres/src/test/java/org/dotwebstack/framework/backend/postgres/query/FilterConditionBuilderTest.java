@@ -69,7 +69,8 @@ class FilterConditionBuilderTest {
         arguments(Map.of("touches", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("not", Map.of("touches", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"));
+            "not ((ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"),
+        arguments(Map.of("type", "POINT"), "(GeometryType(\"x1\".\"geometry_column\") = 'POINT')"));
   }
 
   @ParameterizedTest

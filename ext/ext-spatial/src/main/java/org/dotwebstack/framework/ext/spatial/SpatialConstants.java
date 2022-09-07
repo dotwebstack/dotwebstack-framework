@@ -26,7 +26,7 @@ public class SpatialConstants {
 
   // FieldNames
 
-  static final String TYPE = "type";
+  public static final String TYPE = "type";
 
   static final String SRID = "srid";
 

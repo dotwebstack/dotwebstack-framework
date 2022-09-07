@@ -1,12 +1,15 @@
 package org.dotwebstack.framework.ext.spatial;
 
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_GEOJSON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKB;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.AS_WKT;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.CONTAINS;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRYCOLLECTION;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_FILTER;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.GEOMETRY_TYPE;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.INTERSECTS;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.LINESTRING;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTILINESTRING;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOINT;
@@ -14,7 +17,9 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.MULTIPOLYGO
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POINT;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.POLYGON;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.SRID;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TOUCHES;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.TYPE;
+import static org.dotwebstack.framework.ext.spatial.SpatialConstants.WITHIN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -25,6 +30,8 @@ import static org.hamcrest.Matchers.is;
 import graphql.language.EnumTypeDefinition;
 import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
+import graphql.language.InputObjectTypeDefinition;
+import graphql.language.InputValueDefinition;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.TypeDefinition;
@@ -83,6 +90,25 @@ class SpatialConfigurerTest {
     for (FieldDefinition field : geometryFieldDefs) {
       assertThat(fieldNames.contains(field.getName()), is(Boolean.TRUE));
       assertThat(field.getType(), instanceOf(NonNullType.class));
+    }
+  }
+
+  @Test
+  @SuppressWarnings("rawtypes")
+  void configureTypeDefinitionRegistry_addGeometryFilter_always() {
+    spatialConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
+
+    Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(GEOMETRY_FILTER);
+    assertThat(optional.isPresent(), is(true));
+    assertThat(optional.get(), instanceOf(InputObjectTypeDefinition.class));
+
+    List<String> inputValueNames = List.of(SRID, TYPE, WITHIN, CONTAINS, INTERSECTS, TOUCHES, NOT_FIELD);
+    List<InputValueDefinition> inputValueDefinitions =
+        ((InputObjectTypeDefinition) optional.get()).getInputValueDefinitions();
+    assertThat(inputValueDefinitions.size(), equalTo(inputValueNames.size()));
+
+    for (InputValueDefinition input : inputValueDefinitions) {
+      assertThat(inputValueNames.contains(input.getName()), is(Boolean.TRUE));
     }
   }
 
