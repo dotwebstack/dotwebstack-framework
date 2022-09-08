@@ -72,14 +72,11 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   public void init(Spatial spatial) {
     Map<String, ObjectType<? extends ObjectField>> objectTypes = schema.getObjectTypes();
 
-    Map<String, List<PostgresObjectField>> allFieldsPerTableName = objectTypes.values()
+    objectTypes.values()
         .stream()
         .map(PostgresObjectType.class::cast)
         .filter(not(PostgresObjectType::isNested))
         .map(objectType -> new AbstractMap.SimpleEntry<>(objectType.getTable(), getFields(objectType)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    allFieldsPerTableName.entrySet()
         .forEach(field -> setSpatial(spatial, field));
   }
 
