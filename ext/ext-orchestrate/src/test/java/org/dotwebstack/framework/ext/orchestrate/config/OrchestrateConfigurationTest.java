@@ -4,6 +4,7 @@ import static graphql.schema.FieldCoordinates.coordinates;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
@@ -14,8 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import lombok.SneakyThrows;
+import okhttp3.Headers;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import okio.Buffer;
 import org.dotwebstack.framework.ext.orchestrate.config.OrchestrateConfigurationProperties.SubschemaProperties;
 import org.junit.jupiter.api.AfterAll;
@@ -31,6 +34,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 class OrchestrateConfigurationTest {
 
   public static final String ROOT_KEY = "dbeerpedia";
+
+  public static final String HEADER_KEY = "header_key";
+
+  public static final String HEADER_VALUE = "header_value";
+
+  public static final String BEARER_AUTH = "Bearer_auth";
 
   private static final MockWebServer MOCK_WEB_SERVER = new MockWebServer();
 
@@ -72,6 +81,18 @@ class OrchestrateConfigurationTest {
   }
 
   @Test
+  void testHeaders() throws InterruptedException {
+    configurationProperties.setRoot(ROOT_KEY);
+    configurationProperties.setSubschemas(Map.of(ROOT_KEY, createSubschemaProperties()));
+    var orchestrateConfiguration = new OrchestrateConfiguration(configurationProperties, webclientBuilder, List.of());
+
+    RecordedRequest recordedRequest = MOCK_WEB_SERVER.takeRequest();
+    Headers headers = recordedRequest.getHeaders();
+    assertEquals(headers.get(HEADER_KEY), HEADER_VALUE);
+    assertEquals(headers.get("Authorization"), "Bearer " + BEARER_AUTH);
+  }
+
+  @Test
   void subschemas_throwsException_ifIntrospectionFails() {
     MOCK_WEB_SERVER.enqueue(new MockResponse().setResponseCode(INTERNAL_SERVER_ERROR.value()));
 
@@ -87,6 +108,8 @@ class OrchestrateConfigurationTest {
     var subschemaProperties = new SubschemaProperties();
     subschemaProperties.setEndpoint(
         URI.create(String.format("http://%s:%d", MOCK_WEB_SERVER.getHostName(), MOCK_WEB_SERVER.getPort())));
+    subschemaProperties.setBearerAuth(BEARER_AUTH);
+    subschemaProperties.setHeaders(Map.of(HEADER_KEY, HEADER_VALUE));
     return subschemaProperties;
   }
 
