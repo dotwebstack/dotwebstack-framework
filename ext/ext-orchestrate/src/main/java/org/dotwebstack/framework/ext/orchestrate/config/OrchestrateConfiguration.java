@@ -73,11 +73,16 @@ class OrchestrateConfiguration {
         .reduce(subschema, (acc, modifier) -> modifier.modify(key, subschema), TransformUtils::noopCombiner);
   }
 
-  private RemoteExecutor createRemoteExecutor(SubschemaProperties subschemaProperties) {
+  private RemoteExecutor createRemoteExecutor(final SubschemaProperties subschemaProperties) {
     var endpoint = subschemaProperties.getEndpoint();
 
-    Consumer<HttpHeaders> headerBuilder = headers -> Optional.ofNullable(subschemaProperties.getBearerAuth())
-        .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
+    Consumer<HttpHeaders> headerBuilder = headers -> {
+      Optional.ofNullable(subschemaProperties.getBearerAuth())
+          .ifPresent(bearerAuth -> headers.add("Authorization", "Bearer ".concat(bearerAuth)));
+      Optional.ofNullable(subschemaProperties.getHeaders())
+          .ifPresent(additionalHeaders -> additionalHeaders.entrySet()
+              .forEach(entry -> headers.add(entry.getKey(), entry.getValue())));
+    };
 
     ConnectionProvider provider = ConnectionProvider.builder("orchestrate")
         .maxIdleTime(Duration.ofSeconds(10))

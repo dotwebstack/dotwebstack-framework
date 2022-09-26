@@ -28,6 +28,8 @@ class OrchestrateConfigurationProperties {
   @Data
   static class SubschemaProperties {
 
+    private Map<String, String> headers;
+
     @NotNull
     private URI endpoint;
 
