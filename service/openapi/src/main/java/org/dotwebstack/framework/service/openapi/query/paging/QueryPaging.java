@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,7 +21,7 @@ public class QueryPaging {
   private static final String PAGE = "page";
 
   public static Map<String, Integer> toPagingArguments(QueryProperties.Paging paging, Map<String, Object> parameters,
-      PagingSettings pagingSettings) {
+      PagingConfiguration pagingConfiguration) {
     Map<String, Integer> pagingArguments = new HashMap<>();
     if (paging != null) {
       var pageSizeValue = parameters.get(paging.getPageSize()
@@ -40,7 +40,7 @@ public class QueryPaging {
         throw parameterValidationException("`pageSize` parameter value should be 1 or higher, but was {}.", pageSize);
       }
 
-      if (pageSize > pagingSettings.getFirstMaxValue()) {
+      if (pageSize > pagingConfiguration.getFirstMaxValue()) {
         throw parameterValidationException("`pageSize` parameter value exceeds allowed value.");
       }
 
@@ -48,7 +48,7 @@ public class QueryPaging {
 
       var offset = getOffsetValue(page, pageSize);
 
-      if (offset > pagingSettings.getOffsetMaxValue()) {
+      if (offset > pagingConfiguration.getOffsetMaxValue()) {
         throw parameterValidationException("`page` parameter value exceeds allowed value.");
       }
 

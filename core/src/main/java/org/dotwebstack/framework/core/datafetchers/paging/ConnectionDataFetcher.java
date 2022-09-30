@@ -16,10 +16,10 @@ import java.util.Optional;
 
 public class ConnectionDataFetcher implements DataFetcher<Object> {
 
-  private final PagingSettings pagingSettings;
+  private final PagingConfiguration pagingConfiguration;
 
-  public ConnectionDataFetcher(PagingSettings pagingSettings) {
-    this.pagingSettings = pagingSettings;
+  public ConnectionDataFetcher(PagingConfiguration pagingConfiguration) {
+    this.pagingConfiguration = pagingConfiguration;
   }
 
   @Override
@@ -67,13 +67,13 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue > pagingSettings.getFirstMaxValue()) {
+    if (firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
       throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
-          pagingSettings.getFirstMaxValue());
+          pagingConfiguration.getFirstMaxValue());
     }
-    if (offsetArgumentValue > pagingSettings.getOffsetMaxValue()) {
+    if (offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
       throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.",
-          pagingSettings.getOffsetMaxValue());
+          pagingConfiguration.getOffsetMaxValue());
     }
   }
 }

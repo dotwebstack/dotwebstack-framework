@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Conditional(OnLocalSchema.class)
 public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 
-  private final PagingSettings pagingSettings;
+  private final PagingConfiguration pagingConfiguration;
 
-  public ConnectionDataFetcherWiringFactory(PagingSettings pagingSettings) {
-    this.pagingSettings = pagingSettings;
+  public ConnectionDataFetcherWiringFactory(PagingConfiguration pagingConfiguration) {
+    this.pagingConfiguration = pagingConfiguration;
   }
 
   @Override
@@ -28,6 +28,6 @@ public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 
   @Override
   public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
-    return new ConnectionDataFetcher(pagingSettings);
+    return new ConnectionDataFetcher(pagingConfiguration);
   }
 }

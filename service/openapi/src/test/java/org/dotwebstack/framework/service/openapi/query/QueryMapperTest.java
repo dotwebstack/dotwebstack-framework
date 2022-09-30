@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -39,7 +39,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 class QueryMapperTest {
 
   @Mock
-  private PagingSettings pagingSettings;
+  private PagingConfiguration pagingConfiguration;
 
   private OpenAPI openApi;
 
@@ -60,11 +60,11 @@ class QueryMapperTest {
     openApi = TestResources.openApi("openapi.yaml");
 
     queryFactory = new QueryMapper(TestResources.graphQl(), queryArgumentBuilder,
-        List.of(new GeometryTypeMapper(new OpenApiProperties())), pagingSettings);
+        List.of(new GeometryTypeMapper(new OpenApiProperties())), pagingConfiguration);
 
-    lenient().when(pagingSettings.getFirstMaxValue())
+    lenient().when(pagingConfiguration.getFirstMaxValue())
         .thenReturn(100);
-    lenient().when(pagingSettings.getOffsetMaxValue())
+    lenient().when(pagingConfiguration.getOffsetMaxValue())
         .thenReturn(10000);
   }
 

@@ -21,7 +21,7 @@ class ConnectionDataFetcherWiringFactoryTest {
 
   @BeforeEach
   void beforeEach() {
-    wiringFactory = new ConnectionDataFetcherWiringFactory(mock(PagingSettings.class));
+    wiringFactory = new ConnectionDataFetcherWiringFactory(mock(PagingConfiguration.class));
   }
 
   @Test
