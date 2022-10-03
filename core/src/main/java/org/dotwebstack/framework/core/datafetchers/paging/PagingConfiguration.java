@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.datafetchers.paging;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "dotwebstack.paging")
 @Configuration
 @Getter
+@Setter
 public class PagingConfiguration {
 
   @Value("${firstMaxValue:#{100}}")
