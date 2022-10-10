@@ -32,13 +32,13 @@ class ConnectionDataFetcherTest {
   private DataFetchingEnvironment dataFetchingEnvironment;
 
   @Mock
-  private PagingSettings pagingSettings;
+  private PagingConfiguration pagingConfiguration;
 
   private ConnectionDataFetcher connectionDataFetcher;
 
   @BeforeEach
   void beforeEach() {
-    connectionDataFetcher = new ConnectionDataFetcher(pagingSettings);
+    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration);
     GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
 
     when(fieldDefinition.getArgument(FIRST_ARGUMENT_NAME)).thenReturn(newArgument().name(FIRST_ARGUMENT_NAME)
@@ -53,9 +53,9 @@ class ConnectionDataFetcherTest {
 
     when(dataFetchingEnvironment.getFieldDefinition()).thenReturn(fieldDefinition);
 
-    lenient().when(pagingSettings.getFirstMaxValue())
+    lenient().when(pagingConfiguration.getFirstMaxValue())
         .thenReturn(100);
-    lenient().when(pagingSettings.getOffsetMaxValue())
+    lenient().when(pagingConfiguration.getOffsetMaxValue())
         .thenReturn(10000);
   }
 

@@ -46,7 +46,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoaderRegistry;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.datafetchers.paging.PagingSettings;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.MapperUtils;
 import org.dotwebstack.framework.service.openapi.mapping.TypeMapper;
@@ -56,10 +56,9 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@SuppressWarnings("rawtypes")
 public class QueryMapper {
 
-  private final PagingSettings pagingSettings;
+  private final PagingConfiguration pagingConfiguration;
 
   private static final String OPERATION_NAME = "Query";
 
@@ -73,12 +72,12 @@ public class QueryMapper {
   private final Map<String, TypeMapper> typeMappers;
 
   public QueryMapper(@NonNull GraphQL graphQL, @NonNull QueryArgumentBuilder queryArgumentBuilder,
-      @NonNull Collection<TypeMapper> typeMappers, @NonNull PagingSettings pagingSettings) {
+      @NonNull Collection<TypeMapper> typeMappers, @NonNull PagingConfiguration pagingConfiguration) {
     this.graphQlSchema = graphQL.getGraphQLSchema();
     this.queryArgumentBuilder = queryArgumentBuilder;
     this.typeMappers = typeMappers.stream()
         .collect(Collectors.toMap(TypeMapper::typeName, Function.identity()));
-    this.pagingSettings = pagingSettings;
+    this.pagingConfiguration = pagingConfiguration;
   }
 
   public ExecutionInput map(OperationRequest operationRequest) {
@@ -308,7 +307,7 @@ public class QueryMapper {
     if (MapperUtils.isPageableField(fieldDefinition)) {
       parameters.putAll(QueryPaging.toPagingArguments(operationRequest.getContext()
           .getQueryProperties()
-          .getPaging(), operationRequest.getParameters(), pagingSettings));
+          .getPaging(), operationRequest.getParameters(), pagingConfiguration));
     }
 
     List<Argument> result = fieldDefinition.getArguments()
