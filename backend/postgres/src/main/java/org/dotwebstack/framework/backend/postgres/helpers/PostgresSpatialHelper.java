@@ -2,6 +2,7 @@ package org.dotwebstack.framework.backend.postgres.helpers;
 
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
+import static org.dotwebstack.framework.core.helpers.StringHelper.toSnakeCase;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_BBOX;
 import static org.dotwebstack.framework.ext.spatial.SpatialConstants.ARGUMENT_SRID;
 
@@ -10,10 +11,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 
 public final class PostgresSpatialHelper {
+
+  private static final String INFIX = "__";
+
+  private static final String SEGMENTS = INFIX.concat("segments");
 
   private PostgresSpatialHelper() {}
 
@@ -98,5 +104,12 @@ public final class PostgresSpatialHelper {
         .map(args -> args.get(argumentKey))
         .map(returnType::cast)
         .orElse(null);
+  }
+
+  public static String getSegmentsTableName(String bronTable, String geoColumnName) {
+    var bronTablePrefix = StringUtils.removeEnd(bronTable, "_v");
+    var prefix = toSnakeCase(bronTablePrefix.concat(INFIX)
+        .concat(geoColumnName));
+    return toSnakeCase(prefix).concat(SEGMENTS);
   }
 }

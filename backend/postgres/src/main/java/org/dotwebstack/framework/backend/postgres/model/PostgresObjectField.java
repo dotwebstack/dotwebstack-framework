@@ -59,4 +59,8 @@ public class PostgresObjectField extends AbstractObjectField {
   public void setSpatial(PostgresSpatial spatial) {
     this.spatial = spatial;
   }
+
+  public boolean hasSpatial() {
+    return spatial != null;
+  }
 }

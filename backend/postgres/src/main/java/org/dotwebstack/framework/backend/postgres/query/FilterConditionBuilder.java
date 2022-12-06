@@ -1,8 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
-import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
-import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.JoinBuilder.newJoin;
 import static org.dotwebstack.framework.backend.postgres.query.JoinConfiguration.toJoinConfiguration;
@@ -24,13 +22,10 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.LTE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.MATCH;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.NOT;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
-import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import java.util.List;
@@ -441,38 +436,11 @@ class FilterConditionBuilder {
 
   private Optional<Condition> createGeometryCondition(PostgresObjectField objectField, FilterOperator operator,
       Object value, Integer requestedSrid) {
-    if (SRID == operator) {
-      return Optional.empty();
-    }
-
-    var columnName = getColumnName(objectField.getSpatial(), requestedSrid);
-    var field = DSL.field(DSL.name(table.getName(), columnName));
-
-    if (TYPE == operator) {
-      return Optional.of(DSL.condition("GeometryType({0}) = {1}", field, value));
-    }
-
-    var mapValue = ObjectHelper.castToMap(value);
-
-    var geometry = readGeometry(mapValue);
-    var columnSrid = getSridOfColumnName(objectField.getSpatial(), columnName);
-    geometry.setSRID(columnSrid);
-
-    Field<Geometry> geoField = DSL.val(geometry)
-        .cast(GEOMETRY_DATATYPE);
-
-    switch (operator) {
-      case CONTAINS:
-        return Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoField));
-      case WITHIN:
-        return Optional.of(DSL.condition("ST_Within({0}, {1})", geoField, field));
-      case INTERSECTS:
-        return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoField));
-      case TOUCHES:
-        return Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoField));
-      default:
-        throw illegalArgumentException("Unsupported geometry filter operation");
-    }
+    var geoConditionBuilder = GeometryConditionBuilderFactory.getGeometryConditionBuilder(objectField, operator);
+    return geoConditionBuilder.sourceTable(table)
+        .value(value)
+        .srid(requestedSrid)
+        .build();
   }
 
   private String escapeMatchValue(String inputValue) {
