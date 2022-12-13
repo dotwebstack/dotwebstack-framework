@@ -3,16 +3,20 @@ package org.dotwebstack.framework.backend.postgres.query;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.SplitGeoTilesTableBuilder.newSplitGeoTilesTableBuilder;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.INTERSECTS;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TOUCHES;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.WITHIN;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.jooq.JoinType.JOIN;
 import static org.jooq.impl.DSL.not;
 
 import java.util.Optional;
+import java.util.Set;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -23,6 +27,8 @@ import org.jooq.impl.DSL;
 @Accessors(fluent = true)
 @Setter
 public class SegmentsGeometryConditionBuilder extends GeometryConditionBuilderBase {
+  private static final Set<FilterOperator> SUPPORTED_OPERATORS = Set.of(INTERSECTS, CONTAINS, WITHIN, TOUCHES);
+
   private static final String INFIX = "__";
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
@@ -35,23 +41,20 @@ public class SegmentsGeometryConditionBuilder extends GeometryConditionBuilderBa
 
   Optional<Condition> build() {
     validateFields(this);
+    validateSupportedOperators(filterOperator);
     return buildCondition();
   }
 
   private Optional<Condition> buildCondition() {
-    if (SRID == filterOperator) {
-      return Optional.empty();
-    }
-
     var geometryCondition = createGeometryCondition();
     return Optional.of(geometryCondition);
   }
 
-  // select 1
-  // from brewery__geometry__segments ps
-  // INNER JOIN cte_tiles_zoekgeometrien tz ON ( ps.tile_id = tz.tile_id)
-  // and st_intersects(tz.geom_rd, ps.geometry)
-  // where ps.brewery__record_id = bron.record_id
+  private void validateSupportedOperators(FilterOperator filterOperator) {
+    if (!SUPPORTED_OPERATORS.contains(filterOperator)) {
+      throw illegalArgumentException("Unsupported segment geometry filter operation");
+    }
+  }
 
   private Condition createGeometryCondition() {
     var segmentsTable = postgresObjectField.getSpatial()

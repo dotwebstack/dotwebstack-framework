@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
@@ -58,11 +59,11 @@ class PostgresSpatialBackendModuleTest {
     var schema = new Schema();
     schema.setObjectTypes(createObjectTypes());
 
-    var postgresClient = mockDatabaseCalls(createRows());
-
+    var postgresClient = mockDatabaseCalls();
     var spatial = createSpatial();
 
-    new PostgresSpatialBackendModule(schema, postgresClient).init(spatial);
+    var spatialBackendModule = new PostgresSpatialBackendModule(schema, postgresClient);
+    spatialBackendModule.init(spatial);
 
     var brewerySpatial = ((PostgresObjectField) schema.getObjectTypes()
         .get("Brewery")
@@ -86,6 +87,16 @@ class PostgresSpatialBackendModuleTest {
 
     assertThat(brewerySpatial.getEquivalents(), allOf(hasEntry(is(7415), is(28892)), hasEntry(is(7931), is(9067))));
     assertThat(addressSpatial.getEquivalents(), allOf(hasEntry(is(7415), is(28892)), hasEntry(is(7931), is(9067))));
+
+    assertThat(brewerySpatial.getSegmentsTable()
+        .isPresent(), is(true));
+    assertThat(addressSpatial.getSegmentsTable()
+        .isPresent(), is(false));
+
+    var expectedSegmentsTable = new GeometrySegmentsTable("dbeerpedia", "brewery__brewery_geometry__segments",
+        "brewery_geometry", "brewery__record_id");
+    assertThat(brewerySpatial.getSegmentsTable()
+        .get(), is(expectedSegmentsTable));
   }
 
   private Map<String, ObjectType<? extends ObjectField>> createObjectTypes() {
@@ -149,24 +160,44 @@ class PostgresSpatialBackendModuleTest {
     return Map.of(7931, srs7931, 9067, srs9067, 7415, srs7415, 28892, srs28892);
   }
 
+  private PostgresClient mockDatabaseCalls() {
+    var postgresClient = mock(PostgresClient.class);
+
+    Map<String, Object> segmnentTableRow = Map.of("f_table_schema", "dbeerpedia", "f_table_name",
+        "brewery__brewery_geometry__segments", "f_geometry_column", "brewery_geometry");
+    var segmentTablesQuery = "SELECT f_table_schema, f_table_name, f_geometry_column "
+        + "FROM geometry_columns where f_table_name LIKE '%__segments'";
+    when(postgresClient.fetch(segmentTablesQuery)).thenReturn(Flux.just(segmnentTableRow));
+
+    var geometryColumnsQuery = "SELECT f_table_schema, f_table_name, f_geometry_column, srid FROM geometry_columns";
+    when(postgresClient.fetch(geometryColumnsQuery)).thenReturn(createGeoSridRows());
+
+    var joinColumnQuery = "SELECT column_name FROM information_schema.columns "
+        + "WHERE table_name = 'brewery__brewery_geometry__segments' and column_name like '%__record_id'";
+
+    Map<String, Object> joinColumnRow = Map.of("column_name", "brewery__record_id");
+    when(postgresClient.fetch(joinColumnQuery)).thenReturn(Flux.just(joinColumnRow));
+    return postgresClient;
+  }
+
   private PostgresClient mockDatabaseCalls(Flux<Map<String, Object>> flux) {
     var postgresClient = mock(PostgresClient.class);
     when(postgresClient.fetch(anyString())).thenReturn(flux);
     return postgresClient;
   }
 
-  private Flux<Map<String, Object>> createRows() {
-    var breweryGeometryRow7931 = createRow("brewery_geometry", 7931);
-    var breweryGeometryRowBbox7931 = createRow("brewery_geometry_bbox", 7931);
-    var breweryGeometryRow7415 = createRow("brewery_geometry_7415", 7415);
-    var addressGeometryRow7931 = createRow("address_geometry", 7931);
-    var addressGeometryRow7415 = createRow("address_geometry_7415", 7415);
+  private Flux<Map<String, Object>> createGeoSridRows() {
+    var breweryGeometryRow7931 = createSridRow("brewery_geometry", 7931);
+    var breweryGeometryRowBbox7931 = createSridRow("brewery_geometry_bbox", 7931);
+    var breweryGeometryRow7415 = createSridRow("brewery_geometry_7415", 7415);
+    var addressGeometryRow7931 = createSridRow("address_geometry", 7931);
+    var addressGeometryRow7415 = createSridRow("address_geometry_7415", 7415);
 
     return Flux.just(breweryGeometryRow7931, breweryGeometryRowBbox7931, breweryGeometryRow7415, addressGeometryRow7931,
         addressGeometryRow7415);
   }
 
-  private Map<String, Object> createRow(String geometryColumnName, Integer srid) {
+  private Map<String, Object> createSridRow(String geometryColumnName, Integer srid) {
     return Map.of("f_table_schema", "dbeerpedia", "f_table_name", "brewery", "f_geometry_column", geometryColumnName,
         "srid", srid);
   }

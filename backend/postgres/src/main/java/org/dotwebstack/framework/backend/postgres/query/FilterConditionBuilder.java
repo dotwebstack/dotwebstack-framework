@@ -60,7 +60,6 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.util.postgres.PostgresDSL;
-import org.locationtech.jts.geom.Geometry;
 
 @Accessors(fluent = true)
 @Setter
@@ -68,9 +67,6 @@ class FilterConditionBuilder {
   private static final String ERROR_MESSAGE = "Unknown filter field '%s' for type '%s'";
 
   private static final char LIKE_ESCAPE_CHARACTER = '\\';
-
-  private static final DataType<Geometry> GEOMETRY_DATATYPE =
-      new DefaultDataType<>(SQLDialect.POSTGRES, Geometry.class, "geometry");
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 

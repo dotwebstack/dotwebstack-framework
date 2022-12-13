@@ -73,6 +73,8 @@ class GraphQlPostgresIntegrationTest {
 
   private static final String INGREDIENT = "ingredient";
 
+  private static final String ROOMS = "rooms";
+
   private static final String GEOMETRY = "geometry";
 
   private static final String BEER_AGG = "beerAgg";
@@ -1479,7 +1481,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void getRequest_returnsBreweries_forGeometryFilterQueryWkt() {
+  void getRequest_returnsBreweries_forDefaultGeometryFilterQueryWkt() {
     var query = "{breweries(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
         + "\"POLYGON((206387.0439 447771.0547, 206384.4262 447765.9768, 206389.6081 447763.4587, "
         + "206392.4175 447767.804, 206391.3745 447770.732, 206387.0439 447771.0547))\"}}})"
@@ -1497,7 +1499,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequest_returnsBreweries_forGeometryFilterQueryWkb() {
+  void postRequest_returnsBreweries_forDefaultGeometryFilterQueryWkb() {
     var query = "{breweries(filter: {geometry: {intersects: {fromWKB: \"AQMAAAABAAAABgAAAEI+6FmYMQlB3EYDOGxUG0Gsi9togzE"
         + "JQVtCPuhXVBtBZohj3awxCUHrc7XVTVQbQXE9ClfDMQlBqMZLN19UG0Ej2/n+ujEJQXNoke1qVBtBQj7oWZgxCUHcRgM4bFQbQQ"
         + "==\"}}}) { identifier_brewery name }}";
@@ -1528,7 +1530,7 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
-  void postRequest_returnsBreweries_forGeometryFilterQueryGeoJson() {
+  void postRequest_returnsBreweries_forDefaultGeometryFilterQueryGeoJson() {
     var query = "{breweries(filter: {geometry: {intersects: {fromGeoJSON: \"{\\\"type\\\": \\\"Polygon\\\", "
         + "\\\"coordinates\\\": [[[206387.0439,447771.0547],[206384.4262,447765.9768],[206389.6081,447763.4587],"
         + "[206392.4175,447767.804],[206391.3745,447770.732],[206387.0439,447771.0547]]],"
@@ -1558,6 +1560,104 @@ class GraphQlPostgresIntegrationTest {
     assertThat(result.get("status"), is(HttpStatus.BAD_REQUEST.value()));
     assertThat(result.get("detail"), is("The filter input GeoJSON is invalid!"));
   }
+
+  // insersect
+  @Test
+  void getRequest_returnsRooms_forSegmentsIntersectsGeometryFilter() {
+    var geoAsWkt = "MultiPolygon (((216092.41684153329697438 568768.15405663626734167, "
+        + "216050.95043135021114722 567959.55905806645750999, 215221.62222768887295388 568477.88918535481207073, "
+        + "216092.41684153329697438 568768.15405663626734167)))";
+    var query =
+        "{rooms(filter: {geometry: {srid: 28992, intersects: {fromWKT: " + "\"" + geoAsWkt + "\"}}})" + " { name }}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(ROOMS), is(true));
+
+    List<Map<String, Object>> rooms = getNestedObjects(data, ROOMS);
+    assertThat(rooms.size(), is(1));
+
+    assertThat(rooms, IsIterableContainingInOrder.contains(hasEntry("name", "Room 1")));
+  }
+
+  @Test
+  void getRequest_returnsRooms_forSegmentsWithinGeometryFilter() {
+    var geoAsWkt = "MultiPolygon (((210909.25174733690801077 570909.87031132145784795, "
+        + "211281.18978613000945188 570894.99278976966161281, 211087.78200595758971758 570359.40201390767470002, "
+        + "210909.25174733690801077 570909.87031132145784795)))";
+
+    var query =
+        "{rooms(filter: {geometry: {srid: 28992, within: {fromWKT: " + "\"" + geoAsWkt + "\"}}})" + " { name }}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(ROOMS), is(true));
+
+    List<Map<String, Object>> rooms = getNestedObjects(data, ROOMS);
+    assertThat(rooms.size(), is(1));
+
+    assertThat(rooms, IsIterableContainingInOrder.contains(hasEntry("name", "Room 1")));
+  }
+
+  @Test
+  void getRequest_returnsRooms_forSegmentsContainsGeometryFilter() {
+    var geoAsWkt = "MultiPolygon (((6.18330167358269112 53.16425784117628695, 6.35888371684041154 53.16421120088322283,"
+        + "6.36187797012836054 53.08195886431762034, 6.14040884350146321 53.08591436347985848, "
+        + "6.18330167358269112 53.16425784117628695)))";
+
+    var query =
+        "{rooms(filter: {geometry: {srid: 28992, contains: {fromWKT: " + "\"" + geoAsWkt + "\"}}})" + " { name }}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(ROOMS), is(true));
+
+    List<Map<String, Object>> rooms = getNestedObjects(data, ROOMS);
+    assertThat(rooms.size(), is(1));
+
+    assertThat(rooms, IsIterableContainingInOrder.contains(hasEntry("name", "Room 1")));
+  }
+
+  @Test
+  void getRequest_returnsRooms_forSegmentsTouchesGeometryFilter() {
+    var geoAsWkt = "POINT(214593.046 570933.057)";
+    var query =
+        "{rooms(filter: {geometry: {srid: 28992, touches: {fromWKT: " + "\"" + geoAsWkt + "\"}}})" + " { name }}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey(ROOMS), is(true));
+
+    List<Map<String, Object>> rooms = getNestedObjects(data, ROOMS);
+    assertThat(rooms.size(), is(1));
+
+    assertThat(rooms, IsIterableContainingInOrder.contains(hasEntry("name", "Room 1")));
+  }
+
+  // TODO: is this test necessary?
+  // @Test
+  // void getRequest_returnsBreweries_forSegmentsGeometryFilter() {
+  // var geoAsWkt = "MultiPolygon (((216092.41684153329697438 568768.15405663626734167,
+  // 216050.95043135021114722 567959.55905806645750999, 215221.62222768887295388
+  // 568477.88918535481207073, 216092.41684153329697438 568768.15405663626734167)))";
+  // var query = "{breweries { rooms(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
+  // + "\"" + geoAsWkt + "\"}}})"
+  // + " { name }} }";
+  //
+  // var data = WebTestClientHelper.get(client, query);
+  //
+  // assertThat(data.size(), is(1));
+  // assertThat(data.containsKey(BREWERIES), is(true));
+  //
+  // List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
+  // assertThat(breweries.size(), is(1));
+  //
+  // assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery X")));
+  // }
 
   @Test
   void getRequest_returnsBreweries_forStringPartialFilter() {

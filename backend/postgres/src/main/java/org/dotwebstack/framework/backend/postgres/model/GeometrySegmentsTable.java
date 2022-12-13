@@ -15,20 +15,23 @@ import org.jooq.impl.DSL;
 public class GeometrySegmentsTable {
   private static final String TILE_ID = "tile_id";
 
-  private final String name;
+  private final String schemaName;
+
+  private final String tableName;
 
   private final String geoColumnName;
 
   private JoinColumn joinColumn;
 
-  public GeometrySegmentsTable(String name, String geoColumnName, String recordIdJoinColumn) {
-    this.name = name;
+  public GeometrySegmentsTable(String schemaName, String tableName, String geoColumnName, String recordIdJoinColumn) {
+    this.schemaName = schemaName;
+    this.tableName = tableName;
     this.geoColumnName = geoColumnName;
     this.joinColumn = createJoinColumn(recordIdJoinColumn);
   }
 
   public Table<Record> getTable() {
-    return DSL.table(DSL.name(name))
+    return DSL.table(DSL.name(schemaName, tableName))
         .as("gs");
   }
 

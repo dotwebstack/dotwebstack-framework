@@ -36,7 +36,6 @@ public abstract class GeometryConditionBuilderBase {
   @NotNull
   protected Object value;
 
-  @NotNull
   protected Integer srid;
 
   @NotNull
