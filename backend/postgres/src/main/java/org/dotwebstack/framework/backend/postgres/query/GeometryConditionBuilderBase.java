@@ -2,9 +2,11 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSridOfColumnName;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 
 import java.util.Optional;
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -53,10 +55,17 @@ public abstract class GeometryConditionBuilderBase {
     var columnSrid = getSridOfColumnName(postgresObjectField.getSpatial(), columnName);
     geometry.setSRID(columnSrid);
 
-    Field<Geometry> geoField = DSL.val(geometry)
+    return DSL.val(geometry)
         .cast(GEOMETRY_DATATYPE);
-    return geoField;
   }
+
+  protected void validateSupportedOperators(FilterOperator filterOperator) {
+    if (!getSupportedOperators().contains(filterOperator)) {
+      throw illegalArgumentException("Unsupported segment geometry filter operation");
+    }
+  }
+
+  abstract Set<FilterOperator> getSupportedOperators();
 
   abstract Optional<Condition> build();
 }

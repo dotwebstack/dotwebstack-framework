@@ -2,19 +2,27 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getColumnName;
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.INTERSECTS;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TOUCHES;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.WITHIN;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import java.util.Optional;
+import java.util.Set;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
 @Accessors(fluent = true)
 @Setter
 public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBase {
+  private static final Set<FilterOperator> SUPPORTED_OPERATORS =
+      Set.of(SRID, TYPE, INTERSECTS, CONTAINS, WITHIN, TOUCHES);
 
   private DefaultGeometryConditionBuilder() {}
 
@@ -24,6 +32,7 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
 
   Optional<Condition> build() {
     validateFields(this);
+    validateSupportedOperators(filterOperator);
 
     if (SRID == filterOperator) {
       return Optional.empty();
@@ -50,5 +59,9 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
       default:
         throw illegalArgumentException("Unsupported geometry filter operation");
     }
+  }
+
+  protected Set<FilterOperator> getSupportedOperators() {
+    return SUPPORTED_OPERATORS;
   }
 }

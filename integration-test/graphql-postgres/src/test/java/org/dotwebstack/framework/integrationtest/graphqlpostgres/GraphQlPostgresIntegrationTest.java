@@ -1638,27 +1638,6 @@ class GraphQlPostgresIntegrationTest {
     assertThat(rooms, IsIterableContainingInOrder.contains(hasEntry("name", "Room 1")));
   }
 
-  // TODO: is this test necessary?
-  // @Test
-  // void getRequest_returnsBreweries_forSegmentsGeometryFilter() {
-  // var geoAsWkt = "MultiPolygon (((216092.41684153329697438 568768.15405663626734167,
-  // 216050.95043135021114722 567959.55905806645750999, 215221.62222768887295388
-  // 568477.88918535481207073, 216092.41684153329697438 568768.15405663626734167)))";
-  // var query = "{breweries { rooms(filter: {geometry: {srid: 28992, intersects: {fromWKT: "
-  // + "\"" + geoAsWkt + "\"}}})"
-  // + " { name }} }";
-  //
-  // var data = WebTestClientHelper.get(client, query);
-  //
-  // assertThat(data.size(), is(1));
-  // assertThat(data.containsKey(BREWERIES), is(true));
-  //
-  // List<Map<String, Object>> breweries = getNestedObjects(data, BREWERIES);
-  // assertThat(breweries.size(), is(1));
-  //
-  // assertThat(breweries, IsIterableContainingInOrder.contains(hasEntry("name", "Brewery X")));
-  // }
-
   @Test
   void getRequest_returnsBreweries_forStringPartialFilter() {
     var query = "{breweries(filter: {postalAddress: {streetPartial: {match: \"Ch\"}}}) { name }}";

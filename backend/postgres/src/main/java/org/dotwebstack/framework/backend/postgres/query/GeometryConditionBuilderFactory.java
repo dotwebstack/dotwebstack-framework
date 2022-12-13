@@ -5,9 +5,12 @@ import static org.dotwebstack.framework.backend.postgres.query.SegmentsGeometryC
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.SRID;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.TYPE;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GeometryConditionBuilderFactory {
   public static GeometryConditionBuilderBase getGeometryConditionBuilder(PostgresObjectField objectField,
       FilterOperator operator) {

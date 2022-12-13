@@ -17,13 +17,17 @@ import org.locationtech.jts.geom.Geometry;
 @Setter
 @Accessors(fluent = true)
 public class SplitGeoTilesTableBuilder {
+  private static final String GEOM_RD = "geom_rd";
+
+  private static final String TILE_ID = "tile_id";
+
   private static final Table<Record> tilesTable = DSL.table(DSL.name("public", "tiles_10km"));
 
-  private static final Field<Object> TILE_ID_FIELD = DSL.field(DSL.name(tilesTable.getName(), "tile_id"))
-      .as("tile_id");
+  private static final Field<Object> TILE_ID_FIELD = DSL.field(DSL.name(tilesTable.getName(), TILE_ID))
+      .as(TILE_ID);
 
-  private static final Field<Object> GEOM_RD_FIELD = DSL.field(DSL.name(tilesTable.getName(), "geom_rd"))
-      .as("geom_rd");
+  private static final Field<Object> GEOM_RD_FIELD = DSL.field(DSL.name(tilesTable.getName(), GEOM_RD))
+      .as(GEOM_RD);
 
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
@@ -36,19 +40,6 @@ public class SplitGeoTilesTableBuilder {
     return new SplitGeoTilesTableBuilder();
   }
 
-  // SELECT
-  // tls.tile_id,
-  // ST_Intersection(
-  // tls.geom_rd,
-  // :geom
-  // ) AS geom_rd
-  // FROM
-  // cimow.tiles tls
-  // WHERE
-  // ST_Intersects(
-  // tls.geom_rd,
-  // :geom
-  // )
   Table<Record> build() {
     validateFields(this);
 
@@ -62,7 +53,7 @@ public class SplitGeoTilesTableBuilder {
 
   private Field<byte[]> createIntersectionField() {
     return DSL.field("ST_Intersection({0}, {1})", byte[].class, GEOM_RD_FIELD, geometryValue)
-        .as("geom_rd");
+        .as(GEOM_RD);
   }
 
   private Condition createIntersectionCondition() {

@@ -71,7 +71,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private Map<String, GeometrySegmentsTable> retrieveSegmentsTables(PostgresClient postgresClient) {
-    var result = postgresClient.fetch(SEGMENTS_TABLES_STMT)
+    return postgresClient.fetch(SEGMENTS_TABLES_STMT)
         .flatMap(row -> {
           var schemaName = (String) row.get(F_TABLE_SCHEMA);
           var tableName = (String) row.get(F_TABLE_NAME);
@@ -83,7 +83,6 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .onErrorContinue((e, i) -> LOG.warn("Retrieving segments tables failed. Exception: {}", e.getMessage()))
         .onErrorReturn(Map.of())
         .block();
-    return result;
   }
 
   private Map.Entry<String, GeometryMetadata> mapToGeoMetadata(Map<String, Object> row,
@@ -108,10 +107,9 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   private Mono<String> getRecordIdColumn(String tableName, PostgresClient postgresClient) {
     String query = String.format(RECORD_ID_JOIN_COLUMN_STMT, tableName);
-    var result = postgresClient.fetch(query)
+    return postgresClient.fetch(query)
         .map(row -> ((String) row.get("column_name")))
         .singleOrEmpty();
-    return result;
   }
 
   private Optional<GeometrySegmentsTable> getSegmentsTable(String tableName, String geoColumnName,
@@ -136,7 +134,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .stream()
         .map(PostgresObjectType.class::cast)
         .filter(not(PostgresObjectType::isNested))
-        .map(objectType -> createAllFieldsPerTableNameEntry(objectType))
+        .map(this::createAllFieldsPerTableNameEntry)
         .forEach(field -> setSpatial(spatial, field));
   }
 

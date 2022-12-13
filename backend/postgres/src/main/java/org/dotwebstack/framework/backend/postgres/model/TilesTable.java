@@ -1,10 +1,13 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TilesTable {
   private static final Table<Record> table = DSL.table(DSL.name("public", "tiles_10km"))
       .as("tls");

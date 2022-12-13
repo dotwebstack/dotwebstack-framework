@@ -29,8 +29,6 @@ import org.jooq.impl.DSL;
 public class SegmentsGeometryConditionBuilder extends GeometryConditionBuilderBase {
   private static final Set<FilterOperator> SUPPORTED_OPERATORS = Set.of(INTERSECTS, CONTAINS, WITHIN, TOUCHES);
 
-  private static final String INFIX = "__";
-
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
   private SegmentsGeometryConditionBuilder() {}
@@ -50,10 +48,8 @@ public class SegmentsGeometryConditionBuilder extends GeometryConditionBuilderBa
     return Optional.of(geometryCondition);
   }
 
-  private void validateSupportedOperators(FilterOperator filterOperator) {
-    if (!SUPPORTED_OPERATORS.contains(filterOperator)) {
-      throw illegalArgumentException("Unsupported segment geometry filter operation");
-    }
+  protected Set<FilterOperator> getSupportedOperators() {
+    return SUPPORTED_OPERATORS;
   }
 
   private Condition createGeometryCondition() {
