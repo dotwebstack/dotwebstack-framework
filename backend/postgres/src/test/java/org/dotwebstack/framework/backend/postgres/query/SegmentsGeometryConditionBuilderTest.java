@@ -1,25 +1,54 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static graphql.Assert.assertTrue;
 import static org.dotwebstack.framework.backend.postgres.query.SegmentsGeometryConditionBuilder.newSegmentsGeometryConditionBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.google.common.collect.ImmutableBiMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class SegmentsGeometryConditionBuilderTest {
+
+  @Test
+  void build_throwsException_forNotSupportedOperator() {
+    var objectField = mockObjectField();
+    var srid = 1;
+    var sourceTable = DSL.table(DSL.name("db", "brewery"))
+        .as("src");
+
+
+    Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      newSegmentsGeometryConditionBuilder().postgresObjectField(objectField)
+          .filterOperator(FilterOperator.EQ)
+          .value(Map.of())
+          .srid(srid)
+          .sourceTable(sourceTable)
+          .build();
+    });
+
+    String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.contains(expectedMessage));
+  }
+
   @ParameterizedTest
   @MethodSource("getGeometryConditionBuilderArguments")
   void build_returnsCondition_forArguments(Object geometryValue, FilterOperator filterOperator,
@@ -57,7 +86,7 @@ class SegmentsGeometryConditionBuilderTest {
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
         + "        and not ((ST_Contains(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"src\".\"record_id\" = \"gs\".\"brewery__record_id\"\n" + "))";
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
   }
 
   private static String getExpectedWithinCondition() {
@@ -68,7 +97,7 @@ class SegmentsGeometryConditionBuilderTest {
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
         + "        and not ((ST_Within(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"src\".\"record_id\" = \"gs\".\"brewery__record_id\"\n" + "))";
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
   }
 
   private static String getExpectedIntersectsCondition() {
@@ -79,7 +108,7 @@ class SegmentsGeometryConditionBuilderTest {
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
         + "        and (ST_Intersects(\"tls\".\"geom_rd\", \"gs\".\"geometry\"))\n" + "      )\n"
-        + "  where \"src\".\"record_id\" = \"gs\".\"brewery__record_id\"\n" + ")";
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + ")";
   }
 
   private static String getExpectedTouchesCondition() {
@@ -90,7 +119,7 @@ class SegmentsGeometryConditionBuilderTest {
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
         + "        and not ((ST_Touches(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"src\".\"record_id\" = \"gs\".\"brewery__record_id\"\n" + "))";
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
   }
 
   private PostgresObjectField mockObjectField() {
@@ -98,7 +127,7 @@ class SegmentsGeometryConditionBuilderTest {
 
     objectField.setType(SpatialConstants.GEOMETRY);
     var segmentsTable =
-        new GeometrySegmentsTable("dbeerpedia", "brewery__geometry__segments", "geometry", "brewery__record_id");
+        new GeometrySegmentsTable("dbeerpedia", "brewery__geometry__segments", "geometry", List.of(createJoinColumn()));
     var spatial = PostgresSpatial.builder()
         .srid(1)
         .segmentsTable(Optional.of(segmentsTable))
@@ -107,5 +136,12 @@ class SegmentsGeometryConditionBuilderTest {
 
     objectField.setSpatial(spatial);
     return objectField;
+  }
+
+  private JoinColumn createJoinColumn() {
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("brewery__record_id");
+    joinColumn.setReferencedColumn("record_id");
+    return joinColumn;
   }
 }

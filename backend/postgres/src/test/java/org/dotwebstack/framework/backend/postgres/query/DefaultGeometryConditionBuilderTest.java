@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
+import static graphql.Assert.assertTrue;
 import static org.dotwebstack.framework.backend.postgres.query.DefaultGeometryConditionBuilder.newDefaultGeometryConditionBuilder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -13,6 +14,8 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.impl.DSL;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,6 +40,28 @@ class DefaultGeometryConditionBuilderTest {
     assertThat(condition.isPresent(), is(true));
     assertThat(condition.get()
         .toString(), is(expectedCondition));
+  }
+
+  @Test
+  void build_throwsException_forNotSupportedOperator() {
+    var objectField = mockObjectField();
+    var srid = 1;
+    var sourceTable = DSL.table(DSL.name("db", "brewery"))
+        .as("src");
+
+    Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
+      newDefaultGeometryConditionBuilder().postgresObjectField(objectField)
+          .filterOperator(FilterOperator.EQ)
+          .value(Map.of())
+          .srid(srid)
+          .sourceTable(sourceTable)
+          .build();
+    });
+
+    String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.contains(expectedMessage));
   }
 
   private static Stream<Arguments> getGeometryConditionBuilderArguments() {

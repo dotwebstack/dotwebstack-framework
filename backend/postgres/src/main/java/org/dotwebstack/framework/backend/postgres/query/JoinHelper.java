@@ -156,6 +156,16 @@ public class JoinHelper {
     return andCondition(conditions);
   }
 
+  public static Condition createJoinConditions(Table<Record> table, Table<Record> referencedTable,
+      List<JoinColumn> joinColumns) {
+    List<Condition> conditions = joinColumns.stream()
+        .map(joinColumn -> column(table, joinColumn.getName())
+            .equal(column(referencedTable, joinColumn.getReferencedColumn())))
+        .collect(Collectors.toList());
+
+    return andCondition(conditions);
+  }
+
   public static Condition andCondition(List<Condition> conditions) {
     if (conditions.size() == 1) {
       return conditions.get(0);

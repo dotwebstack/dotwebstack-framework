@@ -4,6 +4,7 @@ import static org.jooq.impl.DSL.condition;
 import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.not;
 
+import java.util.List;
 import lombok.Data;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -23,11 +24,14 @@ public class GeometrySegmentsTable {
 
   private JoinColumn joinColumn;
 
-  public GeometrySegmentsTable(String schemaName, String tableName, String geoColumnName, String recordIdJoinColumn) {
+  private List<JoinColumn> joinColumns;
+
+  public GeometrySegmentsTable(String schemaName, String tableName, String geoColumnName,
+      List<JoinColumn> joinColumns) {
     this.schemaName = schemaName;
     this.tableName = tableName;
     this.geoColumnName = geoColumnName;
-    this.joinColumn = createJoinColumn(recordIdJoinColumn);
+    this.joinColumns = joinColumns;
   }
 
   public Table<Record> getTable() {
@@ -62,13 +66,5 @@ public class GeometrySegmentsTable {
 
   public Condition getTouchesCondition() {
     return not(condition("ST_Touches({0}, {1})", TilesTable.getGeomRdField(), getGeomRdField()));
-  }
-
-  private JoinColumn createJoinColumn(String recordIdJoinColumn) {
-    var result = new JoinColumn();
-    result.setName(recordIdJoinColumn);
-    result.setReferencedColumn("record_id");
-    return result;
-
   }
 }

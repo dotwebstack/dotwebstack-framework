@@ -10,8 +10,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
@@ -27,6 +29,16 @@ import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresSpatialBackendModuleTest {
+
+  private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
+      "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name, tc.table_name, "
+          + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
+          + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc "
+          + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
+          + " AND tc.table_schema = kcu.table_schema"
+          + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name"
+          + "    AND ccu.table_schema = tc.table_schema "
+          + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'";
 
   @Test
   void contructor_throwsNoException_onError() {
@@ -93,10 +105,18 @@ class PostgresSpatialBackendModuleTest {
     assertThat(addressSpatial.getSegmentsTable()
         .isPresent(), is(false));
 
-    var expectedSegmentsTable = new GeometrySegmentsTable("dbeerpedia", "brewery__brewery_geometry__segments",
-        "brewery_geometry", "brewery__record_id");
+    var expectedSegmentsTable = createdExpectedSegmentTable();
     assertThat(brewerySpatial.getSegmentsTable()
         .get(), is(expectedSegmentsTable));
+  }
+
+  private GeometrySegmentsTable createdExpectedSegmentTable() {
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("brewery__record_id");
+    joinColumn.setReferencedColumn("record_id");
+
+    return new GeometrySegmentsTable("dbeerpedia", "brewery__brewery_geometry__segments", "brewery_geometry",
+        List.of(joinColumn));
   }
 
   private Map<String, ObjectType<? extends ObjectField>> createObjectTypes() {
@@ -172,11 +192,11 @@ class PostgresSpatialBackendModuleTest {
     var geometryColumnsQuery = "SELECT f_table_schema, f_table_name, f_geometry_column, srid FROM geometry_columns";
     when(postgresClient.fetch(geometryColumnsQuery)).thenReturn(createGeoSridRows());
 
-    var joinColumnQuery = "SELECT column_name FROM information_schema.columns "
-        + "WHERE table_name = 'brewery__brewery_geometry__segments' and column_name like '%__record_id'";
+    var foreignkeysQuery = String.format(FOREIGNKEYS_SEGMENT_TABLE_STMT, "brewery__brewery_geometry__segments");
 
-    Map<String, Object> joinColumnRow = Map.of("column_name", "brewery__record_id");
-    when(postgresClient.fetch(joinColumnQuery)).thenReturn(Flux.just(joinColumnRow));
+    Map<String, Object> joinColumnRow =
+        Map.of("join_column_name", "brewery__record_id", "referenced_column_name", "record_id");
+    when(postgresClient.fetch(foreignkeysQuery)).thenReturn(Flux.just(joinColumnRow));
     return postgresClient;
   }
 

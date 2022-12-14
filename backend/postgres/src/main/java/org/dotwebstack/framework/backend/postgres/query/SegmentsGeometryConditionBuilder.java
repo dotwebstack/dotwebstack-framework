@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelper.validateFields;
-import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.SplitGeoTilesTableBuilder.newSplitGeoTilesTableBuilder;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.INTERSECTS;
@@ -92,9 +91,7 @@ public class SegmentsGeometryConditionBuilder extends GeometryConditionBuilderBa
   }
 
   private Condition createWhereCondition(final GeometrySegmentsTable segmentsTable) {
-    var joinColumn = segmentsTable.getJoinColumn();
-    return column(sourceTable, joinColumn.getReferencedColumn())
-        .equal(column(segmentsTable.getTable(), joinColumn.getName()));
+    return JoinHelper.createJoinConditions(segmentsTable.getTable(), sourceTable, segmentsTable.getJoinColumns());
   }
 
   private Table<Record> createSplitGeoTilesTable() {

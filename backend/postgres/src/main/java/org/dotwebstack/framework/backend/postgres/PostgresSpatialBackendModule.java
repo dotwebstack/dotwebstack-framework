@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.postgres.model.GeometryMetadata;
 import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
@@ -48,8 +49,15 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
       String.format("SELECT %s, %s, %s FROM geometry_columns where %s LIKE '%%__segments'", F_TABLE_SCHEMA,
           F_TABLE_NAME, F_GEOMETRY_COLUMN, F_TABLE_NAME);
 
-  private static final String RECORD_ID_JOIN_COLUMN_STMT =
-      "SELECT column_name FROM information_schema.columns WHERE table_name = '%s' and column_name like '%%__record_id'";
+  private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
+      "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name, tc.table_name, "
+          + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
+          + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc "
+          + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
+          + " AND tc.table_schema = kcu.table_schema"
+          + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name"
+          + "    AND ccu.table_schema = tc.table_schema "
+          + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'";
 
   private final Map<String, GeometryMetadata> geoMetadataByTableColumn;
 
@@ -75,9 +83,10 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .flatMap(row -> {
           var schemaName = (String) row.get(F_TABLE_SCHEMA);
           var tableName = (String) row.get(F_TABLE_NAME);
-          var recordIdColumn = getRecordIdColumn(tableName, postgresClient);
-          return recordIdColumn.map(recordIdColumnName -> createSegmentsTable(schemaName, tableName,
-              (String) row.get(F_GEOMETRY_COLUMN), recordIdColumnName));
+          var geoColumn = (String) row.get(F_GEOMETRY_COLUMN);
+          var joinColumns = getJoinColumns(tableName, postgresClient);
+          return joinColumns
+              .map(joinColumnList -> createSegmentsTable(schemaName, tableName, geoColumn, joinColumnList));
         })
         .collect(Collectors.toMap(GeometrySegmentsTable::getTableName, identity()))
         .onErrorContinue((e, i) -> LOG.warn("Retrieving segments tables failed. Exception: {}", e.getMessage()))
@@ -99,17 +108,20 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private GeometrySegmentsTable createSegmentsTable(String schemaName, String tableName, String geoColumnName,
-      String recordIdColumnName) {
-    // brewery__record_id -> record_id (referencedColumn)
-    // TODO add join column (record_id and tile_id)
-    return new GeometrySegmentsTable(schemaName, tableName, geoColumnName, recordIdColumnName);
+      List<JoinColumn> joinColumns) {
+    return new GeometrySegmentsTable(schemaName, tableName, geoColumnName, joinColumns);
   }
 
-  private Mono<String> getRecordIdColumn(String tableName, PostgresClient postgresClient) {
-    String query = String.format(RECORD_ID_JOIN_COLUMN_STMT, tableName);
+  private Mono<List<JoinColumn>> getJoinColumns(String tableName, PostgresClient postgresClient) {
+    String query = String.format(FOREIGNKEYS_SEGMENT_TABLE_STMT, tableName);
     return postgresClient.fetch(query)
-        .map(row -> ((String) row.get("column_name")))
-        .singleOrEmpty();
+        .map(row -> {
+          var joinColumn = new JoinColumn();
+          joinColumn.setName((String) row.get("join_column_name"));
+          joinColumn.setReferencedColumn((String) row.get("referenced_column_name"));
+          return joinColumn;
+        })
+        .collect(Collectors.toList());
   }
 
   private Optional<GeometrySegmentsTable> getSegmentsTable(String tableName, String geoColumnName,
