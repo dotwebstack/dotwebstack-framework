@@ -6,6 +6,7 @@
 - Core
   - [Diagrams](core/diagrams.md)
   - [Filtering](core/filtering.md)
+    - [Geometry Filter](core/filtering-geometries.md)
   - [Sorting](core/sorting.md)
   - [Paging](core/paging.md)
   

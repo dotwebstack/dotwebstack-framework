@@ -49,13 +49,14 @@ class DefaultGeometryConditionBuilderTest {
     var sourceTable = DSL.table(DSL.name("db", "brewery"))
         .as("src");
 
+    var defaultGeometryConditionBuilder = newDefaultGeometryConditionBuilder().postgresObjectField(objectField)
+        .filterOperator(FilterOperator.EQ)
+        .value(Map.of())
+        .srid(srid)
+        .sourceTable(sourceTable);
+
     Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      newDefaultGeometryConditionBuilder().postgresObjectField(objectField)
-          .filterOperator(FilterOperator.EQ)
-          .value(Map.of())
-          .srid(srid)
-          .sourceTable(sourceTable)
-          .build();
+      defaultGeometryConditionBuilder.build();
     });
 
     String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";

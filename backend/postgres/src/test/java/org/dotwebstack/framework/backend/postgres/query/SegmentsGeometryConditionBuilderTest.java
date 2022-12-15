@@ -33,14 +33,14 @@ class SegmentsGeometryConditionBuilderTest {
     var sourceTable = DSL.table(DSL.name("db", "brewery"))
         .as("src");
 
+    var segementGeometryCOnditionBuilder = newSegmentsGeometryConditionBuilder().postgresObjectField(objectField)
+        .filterOperator(FilterOperator.EQ)
+        .value(Map.of())
+        .srid(srid)
+        .sourceTable(sourceTable);
 
     Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      newSegmentsGeometryConditionBuilder().postgresObjectField(objectField)
-          .filterOperator(FilterOperator.EQ)
-          .value(Map.of())
-          .srid(srid)
-          .sourceTable(sourceTable)
-          .build();
+      segementGeometryCOnditionBuilder.build();
     });
 
     String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";
