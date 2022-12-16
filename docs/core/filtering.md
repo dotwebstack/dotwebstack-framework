@@ -258,9 +258,9 @@ CREATE TABLE IF NOT EXISTS public.tiles_10km AS
 SELECT x || '_' || y                                        AS tile_id,
 -- Create rectangle polygon
 ST_MakeEnvelope(x, y, x + 10000, y + 10000, 28992)  AS geom_rd
--- from bottom leftside: x = (-41171,606), y = (306846,073) in stappen van 10km (10000)
+-- from bottom leftside: x = (-41171,606), y = (306846,073) with steps of 10km (10000)
 FROM generate_series(-41200, 306000, 10000) x
--- from top rightside: x = (278026,057), y = (866614,784) in stappen van 10km (10000)
+-- from top rightside: x = (278026,057), y = (866614,784) with steps of 10km (10000)
 CROSS JOIN generate_series(280000, 870000, 10000) y;
 
 CREATE INDEX IF NOT EXISTS tiles_10km_sdx1 ON public.tiles_10km USING GIST (geom_rd);
@@ -270,10 +270,10 @@ This table is automatically updated during mutation of the geometry. When making
 dotwebstack will use the 'segments' table to create the filter conditon.
 
 The segment table must conform to the following conventions: <source table>__<geometry column>__segments
-- the segments table is prefixed by the name of the table which contains the geometry that needs to be split
+- the 'segments' table is prefixed by the name of the table which contains the geometry that needs to be split
   into segments
-- the middle part of the segments table is the name of the geometry column
-- the segments table has the postfix 'segments'
+- the middle part of the 'segments' table is the name of the geometry column
+- the 'segments' table has the postfix 'segments'
 
 The 'segments' table has at least three columns
 - tile_id: is a referenceto the 'tiles_10km' table
@@ -297,4 +297,4 @@ The table above results in the 'segments' table as shown underneath:
 | identifier                  |
 
 
-If the segments table conforms to the above conventions, dotwebstack will use the segments table when a geometry filter is applied. 
+If the 'segments' table conforms to the above conventions, dotwebstack will use the 'segments' table when a geometry filter is applied. 
