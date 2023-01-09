@@ -20,6 +20,9 @@ spatial:
       equivalent: 9067
 
 queries:
+  rooms:
+    type: Room
+    list: true
   beers:
     type: Beer
     list: true
@@ -67,6 +70,23 @@ subscriptions:
     type: Beer
 
 objectTypes:
+  Room:
+    table: db.room
+    filters:
+      geometry: {}
+    fields:
+      record_id:
+        type: ID
+      name:
+        type: String
+      brewery:
+        type: Brewery
+        joinColumns:
+          - name: brewery
+            referencedField: identifier_brewery
+      geometry:
+        type: Geometry
+
   Beer:
     table: db.beer
     fields:
@@ -202,6 +222,11 @@ objectTypes:
         joinColumns:
           - name: visit_address
             referencedColumn: identifier_address
+      rooms:
+        type: Room
+        list: true
+        nullable: true
+        mappedBy: brewery
       beers:
         type: Beer
         list: true

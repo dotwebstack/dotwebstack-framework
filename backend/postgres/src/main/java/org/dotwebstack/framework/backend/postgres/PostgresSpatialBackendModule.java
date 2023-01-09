@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static java.util.function.Function.identity;
 import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSegmentsTableName;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -11,6 +13,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.dotwebstack.framework.backend.postgres.model.GeometryMetadata;
+import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
+import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
@@ -23,6 +28,7 @@ import org.dotwebstack.framework.ext.spatial.backend.SpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @Slf4j
@@ -39,28 +45,92 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   private static final String GEOMETRY_COLUMNS_STMT = String.format("SELECT %s, %s, %s, %s FROM geometry_columns",
       F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOMETRY_COLUMN, SRID);
 
-  private final Map<String, Integer> sridByTableColumn;
+  private static final String SEGMENTS_TABLES_STMT =
+      String.format("SELECT %s, %s, %s FROM geometry_columns where %s LIKE '%%__segments'", F_TABLE_SCHEMA,
+          F_TABLE_NAME, F_GEOMETRY_COLUMN, F_TABLE_NAME);
+
+  private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
+      "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name, tc.table_name, "
+          + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
+          + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc "
+          + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
+          + " AND tc.table_schema = kcu.table_schema"
+          + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name"
+          + "    AND ccu.table_schema = tc.table_schema "
+          + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'";
+
+  private final Map<String, GeometryMetadata> geoMetadataByTableColumn;
 
   private final Schema schema;
 
   public PostgresSpatialBackendModule(Schema schema, PostgresClient postgresClient) {
     this.schema = schema;
-    this.sridByTableColumn = getSridByTableColumn(postgresClient);
+    this.geoMetadataByTableColumn = getGeoMetadataByTableColumn(postgresClient);
   }
 
-  private Map<String, Integer> getSridByTableColumn(PostgresClient postgresClient) {
+  private Map<String, GeometryMetadata> getGeoMetadataByTableColumn(PostgresClient postgresClient) {
+    var segmentsTables = retrieveSegmentsTables(postgresClient);
     return postgresClient.fetch(GEOMETRY_COLUMNS_STMT)
-        .map(this::mapToEntry)
+        .map(row -> mapToGeoMetadata(row, segmentsTables))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
         .onErrorReturn(Map.of())
         .block();
   }
 
-  private Map.Entry<String, Integer> mapToEntry(Map<String, Object> row) {
-    var key = row.get(F_TABLE_SCHEMA) + "." + row.get(F_TABLE_NAME) + "." + row.get(F_GEOMETRY_COLUMN);
-    var value = (int) row.get(SRID);
-    return new AbstractMap.SimpleEntry<>(key, value);
+  private Map<String, GeometrySegmentsTable> retrieveSegmentsTables(PostgresClient postgresClient) {
+    return postgresClient.fetch(SEGMENTS_TABLES_STMT)
+        .flatMap(row -> {
+          var schemaName = (String) row.get(F_TABLE_SCHEMA);
+          var tableName = (String) row.get(F_TABLE_NAME);
+          var geoColumn = (String) row.get(F_GEOMETRY_COLUMN);
+          var joinColumns = getJoinColumns(tableName, postgresClient);
+          return joinColumns
+              .map(joinColumnList -> createSegmentsTable(schemaName, tableName, geoColumn, joinColumnList));
+        })
+        .collect(Collectors.toMap(GeometrySegmentsTable::getTableName, identity()))
+        .onErrorContinue((e, i) -> LOG.warn("Retrieving segments tables failed. Exception: {}", e.getMessage()))
+        .onErrorReturn(Map.of())
+        .block();
+  }
+
+  private Map.Entry<String, GeometryMetadata> mapToGeoMetadata(Map<String, Object> row,
+      Map<String, GeometrySegmentsTable> segmentsTablesByName) {
+    var tableName = (String) row.get(F_TABLE_NAME);
+    var geoColumnName = (String) row.get(F_GEOMETRY_COLUMN);
+    var srid = (int) row.get(SRID);
+    var geoMetadata = GeometryMetadata.builder()
+        .srid(srid)
+        .segmentsTable(getSegmentsTable(tableName, geoColumnName, segmentsTablesByName))
+        .build();
+    return new AbstractMap.SimpleEntry<>(tableName.concat(".")
+        .concat(geoColumnName), geoMetadata);
+  }
+
+  private GeometrySegmentsTable createSegmentsTable(String schemaName, String tableName, String geoColumnName,
+      List<JoinColumn> joinColumns) {
+    return new GeometrySegmentsTable(schemaName, tableName, geoColumnName, joinColumns);
+  }
+
+  private Mono<List<JoinColumn>> getJoinColumns(String tableName, PostgresClient postgresClient) {
+    String query = String.format(FOREIGNKEYS_SEGMENT_TABLE_STMT, tableName);
+    return postgresClient.fetch(query)
+        .map(row -> {
+          var joinColumn = new JoinColumn();
+          joinColumn.setName((String) row.get("join_column_name"));
+          joinColumn.setReferencedColumn((String) row.get("referenced_column_name"));
+          return joinColumn;
+        })
+        .collect(Collectors.toList());
+  }
+
+  private Optional<GeometrySegmentsTable> getSegmentsTable(String tableName, String geoColumnName,
+      Map<String, GeometrySegmentsTable> segmentsTablesByName) {
+    var segmentsTableName = getSegmentsTableName(tableName, geoColumnName);
+    if (segmentsTablesByName.containsKey(segmentsTableName)) {
+      return Optional.of(segmentsTablesByName.get(segmentsTableName));
+    }
+    return Optional.empty();
   }
 
   @Override
@@ -76,8 +146,15 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .stream()
         .map(PostgresObjectType.class::cast)
         .filter(not(PostgresObjectType::isNested))
-        .map(objectType -> new AbstractMap.SimpleEntry<>(objectType.getTable(), getFields(objectType)))
+        .map(this::createAllFieldsPerTableNameEntry)
         .forEach(field -> setSpatial(spatial, field));
+  }
+
+  private Map.Entry<String, List<PostgresObjectField>> createAllFieldsPerTableNameEntry(PostgresObjectType objectType) {
+    var tableNames = objectType.getTable()
+        .split("\\.");
+    var table = tableNames[tableNames.length - 1];
+    return new AbstractMap.SimpleEntry<>(table, getFields(objectType));
   }
 
   private List<PostgresObjectField> getFields(PostgresObjectType objectType) {
@@ -106,7 +183,12 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private void addSpatial(Spatial spatial, String tableName, PostgresObjectField objectField) {
-    Integer srid = getSrid(tableName, objectField.getColumn());
+    var geoMetadata = getGeoMetadata(tableName, objectField.getColumn());
+    Optional<GeometrySegmentsTable> segmentsTable = geoMetadata.isPresent() ? geoMetadata.get()
+        .getSegmentsTable() : Optional.empty();
+    Integer srid = geoMetadata.isPresent() ? geoMetadata.get()
+        .getSrid() : null;
+
     BiMap<Integer, String> spatialReferenceSystems =
         getSpatialReferenceSystems(spatial, tableName, objectField.getColumn());
     BiMap<Integer, Integer> equivalents = getEquivalents(spatial, spatialReferenceSystems);
@@ -117,8 +199,8 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .equivalents(equivalents)
         .bboxes(bboxes)
         .srid(srid)
+        .segmentsTable(segmentsTable)
         .build();
-
     objectField.setSpatial(postgresSpatial);
   }
 
@@ -134,15 +216,15 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   }
 
   private BiMap<Integer, String> getSpatialReferenceSystems(Spatial spatial, String tableName, String geometryColumn) {
-    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getColumnSuffix, spatial, tableName, geometryColumn);
+    return getColumnNamesPerSrid(PostgresSpatialReferenceSystem::getColumnSuffix, spatial, tableName, geometryColumn);
   }
 
   private BiMap<Integer, String> getBboxes(Spatial spatial, String tableName, String geometryColumn) {
-    return getTableNamesPerSrid(PostgresSpatialReferenceSystem::getBboxColumnSuffix, spatial, tableName,
+    return getColumnNamesPerSrid(PostgresSpatialReferenceSystem::getBboxColumnSuffix, spatial, tableName,
         geometryColumn);
   }
 
-  private BiMap<Integer, String> getTableNamesPerSrid(Function<PostgresSpatialReferenceSystem, String> suffixFunc,
+  private BiMap<Integer, String> getColumnNamesPerSrid(Function<PostgresSpatialReferenceSystem, String> suffixFunc,
       Spatial spatial, String tableName, String geometryColumn) {
     return HashBiMap.create(spatial.getReferenceSystems()
         .entrySet()
@@ -164,14 +246,14 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .orElse(geometryColumn);
   }
 
+  private Optional<GeometryMetadata> getGeoMetadata(String tableName, String columnName) {
+    var tableColumn = tableName + "." + columnName;
+    return Optional.ofNullable(geoMetadataByTableColumn.get(tableColumn));
+  }
+
   private Integer getSrid(String tableName, String columnName) {
     var geometryTableColumn = tableName + "." + columnName;
-
-    return sridByTableColumn.keySet()
-        .stream()
-        .filter(key -> key.endsWith(geometryTableColumn))
-        .findFirst()
-        .map(sridByTableColumn::get)
-        .orElse(null);
+    var geoMetadata = geoMetadataByTableColumn.get(geometryTableColumn);
+    return geoMetadata != null ? geoMetadata.getSrid() : null;
   }
 }

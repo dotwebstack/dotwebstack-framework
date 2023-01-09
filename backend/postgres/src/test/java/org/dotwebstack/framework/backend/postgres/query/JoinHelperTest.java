@@ -166,7 +166,7 @@ class JoinHelperTest {
   }
 
   @Test
-  void createJoinConditions_returnsListCondition() {
+  void createJoinConditions_returnsCondition_forJoinColumnWithoutReferencedColumn() {
     var context = new Context();
     context.setFields(Map.of("arg", mock(ContextField.class)));
 
@@ -191,6 +191,24 @@ class JoinHelperTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), is("\"table1_test_ctx({0})\".\"arg\" = \"table2_test_ctx({0})\".\"arg\""));
+  }
+
+  @Test
+  void createJoinConditions_returnsCondition_forJoinColumnWithReferencedColumn() {
+    var junctionTable = DSL.table("junction_table");
+    var referencedTable = DSL.table("reference_table");
+    var joinColumns = List.of(createJoinColumn());
+    var result = createJoinConditions(junctionTable, referencedTable, joinColumns);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), is("\"junction_table\".\"junction__id\" = \"reference_table\".\"id\""));
+  }
+
+  private JoinColumn createJoinColumn() {
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("junction__id");
+    joinColumn.setReferencedColumn("id");
+    return joinColumn;
   }
 
 }
