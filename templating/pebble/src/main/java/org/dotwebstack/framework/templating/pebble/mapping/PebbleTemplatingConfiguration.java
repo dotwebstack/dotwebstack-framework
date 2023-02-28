@@ -1,12 +1,12 @@
 package org.dotwebstack.framework.templating.pebble.mapping;
 
-import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.extension.Extension;
-import com.mitchellbosecke.pebble.loader.ClasspathLoader;
-import com.mitchellbosecke.pebble.loader.DelegatingLoader;
-import com.mitchellbosecke.pebble.loader.FileLoader;
-import com.mitchellbosecke.pebble.loader.Loader;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.extension.Extension;
+import io.pebbletemplates.pebble.loader.ClasspathLoader;
+import io.pebbletemplates.pebble.loader.DelegatingLoader;
+import io.pebbletemplates.pebble.loader.FileLoader;
+import io.pebbletemplates.pebble.loader.Loader;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
