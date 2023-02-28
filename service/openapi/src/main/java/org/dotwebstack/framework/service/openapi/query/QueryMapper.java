@@ -14,6 +14,7 @@ import static org.dotwebstack.framework.service.openapi.mapping.MapperUtils.isPa
 
 import graphql.ExecutionInput;
 import graphql.GraphQL;
+import graphql.GraphQLContext;
 import graphql.language.Argument;
 import graphql.language.AstPrinter;
 import graphql.language.Field;
@@ -37,6 +38,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -332,7 +334,7 @@ public class QueryMapper {
     }
 
     return ((GraphQLScalarType) inputType).getCoercing()
-        .valueToLiteral(parameterValue);
+        .valueToLiteral(parameterValue, GraphQLContext.getDefault(), Locale.getDefault());
   }
 
   private boolean isSchemaNullabilityValid(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
