@@ -113,7 +113,6 @@ class OrchestrateConfiguration {
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, RuntimeWiring.newRuntimeWiring()
         .scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME)
-        .scalar(CoreScalars.OBJECT)
         .build());
   }
 }

@@ -44,7 +44,7 @@ class GraphqlControllerTest {
   void handleGet_shouldReturnMono_default() {
     var query = "{beers{identifier_beer name}}";
 
-    ExecutionResultImpl executionResult = ExecutionResultImpl.newExecutionResult()
+    var executionResult = ExecutionResultImpl.newExecutionResult()
         .data(Map.of("beers",
             List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
                 Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"))))
@@ -151,7 +151,7 @@ class GraphqlControllerTest {
   void handlePost_shouldReturnMono_applicationJson() {
     var body = Map.of("query", "{beers{identifier_beer name}}", "variables", Map.of());
 
-    ExecutionResultImpl executionResult = ExecutionResultImpl.newExecutionResult()
+    var executionResult = ExecutionResultImpl.newExecutionResult()
         .data(Map.of("beers",
             List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
                 Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"))))
@@ -181,7 +181,7 @@ class GraphqlControllerTest {
   void handlePost_shouldReturnMono_applicationGraphql() {
     var query = "{beers{identifier_beer name}}";
 
-    ExecutionResultImpl executionResult = ExecutionResultImpl.newExecutionResult()
+    var executionResult = ExecutionResultImpl.newExecutionResult()
         .data(Map.of("beers",
             List.of(Map.of("identifier_beer", "b0e7cf18-e3ce-439b-a63e-034c8452f59c", "name", "Beer 1"),
                 Map.of("identifier_beer", "1295f4c1-846b-440c-b302-80bbc1f9f3a9", "name", "Beer 2"))))

@@ -4,12 +4,6 @@ import graphql.schema.GraphQLScalarType;
 
 public final class CoreScalars {
 
-  public static final GraphQLScalarType OBJECT = GraphQLScalarType.newScalar()
-      .name("Object")
-      .description("Object type")
-      .coercing(new ObjectCoercing())
-      .build();
-
   public static final GraphQLScalarType DATE = GraphQLScalarType.newScalar()
       .name("Date")
       .description("Date type")
@@ -23,5 +17,4 @@ public final class CoreScalars {
       .build();
 
   private CoreScalars() {}
-
 }
