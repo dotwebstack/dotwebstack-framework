@@ -1,8 +1,12 @@
 package org.dotwebstack.framework.core.scalars;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.DEPRECATED_METHOD_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import graphql.GraphQLContext;
+import graphql.execution.CoercedVariables;
 import graphql.language.StringValue;
+import graphql.language.Value;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.LocalDate;
@@ -11,6 +15,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -19,7 +24,13 @@ import org.springframework.stereotype.Component;
 public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
 
   @Override
+  @SuppressWarnings("deprecation")
   public LocalDate serialize(@NonNull Object value) {
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
+  }
+
+  @Override
+  public LocalDate serialize(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
     if (value instanceof LocalDate) {
       return (LocalDate) value;
     }
@@ -58,12 +69,25 @@ public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public DateSupplier parseValue(@NonNull Object value) {
-    return new DateSupplier(false, serialize(value));
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
   }
 
   @Override
+  public DateSupplier parseValue(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
+    return new DateSupplier(false, serialize(value, context, locale));
+  }
+
+  @Override
+  @SuppressWarnings("deprecation")
   public DateSupplier parseLiteral(@NonNull Object value) {
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
+  }
+
+  @Override
+  public DateSupplier parseLiteral(@NonNull Value<?> value, @NonNull CoercedVariables variables,
+      @NonNull GraphQLContext context, @NonNull Locale locale) {
     if (value instanceof StringValue) {
       var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {
@@ -72,7 +96,7 @@ public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
 
       return new DateSupplier(false, LocalDate.parse(stringValue.getValue()));
     }
+
     throw unsupportedOperationException("Parsing of literal {} is not supported!", value);
   }
-
 }

@@ -55,6 +55,7 @@ public class QueryValidator implements SchemaValidator {
         .forEach((key, value) -> validateKeyValue(queryName, value, query.getType(), schema));
   }
 
+  @SuppressWarnings("unchecked")
   private void validateKeyAliases(List<Object> keys) {
     var set = new HashSet<String>();
 

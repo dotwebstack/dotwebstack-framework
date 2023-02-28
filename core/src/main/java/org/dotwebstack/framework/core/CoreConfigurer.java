@@ -14,15 +14,13 @@ public class CoreConfigurer implements GraphqlConfigurer {
 
   @Override
   public void configureTypeDefinitionRegistry(@NonNull TypeDefinitionRegistry typeDefinitionRegistry) {
-    typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.OBJECT.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATE.getName()));
     typeDefinitionRegistry.add(new ScalarTypeDefinition(CoreScalars.DATETIME.getName()));
   }
 
   @Override
   public void configureRuntimeWiring(@NonNull Builder builder) {
-    builder.scalar(CoreScalars.OBJECT)
-        .scalar(CoreScalars.DATE)
+    builder.scalar(CoreScalars.DATE)
         .scalar(CoreScalars.DATETIME);
   }
 }
