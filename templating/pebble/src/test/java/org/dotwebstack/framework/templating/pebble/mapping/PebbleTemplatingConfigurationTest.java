@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
