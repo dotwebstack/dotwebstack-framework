@@ -26,6 +26,12 @@ class DateTimeCoercingTest {
   private final DateTimeCoercing coercing = new DateTimeCoercing();
 
   @Test
+  void serialize_ThrowsException_ForDeprecatedSignature() {
+    var value = new Object();
+    assertThrows(UnsupportedOperationException.class, () -> coercing.serialize(value));
+  }
+
+  @Test
   void serialize_ReturnsDateTime_ForDateTime() {
     OffsetDateTime input = OffsetDateTime.now();
 
@@ -53,13 +59,19 @@ class DateTimeCoercingTest {
   }
 
   @Test
+  void parseValue_ThrowsException_ForDeprecatedSignature() {
+    var value = new Object();
+    assertThrows(UnsupportedOperationException.class, () -> coercing.parseValue(value));
+  }
+
+  @Test
   void parseValue_ThrowsException() {
     var value = new Object();
     assertThrows(CoercingSerializeException.class, () -> coercing.parseValue(value, DEFAULT_CONTEXT, DEFAULT_LOCALE));
   }
 
   @Test
-  void parseLiteral_ThrowsException() {
+  void parseLiteral_ThrowsException_ForDeprecatedSignature() {
     var value = new Object();
     assertThrows(UnsupportedOperationException.class, () -> coercing.parseLiteral(value));
   }
