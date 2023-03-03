@@ -40,10 +40,17 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   private static final String F_GEOMETRY_COLUMN = "f_geometry_column";
 
+  private static final String F_GEOGRAPHY_COLUMN = "f_geography_column";
+
   private static final String SRID = "srid";
 
   private static final String GEOMETRY_COLUMNS_STMT = String.format("SELECT %s, %s, %s, %s FROM geometry_columns",
       F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOMETRY_COLUMN, SRID);
+
+  private static final String GEOGRAPHY_COLUMNS_STMT = String.format("SELECT %s, %s, %s as %s, %s FROM geography_columns",
+      F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOGRAPHY_COLUMN, F_GEOMETRY_COLUMN, SRID);
+
+  private static final String GEO_COLUMNS_STMT = String.format("%s UNION ALL  %s", GEOMETRY_COLUMNS_STMT, GEOGRAPHY_COLUMNS_STMT);
 
   private static final String SEGMENTS_TABLES_STMT =
       String.format("SELECT %s, %s, %s FROM geometry_columns where %s LIKE '%%__segments'", F_TABLE_SCHEMA,
@@ -70,7 +77,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
 
   private Map<String, GeometryMetadata> getGeoMetadataByTableColumn(PostgresClient postgresClient) {
     var segmentsTables = retrieveSegmentsTables(postgresClient);
-    return postgresClient.fetch(GEOMETRY_COLUMNS_STMT)
+    return postgresClient.fetch(GEO_COLUMNS_STMT)
         .map(row -> mapToGeoMetadata(row, segmentsTables))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
         .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
@@ -186,8 +193,8 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     var geoMetadata = getGeoMetadata(tableName, objectField.getColumn());
     Optional<GeometrySegmentsTable> segmentsTable = geoMetadata.isPresent() ? geoMetadata.get()
         .getSegmentsTable() : Optional.empty();
-    Integer srid = geoMetadata.isPresent() ? geoMetadata.get()
-        .getSrid() : null;
+    Integer srid = geoMetadata.map(GeometryMetadata::getSrid)
+        .orElse(null);
 
     BiMap<Integer, String> spatialReferenceSystems =
         getSpatialReferenceSystems(spatial, tableName, objectField.getColumn());
