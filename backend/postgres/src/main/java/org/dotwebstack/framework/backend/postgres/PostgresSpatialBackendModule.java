@@ -47,10 +47,12 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
   private static final String GEOMETRY_COLUMNS_STMT = String.format("SELECT %s, %s, %s, %s FROM geometry_columns",
       F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOMETRY_COLUMN, SRID);
 
-  private static final String GEOGRAPHY_COLUMNS_STMT = String.format("SELECT %s, %s, %s as %s, %s FROM geography_columns",
-      F_TABLE_SCHEMA, F_TABLE_NAME, F_GEOGRAPHY_COLUMN, F_GEOMETRY_COLUMN, SRID);
+  private static final String GEOGRAPHY_COLUMNS_STMT =
+      String.format("SELECT %s, %s, %s as %s, %s FROM geography_columns", F_TABLE_SCHEMA, F_TABLE_NAME,
+          F_GEOGRAPHY_COLUMN, F_GEOMETRY_COLUMN, SRID);
 
-  private static final String GEO_COLUMNS_STMT = String.format("%s UNION ALL  %s", GEOMETRY_COLUMNS_STMT, GEOGRAPHY_COLUMNS_STMT);
+  private static final String GEO_COLUMNS_STMT =
+      String.format("%s UNION ALL %s", GEOMETRY_COLUMNS_STMT, GEOGRAPHY_COLUMNS_STMT);
 
   private static final String SEGMENTS_TABLES_STMT =
       String.format("SELECT %s, %s, %s FROM geometry_columns where %s LIKE '%%__segments'", F_TABLE_SCHEMA,

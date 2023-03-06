@@ -32,7 +32,7 @@ CREATE TABLE db.brewery (
   visit_address character varying REFERENCES db.address (identifier_address),
   geometry geometry(GeometryZ, 7415) NOT NULL,
   geometry_bbox geometry(Geometry, 7415) NOT NULL,
-  geometry_etrs89 geometry(GeometryZ, 7931) NOT NULL,
+  geometry_etrs89 geography(GeometryZ, 7931) NOT NULL,
   his_age INT,
   his_history character varying,
   multinational boolean,
