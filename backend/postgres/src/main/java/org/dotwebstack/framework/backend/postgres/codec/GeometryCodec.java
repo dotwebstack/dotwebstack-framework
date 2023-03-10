@@ -14,6 +14,7 @@ import io.r2dbc.postgresql.message.Format;
 import io.r2dbc.postgresql.util.Assert;
 import io.r2dbc.postgresql.util.ByteBufUtils;
 import java.util.Collections;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -30,8 +31,12 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
 
   private final int oid;
 
-  GeometryCodec(int oid) {
-    this.oid = oid;
+  private final Map<String, Integer> objectIds;
+
+  GeometryCodec(Map<String, Integer> objectIds) {
+    this.objectIds = objectIds;
+    // It does not matter for the Object type if it's a geometry or geography type.
+    oid = objectIds.get("geometry");
   }
 
   @Override
@@ -39,7 +44,7 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireNonNull(format, "format must not be null");
     Assert.requireNonNull(type, "type must not be null");
 
-    return dataType == oid;
+    return objectIds.containsValue(dataType);
   }
 
   @Override
