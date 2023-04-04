@@ -1,0 +1,32 @@
+queries:
+  brewery:
+    type: Brewery
+    keys:
+      - identifier
+
+objectTypes:
+  Brewery:
+    implementz:
+      - Organization
+    fields:
+      identifier:
+        type: ID
+
+  Transporter:
+    implementz:
+      - Organization
+
+interfaces:
+  Organization:
+    implementz:
+      - Object
+    fields:
+      name:
+        type: String
+        nullable: false
+
+  Object:
+    fields:
+      code:
+        type: String
+        nullable: false

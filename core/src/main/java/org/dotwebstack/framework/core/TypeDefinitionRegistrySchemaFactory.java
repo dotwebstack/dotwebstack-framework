@@ -10,8 +10,10 @@ import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.InterfaceTypeDefinition.newInterfaceTypeDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static graphql.language.TypeName.newTypeName;
 import static java.lang.Boolean.TRUE;
 import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -62,6 +64,7 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
+import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.math.BigDecimal;
@@ -116,6 +119,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var typeDefinitionRegistry = new TypeDefinitionRegistry();
 
     addEnumerations(typeDefinitionRegistry);
+    addInterfaceTypes(typeDefinitionRegistry);
     addObjectTypes(typeDefinitionRegistry);
     addFilterTypes(typeDefinitionRegistry);
     addSortTypes(typeDefinitionRegistry);
@@ -134,11 +138,45 @@ public class TypeDefinitionRegistrySchemaFactory {
           var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType));
 
+          if (objectType.getImplementz() != null) {
+            objectType.getImplementz()
+                .forEach(implementz -> {
+                  objectTypeDefinition.implementz(newTypeName().name(implementz).build());
+                  var implementedInterface = schema.getInterfaces().get(implementz);
+                  if (implementedInterface.getImplementz() != null) {
+                    implementedInterface.getImplementz()
+                        .forEach(additionalImplements -> objectTypeDefinition.implementz(newTypeName().name(additionalImplements)
+                            .build()));
+                  }
+                });
+          }
+
           if (objectType.isNested()) {
             objectTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
           }
 
           typeDefinitionRegistry.add(objectTypeDefinition.build());
+        });
+  }
+
+  private void addInterfaceTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
+    schema.getInterfaces()
+        .forEach((name, objectType) -> {
+          var interfaceTypeDefinition = newInterfaceTypeDefinition().name(name)
+              .definitions(createFieldDefinitions(objectType));
+
+          if (objectType.getImplementz() != null) {
+            objectType.getImplementz()
+                .forEach(implementz -> {
+                  interfaceTypeDefinition.implementz(newTypeName().name(implementz)
+                      .build());
+                });
+          }
+
+          if (objectType.isNested()) {
+            interfaceTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
+          }
+          typeDefinitionRegistry.add(interfaceTypeDefinition.build());
         });
   }
 

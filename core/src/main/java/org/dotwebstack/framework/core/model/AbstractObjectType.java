@@ -13,10 +13,12 @@ import org.dotwebstack.framework.core.config.FilterConfiguration;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 
 @Data
-@EqualsAndHashCode(exclude = {"fields"})
+@EqualsAndHashCode(exclude = {"fields", "implementz"})
 public abstract class AbstractObjectType<T extends ObjectField> implements ObjectType<T> {
 
   protected String name;
+
+  protected List<String> implementz;
 
   @Valid
   protected Map<String, T> fields = new HashMap<>();
@@ -30,6 +32,10 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
   public T getField(String name) {
     return ofNullable(fields.get(name))
         .orElseThrow(() -> illegalArgumentException("Field '{}' does not exist in object type '{}'.", name, getName()));
+  }
+
+  public void addField(String name, ObjectField field) {
+    fields.putIfAbsent(name, (T) field);
   }
 
   @Override

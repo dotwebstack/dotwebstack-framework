@@ -31,6 +31,7 @@ import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
+import graphql.language.InterfaceTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
@@ -217,6 +218,22 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     assertBreweryCollection(registry, fieldDefinitions);
     assertAddressCollection(registry, fieldDefinitions);
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerInterfaces_whenConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    var brewery = (ObjectTypeDefinition) registry.getType("Brewery").orElse(null);
+    var organization = (InterfaceTypeDefinition) registry.getType("Organization").orElse(null);
+
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getImplements().size(), is(1));
+    assertThat(organization, notNullValue());
+    assertThat(organization.getImplements().size(), is(1));
   }
 
   private void assertBreweryCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
