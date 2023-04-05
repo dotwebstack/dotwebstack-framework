@@ -39,7 +39,7 @@ class ModelConfigurationTest {
 
   @Test
   void schema_returnsSchema() throws IOException {
-    String path = "src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml";
+    String path = "src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
 
     File file = new File(path);
     String localUrl = file.toURI()

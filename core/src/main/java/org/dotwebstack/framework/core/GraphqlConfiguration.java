@@ -41,9 +41,8 @@ public class GraphqlConfiguration {
         .fieldVisibility(blockedFields)
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
 
-    typeResolvers.forEach((interfaceName, resolver) -> {
-      runtimeWiringBuilder.type(interfaceName, typeWriting -> typeWriting.typeResolver(resolver));
-    });
+    typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
+        typeWriting -> typeWriting.typeResolver(resolver)));
 
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
 
