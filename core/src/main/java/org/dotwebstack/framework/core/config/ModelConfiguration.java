@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
@@ -61,21 +59,31 @@ public class ModelConfiguration {
   }
 
   private void addImplementedFields(Schema schema) {
-    schema.getInterfaces().forEach((interfaceName, interfaceType) -> {
-      if (interfaceType.getImplementz() != null) {
-        interfaceType.getImplementz().forEach(implementz -> {
-          schema.getInterfaces().get(implementz).getFields().forEach(interfaceType::addField);
+    schema.getInterfaces()
+        .forEach((interfaceName, interfaceType) -> {
+          if (interfaceType.getImplements() != null) {
+            interfaceType.getImplements()
+                .forEach(implementz -> {
+                  schema.getInterfaces()
+                      .get(implementz)
+                      .getFields()
+                      .forEach(interfaceType::addField);
+                });
+          }
         });
-      }
-    });
 
-    schema.getObjectTypes().forEach((objectName, objectType) -> {
-      if (objectType.getImplementz() != null) {
-        objectType.getImplementz().forEach(implementz -> {
-          schema.getInterfaces().get(implementz).getFields().forEach(objectType::addField);
+    schema.getObjectTypes()
+        .forEach((objectName, objectType) -> {
+          if (objectType.getImplements() != null) {
+            objectType.getImplements()
+                .forEach(implementz -> {
+                  schema.getInterfaces()
+                      .get(implementz)
+                      .getFields()
+                      .forEach(objectType::addField);
+                });
+          }
         });
-      }
-    });
   }
 
   private ObjectMapper createObjectMapper() {

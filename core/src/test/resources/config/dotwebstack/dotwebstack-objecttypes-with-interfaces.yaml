@@ -6,19 +6,22 @@ queries:
 
 objectTypes:
   Brewery:
-    implementz:
+    implements:
       - Organization
     fields:
       identifier:
         type: ID
 
   Transporter:
-    implementz:
+    implements:
       - Organization
+    fields:
+      mileage:
+        type: String
 
 interfaces:
   Organization:
-    implementz:
+    implements:
       - Object
     fields:
       name:

@@ -64,7 +64,6 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
-import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.math.BigDecimal;
@@ -138,15 +137,18 @@ public class TypeDefinitionRegistrySchemaFactory {
           var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType));
 
-          if (objectType.getImplementz() != null) {
-            objectType.getImplementz()
+          if (objectType.getImplements() != null) {
+            objectType.getImplements()
                 .forEach(implementz -> {
-                  objectTypeDefinition.implementz(newTypeName().name(implementz).build());
-                  var implementedInterface = schema.getInterfaces().get(implementz);
-                  if (implementedInterface.getImplementz() != null) {
-                    implementedInterface.getImplementz()
-                        .forEach(additionalImplements -> objectTypeDefinition.implementz(newTypeName().name(additionalImplements)
-                            .build()));
+                  objectTypeDefinition.implementz(newTypeName().name(implementz)
+                      .build());
+                  var implementedInterface = schema.getInterfaces()
+                      .get(implementz);
+                  if (implementedInterface.getImplements() != null) {
+                    implementedInterface.getImplements()
+                        .forEach(additionalImplements -> objectTypeDefinition
+                            .implementz(newTypeName().name(additionalImplements)
+                                .build()));
                   }
                 });
           }
@@ -165,8 +167,8 @@ public class TypeDefinitionRegistrySchemaFactory {
           var interfaceTypeDefinition = newInterfaceTypeDefinition().name(name)
               .definitions(createFieldDefinitions(objectType));
 
-          if (objectType.getImplementz() != null) {
-            objectType.getImplementz()
+          if (objectType.getImplements() != null) {
+            objectType.getImplements()
                 .forEach(implementz -> {
                   interfaceTypeDefinition.implementz(newTypeName().name(implementz)
                       .build());

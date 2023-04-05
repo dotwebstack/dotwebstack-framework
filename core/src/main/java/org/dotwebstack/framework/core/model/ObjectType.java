@@ -9,7 +9,7 @@ public interface ObjectType<T extends ObjectField> {
 
   String getName();
 
-  List<String> getImplementz();
+  List<String> getImplements();
 
   void setName(String name);
 

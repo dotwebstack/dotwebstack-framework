@@ -227,13 +227,37 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
-    var brewery = (ObjectTypeDefinition) registry.getType("Brewery").orElse(null);
-    var organization = (InterfaceTypeDefinition) registry.getType("Organization").orElse(null);
+    var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
+        .orElse(null);
+    var organization = (InterfaceTypeDefinition) registry.getType("Organization")
+        .orElse(null);
 
     assertThat(brewery, notNullValue());
-    assertThat(brewery.getImplements().size(), is(1));
+    assertThat(brewery.getImplements()
+        .size(), is(2));
     assertThat(organization, notNullValue());
-    assertThat(organization.getImplements().size(), is(1));
+    assertThat(organization.getImplements()
+        .size(), is(1));
+  }
+
+  @Test
+  void typeDefinitionRegistry_NoRegisteredInterfaces_whenNotConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
+        .orElse(null);
+    var beer = (ObjectTypeDefinition) registry.getType("Beer")
+        .orElse(null);
+
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getImplements()
+        .size(), is(0));
+    assertThat(beer, notNullValue());
+    assertThat(beer.getImplements()
+        .size(), is(0));
   }
 
   private void assertBreweryCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
