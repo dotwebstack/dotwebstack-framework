@@ -43,6 +43,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
@@ -137,21 +138,24 @@ public class TypeDefinitionRegistrySchemaFactory {
           var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType));
 
-          if (objectType.getImplements() != null) {
-            objectType.getImplements()
-                .forEach(implementz -> {
+          objectType.getImplements()
+              .forEach(implementz -> {
+                var implementedInterface = schema.getInterfaces()
+                    .get(implementz);
+                if (implementedInterface != null) {
                   objectTypeDefinition.implementz(newTypeName().name(implementz)
                       .build());
-                  var implementedInterface = schema.getInterfaces()
-                      .get(implementz);
-                  if (implementedInterface.getImplements() != null) {
-                    implementedInterface.getImplements()
-                        .forEach(additionalImplements -> objectTypeDefinition
-                            .implementz(newTypeName().name(additionalImplements)
-                                .build()));
-                  }
-                });
-          }
+
+                  implementedInterface.getImplements()
+                      .forEach(additionalImplements -> objectTypeDefinition
+                          .implementz(newTypeName().name(additionalImplements)
+                              .build()));
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented  Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
+                      name);
+                }
+              });
 
           if (objectType.isNested()) {
             objectTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
@@ -163,19 +167,23 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private void addInterfaceTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
     schema.getInterfaces()
-        .forEach((name, objectType) -> {
+        .forEach((name, interfaceType) -> {
           var interfaceTypeDefinition = newInterfaceTypeDefinition().name(name)
-              .definitions(createFieldDefinitions(objectType));
+              .definitions(createFieldDefinitions(interfaceType));
 
-          if (objectType.getImplements() != null) {
-            objectType.getImplements()
-                .forEach(implementz -> {
+          interfaceType.getImplements()
+              .forEach(implementz -> {
+                if (schema.getInterfaces()
+                    .containsKey(implementz)) {
                   interfaceTypeDefinition.implementz(newTypeName().name(implementz)
                       .build());
-                });
-          }
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
+                }
+              });
 
-          if (objectType.isNested()) {
+          if (interfaceType.isNested()) {
             interfaceTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
           }
           typeDefinitionRegistry.add(interfaceTypeDefinition.build());

@@ -34,7 +34,7 @@ public class TypeResolversFactory {
               schema.getInterfaces()
                   .values()
                   .stream())
-              .filter(o -> o.getImplements() != null && o.getImplements()
+              .filter(o -> o.getImplements()
                   .contains(name))
               .map(ObjectType::getName)
               .collect(Collectors.toList());

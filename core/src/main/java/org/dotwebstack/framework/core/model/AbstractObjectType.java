@@ -4,6 +4,7 @@ import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,9 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
 
   @Override
   public List<String> getImplements() {
+    if (implementz == null) {
+      return Collections.emptyList();
+    }
     return implementz;
   }
 

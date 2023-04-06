@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.config;
 
 import static java.util.stream.Collectors.joining;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -61,28 +62,38 @@ public class ModelConfiguration {
   private void addImplementedFields(Schema schema) {
     schema.getInterfaces()
         .forEach((interfaceName, interfaceType) -> {
-          if (interfaceType.getImplements() != null) {
-            interfaceType.getImplements()
-                .forEach(implementz -> {
+          interfaceType.getImplements()
+              .forEach(implementz -> {
+                if (schema.getInterfaces()
+                    .containsKey(implementz)) {
                   schema.getInterfaces()
                       .get(implementz)
                       .getFields()
                       .forEach(interfaceType::addField);
-                });
-          }
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz,
+                      interfaceName);
+                }
+              });
         });
 
     schema.getObjectTypes()
         .forEach((objectName, objectType) -> {
-          if (objectType.getImplements() != null) {
-            objectType.getImplements()
-                .forEach(implementz -> {
+          objectType.getImplements()
+              .forEach(implementz -> {
+                if (schema.getInterfaces()
+                    .containsKey(implementz)) {
                   schema.getInterfaces()
                       .get(implementz)
                       .getFields()
                       .forEach(objectType::addField);
-                });
-          }
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
+                      objectName);
+                }
+              });
         });
   }
 
