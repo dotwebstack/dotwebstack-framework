@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
-import org.dotwebstack.framework.core.TypeDefinitionRegistrySchemaFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.validators.FilterValidator;
 import org.dotwebstack.framework.core.config.validators.SchemaValidator;
@@ -58,9 +57,13 @@ class ModelConfigurationTest {
   }
 
   @ParameterizedTest
-  @CsvSource({"src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-objecttypes.yaml, ObjectType, Brewery",
-      "src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-interfaces.yaml, Interface, Organization"})
-  void schema_throwsException_whenNonExistentInterfaceConfigured(String path, String type, String objectName) throws IOException {
+  @CsvSource({
+      "src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-objecttypes.yaml,"
+          + " ObjectType, Brewery",
+      "src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-interfaces.yaml,"
+          + " Interface, Organization"})
+  void schema_throwsException_whenNonExistentInterfaceConfigured(String path, String type, String objectName)
+      throws IOException {
     File file = new File(path);
     String localUrl = file.toURI()
         .toURL()
@@ -69,6 +72,8 @@ class ModelConfigurationTest {
     var exception =
         assertThrows(InvalidConfigurationException.class, () -> modelConfiguration.schema(localUrl, validatorList));
 
-    assertThat(exception.getMessage(), is(String.format("Implemented Interface 'NonExistentInterface' not found in provided schema for %s '%s'.", type, objectName)));
+    assertThat(exception.getMessage(),
+        is(String.format("Implemented Interface 'NonExistentInterface' not found in provided schema for %s '%s'.", type,
+            objectName)));
   }
 }
