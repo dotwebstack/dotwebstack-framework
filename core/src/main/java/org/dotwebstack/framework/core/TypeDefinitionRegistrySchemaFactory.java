@@ -152,7 +152,7 @@ public class TypeDefinitionRegistrySchemaFactory {
                               .build()));
                 } else {
                   throw invalidConfigurationException(
-                      "Implemented  Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
+                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
                       name);
                 }
               });

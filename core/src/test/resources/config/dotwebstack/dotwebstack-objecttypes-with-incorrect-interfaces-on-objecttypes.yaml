@@ -1,0 +1,35 @@
+queries:
+  brewery:
+    type: Brewery
+    keys:
+      - identifier
+
+objectTypes:
+  Brewery:
+    implements:
+      - NonExistentInterface
+    fields:
+      identifier:
+        type: ID
+
+  Transporter:
+    implements:
+      - NonExistentInterface
+    fields:
+      mileage:
+        type: String
+
+interfaces:
+  Organization:
+    implements:
+      - Object
+    fields:
+      name:
+        type: String
+        nullable: false
+
+  Object:
+    fields:
+      code:
+        type: String
+        nullable: false
