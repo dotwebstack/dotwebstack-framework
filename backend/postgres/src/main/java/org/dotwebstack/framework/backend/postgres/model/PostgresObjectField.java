@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import static java.util.Optional.ofNullable;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
@@ -30,8 +29,6 @@ public class PostgresObjectField extends AbstractObjectField {
 
   private String column;
 
-  private String columnPrefix;
-
   @Valid
   private List<JoinColumn> joinColumns = new ArrayList<>();
 
@@ -55,7 +52,6 @@ public class PostgresObjectField extends AbstractObjectField {
     super(objectField);
     this.spatial = objectField.getSpatial();
     this.column = objectField.getColumn();
-    this.columnPrefix = objectField.getColumnPrefix();
     this.joinColumns = objectField.getJoinColumns();
     this.joinTable = objectField.getJoinTable();
     this.mappedBy = objectField.getMappedBy();
@@ -76,20 +72,13 @@ public class PostgresObjectField extends AbstractObjectField {
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
 
-      column = ofNullable(this.columnPrefix).or(() -> ofNullable(ancestors).map(this::toColumn))
+      column = ofNullable(ancestors).map(this::toColumn)
           .map(prefix -> prefix.concat(columnName))
           .orElse(columnName);
     }
   }
 
   private String toColumn(List<PostgresObjectField> ancestors) {
-    if (!ancestors.isEmpty()) {
-      var parent = ancestors.get(ancestors.size() - 1);
-
-      if (isNotBlank(parent.getColumnPrefix())) {
-        return parent.getColumnPrefix();
-      }
-    }
     return ancestors.stream()
         .map(PostgresObjectField::getName)
         .map(StringHelper::toSnakeCase)
@@ -101,20 +90,10 @@ public class PostgresObjectField extends AbstractObjectField {
     this.spatial = spatial;
   }
 
-  public boolean hasSpatial() {
-    return spatial != null;
-  }
-
   public boolean hasNestedFields() {
     return Optional.of(this)
         .map(AbstractObjectField::getTargetType)
         .filter(ObjectType::isNested)
         .isPresent();
-  }
-
-  public List<String> createPrefixes(List<String> base) {
-    var prefixes = new ArrayList<>(base);
-    prefixes.add(getName());
-    return prefixes;
   }
 }

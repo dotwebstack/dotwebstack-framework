@@ -294,11 +294,11 @@ class SelectBuilderTest {
 
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
-            + "columnPrefix=null, joinColumns=[JoinColumn(name=postal_address, referencedField=ref.identifier, "
+            + "joinColumns=[JoinColumn(name=postal_address, referencedField=ref.identifier, "
             + "referencedColumn=null)], joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, "
-            + "spatial=null), PostgresObjectField(column=ref, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
   }
@@ -334,10 +334,10 @@ class SelectBuilderTest {
 
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
-            + "columnPrefix=null, joinColumns=[], joinTable=null, mappedBy=null, mappedByObjectField=null, "
-            + "presenceColumn=null, spatial=null), PostgresObjectField(column=ref, columnPrefix=null, joinColumns=[], "
+            + "joinColumns=[], joinTable=null, mappedBy=null, mappedByObjectField=null, "
+            + "presenceColumn=null, spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], "
             + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=identifier, columnPrefix=null, joinColumns=[], joinTable=null, "
+            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
   }
