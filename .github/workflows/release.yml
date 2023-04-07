@@ -28,11 +28,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Setup JDK 11
+      - name: Setup JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'temurin'
           server-id: ossrh
           server-username: OSSRH_USERNAME # env variable for OSSRH username
           server-password: OSSRH_TOKEN # env variable for OSSRH token
