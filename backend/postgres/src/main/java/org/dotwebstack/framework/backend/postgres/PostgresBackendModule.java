@@ -59,7 +59,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
           objectType.getFields()
               .values()
               .stream()
-              .filter(field -> field.getTargetType() == null || !field.hasNestedFields())
               .forEach(PostgresObjectField::initColumns);
 
           // Initialize nested columns
