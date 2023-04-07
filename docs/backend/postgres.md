@@ -231,30 +231,6 @@ Simplified configuration example
         type: History
 ```
 
-#### Column prefix
-
-Column prefix can be used to prefix each field within the nested object. Fields with a `column` property will be ignored. 
-The outcome for the nested history object of the example below will be `his_age` and `history`. 
-
-```yaml
-  Brewery:
-    table: db.brewery
-    fields:
-      name:
-        type: String
-      history:
-        type: History
-        columnPrefix: his_
-
-  History:
-    fields:
-      age:
-        type: Int
-      history:
-        type: String
-        column: history
-```
-
 #### Presence column
 
 The presence column can be used for nested objects which are nullable. In the example below the `his_age` column will be used 

@@ -39,12 +39,16 @@ public abstract class AbstractObjectField implements ObjectField {
   @Valid
   protected ObjectType<? extends ObjectField> aggregationOfType;
 
-  private ObjectType<? extends ObjectField> targetType;
+  protected ObjectType<? extends ObjectField> targetType;
 
   @Valid
   protected List<FieldArgument> arguments = new ArrayList<>();
 
   public boolean isEnumeration() {
     return enumeration != null;
+  }
+
+  protected AbstractObjectField() {
+    super();
   }
 }

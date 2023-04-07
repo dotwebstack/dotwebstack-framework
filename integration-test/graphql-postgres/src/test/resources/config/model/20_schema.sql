@@ -33,8 +33,8 @@ CREATE TABLE db.brewery (
   geometry geometry(GeometryZ, 7415) NOT NULL,
   geometry_bbox geometry(Geometry, 7415) NOT NULL,
   geometry_etrs89 geography(GeometryZ, 7931) NOT NULL,
-  his_age INT,
-  his_history character varying,
+  history__age INT,
+  history__history character varying,
   multinational boolean,
   created timestamp NOT NULL
 );

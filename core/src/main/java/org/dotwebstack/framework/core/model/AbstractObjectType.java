@@ -36,4 +36,8 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
   public boolean isNested() {
     return false;
   }
+
+  protected AbstractObjectType() {
+    super();
+  }
 }
