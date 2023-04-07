@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -46,5 +47,21 @@ class PostgresObjectFieldTest {
     var result = objectField.getColumn();
 
     assertThat(result, is("foo__bar"));
+  }
+
+  @Test
+  void new_returnsCopy_forObjectField() {
+    var objectField = new PostgresObjectField();
+    objectField.setName("identifier");
+    objectField.setType("String");
+    objectField.setJoinColumns(List.of(new JoinColumn()));
+    objectField.setJoinTable(new JoinTable());
+    objectField.setMappedBy("mappedBy");
+    objectField.setMappedByObjectField(new PostgresObjectField());
+    objectField.setPresenceColumn("presenceColumn");
+
+    var result = new PostgresObjectField(objectField);
+
+    assertThat(result, equalTo(objectField));
   }
 }

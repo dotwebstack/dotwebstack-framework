@@ -1,12 +1,16 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.hamcrest.CoreMatchers;
+import java.util.List;
+import java.util.Map;
+import org.dotwebstack.framework.core.config.FilterConfiguration;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.junit.jupiter.api.Test;
 
 class PostgresObjectTypeTest {
@@ -23,26 +27,39 @@ class PostgresObjectTypeTest {
     postgresObjectType.setTable("@@@");
 
     assertFalse(postgresObjectType.isNested());
-    assertThat(postgresObjectType.getTable(), CoreMatchers.is("@@@"));
+    assertThat(postgresObjectType.getTable(), is("@@@"));
   }
 
   @Test
   void equalsObjects_returnsTrue() {
     postgresObjectType.setTable("@@@");
 
-    PostgresObjectType postgresObjectType2 = new PostgresObjectType();
-    postgresObjectType2.setTable("@@@");
+    var result = new PostgresObjectType();
+    result.setTable("@@@");
 
-    assertEquals(postgresObjectType, postgresObjectType2);
+    assertThat(result, equalTo(postgresObjectType));
   }
 
   @Test
   void equalsObjects_returnsFalse() {
     postgresObjectType.setTable("@@@");
 
-    PostgresObjectType postgresObjectType2 = new PostgresObjectType();
-    postgresObjectType2.setTable("%%%");
+    var result = new PostgresObjectType();
+    result.setTable("%%%");
 
-    assertNotEquals(postgresObjectType, postgresObjectType2);
+    assertThat(result, not(equalTo(postgresObjectType)));
+  }
+
+  @Test
+  void new_returnsCopy_forObjectType() {
+    var objectType = new PostgresObjectType();
+    objectType.setName("testObject");
+    objectType.setDistinct(true);
+    objectType.setFilters(Map.of("filter", new FilterConfiguration()));
+    objectType.setSortableBy(Map.of("sort", List.of(new SortableByConfiguration())));
+
+    var result = new PostgresObjectType(objectType, List.of());
+
+    assertThat(result, equalTo(objectType));
   }
 }
