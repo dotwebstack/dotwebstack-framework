@@ -13,6 +13,9 @@ public class ExceptionHelper {
 
   public static final String UNSUPPORTED_TYPE_ERROR_TEXT = "unsupported type: '{}'";
 
+  public static final String DEPRECATED_METHOD_ERROR_TEXT =
+      "This method signature is deprecated and should not be used.";
+
   protected ExceptionHelper() {}
 
   public static String formatMessage(String message, Object... arguments) {

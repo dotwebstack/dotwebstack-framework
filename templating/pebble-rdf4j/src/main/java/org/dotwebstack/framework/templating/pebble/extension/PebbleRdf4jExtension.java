@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.templating.pebble.extension;
 
-import com.mitchellbosecke.pebble.extension.AbstractExtension;
-import com.mitchellbosecke.pebble.extension.Filter;
+import io.pebbletemplates.pebble.extension.AbstractExtension;
+import io.pebbletemplates.pebble.extension.Filter;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.templating.pebble.filter.JsonLdFilter;
@@ -24,5 +24,4 @@ public class PebbleRdf4jExtension extends AbstractExtension {
     filters.put(JSON_LD_FILTER, jsonLdFilter);
     return filters;
   }
-
 }

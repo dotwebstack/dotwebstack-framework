@@ -12,6 +12,7 @@ import io.r2dbc.postgresql.api.PostgresqlConnection;
 import io.r2dbc.postgresql.api.PostgresqlResult;
 import io.r2dbc.postgresql.api.PostgresqlStatement;
 import io.r2dbc.postgresql.codec.CodecRegistry;
+import io.r2dbc.spi.Row;
 import java.util.function.BiFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,8 +36,12 @@ class GeometryCodecRegistrarTest {
   @Test
   void register_registerOids_withQuery() {
     PostgresqlResult result = mock(PostgresqlResult.class);
+    var row = mock(Row.class);
+    when(row.get("typname", String.class)).thenReturn("geometry");
+    when(row.get("oid", Integer.class)).thenReturn(1234);
+
     lenient().when(result.map(any(BiFunction.class)))
-        .thenReturn(Flux.just(1234));
+        .thenReturn(Flux.just(row));
 
     PostgresqlStatement statement = mock(PostgresqlStatement.class);
 

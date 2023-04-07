@@ -189,7 +189,9 @@ class PostgresSpatialBackendModuleTest {
         + "FROM geometry_columns where f_table_name LIKE '%__segments'";
     when(postgresClient.fetch(segmentTablesQuery)).thenReturn(Flux.just(segmnentTableRow));
 
-    var geometryColumnsQuery = "SELECT f_table_schema, f_table_name, f_geometry_column, srid FROM geometry_columns";
+    var geometryColumnsQuery = "SELECT f_table_schema, f_table_name, f_geometry_column, srid FROM geometry_columns "
+        + "UNION ALL "
+        + "SELECT f_table_schema, f_table_name, f_geography_column as f_geometry_column, srid FROM geography_columns";
     when(postgresClient.fetch(geometryColumnsQuery)).thenReturn(createGeoSridRows());
 
     var foreignkeysQuery = String.format(FOREIGNKEYS_SEGMENT_TABLE_STMT, "brewery__brewery_geometry__segments");

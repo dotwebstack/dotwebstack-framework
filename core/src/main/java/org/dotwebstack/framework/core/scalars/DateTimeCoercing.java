@@ -1,12 +1,17 @@
 package org.dotwebstack.framework.core.scalars;
 
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.DEPRECATED_METHOD_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 
+import graphql.GraphQLContext;
+import graphql.execution.CoercedVariables;
 import graphql.language.StringValue;
+import graphql.language.Value;
 import graphql.schema.Coercing;
 import graphql.schema.CoercingSerializeException;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 import java.util.Objects;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -15,7 +20,13 @@ import org.springframework.stereotype.Component;
 class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
 
   @Override
+  @SuppressWarnings("deprecation")
   public OffsetDateTime serialize(@NonNull Object value) {
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
+  }
+
+  @Override
+  public OffsetDateTime serialize(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
     if (value instanceof OffsetDateTime) {
       return (OffsetDateTime) value;
     }
@@ -34,12 +45,25 @@ class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public DateTimeSupplier parseValue(@NonNull Object value) {
-    return new DateTimeSupplier(false, serialize(value));
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
   }
 
   @Override
+  public DateTimeSupplier parseValue(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
+    return new DateTimeSupplier(false, serialize(value, context, locale));
+  }
+
+  @Override
+  @SuppressWarnings("deprecation")
   public DateTimeSupplier parseLiteral(@NonNull Object value) {
+    throw unsupportedOperationException(DEPRECATED_METHOD_ERROR_TEXT);
+  }
+
+  @Override
+  public DateTimeSupplier parseLiteral(@NonNull Value<?> value, @NonNull CoercedVariables variables,
+      @NonNull GraphQLContext context, @NonNull Locale locale) {
     if (value instanceof StringValue) {
       var stringValue = (StringValue) value;
       if (Objects.equals("NOW", stringValue.getValue())) {

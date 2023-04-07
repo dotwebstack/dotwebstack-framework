@@ -3,7 +3,7 @@ package org.dotwebstack.framework.templating.pebble.extension;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.mitchellbosecke.pebble.extension.Filter;
+import io.pebbletemplates.pebble.extension.Filter;
 import java.util.Map;
 import org.dotwebstack.framework.templating.pebble.filter.JsonLdFilter;
 import org.junit.jupiter.api.Test;

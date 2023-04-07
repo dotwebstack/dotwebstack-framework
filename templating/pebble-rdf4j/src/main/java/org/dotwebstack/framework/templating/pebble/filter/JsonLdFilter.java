@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.templating.pebble.filter;
 
-import com.mitchellbosecke.pebble.extension.Filter;
-import com.mitchellbosecke.pebble.template.EvaluationContext;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
+import io.pebbletemplates.pebble.extension.Filter;
+import io.pebbletemplates.pebble.template.EvaluationContext;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;

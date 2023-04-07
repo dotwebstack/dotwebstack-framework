@@ -13,6 +13,7 @@ import io.r2dbc.postgresql.message.Format;
 import io.r2dbc.postgresql.util.ByteBufUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Assertions;
@@ -32,7 +33,7 @@ class GeometryCodecTest {
   @BeforeEach
   void doBeforeEach() {
     geometryFactory = new GeometryFactory();
-    geometryCodec = new GeometryCodec(1);
+    geometryCodec = new GeometryCodec(Map.of("geometry", 1));
   }
 
   @Test
