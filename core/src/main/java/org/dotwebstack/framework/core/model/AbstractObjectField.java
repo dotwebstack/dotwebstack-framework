@@ -39,7 +39,7 @@ public abstract class AbstractObjectField implements ObjectField {
   @Valid
   protected ObjectType<? extends ObjectField> aggregationOfType;
 
-  private ObjectType<? extends ObjectField> targetType;
+  protected ObjectType<? extends ObjectField> targetType;
 
   @Valid
   protected List<FieldArgument> arguments = new ArrayList<>();
@@ -50,24 +50,5 @@ public abstract class AbstractObjectField implements ObjectField {
 
   protected AbstractObjectField() {
     super();
-  }
-
-  protected AbstractObjectField(AbstractObjectField objectField) {
-    super();
-    this.name = objectField.getName();
-    this.objectType = objectField.getObjectType();
-    this.type = objectField.getType();
-    this.keys = objectField.getKeys();
-    this.isList = objectField.isList();
-    this.nullable = objectField.isNullable();
-    this.pageable = objectField.isPageable();
-    this.visible = objectField.isVisible();
-    this.aggregationOf = objectField.getAggregationOf();
-    this.keyField = objectField.getKeyField();
-    this.valueFetcher = objectField.getValueFetcher();
-    this.enumeration = objectField.getEnumeration();
-    this.aggregationOfType = objectField.getAggregationOfType();
-    this.targetType = objectField.getTargetType();
-    this.arguments = objectField.getArguments();
   }
 }

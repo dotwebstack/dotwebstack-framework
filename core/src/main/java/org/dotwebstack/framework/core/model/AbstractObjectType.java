@@ -40,11 +40,4 @@ public abstract class AbstractObjectType<T extends ObjectField> implements Objec
   protected AbstractObjectType() {
     super();
   }
-
-  protected AbstractObjectType(ObjectType<T> objectType) {
-    super();
-    this.name = objectType.getName();
-    this.filters = objectType.getFilters();
-    this.sortableBy = objectType.getSortableBy();
-  }
 }

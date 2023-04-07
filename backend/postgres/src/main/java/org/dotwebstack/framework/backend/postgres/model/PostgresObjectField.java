@@ -49,7 +49,23 @@ public class PostgresObjectField extends AbstractObjectField {
   }
 
   public PostgresObjectField(PostgresObjectField objectField) {
-    super(objectField);
+    super();
+    this.name = objectField.getName();
+    this.objectType = objectField.getObjectType();
+    this.type = objectField.getType();
+    this.keys = objectField.getKeys();
+    this.isList = objectField.isList();
+    this.nullable = objectField.isNullable();
+    this.pageable = objectField.isPageable();
+    this.visible = objectField.isVisible();
+    this.aggregationOf = objectField.getAggregationOf();
+    this.keyField = objectField.getKeyField();
+    this.valueFetcher = objectField.getValueFetcher();
+    this.enumeration = objectField.getEnumeration();
+    this.aggregationOfType = objectField.getAggregationOfType();
+    this.targetType = objectField.getTargetType();
+    this.arguments = objectField.getArguments();
+
     this.spatial = objectField.getSpatial();
     this.column = objectField.getColumn();
     this.joinColumns = objectField.getJoinColumns();

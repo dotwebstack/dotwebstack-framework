@@ -26,7 +26,11 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
   }
 
   public PostgresObjectType(PostgresObjectType objectType, List<PostgresObjectField> ancestors) {
-    super(objectType);
+    super();
+    this.name = objectType.getName();
+    this.filters = objectType.getFilters();
+    this.sortableBy = objectType.getSortableBy();
+
     this.table = objectType.getTable();
     this.distinct = objectType.isDistinct();
 
