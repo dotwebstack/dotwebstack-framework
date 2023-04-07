@@ -186,8 +186,8 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     var geoMetadata = getGeoMetadata(tableName, objectField.getColumn());
     Optional<GeometrySegmentsTable> segmentsTable = geoMetadata.isPresent() ? geoMetadata.get()
         .getSegmentsTable() : Optional.empty();
-    Integer srid = geoMetadata.isPresent() ? geoMetadata.get()
-        .getSrid() : null;
+    var srid = geoMetadata.map(GeometryMetadata::getSrid)
+        .orElse(null);
 
     BiMap<Integer, String> spatialReferenceSystems =
         getSpatialReferenceSystems(spatial, tableName, objectField.getColumn());

@@ -1,14 +1,20 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import static java.util.Optional.ofNullable;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
+import org.dotwebstack.framework.core.model.ObjectType;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -41,7 +47,27 @@ public class PostgresObjectField extends AbstractObjectField {
   @JsonIgnore
   private PostgresSpatial spatial;
 
+  public PostgresObjectField() {
+    super();
+  }
+
+  public PostgresObjectField(PostgresObjectField objectField) {
+    super(objectField);
+    this.spatial = objectField.getSpatial();
+    this.column = objectField.getColumn();
+    this.columnPrefix = objectField.getColumnPrefix();
+    this.joinColumns = objectField.getJoinColumns();
+    this.joinTable = objectField.getJoinTable();
+    this.mappedBy = objectField.getMappedBy();
+    this.mappedByObjectField = objectField.getMappedByObjectField();
+    this.presenceColumn = objectField.getPresenceColumn();
+  }
+
   public void initColumns() {
+    initColumns(null);
+  }
+
+  public void initColumns(List<PostgresObjectField> ancestors) {
     if (column == null) {
       var tempName = NAME_PATTERN_1ST.matcher(name)
           .replaceAll(NAME_REPLACEMENT);
@@ -50,10 +76,25 @@ public class PostgresObjectField extends AbstractObjectField {
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
 
-      column = Optional.ofNullable(columnPrefix)
+      column = ofNullable(this.columnPrefix).or(() -> ofNullable(ancestors).map(this::toColumn))
           .map(prefix -> prefix.concat(columnName))
           .orElse(columnName);
     }
+  }
+
+  private String toColumn(List<PostgresObjectField> ancestors) {
+    if (!ancestors.isEmpty()) {
+      var parent = ancestors.get(ancestors.size() - 1);
+
+      if (isNotBlank(parent.getColumnPrefix())) {
+        return parent.getColumnPrefix();
+      }
+    }
+    return ancestors.stream()
+        .map(PostgresObjectField::getName)
+        .map(StringHelper::toSnakeCase)
+        .collect(Collectors.joining("__"))
+        .concat("__");
   }
 
   public void setSpatial(PostgresSpatial spatial) {
@@ -62,5 +103,18 @@ public class PostgresObjectField extends AbstractObjectField {
 
   public boolean hasSpatial() {
     return spatial != null;
+  }
+
+  public boolean hasNestedFields() {
+    return Optional.of(this)
+        .map(AbstractObjectField::getTargetType)
+        .filter(ObjectType::isNested)
+        .isPresent();
+  }
+
+  public List<String> createPrefixes(List<String> base) {
+    var prefixes = new ArrayList<>(base);
+    prefixes.add(getName());
+    return prefixes;
   }
 }

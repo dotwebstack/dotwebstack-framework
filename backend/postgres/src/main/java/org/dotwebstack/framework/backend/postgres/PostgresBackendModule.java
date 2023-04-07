@@ -1,14 +1,16 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
-import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -43,9 +45,47 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     setTargetType(objectTypes, allFields);
     setMappedByObjectField(objectTypes, allFields);
     setAggregationOfType(objectTypes, allFields);
+    initColumns(objectTypes.values());
+  }
 
-    propagateNestedColumnPrefix(allFields);
-    initColumns(allFields);
+  private void initColumns(Collection<ObjectType<? extends ObjectField>> objectTypes) {
+    objectTypes.stream()
+        .filter(PostgresObjectType.class::isInstance)
+        .map(PostgresObjectType.class::cast)
+        .filter(Predicate.not(PostgresObjectType::isNested))
+        .forEach(objectType -> {
+          // Initialize column for scalar field
+
+          objectType.getFields()
+              .values()
+              .stream()
+              .filter(field -> field.getTargetType() == null || !field.hasNestedFields())
+              .forEach(PostgresObjectField::initColumns);
+
+          // Initialize nested columns
+          initColumns(List.of(), objectType);
+        });
+  }
+
+  private List<PostgresObjectType> initColumns(List<PostgresObjectField> ancestors, PostgresObjectType objectType) {
+    return objectType.getFields()
+        .values()
+        .stream()
+        .filter(PostgresObjectField::hasNestedFields)
+        .flatMap(objectField -> {
+          var targetType = (PostgresObjectType) objectField.getTargetType();
+
+          var fieldAncestors = new ArrayList<>(ancestors);
+          fieldAncestors.add(objectField);
+
+          var nestedObjectType = initColumns(fieldAncestors, targetType);
+          var resultObjectType = new PostgresObjectType(targetType, fieldAncestors);
+
+          objectField.setTargetType(resultObjectType);
+
+          return Stream.concat(Stream.of(resultObjectType), nestedObjectType.stream());
+        })
+        .collect(Collectors.toList());
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
@@ -99,69 +139,5 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
       String name) {
     return (PostgresObjectType) Optional.ofNullable(objectTypes.get(name))
         .orElseThrow(() -> invalidConfigurationException("Object type '{}' not found.", name));
-  }
-
-  private void propagateNestedColumnPrefix(List<PostgresObjectField> allFields) {
-    allFields.stream()
-        .filter(this::qualifiesForPropagationColumnPrefix)
-        .forEach(this::setNewTargetObjectTypeWithColumnPrefix);
-  }
-
-  private boolean qualifiesForPropagationColumnPrefix(PostgresObjectField field) {
-    return isNotBlank(field.getColumnPrefix()) && hasNestedTargetType(field) && !field.getObjectType()
-        .isNested() && hasOnlyScalarFields(field.getTargetType());
-  }
-
-  private boolean hasNestedTargetType(PostgresObjectField field) {
-    return field.getTargetType() != null && field.getTargetType()
-        .isNested();
-  }
-
-  private boolean hasOnlyScalarFields(ObjectType<? extends ObjectField> objectType) {
-    return objectType.getFields()
-        .values()
-        .stream()
-        .map(PostgresObjectField.class::cast)
-        .filter(this::hasNestedTargetType)
-        .findFirst()
-        .isEmpty();
-  }
-
-  private void setNewTargetObjectTypeWithColumnPrefix(PostgresObjectField parentField) {
-    ObjectType<? extends ObjectField> objectType = parentField.getTargetType();
-
-    PostgresObjectType columnPrefixedObjectType = new PostgresObjectType();
-    columnPrefixedObjectType.setName(objectType.getName());
-    columnPrefixedObjectType
-        .setFields(createScalarFieldsWithColumnPrefix(parentField.getColumnPrefix(), objectType.getFields()));
-    columnPrefixedObjectType.setFilters(objectType.getFilters());
-    parentField.setTargetType(columnPrefixedObjectType);
-  }
-
-  private Map<String, PostgresObjectField> createScalarFieldsWithColumnPrefix(String columnPrefix,
-      Map<String, ? extends ObjectField> fields) {
-    return fields.values()
-        .stream()
-        .map(PostgresObjectField.class::cast)
-        .map(field -> new AbstractMap.SimpleEntry<>(field.getName(),
-            createScalarFieldWithColumnPrefix(columnPrefix, field)))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  private PostgresObjectField createScalarFieldWithColumnPrefix(String columnPrefix, PostgresObjectField field) {
-    PostgresObjectField postgresObjectField = new PostgresObjectField();
-    postgresObjectField.setName(field.getName());
-    postgresObjectField.setType(field.getType());
-    postgresObjectField.setColumn(field.getColumn());
-    postgresObjectField.setColumnPrefix(field.getColumn() == null ? columnPrefix : null);
-    postgresObjectField.setObjectType(field.getObjectType());
-
-    postgresObjectField.initColumns();
-
-    return postgresObjectField;
-  }
-
-  private void initColumns(List<PostgresObjectField> allFields) {
-    allFields.forEach(PostgresObjectField::initColumns);
   }
 }
