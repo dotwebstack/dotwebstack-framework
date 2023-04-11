@@ -9,11 +9,15 @@ public interface ObjectType<T extends ObjectField> {
 
   String getName();
 
+  List<String> getImplements();
+
   void setName(String name);
 
   Map<String, T> getFields();
 
   T getField(String name);
+
+  void addField(String name, ObjectField field);
 
   Map<String, List<SortableByConfiguration>> getSortableBy();
 

@@ -10,8 +10,10 @@ import static graphql.language.EnumValueDefinition.newEnumValueDefinition;
 import static graphql.language.FieldDefinition.newFieldDefinition;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
+import static graphql.language.InterfaceTypeDefinition.newInterfaceTypeDefinition;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.ObjectTypeDefinition.newObjectTypeDefinition;
+import static graphql.language.TypeName.newTypeName;
 import static java.lang.Boolean.TRUE;
 import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -41,6 +43,7 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_PATH;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getObjectType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
@@ -116,6 +119,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var typeDefinitionRegistry = new TypeDefinitionRegistry();
 
     addEnumerations(typeDefinitionRegistry);
+    addInterfaceTypes(typeDefinitionRegistry);
     addObjectTypes(typeDefinitionRegistry);
     addFilterTypes(typeDefinitionRegistry);
     addSortTypes(typeDefinitionRegistry);
@@ -134,11 +138,54 @@ public class TypeDefinitionRegistrySchemaFactory {
           var objectTypeDefinition = newObjectTypeDefinition().name(name)
               .fieldDefinitions(createFieldDefinitions(objectType));
 
+          objectType.getImplements()
+              .forEach(implementz -> {
+                var implementedInterface = schema.getInterfaces()
+                    .get(implementz);
+                if (implementedInterface != null) {
+                  objectTypeDefinition.implementz(newTypeName().name(implementz)
+                      .build());
+
+                  implementedInterface.getImplements()
+                      .forEach(additionalImplements -> objectTypeDefinition
+                          .implementz(newTypeName().name(additionalImplements)
+                              .build()));
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz, name);
+                }
+              });
+
           if (objectType.isNested()) {
             objectTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
           }
 
           typeDefinitionRegistry.add(objectTypeDefinition.build());
+        });
+  }
+
+  private void addInterfaceTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
+    schema.getInterfaces()
+        .forEach((name, interfaceType) -> {
+          var interfaceTypeDefinition = newInterfaceTypeDefinition().name(name)
+              .definitions(createFieldDefinitions(interfaceType));
+
+          interfaceType.getImplements()
+              .forEach(implementz -> {
+                if (schema.getInterfaces()
+                    .containsKey(implementz)) {
+                  interfaceTypeDefinition.implementz(newTypeName().name(implementz)
+                      .build());
+                } else {
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
+                }
+              });
+
+          if (interfaceType.isNested()) {
+            interfaceTypeDefinition.additionalData(IS_NESTED, TRUE.toString());
+          }
+          typeDefinitionRegistry.add(interfaceTypeDefinition.build());
         });
   }
 

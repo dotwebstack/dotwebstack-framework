@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.config;
 
 import static java.util.stream.Collectors.joining;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -46,11 +47,50 @@ public class ModelConfiguration {
     Schema schema = new SchemaReader(objectMapper).read(configFile);
     validateSchemaFields(configFile, schema);
 
-    backendModule.init(schema.getObjectTypes());
+    addImplementedFields(schema);
+
+    var schemaTypes = schema.getObjectTypes();
+    schemaTypes.putAll(schema.getInterfaces());
+
+    backendModule.init(schemaTypes);
 
     validators.forEach(validator -> validator.validate(schema));
 
     return schema;
+  }
+
+  private void addImplementedFields(Schema schema) {
+    schema.getInterfaces()
+        .forEach((interfaceName, interfaceType) -> interfaceType.getImplements()
+            .forEach(implementz -> {
+              if (schema.getInterfaces()
+                  .containsKey(implementz)) {
+                schema.getInterfaces()
+                    .get(implementz)
+                    .getFields()
+                    .forEach(interfaceType::addField);
+              } else {
+                throw invalidConfigurationException(
+                    "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz,
+                    interfaceName);
+              }
+            }));
+
+    schema.getObjectTypes()
+        .forEach((objectName, objectType) -> objectType.getImplements()
+            .forEach(implementz -> {
+              if (schema.getInterfaces()
+                  .containsKey(implementz)) {
+                schema.getInterfaces()
+                    .get(implementz)
+                    .getFields()
+                    .forEach(objectType::addField);
+              } else {
+                throw invalidConfigurationException(
+                    "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
+                    objectName);
+              }
+            }));
   }
 
   private ObjectMapper createObjectMapper() {

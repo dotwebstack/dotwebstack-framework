@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -31,6 +32,7 @@ import graphql.language.EnumValueDefinition;
 import graphql.language.FieldDefinition;
 import graphql.language.InputObjectTypeDefinition;
 import graphql.language.InputValueDefinition;
+import graphql.language.InterfaceTypeDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
@@ -59,6 +61,8 @@ import org.dotwebstack.framework.core.testhelpers.TestObjectType;
 import org.hamcrest.core.IsIterableContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.r2dbc.core.DatabaseClient;
 
 class TypeDefinitionRegistrySchemaFactoryTest {
@@ -217,6 +221,61 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     assertBreweryCollection(registry, fieldDefinitions);
     assertAddressCollection(registry, fieldDefinitions);
+  }
+
+  @Test
+  void typeDefinitionRegistry_registerInterfaces_whenConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
+        .orElse(null);
+    var organization = (InterfaceTypeDefinition) registry.getType("Organization")
+        .orElse(null);
+
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getImplements()
+        .size(), is(2));
+    assertThat(organization, notNullValue());
+    assertThat(organization.getImplements()
+        .size(), is(1));
+  }
+
+  @Test
+  void typeDefinitionRegistry_NoRegisteredInterfaces_whenNotConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
+        .orElse(null);
+    var beer = (ObjectTypeDefinition) registry.getType("Beer")
+        .orElse(null);
+
+    assertThat(brewery, notNullValue());
+    assertThat(brewery.getImplements()
+        .size(), is(0));
+    assertThat(beer, notNullValue());
+    assertThat(beer.getImplements()
+        .size(), is(0));
+  }
+
+  @ParameterizedTest
+  @CsvSource({"dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-objecttypes.yaml, ObjectType, Brewery",
+      "dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-interfaces.yaml, Interface, Organization"})
+  void typeDefinitionRegistry_throwException_whenNonExistentInterface(String location, String type, String objectName) {
+    var dotWebStackConfiguration = schemaReader.read(location);
+    var typeDefinitionRegistrySchemaFactory =
+        new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer));
+    var exception = assertThrows(InvalidConfigurationException.class,
+        typeDefinitionRegistrySchemaFactory::createTypeDefinitionRegistry);
+
+    assertThat(exception.getMessage(),
+        is(String.format("Implemented Interface 'NonExistentInterface' not found in provided schema for %s '%s'.", type,
+            objectName)));
   }
 
   private void assertBreweryCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
