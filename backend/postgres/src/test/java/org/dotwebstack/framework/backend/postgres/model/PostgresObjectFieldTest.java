@@ -1,8 +1,10 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -34,14 +36,32 @@ class PostgresObjectFieldTest {
   }
 
   @Test
-  void getColumn_returnsGeneratedColumn_whenColumnColumnSuffixSet() {
+  void getColumn_returnsGeneratedColumn_whenColumnUnsetWithAncestor() {
+    var ancestor = new PostgresObjectField();
+    ancestor.setName("foo");
+
     PostgresObjectField objectField = new PostgresObjectField();
     objectField.setName("bar");
-    objectField.setColumnPrefix("foo_");
-    objectField.initColumns();
+    objectField.initColumns(List.of(ancestor));
 
     var result = objectField.getColumn();
 
-    assertThat(result, is("foo_bar"));
+    assertThat(result, is("foo__bar"));
+  }
+
+  @Test
+  void new_returnsCopy_forObjectField() {
+    var objectField = new PostgresObjectField();
+    objectField.setName("identifier");
+    objectField.setType("String");
+    objectField.setJoinColumns(List.of(new JoinColumn()));
+    objectField.setJoinTable(new JoinTable());
+    objectField.setMappedBy("mappedBy");
+    objectField.setMappedByObjectField(new PostgresObjectField());
+    objectField.setPresenceColumn("presenceColumn");
+
+    var result = new PostgresObjectField(objectField);
+
+    assertThat(result, equalTo(objectField));
   }
 }

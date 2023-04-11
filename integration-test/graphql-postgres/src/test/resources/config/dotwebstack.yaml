@@ -240,10 +240,9 @@ objectTypes:
         aggregationOf: Beer
         mappedBy: brewery
       history:
-        columnPrefix: his_
         type: History
         nullable: true
-        presenceColumn: his_age
+        presenceColumn: history__age
       multinational:
         type: Boolean
         nullable: true

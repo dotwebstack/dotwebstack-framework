@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -49,7 +49,7 @@ class PostgresBackendModuleTest {
 
   @Test
   void init_shouldInitFields() throws MalformedURLException {
-    Map<String, ObjectType<?>> objectTypes = init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml");
+    Map<String, ObjectType<?>> objectTypes = init();
 
     assertThat(objectTypes, notNullValue());
 
@@ -57,49 +57,25 @@ class PostgresBackendModuleTest {
     assertThat(brewery, notNullValue());
     assertThat(brewery.getFields()
         .get("beerAgg"), notNullValue());
+
+    var addresses = brewery.getFields()
+        .get("addresses");
+    assertThat(addresses, notNullValue());
+    assertThat(addresses.getTargetType(), notNullValue());
+
+    var addressIdentifier = (PostgresObjectField) addresses.getTargetType()
+        .getField("identifier");
+    assertThat(addressIdentifier, notNullValue());
+    assertThat(addressIdentifier.getColumn(), equalTo("addresses__identifier"));
+
+    var addressStreet = (PostgresObjectField) addresses.getTargetType()
+        .getField("street");
+    assertThat(addressStreet, notNullValue());
+    assertThat(addressStreet.getColumn(), equalTo("custom_street_column"));
   }
 
-  @Test
-  void init_shouldPropagateNestedColumnPrefix() throws MalformedURLException {
-    Map<String, ObjectType<?>> objectTypes =
-        init("src/test/resources/config/dotwebstack/dotwebstack-objecttypes-with-column-prefix.yaml");
-
-    assertThat(objectTypes, notNullValue());
-
-    var beer = (PostgresObjectType) objectTypes.get("Beer");
-    assertThat(beer, notNullValue());
-
-    assertColumnPrefixFields(beer, "location", "loc_");
-    assertColumnPrefixFields(beer, "altLocation", "altloc_");
-    assertColumnPrefixFields(beer, "anotherLocation", "");
-  }
-
-  private void assertColumnPrefixFields(PostgresObjectType beer, String fieldName, String columnPrefix) {
-    PostgresObjectField location = beer.getField(fieldName);
-    assertThat(location, notNullValue());
-    assertThat(location.getTargetType(), notNullValue());
-    assertThat(beer.getField(fieldName)
-        .getTargetType()
-        .getField("street"), notNullValue());
-    assertThat(((PostgresObjectField) beer.getField(fieldName)
-        .getTargetType()
-        .getField("street")).getColumn(), is(columnPrefix.concat("street")));
-    assertThat(beer.getField(fieldName)
-        .getTargetType()
-        .getField("housenumber"), notNullValue());
-    assertThat(((PostgresObjectField) beer.getField(fieldName)
-        .getTargetType()
-        .getField("housenumber")).getColumn(), is(columnPrefix.concat("housenumber")));
-    assertThat(beer.getField(fieldName)
-        .getTargetType()
-        .getField("city"), notNullValue());
-    assertThat(((PostgresObjectField) beer.getField(fieldName)
-        .getTargetType()
-        .getField("city")).getColumn(), is("ownprefix_city"));
-  }
-
-  private Map<String, ObjectType<?>> init(String path) throws MalformedURLException {
-    File file = new File(path);
+  private Map<String, ObjectType<?>> init() throws MalformedURLException {
+    File file = new File("src/test/resources/config/dotwebstack/dotwebstack-objecttypes.yaml");
     String localUrl = file.toURI()
         .toURL()
         .toExternalForm();

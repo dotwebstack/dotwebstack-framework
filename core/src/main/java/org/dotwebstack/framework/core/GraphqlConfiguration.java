@@ -6,6 +6,7 @@ import static org.dotwebstack.framework.core.helpers.GraphQlHelper.createBlocked
 import graphql.GraphQL;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.TypeResolver;
 import graphql.schema.idl.CombinedWiringFactory;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
@@ -13,6 +14,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.WiringFactory;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +30,8 @@ public class GraphqlConfiguration {
   @Bean
   @Conditional(OnLocalSchema.class)
   public GraphQLSchema graphQlSchema(@NonNull TypeDefinitionRegistry typeDefinitionRegistry,
-      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories) {
+      @NonNull Collection<GraphqlConfigurer> graphqlConfigurers, @NonNull List<WiringFactory> wiringFactories,
+      @NonNull Map<String, TypeResolver> typeResolvers) {
 
     var blockedFields = newBlock().addPatterns(createBlockedPatterns(typeDefinitionRegistry.types()
         .values()))
@@ -37,6 +40,9 @@ public class GraphqlConfiguration {
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring()
         .fieldVisibility(blockedFields)
         .wiringFactory(new CombinedWiringFactory(wiringFactories));
+
+    typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
+        typeWriting -> typeWriting.typeResolver(resolver)));
 
     graphqlConfigurers.forEach(graphqlConfigurer -> graphqlConfigurer.configureRuntimeWiring(runtimeWiringBuilder));
 
@@ -52,6 +58,13 @@ public class GraphqlConfiguration {
   public TypeDefinitionRegistry typeDefinitionRegistry(
       TypeDefinitionRegistrySchemaFactory typeDefinitionRegistryFactory) {
     return typeDefinitionRegistryFactory.createTypeDefinitionRegistry();
+  }
+
+  @Profile("!test")
+  @Bean
+  @Conditional(OnLocalSchema.class)
+  public Map<String, TypeResolver> typeResolvers(TypeResolversFactory typeResolversFactory) {
+    return typeResolversFactory.createTypeResolvers();
   }
 
   @Bean

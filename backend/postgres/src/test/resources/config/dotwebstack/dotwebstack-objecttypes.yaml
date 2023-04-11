@@ -1,5 +1,6 @@
 objectTypes:
   Brewery:
+    table: brewery_v
     fields:
       identifier:
         type: ID
@@ -37,6 +38,7 @@ objectTypes:
         mappedBy: brewery
 
   Beer:
+    table: beer_v
     fields:
       identifier:
         type: ID
@@ -51,6 +53,7 @@ objectTypes:
         type: ID
       street:
         type: String
+        column: custom_street_column
       city:
         type: String
 
