@@ -29,6 +29,9 @@ public class PostgresBackendLoader implements BackendLoader {
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
     if (objectRequest.getObjectType()
         .isNested()) {
+      if (true){
+        System.out.println();
+      }
       return Mono.just(Map.of());
     }
 
