@@ -172,7 +172,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .stream()
         .map(this::getPostgresObjectFields)
         .flatMap(List::stream)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<PostgresObjectField> getPostgresObjectFields(PostgresObjectField field) {

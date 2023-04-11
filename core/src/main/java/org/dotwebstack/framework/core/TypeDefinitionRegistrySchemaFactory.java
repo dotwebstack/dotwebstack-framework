@@ -232,7 +232,7 @@ public class TypeDefinitionRegistrySchemaFactory {
                 .getType()))
             .defaultValue(getDefaultValue(entry))
             .build())
-        .collect(Collectors.toList());
+        .toList();
 
     return newInputObjectDefinition().name(formatContextTypeName(contextName))
         .inputValueDefinitions(inputValueDefinitions)
@@ -303,7 +303,7 @@ public class TypeDefinitionRegistrySchemaFactory {
             .type(newType(
                 FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
             .build())
-        .collect(Collectors.toList()));
+        .toList());
 
     inputValueDefinitions.add(newInputValueDefinition().name(OR_FIELD)
         .type(newType(filterName))
@@ -465,7 +465,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue()))
-        .collect(Collectors.toList());
+        .toList();
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
         .fieldDefinitions(
@@ -482,7 +482,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(entry -> createSubscriptionFieldDefinition(entry.getKey(), entry.getValue(), schema.getObjectTypes()
             .get(entry.getValue()
                 .getType())))
-        .collect(Collectors.toList());
+        .toList();
 
     if (!subscriptionFieldDefinitions.isEmpty()) {
       var subscriptionTypeDefinition = newObjectTypeDefinition().name(SUBSCRIPTION_TYPE_NAME)
@@ -501,7 +501,7 @@ public class TypeDefinitionRegistrySchemaFactory {
                   .stream()
                   .map(value -> newEnumValueDefinition().name(value)
                       .build())
-                  .collect(Collectors.toList()))
+                  .toList())
               .build();
 
           typeDefinitionRegistry.add(enumerationTypeDefinition);
@@ -566,7 +566,7 @@ public class TypeDefinitionRegistrySchemaFactory {
           return createInputValueDefinition(aliasField, objectType,
               Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private Optional<InputValueDefinition> createFilterArgument(Query query, ObjectType<?> objectType) {
@@ -657,7 +657,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   private List<InputValueDefinition> createPagingArguments(Query query) {
     if (query.isList() && query.isPageable()) {
       return Stream.concat(createFirstArgument().stream(), createOffsetArgument().stream())
-          .collect(Collectors.toList());
+          .toList();
     }
 
     return List.of();

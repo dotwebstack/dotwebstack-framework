@@ -38,7 +38,7 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
         .values()
         .stream()
         .map(PostgresObjectField::new)
-        .collect(Collectors.toList());
+        .toList();
 
     fields.forEach(field -> field.setObjectType(this));
     fields.forEach(field -> field.initColumns(ancestors));

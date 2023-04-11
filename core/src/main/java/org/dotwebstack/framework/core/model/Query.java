@@ -33,8 +33,8 @@ public class Query {
   public Map<String, String> getKeyMap() {
     return keys.stream()
         .map(key -> {
-          if (key instanceof String) {
-            return new AbstractMap.SimpleEntry<>(getFieldKey((String) key), (String) key);
+          if (key instanceof String stringKey) {
+            return new AbstractMap.SimpleEntry<>(getFieldKey(stringKey), (String) key);
           }
 
           return ((HashMap<String, String>) key).entrySet()

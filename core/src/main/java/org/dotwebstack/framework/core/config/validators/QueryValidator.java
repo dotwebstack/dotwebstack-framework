@@ -61,8 +61,8 @@ public class QueryValidator implements SchemaValidator {
 
     for (Object key : keys) {
       String fieldKeyName;
-      if (key instanceof String) {
-        fieldKeyName = getFieldKey((String) key);
+      if (key instanceof String keyString) {
+        fieldKeyName = getFieldKey(keyString);
       } else if (key instanceof Map) {
         fieldKeyName = ((Map<String, String>) key).keySet()
             .stream()

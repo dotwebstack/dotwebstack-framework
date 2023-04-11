@@ -77,7 +77,7 @@ public class NodeShapeFactory {
      */
     List<PropertyShape> orShapes = getOrPropertyShapes(shapeModel, nodeShape).stream()
         .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
-        .collect(Collectors.toList());
+        .toList();
 
     List<PropertyShape> propertyShapesList = Models.getPropertyResources(shapeModel, nodeShape, SHACL.PROPERTY)
         .stream()
@@ -91,7 +91,7 @@ public class NodeShapeFactory {
         })
         .flatMap(List::stream)
         .map(shape -> buildPropertyShape(shapeModel, shape, nodeShapeMap))
-        .collect(Collectors.toList());
+        .toList();
 
     Map<String, PropertyShape> propertyShapes = new HashMap<>();
 
@@ -117,7 +117,7 @@ public class NodeShapeFactory {
     return getShaclOrShapes(shapeModel, identifier).stream()
         .filter(resource -> !shapeModel.filter(resource, SHACL.PATH, null)
             .isEmpty())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static Set<IRI> getOrClassConstraints(Model shapeModel, Resource identifier) {
@@ -134,7 +134,7 @@ public class NodeShapeFactory {
     return Models.getPropertyResources(shapeModel, identifier, SHACL.OR)
         .stream()
         .flatMap(or -> unwrapAndEnrichOrs(shapeModel, identifier, or))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static Stream<Resource> unwrapAndEnrichOrs(Model shapeModel, Resource identifier, Resource or) {
@@ -161,7 +161,7 @@ public class NodeShapeFactory {
     return RDFCollections.asValues(shapeModel, shape, new ArrayList<>())
         .stream()
         .map(Resource.class::cast)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static PropertyShape buildPropertyShape(Model shapeModel, Resource shape,

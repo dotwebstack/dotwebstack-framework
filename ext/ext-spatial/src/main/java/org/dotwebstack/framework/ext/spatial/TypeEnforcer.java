@@ -62,18 +62,13 @@ public class TypeEnforcer {
       return geometry;
     }
 
-    switch (type) {
-      case POINT:
-        return enforcePoint(geometry);
-      case MULTIPOINT:
-        return enforceMultiPoint(geometry);
-      case MULTILINESTRING:
-        return enforceMultiLineString(geometry);
-      case MULTIPOLYGON:
-        return enforceMultiPolygon(geometry);
-      default:
-        throw ExceptionHelper.unsupportedOperationException("Enforcing to type '{}' is not supported!", type);
-    }
+    return switch (type) {
+      case POINT -> enforcePoint(geometry);
+      case MULTIPOINT -> enforceMultiPoint(geometry);
+      case MULTILINESTRING -> enforceMultiLineString(geometry);
+      case MULTIPOLYGON -> enforceMultiPolygon(geometry);
+      default -> throw ExceptionHelper.unsupportedOperationException("Enforcing to type '{}' is not supported!", type);
+    };
   }
 
   private Point enforcePoint(Geometry geometry) {
@@ -86,8 +81,8 @@ public class TypeEnforcer {
   }
 
   private MultiPoint enforceMultiPoint(Geometry geometry) {
-    if (geometry instanceof Point) {
-      var multiPoint = geometryFactory.createMultiPoint(new Point[] {(Point) geometry});
+    if (geometry instanceof Point point) {
+      var multiPoint = geometryFactory.createMultiPoint(new Point[] {point});
       multiPoint.setSRID(geometry.getSRID());
       return multiPoint;
     }
@@ -98,8 +93,8 @@ public class TypeEnforcer {
   }
 
   private MultiLineString enforceMultiLineString(Geometry geometry) {
-    if (geometry instanceof LineString) {
-      var multiLineString = geometryFactory.createMultiLineString(new LineString[] {(LineString) geometry});
+    if (geometry instanceof LineString lineString) {
+      var multiLineString = geometryFactory.createMultiLineString(new LineString[] {lineString});
       multiLineString.setSRID(geometry.getSRID());
       return multiLineString;
     }
@@ -110,8 +105,8 @@ public class TypeEnforcer {
   }
 
   private MultiPolygon enforceMultiPolygon(Geometry geometry) {
-    if (geometry instanceof Polygon) {
-      var multiPolygon = geometryFactory.createMultiPolygon(new Polygon[] {(Polygon) geometry});
+    if (geometry instanceof Polygon polygon) {
+      var multiPolygon = geometryFactory.createMultiPolygon(new Polygon[] {polygon});
       multiPolygon.setSRID(geometry.getSRID());
       return multiPolygon;
     }

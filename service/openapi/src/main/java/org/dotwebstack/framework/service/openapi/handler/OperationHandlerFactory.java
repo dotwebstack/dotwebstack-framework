@@ -173,7 +173,7 @@ public class OperationHandlerFactory {
             mediaTypeEntry2.getValue()))
         .map(Map.Entry::getKey)
         .map(MediaType::valueOf)
-        .collect(Collectors.toList());
+        .toList();
 
 
     return serverRequest -> {

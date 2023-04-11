@@ -124,7 +124,7 @@ public class QueryMapper {
 
     return new SelectionSet(
         mapSchema(operationRequest.getResponseSchema(), fieldDefinition, MappingContext.build(operationRequest))
-            .collect(Collectors.toList()));
+            .toList());
   }
 
   private Stream<Field> mapSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition,
@@ -134,8 +134,8 @@ public class QueryMapper {
       throw invalidConfigurationException("Unsupported composition construct oneOf / anyOf encountered.");
     }
 
-    if (schema instanceof ArraySchema) {
-      return mapArraySchema((ArraySchema) schema, fieldDefinition, mappingContext);
+    if (schema instanceof ArraySchema arraySchema) {
+      return mapArraySchema(arraySchema, fieldDefinition, mappingContext);
     }
 
     if ("object".equals(schema.getType())) {
@@ -284,8 +284,8 @@ public class QueryMapper {
               .getSimpleName());
     }
 
-    if (schema instanceof ArraySchema) {
-      var fields = mapArraySchema((ArraySchema) schema, fieldDefinition, mappingContext).collect(Collectors.toList());
+    if (schema instanceof ArraySchema arraySchema) {
+      var fields = mapArraySchema(arraySchema, fieldDefinition, mappingContext).collect(Collectors.toList());
 
       if (fields.isEmpty()) {
         return Stream.of(new Field(fieldDefinition.getName()));
@@ -349,14 +349,14 @@ public class QueryMapper {
 
     if (schema instanceof ObjectSchema || schema instanceof ArraySchema) {
       // unwrap GraphQL Type in non-nullable List, e.g. [Type]!
-      if (fieldType instanceof GraphQLNonNull && ((GraphQLNonNull) fieldType).getWrappedType() instanceof GraphQLList) {
-        var listItemType = ((GraphQLList) ((GraphQLNonNull) fieldType).getWrappedType()).getWrappedType();
+      if (fieldType instanceof GraphQLNonNull nonNullType && (nonNullType).getWrappedType() instanceof GraphQLList) {
+        var listItemType = ((GraphQLList) nonNullType.getWrappedType()).getWrappedType();
         return listItemType instanceof GraphQLNonNull;
       }
 
       // unwrap GraphQL Type in nullable List, e.g. [Type]
-      if (fieldType instanceof GraphQLList) {
-        var listItemType = ((GraphQLList) fieldType).getWrappedType();
+      if (fieldType instanceof GraphQLList listType) {
+        var listItemType = listType.getWrappedType();
         return listItemType instanceof GraphQLNonNull;
       }
 
@@ -376,5 +376,4 @@ public class QueryMapper {
 
     return mappingContext.isExpandable() && required;
   }
-
 }

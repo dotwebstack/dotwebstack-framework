@@ -112,8 +112,8 @@ class GraphqlController {
         .findFirst()
         .orElseThrow(() -> internalServerErrorException(executionInput));
 
-    if (throwable instanceof DotWebStackRuntimeException) {
-      throw ((DotWebStackRuntimeException) throwable);
+    if (throwable instanceof DotWebStackRuntimeException dotWebStackRuntimeException) {
+      throw dotWebStackRuntimeException;
     }
 
     return Mono.error(internalServerErrorException(executionInput));

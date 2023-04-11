@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 
@@ -81,14 +80,14 @@ public class GraphQlFieldBuilder {
           }
           return toGraphQlField(childFieldDefinition, typeNameFieldMap);
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<GraphQlArgument> getArguments(FieldDefinition fieldDefinition) {
     return fieldDefinition.getInputValueDefinitions()
         .stream()
         .map(this::toGraphQlArgument)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private GraphQlArgument toGraphQlArgument(InputValueDefinition inputValueDefinition) {
@@ -108,11 +107,11 @@ public class GraphQlFieldBuilder {
     var typeDefinition = this.registry.getType(baseType)
         .orElseThrow(() -> invalidConfigurationException("Type '{}' not found in the GraphQL schema.", baseType));
 
-    if (typeDefinition instanceof InputObjectTypeDefinition) {
-      builder.children(((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions()
+    if (typeDefinition instanceof InputObjectTypeDefinition inputObjectTypeDefinition) {
+      builder.children(inputObjectTypeDefinition.getInputValueDefinitions()
           .stream()
           .map(this::toGraphQlArgument)
-          .collect(Collectors.toList()));
+          .toList());
     }
     return builder.build();
   }

@@ -64,8 +64,7 @@ class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
   @Override
   public DateTimeSupplier parseLiteral(@NonNull Value<?> value, @NonNull CoercedVariables variables,
       @NonNull GraphQLContext context, @NonNull Locale locale) {
-    if (value instanceof StringValue) {
-      var stringValue = (StringValue) value;
+    if (value instanceof StringValue stringValue) {
       if (Objects.equals("NOW", stringValue.getValue())) {
         return new DateTimeSupplier(true);
       }

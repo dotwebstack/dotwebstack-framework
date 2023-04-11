@@ -32,7 +32,7 @@ public class CoreRequestHelper {
   public static void validateParameterExistence(String type, Set<String> schemaParams, Set<String> givenParams) {
     List<String> nonExistentVariables = givenParams.stream()
         .filter(parameter -> !schemaParams.contains(parameter))
-        .collect(Collectors.toList());
+        .toList();
 
     if (!nonExistentVariables.isEmpty()) {
       throw parameterValidationException("The following request {} parameters are not allowed on this endpoint: {}",

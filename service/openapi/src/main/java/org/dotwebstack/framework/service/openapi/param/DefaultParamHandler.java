@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import org.dotwebstack.framework.core.helpers.ExceptionHelper;
@@ -67,20 +66,12 @@ public class DefaultParamHandler implements ParamHandler {
 
   @Override
   public Optional<Object> getValue(@NonNull ServerRequest request, @NonNull Parameter parameter) {
-    Object paramValue;
-    switch (parameter.getIn()) {
-      case PARAM_PATH_TYPE:
-        paramValue = getPathParam(parameter, request);
-        break;
-      case PARAM_QUERY_TYPE:
-        paramValue = getQueryParam(parameter, request);
-        break;
-      case PARAM_HEADER_TYPE:
-        paramValue = getHeaderParam(parameter, request);
-        break;
-      default:
-        throw illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
-    }
+    Object paramValue = switch (parameter.getIn()) {
+      case PARAM_PATH_TYPE -> getPathParam(parameter, request);
+      case PARAM_QUERY_TYPE -> getQueryParam(parameter, request);
+      case PARAM_HEADER_TYPE -> getHeaderParam(parameter, request);
+      default -> throw illegalArgumentException("Unsupported value for parameters.in: '{}'.", parameter.getIn());
+    };
 
     if (Objects.nonNull(paramValue)) {
       Object convertedValue = deserialize(parameter, paramValue);
@@ -137,32 +128,31 @@ public class DefaultParamHandler implements ParamHandler {
   void validateValues(Object paramValue, Parameter parameter) {
     switch (parameter.getSchema()
         .getType()) {
-      case ARRAY_TYPE:
-        validateEnumValuesForArray(paramValue, parameter);
-        break;
-      case STRING_TYPE:
+      case ARRAY_TYPE -> validateEnumValuesForArray(paramValue, parameter);
+      case STRING_TYPE -> {
         validateEnum(paramValue, parameter);
         validatePattern(paramValue.toString(), parameter);
         validateDate(paramValue, parameter);
         validateDateTime(paramValue, parameter);
-        break;
-      case INTEGER_TYPE:
+      }
+      case INTEGER_TYPE -> {
         validateInteger(paramValue, parameter);
         validateEnum(paramValue, parameter);
-        break;
-      case NUMBER_TYPE:
+      }
+      case NUMBER_TYPE -> {
         validateNumber(paramValue, parameter);
         validateEnum(paramValue, parameter);
-        break;
-      case BOOLEAN_TYPE:
+      }
+      case BOOLEAN_TYPE -> {
         validateBoolean(paramValue, parameter);
         validateEnum(paramValue, parameter);
-        break;
-      default:
+      }
+      default -> {
         if (hasEnum(parameter)) {
           throw parameterValidationException("Sort parameter '{}' is of wrong type, can only be string or string[]",
               parameter.getName());
         }
+      }
     }
   }
 
@@ -172,7 +162,7 @@ public class DefaultParamHandler implements ParamHandler {
         .getEnum()
         .stream()
         .map(Object::toString)
-        .collect(Collectors.toList())).contains(paramValue.toString())) {
+        .toList()).contains(paramValue.toString())) {
       throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
           parameter.getName(), paramValue, parameter.getSchema()
               .getEnum()
@@ -269,10 +259,10 @@ public class DefaultParamHandler implements ParamHandler {
       List<String> list;
       List<String> enumList = (List<String>) ((ArraySchema) parameter.getSchema()).getItems()
           .getEnum();
-      if (paramValue instanceof String) {
-        list = Stream.of(((String) paramValue).replace("[", "")
+      if (paramValue instanceof String string) {
+        list = Stream.of(string.replace("[", "")
             .replace("]", ""))
-            .collect(Collectors.toList());
+            .toList();
       } else if (paramValue instanceof List) {
         list = (List<String>) paramValue;
       } else {
@@ -281,7 +271,7 @@ public class DefaultParamHandler implements ParamHandler {
       }
       List<String> invalidValues = list.stream()
           .filter(param -> !enumList.contains(param))
-          .collect(Collectors.toList());
+          .toList();
 
       if (!invalidValues.isEmpty()) {
         throw parameterValidationException("Parameter '{}' has (an) invalid value(s): '{}', should be one of: '{}'",
@@ -296,14 +286,11 @@ public class DefaultParamHandler implements ParamHandler {
     }
     Schema<?> schema = SchemaResolver.resolveSchema(openApi, parameter.getSchema(), parameter.get$ref());
     String schemaType = schema.getType();
-    switch (schemaType) {
-      case ARRAY_TYPE:
-        return deserializeArray(parameter, (ArraySchema) schema, paramValue);
-      case OBJECT_TYPE:
-        return deserializeObject(parameter, schema, paramValue);
-      default:
-        return cast((String) paramValue, schema);
-    }
+    return switch (schemaType) {
+      case ARRAY_TYPE -> deserializeArray(parameter, (ArraySchema) schema, paramValue);
+      case OBJECT_TYPE -> deserializeObject(parameter, schema, paramValue);
+      default -> cast((String) paramValue, schema);
+    };
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -410,20 +397,16 @@ public class DefaultParamHandler implements ParamHandler {
   Optional<Object> getDefault(Parameter parameter) {
     var schema = resolveSchema(openApi, parameter.getSchema());
     if (schema != null && schema.getDefault() != null) {
-      switch (schema.getType()) {
-        case ARRAY_TYPE:
-        case OBJECT_TYPE:
-          return Optional.ofNullable(JsonNodeUtils.toObject((JsonNode) schema.getDefault()));
-        default:
-          return Optional.of(schema.getDefault());
-      }
+      return switch (schema.getType()) {
+        case ARRAY_TYPE, OBJECT_TYPE -> Optional.ofNullable(JsonNodeUtils.toObject((JsonNode) schema.getDefault()));
+        default -> Optional.of(schema.getDefault());
+      };
     }
     return Optional.empty();
   }
 
   private boolean hasEnum(Parameter parameter) {
-    if (parameter.getSchema() instanceof ArraySchema) {
-      var arraySchema = (ArraySchema) parameter.getSchema();
+    if (parameter.getSchema() instanceof ArraySchema arraySchema) {
       return Objects.nonNull(arraySchema.getItems()
           .getEnum())
           && !arraySchema.getItems()

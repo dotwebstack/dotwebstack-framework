@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -58,7 +57,6 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
           objectType.getFields()
               .values()
-              .stream()
               .forEach(PostgresObjectField::initColumns);
 
           // Initialize nested columns
@@ -84,20 +82,20 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
           return Stream.concat(Stream.of(resultObjectType), nestedObjectType.stream());
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {
     var postgresObjectTypes = objectTypes.values()
         .stream()
         .map(PostgresObjectType.class::cast)
-        .collect(Collectors.toList());
+        .toList();
 
     return postgresObjectTypes.stream()
         .flatMap(objectType -> objectType.getFields()
             .values()
             .stream())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private void setTargetType(Map<String, ObjectType<? extends ObjectField>> objectTypes,

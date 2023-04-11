@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.postgres.query.Query;
@@ -72,8 +71,8 @@ public class PostgresClient {
 
   @SuppressWarnings("unchecked")
   private static PostgresqlConnection unwrap(Connection connection) {
-    if (connection instanceof PostgresqlConnection) {
-      return (PostgresqlConnection) connection;
+    if (connection instanceof PostgresqlConnection postgresqlConnection) {
+      return postgresqlConnection;
     }
 
     if (connection instanceof Wrapped) {
@@ -91,7 +90,7 @@ public class PostgresClient {
         .values()
         .stream()
         .filter(Predicate.not(Param::isInline))
-        .collect(Collectors.toList());
+        .toList();
 
     LOG.debug("Executing query: {}", sql);
     LOG.debug("Binding variables: {}", params);

@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -66,7 +65,7 @@ public class QueryArgumentBuilder {
     var sortArgument = createSortArgument(fieldDefinition, operationRequest);
 
     return Stream.concat(Stream.concat(filterArguments.stream(), contextArguments.stream()), sortArgument.stream())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private Optional<Argument> createSortArgument(GraphQLFieldDefinition fieldDefinition,
@@ -137,7 +136,7 @@ public class QueryArgumentBuilder {
           return value != null ? new ObjectField(key, value) : null;
         })
         .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @SuppressWarnings({"unchecked"})
@@ -161,7 +160,7 @@ public class QueryArgumentBuilder {
           }
         })
         .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @SuppressWarnings({"unchecked"})
@@ -175,8 +174,8 @@ public class QueryArgumentBuilder {
           if (value == null) {
             return new ObjectField(key, NullValue.newNullValue()
                 .build());
-          } else if (value instanceof String) {
-            return keyValueToObjectField(key, (String) value, operationRequest.getParameters());
+          } else if (value instanceof String string) {
+            return keyValueToObjectField(key, string, operationRequest.getParameters());
           } else if (value instanceof Map && isExpression((Map<String, Object>) value)) {
             var objectValue = createExpressionObjectValue(operationRequest, (Map<String, Object>) value);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
@@ -189,7 +188,7 @@ public class QueryArgumentBuilder {
           }
         })
         .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+        .toList();
     return objectFields.isEmpty() ? null : new ObjectValue(objectFields);
   }
 
@@ -224,20 +223,20 @@ public class QueryArgumentBuilder {
     if (e == null) {
       return null;
     }
-    if (e instanceof String) {
-      return new StringValue((String) e);
+    if (e instanceof String string) {
+      return new StringValue(string);
     } else if (e instanceof List) {
       List<Value> values = ((List<Object>) e).stream()
           .map(this::toArgumentValue)
           .filter(Objects::nonNull)
-          .collect(Collectors.toList());
+          .toList();
       return new ArrayValue(values);
     } else if (e instanceof Integer || e instanceof Long) {
       return new IntValue(new BigInteger(e.toString()));
     } else if (e instanceof Float || e instanceof Double) {
       return new FloatValue(new BigDecimal(e.toString()));
-    } else if (e instanceof Boolean) {
-      return new BooleanValue((Boolean) e);
+    } else if (e instanceof Boolean booleanValue) {
+      return new BooleanValue(booleanValue);
     } else {
       return new StringValue(e.toString());
     }

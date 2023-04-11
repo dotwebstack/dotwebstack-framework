@@ -100,7 +100,7 @@ class FilterConditionBuilder {
       var conditions = group.getFilterCriterias()
           .stream()
           .map(this::build)
-          .collect(Collectors.toList());
+          .toList();
 
       if (conditions.size() > 1) {
         switch (group.getLogicalOperator()) {
@@ -207,7 +207,7 @@ class FilterConditionBuilder {
 
           return createConditions(field, filterCriteria);
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private Condition createConditionsForMatchingNestedReference(ObjectFieldFilterCriteria filterCriteria,
@@ -253,7 +253,7 @@ class FilterConditionBuilder {
           var filterOperator = FilterOperator.getFilterOperator(entry.getKey(), filterCriteria.isCaseSensitive());
           return createCondition(null, field, filterOperator, entry.getValue());
         })
-        .collect(Collectors.toList());
+        .toList();
 
     return andCondition(conditions);
   }
@@ -278,7 +278,7 @@ class FilterConditionBuilder {
               return Stream.of(createCondition(objectField, filterOperator, entry.getValue()));
             })
             .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
-        .collect(Collectors.toList());
+        .toList();
 
     return andCondition(conditions);
 
@@ -384,7 +384,7 @@ class FilterConditionBuilder {
               return createCondition(objectField, filterOperator, entry.getValue());
             })
             .orElseThrow(() -> illegalArgumentException(ERROR_MESSAGE, entry.getKey(), objectField.getType())))
-        .collect(Collectors.toList());
+        .toList();
 
     return DSL.not(andCondition(conditions));
   }

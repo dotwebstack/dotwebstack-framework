@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.rdf4j.Rdf4jProperties.EndpointProperties;
@@ -130,7 +129,7 @@ class Rdf4jConfiguration {
 
     return Arrays.stream(resources)
         .filter(Resource::isFile)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @SneakyThrows(IOException.class)

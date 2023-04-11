@@ -3,7 +3,6 @@ package org.dotwebstack.framework.service.openapi.requestbody;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,7 @@ public class RequestBodyHandlerRouter {
       @NonNull DefaultRequestBodyHandler defaultHandler) {
     this.customHandlers = handlers.stream()
         .filter(handler -> !Objects.equals(handler, defaultHandler))
-        .collect(Collectors.toList());
+        .toList();
     this.defaultHandler = defaultHandler;
   }
 

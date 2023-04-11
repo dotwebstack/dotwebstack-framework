@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupported
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -36,7 +35,7 @@ class SortBuilder {
 
     return sortCriterias.stream()
         .map(this::createSortCondition)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private SortField<Object> createSortCondition(SortCriteria sortCriteria) {
