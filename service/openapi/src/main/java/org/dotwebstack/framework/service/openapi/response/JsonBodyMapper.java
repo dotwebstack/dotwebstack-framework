@@ -235,10 +235,9 @@ public class JsonBodyMapper implements BodyMapper {
     }
     if (childData instanceof Map) {
       ((Map<String, Object>) childData).put("_parent", data);
-    } else if (childData instanceof List childDataList) {
-      if (!childDataList.isEmpty() && childDataList.get(0) instanceof Map) {
-        childDataList.forEach(item -> ((Map) item).put("_parent", data));
-      }
+    } else if (childData instanceof List childDataList && !childDataList.isEmpty()
+        && childDataList.get(0) instanceof Map) {
+      childDataList.forEach(item -> ((Map) item).put("_parent", data));
     }
   }
 
@@ -268,7 +267,7 @@ public class JsonBodyMapper implements BodyMapper {
       return ((Collection<Object>) items).stream()
           .map(item -> mapSchema(schema.getItems(),
               ((GraphQLObjectType) rawType).getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item, jexlContext))
-          .collect(Collectors.toList());
+          .toList();
     }
 
     if (!(data instanceof Collection)) {
