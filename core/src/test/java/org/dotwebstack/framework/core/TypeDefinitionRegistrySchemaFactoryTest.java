@@ -268,9 +268,10 @@ class TypeDefinitionRegistrySchemaFactoryTest {
       "dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-interfaces.yaml, Interface, Organization"})
   void typeDefinitionRegistry_throwException_whenNonExistentInterface(String location, String type, String objectName) {
     var dotWebStackConfiguration = schemaReader.read(location);
+    var typeDefinitionRegistrySchemaFactory =
+        new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer));
     var exception = assertThrows(InvalidConfigurationException.class,
-        () -> new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-            .createTypeDefinitionRegistry());
+        typeDefinitionRegistrySchemaFactory::createTypeDefinitionRegistry);
 
     assertThat(exception.getMessage(),
         is(String.format("Implemented Interface 'NonExistentInterface' not found in provided schema for %s '%s'.", type,

@@ -61,40 +61,36 @@ public class ModelConfiguration {
 
   private void addImplementedFields(Schema schema) {
     schema.getInterfaces()
-        .forEach((interfaceName, interfaceType) -> {
-          interfaceType.getImplements()
-              .forEach(implementz -> {
-                if (schema.getInterfaces()
-                    .containsKey(implementz)) {
-                  schema.getInterfaces()
-                      .get(implementz)
-                      .getFields()
-                      .forEach(interfaceType::addField);
-                } else {
-                  throw invalidConfigurationException(
-                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz,
-                      interfaceName);
-                }
-              });
-        });
+        .forEach((interfaceName, interfaceType) -> interfaceType.getImplements()
+            .forEach(implementz -> {
+              if (schema.getInterfaces()
+                  .containsKey(implementz)) {
+                schema.getInterfaces()
+                    .get(implementz)
+                    .getFields()
+                    .forEach(interfaceType::addField);
+              } else {
+                throw invalidConfigurationException(
+                    "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz,
+                    interfaceName);
+              }
+            }));
 
     schema.getObjectTypes()
-        .forEach((objectName, objectType) -> {
-          objectType.getImplements()
-              .forEach(implementz -> {
-                if (schema.getInterfaces()
-                    .containsKey(implementz)) {
-                  schema.getInterfaces()
-                      .get(implementz)
-                      .getFields()
-                      .forEach(objectType::addField);
-                } else {
-                  throw invalidConfigurationException(
-                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
-                      objectName);
-                }
-              });
-        });
+        .forEach((objectName, objectType) -> objectType.getImplements()
+            .forEach(implementz -> {
+              if (schema.getInterfaces()
+                  .containsKey(implementz)) {
+                schema.getInterfaces()
+                    .get(implementz)
+                    .getFields()
+                    .forEach(objectType::addField);
+              } else {
+                throw invalidConfigurationException(
+                    "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz,
+                    objectName);
+              }
+            }));
   }
 
   private ObjectMapper createObjectMapper() {
