@@ -50,4 +50,4 @@ public class ExampleConfiguration {
 }
 ```
 
-Multiple transforms can be chained by using the `pipe` operator. A [complete example](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.3/example/example-orchestrate) can be found in the `/examples` folder.
+Multiple transforms can be chained by using the `pipe` operator. A [complete example](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.4/example/example-orchestrate) can be found in the `/examples` folder.

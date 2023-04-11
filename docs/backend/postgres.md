@@ -389,7 +389,7 @@ Geometry and Geography types, as part of the [PostGIS extension](https://postgis
 supported.
 
 For an example implementation,
-see [example/example-postgres](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.3/example/example-postgres)
+see [example/example-postgres](https://github.com/dotwebstack/dotwebstack-framework/tree/v0.4/example/example-postgres)
 .
 
 ## Connection configuration
