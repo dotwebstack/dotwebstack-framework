@@ -74,7 +74,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
@@ -331,7 +330,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .stream()
         .map(key -> newEnumValueDefinition().name(formatSortEnumName(key))
             .build())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<FieldDefinition> createFieldDefinitions(ObjectType<?> objectType) {
@@ -339,7 +338,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .values()
         .stream()
         .flatMap(objectField -> createFieldDefinition(objectField).stream())
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private Optional<FieldDefinition> createFieldDefinition(ObjectField objectField) {
@@ -513,7 +512,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     var inputValueDefinitions = subscription.getKeys()
         .stream()
         .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType))
-        .collect(Collectors.toList());
+        .toList();
 
     createFilterArgument(subscription.getType(), objectType).ifPresent(inputValueDefinitions::add);
 

@@ -50,7 +50,7 @@ public class GraphQlHelper {
   public static Object getValue(@NonNull Type<?> type, @NonNull Value<?> value) {
     var stringValue = getStringValue(value);
 
-    if ((type instanceof TypeName typeName) && Objects.equals("Date", (typeName).getName())
+    if ((type instanceof TypeName typeName) && Objects.equals("Date", typeName.getName())
         && Objects.equals("NOW", stringValue)) {
       return LocalDate.now();
     }

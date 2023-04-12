@@ -12,6 +12,8 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class OpenApiPropertiesTest {
 
@@ -54,23 +56,12 @@ class OpenApiPropertiesTest {
     assertThat(validationResult, empty());
   }
 
-  @Test
-  void setApiDocPublicationPath_withInvalidValue_isInvalid() {
-    properties.setApiDocPublicationPath("openapi.yaml");
+  @ParameterizedTest
+  @CsvSource({"openapi.yaml", "/open%2Gapi", "/open^api"})
+  void setApiDocPublicationPath_withInvalidValue_isInvalid(String apiDocPublicationPath) {
+    properties.setApiDocPublicationPath(apiDocPublicationPath);
 
-    Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
-
-    assertThat(validationResult, hasSize(1));
-
-    assertThat(Iterables.getOnlyElement(validationResult)
-        .getMessage(), endsWith(PATH_VALIDATION_MSG));
-  }
-
-  @Test
-  void setApiDocPublicationPath_withWrongPercentEncoding_isInvalid() {
-    properties.setApiDocPublicationPath("/open%2Gapi");
-
-    Set<ConstraintViolation<OpenApiProperties>> validationResult = validator.validate(properties);
+    var validationResult = validator.validate(properties);
 
     assertThat(validationResult, hasSize(1));
 

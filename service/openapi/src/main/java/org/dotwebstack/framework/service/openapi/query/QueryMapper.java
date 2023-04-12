@@ -150,8 +150,8 @@ public class QueryMapper {
     if (isPageableField(fieldDefinition)) {
       var nestedFieldDefinition = ((GraphQLObjectType) unwrapAll(fieldDefinition.getType())).getField(NODES_FIELD_NAME);
 
-      return Stream.of(new Field(NODES_FIELD_NAME, new SelectionSet(
-          mapSchema(schema.getItems(), nestedFieldDefinition, mappingContext).collect(Collectors.toList()))));
+      return Stream.of(new Field(NODES_FIELD_NAME,
+          new SelectionSet(mapSchema(schema.getItems(), nestedFieldDefinition, mappingContext).toList())));
     }
 
     var itemsSchema = schema.getItems();
@@ -285,7 +285,7 @@ public class QueryMapper {
     }
 
     if (schema instanceof ArraySchema arraySchema) {
-      var fields = mapArraySchema(arraySchema, fieldDefinition, mappingContext).collect(Collectors.toList());
+      var fields = mapArraySchema(arraySchema, fieldDefinition, mappingContext).toList();
 
       if (fields.isEmpty()) {
         return Stream.of(new Field(fieldDefinition.getName()));
@@ -294,7 +294,7 @@ public class QueryMapper {
       return Stream.of(new Field(fieldDefinition.getName(), new SelectionSet(fields)));
     }
 
-    var nestedFields = mapSchema(schema, fieldDefinition, mappingContext).collect(Collectors.toList());
+    var nestedFields = mapSchema(schema, fieldDefinition, mappingContext).toList();
 
     if (nestedFields.isEmpty()) {
       return Stream.of(new Field(name));

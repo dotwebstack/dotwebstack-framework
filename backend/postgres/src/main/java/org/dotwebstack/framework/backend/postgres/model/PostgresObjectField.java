@@ -19,7 +19,7 @@ import org.dotwebstack.framework.core.model.ObjectType;
 @EqualsAndHashCode(callSuper = true)
 public class PostgresObjectField extends AbstractObjectField {
 
-  private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])([0-9]*[A-Z])");
+  private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])(\\d*[A-Z])");
 
   private static final Pattern NAME_PATTERN_2ND = Pattern.compile("([A-Z])([A-Z][^A-Z])");
 

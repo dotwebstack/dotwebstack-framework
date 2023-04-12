@@ -60,10 +60,10 @@ public class QueryPaging {
   }
 
   private static int getIntValueForArgument(Object value, String name) {
-    if (value instanceof Integer) {
-      return (Integer) value;
-    } else if (value instanceof BigInteger) {
-      return ((BigInteger) value).intValue();
+    if (value instanceof Integer integer) {
+      return integer;
+    } else if (value instanceof BigInteger bigInteger) {
+      return bigInteger.intValue();
     } else {
       throw invalidConfigurationException("`{}` parameter must be configured having type integer.", name);
     }

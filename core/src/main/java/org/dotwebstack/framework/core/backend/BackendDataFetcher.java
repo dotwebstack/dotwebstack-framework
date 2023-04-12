@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
@@ -156,7 +155,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
     var duplicateKeys = keys.stream()
         .filter(key -> Collections.frequency(keys, key) > 1)
         .distinct()
-        .collect(Collectors.toList());
+        .toList();
+
     if (!duplicateKeys.isEmpty()) {
       throw requestValidationException("The following keys are duplicate: {}", duplicateKeys);
     }
