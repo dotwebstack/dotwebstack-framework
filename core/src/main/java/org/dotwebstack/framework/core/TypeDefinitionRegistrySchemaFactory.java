@@ -509,10 +509,12 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private FieldDefinition createSubscriptionFieldDefinition(String queryName, Subscription subscription,
       ObjectType<?> objectType) {
-    var inputValueDefinitions = subscription.getKeys()
+    var inputValueDefinitions = new ArrayList<InputValueDefinition>();
+
+    subscription.getKeys()
         .stream()
         .map(keyConfiguration -> createInputValueDefinition(keyConfiguration, objectType))
-        .toList();
+        .forEach(inputValueDefinitions::add);
 
     createFilterArgument(subscription.getType(), objectType).ifPresent(inputValueDefinitions::add);
 
