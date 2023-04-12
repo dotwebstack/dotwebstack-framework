@@ -47,47 +47,25 @@ public class AggregateHelper {
 
   public static ScalarType getAggregateScalarType(SelectedField selectedField) {
     String aggregateFunction = selectedField.getName();
-    switch (aggregateFunction) {
-      case INT_MIN_FIELD:
-      case INT_MAX_FIELD:
-      case INT_AVG_FIELD:
-      case INT_SUM_FIELD:
-      case COUNT_FIELD:
-        return ScalarType.INT;
-      case STRING_JOIN_FIELD:
-        return ScalarType.STRING;
-      case FLOAT_MIN_FIELD:
-      case FLOAT_SUM_FIELD:
-      case FLOAT_MAX_FIELD:
-      case FLOAT_AVG_FIELD:
-        return ScalarType.FLOAT;
-      default:
-        throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
-    }
+    return switch (aggregateFunction) {
+      case INT_MIN_FIELD, INT_MAX_FIELD, INT_AVG_FIELD, INT_SUM_FIELD, COUNT_FIELD -> ScalarType.INT;
+      case STRING_JOIN_FIELD -> ScalarType.STRING;
+      case FLOAT_MIN_FIELD, FLOAT_SUM_FIELD, FLOAT_MAX_FIELD, FLOAT_AVG_FIELD -> ScalarType.FLOAT;
+      default -> throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
+    };
   }
 
   public static AggregateFunctionType getAggregateFunctionType(SelectedField selectedField) {
     String aggregateFunction = selectedField.getName();
-    switch (aggregateFunction) {
-      case COUNT_FIELD:
-        return AggregateFunctionType.COUNT;
-      case STRING_JOIN_FIELD:
-        return AggregateFunctionType.JOIN;
-      case FLOAT_SUM_FIELD:
-      case INT_SUM_FIELD:
-        return AggregateFunctionType.SUM;
-      case FLOAT_MIN_FIELD:
-      case INT_MIN_FIELD:
-        return AggregateFunctionType.MIN;
-      case FLOAT_MAX_FIELD:
-      case INT_MAX_FIELD:
-        return AggregateFunctionType.MAX;
-      case INT_AVG_FIELD:
-      case FLOAT_AVG_FIELD:
-        return AggregateFunctionType.AVG;
-      default:
-        throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
-    }
+    return switch (aggregateFunction) {
+      case COUNT_FIELD -> AggregateFunctionType.COUNT;
+      case STRING_JOIN_FIELD -> AggregateFunctionType.JOIN;
+      case FLOAT_SUM_FIELD, INT_SUM_FIELD -> AggregateFunctionType.SUM;
+      case FLOAT_MIN_FIELD, INT_MIN_FIELD -> AggregateFunctionType.MIN;
+      case FLOAT_MAX_FIELD, INT_MAX_FIELD -> AggregateFunctionType.MAX;
+      case INT_AVG_FIELD, FLOAT_AVG_FIELD -> AggregateFunctionType.AVG;
+      default -> throw requestValidationException("Aggregate function {} is not supported", aggregateFunction);
+    };
   }
 
   public static boolean isDistinct(SelectedField selectedField) {

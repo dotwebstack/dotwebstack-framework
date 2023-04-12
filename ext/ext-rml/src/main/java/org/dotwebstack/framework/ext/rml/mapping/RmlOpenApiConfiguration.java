@@ -72,8 +72,8 @@ public class RmlOpenApiConfiguration {
 
     if (mappingConfig instanceof List) {
       return Map.of(operation, resolveMappings((List<String>) mappingConfig));
-    } else if (mappingConfig instanceof String) {
-      return Map.of(operation, resolveMappings(List.of((String) mappingConfig)));
+    } else if (mappingConfig instanceof String stringConfig) {
+      return Map.of(operation, resolveMappings(List.of(stringConfig)));
     } else {
       throw invalidOpenApiConfigurationException("{} on {} is not a list of RML mapping paths", X_DWS_RML_MAPPING,
           name);
@@ -119,7 +119,7 @@ public class RmlOpenApiConfiguration {
                 .stream()
                 .map(RDFFormat::getFileExtensions)
                 .flatMap(List::stream)
-                .collect(Collectors.toList())));
+                .toList()));
 
     return Models.parse(mappingInputStream, rdfFormat);
   }

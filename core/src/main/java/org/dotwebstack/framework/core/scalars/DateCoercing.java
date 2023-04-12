@@ -31,12 +31,12 @@ public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
 
   @Override
   public LocalDate serialize(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
-    if (value instanceof LocalDate) {
-      return (LocalDate) value;
+    if (value instanceof LocalDate localDate) {
+      return localDate;
     }
 
-    if (value instanceof Date) {
-      return ((Date) value).toInstant()
+    if (value instanceof Date date) {
+      return date.toInstant()
           .atZone(ZoneId.systemDefault())
           .toLocalDate();
     }
@@ -88,8 +88,7 @@ public class DateCoercing implements Coercing<DateSupplier, LocalDate> {
   @Override
   public DateSupplier parseLiteral(@NonNull Value<?> value, @NonNull CoercedVariables variables,
       @NonNull GraphQLContext context, @NonNull Locale locale) {
-    if (value instanceof StringValue) {
-      var stringValue = (StringValue) value;
+    if (value instanceof StringValue stringValue) {
       if (Objects.equals("NOW", stringValue.getValue())) {
         return new DateSupplier(true);
       }

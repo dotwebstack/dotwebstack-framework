@@ -8,7 +8,6 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -39,7 +38,7 @@ public class GeometryReader {
     var foundFilters = data.keySet()
         .stream()
         .filter(filters::contains)
-        .collect(Collectors.toList());
+        .toList();
 
     if (foundFilters.isEmpty()) {
       throw requestValidationException("The geometry filter does not contain one of the following methods: {}.",

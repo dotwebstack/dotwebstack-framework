@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.ValueUtils;
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
@@ -37,16 +36,14 @@ public class PropertyPathFactory {
   public static BasePath create(Model model, Resource subject, IRI predicate) {
     var value = ValueUtils.findRequiredProperty(model, subject, predicate);
 
-    if (value instanceof BNode) {
-      BNode blankNode = (BNode) value;
-
-      IRI iri = Models.predicate(model.filter(blankNode, null, null))
+    if (value instanceof BNode blankNode) {
+      var iri = Models.predicate(model.filter(blankNode, null, null))
           .orElseThrow(() -> invalidConfigurationException("No predicate found."));
 
-      List<BasePath> childs = model.filter(blankNode, null, null)
+      var childs = model.filter(blankNode, null, null)
           .stream()
           .map(child -> create(model, child.getSubject(), child.getPredicate()))
-          .collect(Collectors.toList());
+          .toList();
 
       return MAP.get(iri)
           .apply(childs);

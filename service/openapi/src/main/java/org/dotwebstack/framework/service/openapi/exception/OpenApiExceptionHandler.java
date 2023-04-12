@@ -78,14 +78,13 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
   public Mono<Void> handle(ServerWebExchange exchange, Throwable throwable) {
     Mono<ResponseEntity<Problem>> responseEntity;
 
-    if (throwable instanceof ResponseStatusException) {
+    if (throwable instanceof ResponseStatusException responseStatusException) {
       // In case endpoint doesn't exists
-      var responseStatusException = (ResponseStatusException) throwable;
       responseEntity = advice.create(responseStatusException.getStatus(), throwable, exchange);
     } else {
       Optional<Problem> problem;
-      if (throwable instanceof ThrowableProblem) {
-        problem = Optional.of((ThrowableProblem) throwable);
+      if (throwable instanceof ThrowableProblem throwableProblem) {
+        problem = Optional.of(throwableProblem);
       } else {
         problem = getExceptionRule(throwable).map(rule -> toProblem(rule, throwable));
       }

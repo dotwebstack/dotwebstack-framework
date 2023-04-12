@@ -110,7 +110,7 @@ public class FilterCriteriaBuilder {
     var criteria = getArgumentKeys().filter(filterName -> !filterName.equals(FilterConstants.OR_FIELD))
         .map(this::build)
         .map(FilterCriteria.class::cast)
-        .collect(Collectors.toList());
+        .toList();
 
     return GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.AND)

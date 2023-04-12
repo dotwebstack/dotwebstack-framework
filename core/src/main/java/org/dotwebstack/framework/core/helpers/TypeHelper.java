@@ -47,8 +47,8 @@ public final class TypeHelper {
   }
 
   public static boolean hasListType(@NonNull Type<?> type) {
-    if (type instanceof NonNullType) {
-      return hasListType(((NonNullType) type).getType());
+    if (type instanceof NonNullType nonNullType) {
+      return hasListType(nonNullType.getType());
     } else if (type instanceof ListType) {
       return true;
     } else if (type instanceof TypeName) {
@@ -59,8 +59,8 @@ public final class TypeHelper {
   }
 
   public static GraphQLType unwrapConnectionType(GraphQLType type) {
-    if (type instanceof GraphQLNonNull && isConnectionType(((GraphQLNonNull) type).getWrappedType())) {
-      return unwrapConnectionType(((GraphQLNonNull) type).getWrappedType());
+    if (type instanceof GraphQLNonNull nonNullType && isConnectionType(nonNullType.getWrappedType())) {
+      return unwrapConnectionType(nonNullType.getWrappedType());
     }
     if (isConnectionType(type)) {
       return ((GraphQLObjectType) type).getFieldDefinition("nodes")
@@ -70,7 +70,7 @@ public final class TypeHelper {
   }
 
   private static boolean isConnectionType(GraphQLType type) {
-    return type instanceof GraphQLObjectType && ((GraphQLObjectType) type).getName()
+    return type instanceof GraphQLObjectType objectType && objectType.getName()
         .endsWith("Connection");
   }
 
@@ -79,31 +79,31 @@ public final class TypeHelper {
       return getBaseType((Type) type.getChildren()
           .get(0));
     }
-    if (type instanceof NonNullType) {
-      return getBaseType(((NonNullType) type).getType());
+    if (type instanceof NonNullType nonNullType) {
+      return getBaseType(nonNullType.getType());
     }
     return type;
   }
 
   public static String getTypeName(@NonNull Type<?> type) {
-    if (type instanceof NonNullType) {
-      return getTypeName(((NonNullType) type).getType());
-    } else if (type instanceof ListType) {
-      return getTypeName(((ListType) type).getType());
-    } else if (type instanceof TypeName) {
-      return ((TypeName) type).getName();
+    if (type instanceof NonNullType nonNullType) {
+      return getTypeName(nonNullType.getType());
+    } else if (type instanceof ListType listType) {
+      return getTypeName(listType.getType());
+    } else if (type instanceof TypeName typeName) {
+      return typeName.getName();
     } else {
       throw illegalArgumentException(UNSUPPORTED_TYPE_ERROR_TEXT, type.getClass());
     }
   }
 
   public static Optional<String> getTypeName(GraphQLType type) {
-    if (type instanceof GraphQLList) {
-      return getTypeName(((GraphQLList) type).getWrappedType());
-    } else if (type instanceof GraphQLNonNull) {
-      return getTypeName(((GraphQLNonNull) type).getWrappedType());
-    } else if (type instanceof GraphQLNamedType) {
-      return Optional.of(((GraphQLNamedType) type).getName());
+    if (type instanceof GraphQLList listType) {
+      return getTypeName(listType.getWrappedType());
+    } else if (type instanceof GraphQLNonNull nonNullType) {
+      return getTypeName(nonNullType.getWrappedType());
+    } else if (type instanceof GraphQLNamedType namedType) {
+      return Optional.of(namedType.getName());
     } else {
       return Optional.empty();
     }

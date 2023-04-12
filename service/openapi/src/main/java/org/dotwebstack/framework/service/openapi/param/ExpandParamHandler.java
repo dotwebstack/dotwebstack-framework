@@ -74,7 +74,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
     var schema = parameter.getSchema();
 
     switch (schema.getType()) {
-      case ARRAY_TYPE:
+      case ARRAY_TYPE -> {
         if (Objects.nonNull(schema.getDefault())) {
           ((ArrayList<String>) Objects.requireNonNull(JsonNodeUtils.toObject((ArrayNode) schema.getDefault())))
               .forEach(defaultValue -> {
@@ -85,18 +85,17 @@ public class ExpandParamHandler extends DefaultParamHandler {
         ((ArraySchema) schema).getItems()
             .getEnum()
             .forEach((enumParam -> validateExpandParam(graphQlField, (String) enumParam, pathName)));
-        break;
-      case STRING_TYPE:
+      }
+      case STRING_TYPE -> {
         if (Objects.nonNull(schema.getDefault())) {
           validateExpandParam(graphQlField, ((StringSchema) schema).getDefault(), pathName);
           validateValues(((StringSchema) schema).getDefault(), parameter);
         }
         ((StringSchema) schema).getEnum()
             .forEach(enumParam -> validateExpandParam(graphQlField, enumParam, pathName));
-        break;
-      default:
-        throw invalidOpenApiConfigurationException(
-            "Expand parameter '{}' can only be of type array or string for path '{}'", parameter.getName(), pathName);
+      }
+      default -> throw invalidOpenApiConfigurationException(
+          "Expand parameter '{}' can only be of type array or string for path '{}'", parameter.getName(), pathName);
     }
   }
 
@@ -119,9 +118,7 @@ public class ExpandParamHandler extends DefaultParamHandler {
   }
 
   private Schema<?> getPropertySchema(Schema<?> schema, String fieldName) {
-    if (schema instanceof ComposedSchema) {
-      var composedSchema = (ComposedSchema) schema;
-
+    if (schema instanceof ComposedSchema composedSchema) {
       return getComposedChilds(composedSchema).stream()
           .filter(ObjectSchema.class::isInstance)
           .filter(DwsExtensionHelper::isTransient)

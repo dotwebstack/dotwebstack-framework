@@ -5,7 +5,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
@@ -89,7 +88,7 @@ public class Query {
 
     var orderables = sortCriterias.stream()
         .map(this::createOrderable)
-        .collect(Collectors.toList());
+        .toList();
 
     return SparqlBuilder.orderBy(orderables.toArray(Orderable[]::new));
   }

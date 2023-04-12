@@ -87,8 +87,8 @@ public class JsonBodyMapper implements BodyMapper {
       return mapObjectSchema(schema, fieldDefinition, data, newContext);
     }
 
-    if (schema instanceof ArraySchema) {
-      return mapArraySchema((ArraySchema) schema, fieldDefinition, data, newContext);
+    if (schema instanceof ArraySchema arraySchema) {
+      return mapArraySchema(arraySchema, fieldDefinition, data, newContext);
     }
 
     return evaluateScalarData(schema, data, newContext);
@@ -140,7 +140,7 @@ public class JsonBodyMapper implements BodyMapper {
         }, HashMap::putAll);
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
+  @SuppressWarnings({"unchecked"})
   private Object mapEnvelopeObjectSchema(Schema<?> schema, GraphQLFieldDefinition fieldDefinition, Object data,
       JexlContext jexlContext) {
     var rawType = (GraphQLObjectType) GraphQLTypeUtil.unwrapAll(fieldDefinition.getType());
@@ -235,11 +235,9 @@ public class JsonBodyMapper implements BodyMapper {
     }
     if (childData instanceof Map) {
       ((Map<String, Object>) childData).put("_parent", data);
-    } else if (childData instanceof List) {
-      var childDataList = ((List) childData);
-      if (!childDataList.isEmpty() && childDataList.get(0) instanceof Map) {
-        childDataList.forEach(item -> ((Map) item).put("_parent", data));
-      }
+    } else if (childData instanceof List childDataList && !childDataList.isEmpty()
+        && childDataList.get(0) instanceof Map) {
+      childDataList.forEach(item -> ((Map) item).put("_parent", data));
     }
   }
 
@@ -269,7 +267,7 @@ public class JsonBodyMapper implements BodyMapper {
       return ((Collection<Object>) items).stream()
           .map(item -> mapSchema(schema.getItems(),
               ((GraphQLObjectType) rawType).getFieldDefinition(PagingConstants.NODES_FIELD_NAME), item, jexlContext))
-          .collect(Collectors.toList());
+          .toList();
     }
 
     if (!(data instanceof Collection)) {
@@ -278,7 +276,7 @@ public class JsonBodyMapper implements BodyMapper {
 
     return ((Collection<Object>) data).stream()
         .map(item -> mapSchema(schema.getItems(), fieldDefinition, item, jexlContext))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   @SuppressWarnings("unchecked")

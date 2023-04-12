@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.NonNull;
 
@@ -51,7 +50,7 @@ public class GraphQlHelper {
   public static Object getValue(@NonNull Type<?> type, @NonNull Value<?> value) {
     var stringValue = getStringValue(value);
 
-    if ((type instanceof TypeName) && Objects.equals("Date", ((TypeName) type).getName())
+    if ((type instanceof TypeName typeName) && Objects.equals("Date", (typeName).getName())
         && Objects.equals("NOW", stringValue)) {
       return LocalDate.now();
     }
@@ -59,16 +58,16 @@ public class GraphQlHelper {
   }
 
   public static String getStringValue(@NonNull Value<?> value) {
-    if (value instanceof IntValue) {
-      return ((IntValue) value).getValue()
+    if (value instanceof IntValue intValue) {
+      return intValue.getValue()
           .toString();
-    } else if (value instanceof StringValue) {
-      return ((StringValue) value).getValue();
-    } else if (value instanceof FloatValue) {
-      return ((FloatValue) value).getValue()
+    } else if (value instanceof StringValue stringValue) {
+      return stringValue.getValue();
+    } else if (value instanceof FloatValue floatValue) {
+      return floatValue.getValue()
           .toString();
-    } else if (value instanceof BooleanValue) {
-      return Boolean.toString(((BooleanValue) value).isValue());
+    } else if (value instanceof BooleanValue booleanValue) {
+      return Boolean.toString(booleanValue.isValue());
     }
     return value.toString();
   }
@@ -123,7 +122,7 @@ public class GraphQlHelper {
         .stream()
         .filter(argument -> requireNonNull(argument.getDefinition()).getAdditionalData()
             .containsKey(KEY_FIELD))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public static FieldDefinition getFieldDefinition(SelectedField selectedField) {
@@ -177,7 +176,7 @@ public class GraphQlHelper {
         .filter(ObjectTypeDefinition.class::isInstance)
         .map(ObjectTypeDefinition.class::cast)
         .flatMap(GraphQlHelper::createBlockedPatterns)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static Stream<String> createBlockedPatterns(ObjectTypeDefinition objectTypeDefinition) {

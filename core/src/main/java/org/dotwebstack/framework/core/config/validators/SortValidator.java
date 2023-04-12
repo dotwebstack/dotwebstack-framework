@@ -46,7 +46,7 @@ public class SortValidator implements SchemaValidator {
         .values()
         .stream()
         .flatMap(List::stream)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private void validateSortableByField(Schema schema, String objectTypeName,

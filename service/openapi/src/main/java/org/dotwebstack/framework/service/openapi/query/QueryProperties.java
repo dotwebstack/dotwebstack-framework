@@ -35,9 +35,9 @@ public class QueryProperties {
       return null;
     }
 
-    if (extension instanceof String) {
+    if (extension instanceof String string) {
       var properties = new QueryProperties();
-      properties.setField((String) extension);
+      properties.setField(string);
       return properties;
     }
 

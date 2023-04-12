@@ -168,7 +168,7 @@ class SelectBuilder {
     List<Condition> keyConditions = objectRequest.getKeyCriterias()
         .stream()
         .flatMap(keyCriteria -> createKeyCondition(keyCriteria, table).stream())
-        .collect(Collectors.toList());
+        .toList();
 
     dataQuery.addConditions(keyConditions);
 
@@ -244,7 +244,7 @@ class SelectBuilder {
     objectRequest.getAggregateObjectFields()
         .stream()
         .flatMap(aggregateObjectField -> processAggregateObjectField(objectRequest, aggregateObjectField, table))
-        .collect(Collectors.toList())
+        .toList()
         .forEach(nestedSelect -> addSubSelect(dataQuery, nestedSelect, objectRequest.getObjectType()
             .isNested()));
   }
@@ -290,7 +290,7 @@ class SelectBuilder {
     var nonStringJoinAggregateFields = aggregateObjectRequest.getAggregateFields()
         .stream()
         .filter(not(isStringJoin))
-        .collect(Collectors.toList());
+        .toList();
 
     var otherResult = Optional.of(nonStringJoinAggregateFields)
         .filter(not(List::isEmpty))
@@ -329,7 +329,7 @@ class SelectBuilder {
             .filterCriteria(filterCriteria)
             .table(aliasedAggregateTable)
             .build())
-            .collect(Collectors.toList()))
+            .toList())
         .ifPresent(subSelect::addConditions);
 
     return subSelect;
@@ -526,7 +526,7 @@ class SelectBuilder {
                   .selectFieldOrAsterisk(field)
                   .build());
         })
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
@@ -566,7 +566,7 @@ class SelectBuilder {
           .map(selectField -> SelectResult.builder()
               .selectFieldOrAsterisk(selectField)
               .build())
-          .collect(Collectors.toList());
+          .toList();
     } else {
       var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
 
@@ -580,7 +580,7 @@ class SelectBuilder {
           .build();
 
       return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration,
-          childObjectField.getName()).collect(Collectors.toList());
+          childObjectField.getName()).toList();
     }
   }
 
