@@ -4,6 +4,7 @@ import static graphql.schema.GraphQLTypeUtil.unwrapAll;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toCollection;
 import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilder.newFilterCriteriaBuilder;
 import static org.dotwebstack.framework.core.datafetchers.SortConstants.SORT_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getAggregateFunctionType;
@@ -38,6 +39,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -165,7 +167,7 @@ public class BackendRequestFactory {
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
         .flatMap(this::mapScalarFieldToFieldRequests)
-        .toList();
+        .collect(toCollection(ArrayList::new));
   }
 
   private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField) {
