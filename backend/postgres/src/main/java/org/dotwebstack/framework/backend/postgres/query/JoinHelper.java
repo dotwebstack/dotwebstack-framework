@@ -116,14 +116,14 @@ public class JoinHelper {
     var joinColumns = joinTable.getJoinColumns()
         .stream()
         .map(joinColumn -> resolveReferencedField(joinColumn, objectType))
-        .collect(Collectors.toList());
+        .toList();
 
     result.setJoinColumns(joinColumns);
 
     var inverseJoinColumns = joinTable.getInverseJoinColumns()
         .stream()
         .map(JoinHelper::resolveJoinColumn)
-        .collect(Collectors.toList());
+        .toList();
 
     result.setInverseJoinColumns(inverseJoinColumns);
 
@@ -136,7 +136,7 @@ public class JoinHelper {
     }
     return joinColumns.stream()
         .map(JoinHelper::resolveJoinColumn)
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static JoinColumn resolveJoinColumn(JoinColumn joinColumn) {
@@ -151,7 +151,7 @@ public class JoinHelper {
       List<JoinColumn> joinColumns, PostgresObjectType objectType) {
     List<Condition> conditions = joinColumns.stream()
         .map(joinColumn -> column(table, joinColumn.getName()).equal(column(referencedTable, joinColumn, objectType)))
-        .collect(Collectors.toList());
+        .toList();
 
     return andCondition(conditions);
   }
@@ -161,7 +161,7 @@ public class JoinHelper {
     List<Condition> conditions = joinColumns.stream()
         .map(joinColumn -> column(table, joinColumn.getName())
             .equal(column(referencedTable, joinColumn.getReferencedColumn())))
-        .collect(Collectors.toList());
+        .toList();
 
     return andCondition(conditions);
   }

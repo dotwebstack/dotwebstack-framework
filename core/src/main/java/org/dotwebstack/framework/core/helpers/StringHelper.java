@@ -3,7 +3,7 @@ package org.dotwebstack.framework.core.helpers;
 import java.util.regex.Pattern;
 
 public class StringHelper {
-  private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])([0-9]*[A-Z])");
+  private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])(\\d*[A-Z])");
 
   private static final Pattern NAME_PATTERN_2ND = Pattern.compile("([A-Z])([A-Z][^A-Z])");
 

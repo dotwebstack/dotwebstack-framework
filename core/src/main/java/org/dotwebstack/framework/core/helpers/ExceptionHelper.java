@@ -29,8 +29,8 @@ public class ExceptionHelper {
   public static Throwable findCause(Object... arguments) {
     if (arguments != null && arguments.length > 0) {
       Object lastArgument = arguments[arguments.length - 1];
-      if (lastArgument instanceof Throwable) {
-        return (Throwable) lastArgument;
+      if (lastArgument instanceof Throwable throwable) {
+        return throwable;
       }
     }
     return null;

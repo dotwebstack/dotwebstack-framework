@@ -152,8 +152,8 @@ public class QueryArgumentBuilder {
           } else if (value instanceof Map) {
             var objectValue = createObjectValue(operationRequest, (Map<String, Object>) value);
             return objectValue != null ? new ObjectField(key, objectValue) : null;
-          } else if (value instanceof String) {
-            return keyValueToObjectField(key, (String) value, operationRequest.getParameters());
+          } else if (value instanceof String string) {
+            return keyValueToObjectField(key, string, operationRequest.getParameters());
           } else {
             throw new IllegalArgumentException("Type not supported: " + value.getClass()
                 .getSimpleName());

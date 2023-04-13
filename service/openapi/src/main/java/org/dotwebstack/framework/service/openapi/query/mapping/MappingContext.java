@@ -132,8 +132,8 @@ public class MappingContext {
       if (e != null) {
         return new HashSet<>(e);
       }
-    } else if (schema instanceof ArraySchema) {
-      var items = ((ArraySchema) schema).getItems();
+    } else if (schema instanceof ArraySchema arraySchema) {
+      var items = arraySchema.getItems();
       return getEnum(items);
     }
     return Collections.emptySet();

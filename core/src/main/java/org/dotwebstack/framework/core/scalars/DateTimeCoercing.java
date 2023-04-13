@@ -27,8 +27,8 @@ class DateTimeCoercing implements Coercing<DateTimeSupplier, OffsetDateTime> {
 
   @Override
   public OffsetDateTime serialize(@NonNull Object value, @NonNull GraphQLContext context, @NonNull Locale locale) {
-    if (value instanceof OffsetDateTime) {
-      return (OffsetDateTime) value;
+    if (value instanceof OffsetDateTime offsetDateTime) {
+      return offsetDateTime;
     }
 
     if (!(value instanceof String)) {
