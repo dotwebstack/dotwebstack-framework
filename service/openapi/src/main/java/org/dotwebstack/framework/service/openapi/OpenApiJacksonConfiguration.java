@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.zalando.problem.violations.ConstraintViolationProblemModule;
+import org.zalando.problem.jackson.ProblemModule;
 
 @Configuration
 public class OpenApiJacksonConfiguration {
@@ -19,7 +19,7 @@ public class OpenApiJacksonConfiguration {
 
   @Bean
   public Module problemModule() {
-    return new ConstraintViolationProblemModule();
+    return new ProblemModule();
   }
 
   @Bean
