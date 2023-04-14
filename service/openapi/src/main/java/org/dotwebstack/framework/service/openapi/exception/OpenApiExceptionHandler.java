@@ -80,7 +80,9 @@ public class OpenApiExceptionHandler implements WebExceptionHandler {
 
     if (throwable instanceof ResponseStatusException responseStatusException) {
       // In case endpoint doesn't exist
-      responseEntity = advice.create(responseStatusException.getStatus(), throwable, exchange);
+      var status = HttpStatus.valueOf(responseStatusException.getStatusCode()
+          .value());
+      responseEntity = advice.create(status, throwable, exchange);
     } else {
       Optional<Problem> problem;
       if (throwable instanceof ThrowableProblem throwableProblem) {

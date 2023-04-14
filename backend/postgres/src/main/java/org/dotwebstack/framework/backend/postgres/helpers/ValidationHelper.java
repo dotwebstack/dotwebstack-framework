@@ -2,10 +2,10 @@ package org.dotwebstack.framework.backend.postgres.helpers;
 
 import static java.util.stream.Collectors.joining;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
 
 public final class ValidationHelper {
 

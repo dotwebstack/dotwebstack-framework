@@ -1,6 +1,6 @@
 package org.dotwebstack.framework.core.model;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.Data;
 
 @Data

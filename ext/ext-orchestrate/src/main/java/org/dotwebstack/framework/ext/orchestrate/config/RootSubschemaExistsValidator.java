@@ -1,7 +1,8 @@
 package org.dotwebstack.framework.ext.orchestrate.config;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 class RootSubschemaExistsValidator
     implements ConstraintValidator<RootSubschemaExists, OrchestrateConfigurationProperties> {

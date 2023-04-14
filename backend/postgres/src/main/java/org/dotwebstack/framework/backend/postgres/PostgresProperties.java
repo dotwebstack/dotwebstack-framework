@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import io.r2dbc.postgresql.client.SSLMode;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

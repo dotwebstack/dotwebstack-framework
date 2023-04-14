@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import com.google.common.collect.BiMap;
+import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 

@@ -4,11 +4,11 @@ import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

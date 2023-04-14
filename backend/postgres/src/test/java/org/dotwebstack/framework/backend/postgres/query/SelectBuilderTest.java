@@ -222,8 +222,9 @@ class SelectBuilderTest {
     var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
         + "  \"x6\".*\n" + "from \"brewery\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
         + "      \"x4\".\"city\" as \"x5\",\n" + "      1 as \"x4\"\n" + "    from \"address\" as \"x4\"\n"
-        + "    where \"x1\".\"postal_address\" = \"x4\".\"identifier\"\n" + "    limit 1\n" + "  ) as \"x6\"\n"
-        + "    on true\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n" + "  and \"x5\" = 'Dublin'\n" + ")";
+        + "    where \"x1\".\"postal_address\" = \"x4\".\"identifier\"\n" + "    fetch next 1 rows only\n"
+        + "  ) as \"x6\"\n" + "    on true\n" + "where (\n" + "  \"x1\".\"identifier\" = 'id-1'\n"
+        + "  and \"x5\" = 'Dublin'\n" + ")";
     assertThat(result, notNullValue());
     assertThat(result.toString(), is(expectedQuery));
   }
@@ -470,7 +471,7 @@ class SelectBuilderTest {
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x5\".*\n" + "from \"brewery\" as \"x1\"\n"
             + "  left outer join lateral (\n" + "    select\n" + "      \"x3\".\"street_column\" as \"x4\",\n"
             + "      1 as \"x3\"\n" + "    from \"address\" as \"x3\"\n"
-            + "    where \"x1\".\"postalAddress_column\" = \"x3\".\"identifier\"\n" + "    limit 1\n"
+            + "    where \"x1\".\"postalAddress_column\" = \"x3\".\"identifier\"\n" + "    fetch next 1 rows only\n"
             + "  ) as \"x5\"\n" + "    on true"));
   }
 
@@ -687,7 +688,7 @@ class SelectBuilderTest {
         equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"brewery_column\" as \"x3\",\n"
             + "  \"x6\".*\n" + "from \"beer\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
             + "      \"x4\".\"name_column\" as \"x5\",\n" + "      1 as \"x4\"\n" + "    from \"brewery\" as \"x4\"\n"
-            + "    where \"x1\".\"brewery_column\" = \"x4\".\"identifier_column\"\n" + "    limit 1\n"
+            + "    where \"x1\".\"brewery_column\" = \"x4\".\"identifier_column\"\n" + "    fetch next 1 rows only\n"
             + "  ) as \"x6\"\n" + "    on true"));
   }
 

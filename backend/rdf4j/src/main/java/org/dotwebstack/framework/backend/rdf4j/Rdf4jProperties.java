@@ -1,7 +1,7 @@
 package org.dotwebstack.framework.backend.rdf4j;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Map;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.eclipse.rdf4j.model.IRI;

@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.service.openapi;
 
+import jakarta.validation.constraints.Pattern;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

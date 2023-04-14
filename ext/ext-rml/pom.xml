@@ -77,5 +77,10 @@
       <artifactId>reactor-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.zalando</groupId>
+      <artifactId>jackson-datatype-problem</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

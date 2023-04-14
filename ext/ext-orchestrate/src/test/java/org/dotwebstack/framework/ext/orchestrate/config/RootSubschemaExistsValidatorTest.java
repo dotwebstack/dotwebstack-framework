@@ -3,8 +3,8 @@ package org.dotwebstack.framework.ext.orchestrate.config;
 import static org.dotwebstack.framework.ext.orchestrate.config.OrchestrateConfigurationTest.ROOT_KEY;
 import static org.hamcrest.Matchers.is;
 
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.Map;
-import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.ext.orchestrate.config.OrchestrateConfigurationProperties.SubschemaProperties;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;

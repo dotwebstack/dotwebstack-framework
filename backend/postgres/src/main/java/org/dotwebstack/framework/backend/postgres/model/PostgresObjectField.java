@@ -3,12 +3,12 @@ package org.dotwebstack.framework.backend.postgres.model;
 import static java.util.Optional.ofNullable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.helpers.StringHelper;

@@ -79,25 +79,25 @@ class SegmentsGeometryConditionBuilderTest {
   }
 
   private static String getExpectedContainsCondition() {
-    return "not (exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
+    return "not exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
         + "    join (\n" + "      select\n" + "        \"tiles_10km\".\"tile_id\" \"tile_id\",\n"
         + "        ST_Intersection(\"geom_rd\", cast('POINT (1 2)' as geometry)) \"geom_rd\"\n"
         + "      from \"public\".\"tiles_10km\"\n"
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
-        + "        and not ((ST_Contains(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
+        + "        and not (ST_Contains(\"tls\".\"geom_rd\", \"gs\".\"geometry\"))\n" + "      )\n"
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + ")";
   }
 
   private static String getExpectedWithinCondition() {
-    return "not (exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
+    return "not exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
         + "    join (\n" + "      select\n" + "        \"tiles_10km\".\"tile_id\" \"tile_id\",\n"
         + "        ST_Intersection(\"geom_rd\", cast('POINT (1 2)' as geometry)) \"geom_rd\"\n"
         + "      from \"public\".\"tiles_10km\"\n"
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
-        + "        and not ((ST_Within(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
+        + "        and not (ST_Within(\"tls\".\"geom_rd\", \"gs\".\"geometry\"))\n" + "      )\n"
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + ")";
   }
 
   private static String getExpectedIntersectsCondition() {
@@ -112,14 +112,14 @@ class SegmentsGeometryConditionBuilderTest {
   }
 
   private static String getExpectedTouchesCondition() {
-    return "not (exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
+    return "not exists (\n" + "  select 1\n" + "  from \"dbeerpedia\".\"brewery__geometry__segments\" \"gs\"\n"
         + "    join (\n" + "      select\n" + "        \"tiles_10km\".\"tile_id\" \"tile_id\",\n"
         + "        ST_Intersection(\"geom_rd\", cast('POINT (1 2)' as geometry)) \"geom_rd\"\n"
         + "      from \"public\".\"tiles_10km\"\n"
         + "      where (ST_Intersects(\"geom_rd\", cast('POINT (1 2)' as geometry)))\n" + "    ) \"tls\"\n"
         + "      on (\n" + "        \"tls\".\"tile_id\" = \"gs\".\"tile_id\"\n"
-        + "        and not ((ST_Touches(\"tls\".\"geom_rd\", \"gs\".\"geometry\")))\n" + "      )\n"
-        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + "))";
+        + "        and not (ST_Touches(\"tls\".\"geom_rd\", \"gs\".\"geometry\"))\n" + "      )\n"
+        + "  where \"gs\".\"brewery__record_id\" = \"src\".\"record_id\"\n" + ")";
   }
 
   private PostgresObjectField mockObjectField() {

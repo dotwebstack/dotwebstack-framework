@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.backend.postgres.query.Query.GROUP_KEY;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.columnName;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;

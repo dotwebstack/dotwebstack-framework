@@ -2,8 +2,8 @@ package org.dotwebstack.framework.core.testhelpers;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 class TestJoinColumnValidator implements ConstraintValidator<TestValidJoinColumn, TestJoinColumn> {
 

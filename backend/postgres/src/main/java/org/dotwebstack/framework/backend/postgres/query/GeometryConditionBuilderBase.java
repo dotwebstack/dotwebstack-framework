@@ -5,9 +5,9 @@ import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatial
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.ext.spatial.GeometryReader.readGeometry;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.Optional;
 import java.util.Set;
-import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;

@@ -2,13 +2,13 @@ package org.dotwebstack.framework.core.model;
 
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getFieldKey;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 

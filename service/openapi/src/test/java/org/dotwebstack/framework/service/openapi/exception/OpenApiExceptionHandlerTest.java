@@ -85,22 +85,25 @@ class OpenApiExceptionHandlerTest {
   void handle_responseStatusException_returnsEntity() {
     // Arrange
     ResponseStatusException throwable = mock(ResponseStatusException.class);
-    when(throwable.getStatus()).thenReturn(HttpStatus.BAD_REQUEST);
+    when(throwable.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
 
     AtomicReference<ResponseEntity<Problem>> responseEntity = new AtomicReference<>();
-    when(advice.create(throwable.getStatus(), throwable, serverWebExchange)).thenAnswer(invocationOnMock -> {
-      Problem problem = Problem.builder()
-          .build();
-      responseEntity.set(ResponseEntity.status(throwable.getStatus())
-          .body(problem));
-      return Mono.just(responseEntity);
-    });
+    when(advice.create(HttpStatus.valueOf(throwable.getStatusCode()
+        .value()), throwable, serverWebExchange)).thenAnswer(invocationOnMock -> {
+          Problem problem = Problem.builder()
+              .build();
+          responseEntity.set(ResponseEntity.status(throwable.getStatusCode()
+              .value())
+              .body(problem));
+          return Mono.just(responseEntity);
+        });
 
     // Act
     openApiExceptionHandler.handle(serverWebExchange, throwable);
 
     // Assert
-    verify(advice, times(1)).create(throwable.getStatus(), throwable, serverWebExchange);
+    verify(advice, times(1)).create(HttpStatus.valueOf(throwable.getStatusCode()
+        .value()), throwable, serverWebExchange);
     assertThat(responseEntity.get()
         .getStatusCode(), is(HttpStatus.BAD_REQUEST));
   }

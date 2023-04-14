@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import jakarta.validation.ConstraintViolationException;
 import java.util.Map;
-import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -36,11 +36,11 @@ class PagingBuilderTest {
         .dataQuery(dataQuery)
         .build();
 
-    assertThat(dataQuery.getSQL(), is("select 1 limit ? offset ?"));
+    assertThat(dataQuery.getSQL(), is("select 1 offset ? rows fetch next ? rows only"));
     assertThat(dataQuery.getBindValues()
-        .get(0), is(10L));
+        .get(0), is(1L));
     assertThat(dataQuery.getBindValues()
-        .get(1), is(1L));
+        .get(1), is(10L));
   }
 
   @Test
