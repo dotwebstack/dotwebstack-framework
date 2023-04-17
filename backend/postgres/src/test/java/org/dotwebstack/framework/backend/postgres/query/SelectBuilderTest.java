@@ -39,7 +39,7 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +72,7 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequest() {
-    ObjectRequest objectRequest = getObjectRequestWithNestedObject(null);
+    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject(null);
 
     var result = selectBuilder.build(objectRequest);
 
@@ -85,7 +85,7 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forDistinctObjectRequest() {
-    ObjectRequest objectRequest = getObjectRequestWithNestedObject(null, true);
+    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject(null, true);
 
     var result = selectBuilder.build(objectRequest);
 
@@ -99,7 +99,7 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequestWithPresenceColumn() {
-    ObjectRequest objectRequest = getObjectRequestWithNestedObject("age_column");
+    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject("age_column");
 
     var result = selectBuilder.build(objectRequest);
 
@@ -111,11 +111,11 @@ class SelectBuilderTest {
             + "where \"x1\".\"identifier_column\" = 'id-1'"));
   }
 
-  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
+  private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
     return getObjectRequestWithNestedObject(presenceColumn, false);
   }
 
-  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn, boolean distinct) {
+  private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn, boolean distinct) {
     var objectType = createObjectType("beer", distinct, "identifier", "name", "soldPerYear");
 
     var nestedObjectType = createObjectType(null, "age");
@@ -130,7 +130,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("identifier", identifierObjectField);
 
-    var nestedObject = ObjectRequest.builder()
+    var nestedObject = SingleObjectRequest.builder()
         .objectType(nestedObjectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("age")
@@ -138,7 +138,7 @@ class SelectBuilderTest {
             .build())))
         .build();
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("name")
@@ -167,7 +167,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("identifier", identifierObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .contextCriteria(createContextCriteria())
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
@@ -201,7 +201,7 @@ class SelectBuilderTest {
     var identifierFieldPath = createFieldPath(breweryObjectType, "identifier");
     var cityFieldPath = createFieldPath(breweryObjectType, "postalAddress.node.city");
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(breweryObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("identifier")
@@ -236,7 +236,7 @@ class SelectBuilderTest {
     var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
     var addressIdentifierFieldPath = createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(breweryObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("identifier")
@@ -274,7 +274,7 @@ class SelectBuilderTest {
     addressIdentifierFieldPath.get(2)
         .setName("id");
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(breweryObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("identifier")
@@ -314,7 +314,7 @@ class SelectBuilderTest {
 
     ((PostgresObjectField) breweryObjectType.getField("postalAddress")).setJoinColumns(List.of());
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(breweryObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("identifier")
@@ -346,7 +346,7 @@ class SelectBuilderTest {
   void build_returnsSelectQuery_forCollectionRequest() {
     var objectType = createObjectType("beer", "identifier", "name", "soldPerYear");
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -383,7 +383,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("ingredients", ingredientsObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -398,7 +398,7 @@ class SelectBuilderTest {
             .resultKey("ingredients")
             .build(),
             CollectionRequest.builder()
-                .objectRequest(ObjectRequest.builder()
+                .objectRequest(SingleObjectRequest.builder()
                     .objectType(ingredientObjectType)
                     .scalarFields(List.of(FieldRequest.builder()
                         .name("name")
@@ -440,7 +440,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("postalAddress", postalAddressObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -450,7 +450,7 @@ class SelectBuilderTest {
             .name("postalAddress")
             .resultKey("postalAddress")
             .build(),
-            ObjectRequest.builder()
+            SingleObjectRequest.builder()
                 .objectType(addressObjectType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("street")
@@ -501,7 +501,7 @@ class SelectBuilderTest {
         .resultKey("refs")
         .build(),
         CollectionRequest.builder()
-            .objectRequest(ObjectRequest.builder()
+            .objectRequest(SingleObjectRequest.builder()
                 .objectType(ingredientRefType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("identifier")
@@ -510,7 +510,7 @@ class SelectBuilderTest {
                 .build())
             .build());
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -520,7 +520,7 @@ class SelectBuilderTest {
             .name("ingredientRelation")
             .resultKey("ingredientRelation.alias")
             .build(),
-            ObjectRequest.builder()
+            SingleObjectRequest.builder()
                 .objectListFields(objectListFields)
                 .build()))
         .build();
@@ -571,7 +571,7 @@ class SelectBuilderTest {
         .resultKey("nodes")
         .build(),
         CollectionRequest.builder()
-            .objectRequest(ObjectRequest.builder()
+            .objectRequest(SingleObjectRequest.builder()
                 .objectType(ingredientObjectType)
                 .scalarFields(List.of(FieldRequest.builder()
                     .name("name")
@@ -580,7 +580,7 @@ class SelectBuilderTest {
                 .build())
             .build());
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -590,7 +590,7 @@ class SelectBuilderTest {
             .name("ingredientRelation")
             .resultKey("ingredientRelation")
             .build(),
-            ObjectRequest.builder()
+            SingleObjectRequest.builder()
                 .objectListFields(objectListFields)
                 .build()))
         .build();
@@ -650,7 +650,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("breweryRelation", breweryRelationObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -660,13 +660,13 @@ class SelectBuilderTest {
             .name("breweryRelation")
             .resultKey("breweryRelation")
             .build(),
-            ObjectRequest.builder()
+            SingleObjectRequest.builder()
                 .objectType(breweryObjectRelationType)
                 .objectFields(Map.of(FieldRequest.builder()
                     .name("node")
                     .resultKey("node")
                     .build(),
-                    ObjectRequest.builder()
+                    SingleObjectRequest.builder()
                         .objectType(breweryObjectType)
                         .scalarFields(List.of(FieldRequest.builder()
                             .name("name")
@@ -711,7 +711,7 @@ class SelectBuilderTest {
     beersObjectField.setMappedByObjectField(breweryObjectField);
     beersObjectField.setObjectType(objectType);
 
-    var beersObjectRequest = ObjectRequest.builder()
+    var beersObjectRequest = SingleObjectRequest.builder()
         .objectType(beerObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -726,7 +726,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("beers", beersObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -763,7 +763,7 @@ class SelectBuilderTest {
 
     var beerObjectType = createObjectType("beer", "identifier", "name");
 
-    var beersObjectRequest = ObjectRequest.builder()
+    var beersObjectRequest = SingleObjectRequest.builder()
         .objectType(beerObjectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -778,7 +778,7 @@ class SelectBuilderTest {
     objectType.getFields()
         .put("beers", beersObjectField);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")
@@ -894,7 +894,7 @@ class SelectBuilderTest {
         .filterCriteria(filterCriteria)
         .build();
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .aggregateObjectFields(List.of(aggregateObjectRequest))
         .build();
@@ -923,7 +923,7 @@ class SelectBuilderTest {
 
     requestObjectField.setTargetType(objectType);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(List.of(FieldRequest.builder()
             .name("name")

@@ -5,7 +5,7 @@ import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Flux;
@@ -21,7 +21,7 @@ public class TestBackendLoader implements BackendLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
+  public Mono<Map<String, Object>> loadSingle(SingleObjectRequest objectRequest, RequestContext requestContext) {
     return Mono.empty();
   }
 

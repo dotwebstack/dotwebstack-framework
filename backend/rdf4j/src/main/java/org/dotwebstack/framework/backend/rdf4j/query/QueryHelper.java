@@ -11,7 +11,7 @@ import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectField;
 import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.backend.rdf4j.shacl.PropertyShape;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
@@ -51,7 +51,7 @@ class QueryHelper {
     return minCount == 0 ? graphPattern.optional() : graphPattern;
   }
 
-  public static Rdf4jObjectField getObjectField(ObjectRequest objectRequest, String name) {
+  public static Rdf4jObjectField getObjectField(SingleObjectRequest objectRequest, String name) {
     var objectType = objectRequest.getObjectType();
 
     if (!(objectType instanceof Rdf4jObjectType)) {

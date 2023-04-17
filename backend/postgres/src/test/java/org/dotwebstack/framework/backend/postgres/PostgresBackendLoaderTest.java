@@ -22,7 +22,7 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +117,7 @@ class PostgresBackendLoaderTest {
     assertThat(res, CoreMatchers.is(notNullValue()));
   }
 
-  private ObjectRequest initObjectRequest() {
+  private SingleObjectRequest initObjectRequest() {
     var objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
 
@@ -131,9 +131,9 @@ class PostgresBackendLoaderTest {
     when(contextCriteria.getValues()).thenReturn(mapValues);
     when(contextCriteria.getName()).thenReturn("Brewery");
 
-    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, SingleObjectRequest> objectFields = Map.of();
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .objectFields(objectFields)
         .contextCriteria(contextCriteria)

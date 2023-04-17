@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -33,17 +34,23 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
 
     this.table = objectType.getTable();
     this.distinct = objectType.isDistinct();
-
     var fields = objectType.getFields()
-        .values()
-        .stream()
-        .map(PostgresObjectField::new)
-        .toList();
-
+          .values()
+          .stream()
+          .map(PostgresObjectField::new)
+          .toList();
     fields.forEach(field -> field.setObjectType(this));
     fields.forEach(field -> field.initColumns(ancestors));
 
-    this.fields = fields.stream()
+
+    //TODO: niet echt netjes tbh...
+    var cleanedUpFields = fields.stream().peek(field -> {
+      if (field.getColumn().contains("__nodes")) {
+        field.setColumn(StringUtils.remove(field.getColumn(), "__nodes"));
+      }
+    }).toList();
+
+    this.fields = cleanedUpFields.stream()
         .collect(Collectors.toMap(AbstractObjectField::getName, field -> field));
   }
 }

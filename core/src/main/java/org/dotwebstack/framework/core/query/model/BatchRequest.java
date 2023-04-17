@@ -13,7 +13,7 @@ import lombok.NonNull;
 public class BatchRequest {
 
   @NonNull
-  private final ObjectRequest objectRequest;
+  private final SingleObjectRequest objectRequest;
 
   @NonNull
   private final Set<Map<String, Object>> keys;

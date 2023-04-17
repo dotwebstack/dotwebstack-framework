@@ -8,7 +8,7 @@ import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
@@ -37,7 +37,7 @@ public class Query {
     selectQuery = createSelect(collectionBatchRequest);
   }
 
-  public Query(ObjectRequest objectRequest, RequestContext requestContext) {
+  public Query(SingleObjectRequest objectRequest, RequestContext requestContext) {
     this.requestContext = requestContext;
     selectQuery = createSelect(objectRequest);
   }
@@ -73,7 +73,7 @@ public class Query {
         .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
-  private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {
+  private SelectQuery<Record> createSelect(SingleObjectRequest objectRequest) {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)

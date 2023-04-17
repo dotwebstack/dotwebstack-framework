@@ -34,10 +34,12 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,8 +62,10 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
@@ -84,17 +88,18 @@ public class BackendRequestFactory {
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
-    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
-    var objectType = getObjectType(unwrappedType);
+    //TODO: fixme - omgaan met interfaces
+//    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
+//    var objectType = getObjectType(unwrappedType);
 
-    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+//    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
 
-    Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
+//    Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriteria(filterCriteria.orElse(null))
-        .sortCriterias(createSortCriteria(executionStepInfo, objectType))
+        .filterCriteria(null)
+        .sortCriterias(Collections.emptyList())
         .build();
   }
 
@@ -108,11 +113,30 @@ public class BackendRequestFactory {
   public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
+
+
+
+    if (unwrapAll(executionStepInfo.getType()) instanceof GraphQLInterfaceType interfaceType) {
+      var x = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName())).toList();
+
+      var y = x.stream().map(objectType ->
+        createObjectRequest(executionStepInfo, selectionSet, objectType)
+      ).map(SingleObjectRequest.class::cast).toList();
+
+      return UnionObjectRequest.builder()
+          .objectRequests(y).build();
+    }
     var objectType = getObjectType(unwrappedType);
+    return createObjectRequest(executionStepInfo, selectionSet, objectType);
+  }
+
+  public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet, ObjectType objectType) {
+
     var keyCriterias =
         createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(keyCriterias)
         .scalarFields(getScalarFields(selectionSet))
@@ -123,7 +147,7 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
+  private SingleObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
     var objectType = getObjectType(unwrapConnectionType(selectedField.getType()));
 
     var fieldDefinition = selectedField.getFieldDefinitions()
@@ -131,7 +155,7 @@ public class BackendRequestFactory {
         .findFirst()
         .orElseThrow();
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(createKeyCriterias(objectType, fieldDefinition, selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
@@ -194,7 +218,7 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<FieldRequest, SingleObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()

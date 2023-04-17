@@ -9,7 +9,7 @@ import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
@@ -26,7 +26,7 @@ public class PostgresBackendLoader implements BackendLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
+  public Mono<Map<String, Object>> loadSingle(SingleObjectRequest objectRequest, RequestContext requestContext) {
     if (objectRequest.getObjectType()
         .isNested()) {
       return Mono.just(Map.of());
@@ -42,7 +42,7 @@ public class PostgresBackendLoader implements BackendLoader {
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest, RequestContext requestContext) {
     var query = new Query(collectionRequest, requestContext);
 
-    return postgresClient.fetch(query);
+    return postgresClient.fetch(query).map(stringObjectMap -> stringObjectMap);
   }
 
   @Override

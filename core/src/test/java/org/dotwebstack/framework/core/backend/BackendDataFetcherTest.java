@@ -48,7 +48,7 @@ import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Disabled;
@@ -117,7 +117,7 @@ class BackendDataFetcherTest {
     mockExecutionStepInfo("itemsBatchQuery", "itemsBatchQuery");
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .build();
 
     when(requestFactory.createObjectRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(objectRequest);
@@ -141,7 +141,7 @@ class BackendDataFetcherTest {
     mockExecutionStepInfo("itemsBatchQuery", "itemsBatchQuery");
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .build();
 
     when(requestFactory.createObjectRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(objectRequest);
@@ -172,7 +172,7 @@ class BackendDataFetcherTest {
     mockExecutionStepInfo("itemsBatchQuery", "itemsBatchQuery");
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .build();
 
     when(requestFactory.createObjectRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(objectRequest);
@@ -203,7 +203,7 @@ class BackendDataFetcherTest {
     mockExecutionStepInfo("itemsBatchQuery", "itemsBatchQuery");
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .build();
 
     Flux<Tuple2<Map<String, Object>, Map<String, Object>>> fluxResult =
@@ -238,7 +238,7 @@ class BackendDataFetcherTest {
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
     var collectionRequest = CollectionRequest.builder()
-        .objectRequest(ObjectRequest.builder()
+        .objectRequest(SingleObjectRequest.builder()
             .build())
         .build();
 
@@ -304,7 +304,7 @@ class BackendDataFetcherTest {
     when(environment.getDataLoaderRegistry()).thenReturn(new DataLoaderRegistry());
 
     var collectionRequest = CollectionRequest.builder()
-        .objectRequest(ObjectRequest.builder()
+        .objectRequest(SingleObjectRequest.builder()
             .build())
         .build();
 
@@ -344,7 +344,7 @@ class BackendDataFetcherTest {
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
     CollectionRequest collectionRequestMock = CollectionRequest.builder()
-        .objectRequest(ObjectRequest.builder()
+        .objectRequest(SingleObjectRequest.builder()
             .build())
         .build();
 
@@ -428,7 +428,7 @@ class BackendDataFetcherTest {
 
     mockOperationDefinition(OperationDefinition.Operation.QUERY);
 
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .build();
     DataFetchingFieldSelectionSet selectionSet = mock(DataFetchingFieldSelectionSet.class);
     when(environment.getSelectionSet()).thenReturn(selectionSet);
@@ -448,7 +448,7 @@ class BackendDataFetcherTest {
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(data.get("aa")));
     verify(requestFactory).createObjectRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
-    verify(backendLoader).loadSingle(any(ObjectRequest.class), any(RequestContext.class));
+    verify(backendLoader).loadSingle(any(SingleObjectRequest.class), any(RequestContext.class));
   }
 
   @Test

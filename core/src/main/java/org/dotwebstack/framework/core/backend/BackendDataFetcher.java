@@ -34,6 +34,7 @@ import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -78,7 +79,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       throw illegalStateException("BackendLoader can't be null.");
     }
 
-    graphQlValidators.forEach(validator -> validator.validate(environment));
+    //TODO: Validators moeten nog aangezet worden m.b.t. GraphQLInterfaces
+//    graphQlValidators.forEach(validator -> validator.validate(environment));
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
     var requestContext = requestFactory.createRequestContext(environment);
@@ -117,7 +119,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest = (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
@@ -222,7 +224,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
       DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
-    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest = (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
 

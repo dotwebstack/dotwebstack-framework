@@ -20,7 +20,7 @@ import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -35,7 +35,7 @@ import org.eclipse.rdf4j.sparqlbuilder.graphpattern.GraphPatterns;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 class GraphPatternBuilder {
 
-  private ObjectRequest objectRequest;
+  private SingleObjectRequest objectRequest;
 
   private NodeShape nodeShape;
 
@@ -121,7 +121,7 @@ class GraphPatternBuilder {
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private Stream<GraphPattern> createNestedPattern(FieldRequest fieldRequest, ObjectRequest nestedObjectRequest) {
+  private Stream<GraphPattern> createNestedPattern(FieldRequest fieldRequest, SingleObjectRequest nestedSingleObjectRequest) {
     var propertyShape = nodeShape.getPropertyShape(fieldRequest.getName());
 
     if (fieldRequest.isList()) {
@@ -139,7 +139,7 @@ class GraphPatternBuilder {
     fieldMapper.register(fieldRequest.getName(), nestedResourceMapper);
 
     var nestedPattern = GraphPatternBuilder.newGraphPattern()
-        .objectRequest(nestedObjectRequest)
+        .objectRequest(nestedSingleObjectRequest)
         .nodeShape(propertyShape.getNode())
         .subject(nestedResource)
         .fieldMapper(nestedResourceMapper)

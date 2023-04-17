@@ -18,7 +18,7 @@ import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
 import org.dotwebstack.framework.core.testhelpers.TestObjectField;
@@ -71,7 +71,7 @@ class ObjectRequestHelperTest {
 
     var breweryIdSortCriteria = getSortCriteria(List.of(nestedObjectField, idObjectField), DESC);
 
-    Map<FieldRequest, ObjectRequest> objectFieldMap = new HashMap<>();
+    Map<FieldRequest, SingleObjectRequest> objectFieldMap = new HashMap<>();
 
     objectFieldMap.put(FieldRequest.builder()
         .name("nestedField")
@@ -203,7 +203,7 @@ class ObjectRequestHelperTest {
         .value("id-1")
         .build());
 
-    Map<FieldRequest, ObjectRequest> objectFieldMap = new HashMap<>();
+    Map<FieldRequest, SingleObjectRequest> objectFieldMap = new HashMap<>();
 
     objectFieldMap.put(FieldRequest.builder()
         .name("nestedField")
@@ -359,15 +359,15 @@ class ObjectRequestHelperTest {
         .build();
   }
 
-  private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias) {
+  private SingleObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias) {
     return getObjectRequest(keyCriterias, new HashMap<>());
   }
 
-  private ObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias,
-      Map<FieldRequest, ObjectRequest> objectFields) {
+  private SingleObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias,
+      Map<FieldRequest, SingleObjectRequest> objectFields) {
     var objectType = mock(ObjectType.class);
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("identifier")
@@ -383,7 +383,7 @@ class ObjectRequestHelperTest {
         .build();
   }
 
-  private ObjectRequest createNestedObjectRequest() {
+  private SingleObjectRequest createNestedObjectRequest() {
     var idObjectField = new TestObjectField();
     idObjectField.setName("nestedField_id");
 
@@ -394,7 +394,7 @@ class ObjectRequestHelperTest {
 
     idObjectField.setObjectType(nestedObjectType);
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(nestedObjectType)
         .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
             .name("nestedField_id")
