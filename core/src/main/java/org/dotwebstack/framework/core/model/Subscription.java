@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.core.model;
 
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data

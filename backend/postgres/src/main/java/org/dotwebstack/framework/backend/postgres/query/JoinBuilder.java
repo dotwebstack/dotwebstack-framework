@@ -4,8 +4,8 @@ import static org.dotwebstack.framework.backend.postgres.helpers.ValidationHelpe
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.createJoinConditions;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
+import jakarta.validation.constraints.NotNull;
 import java.util.function.Function;
-import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;

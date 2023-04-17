@@ -1,11 +1,11 @@
 package org.dotwebstack.framework.ext.spatial.model.validation;
 
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 
 public class EquivalentValidator implements ConstraintValidator<ValidEquivalent, Map<Integer, SpatialReferenceSystem>> {

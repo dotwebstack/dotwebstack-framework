@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @Data
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 public class ContextFieldConfiguration {
   @NonNull
   private String type;

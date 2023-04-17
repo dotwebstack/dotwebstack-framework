@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.core.testhelpers;
 
 import com.google.common.base.CaseFormat;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.dotwebstack.framework.core.model.AbstractObjectField;

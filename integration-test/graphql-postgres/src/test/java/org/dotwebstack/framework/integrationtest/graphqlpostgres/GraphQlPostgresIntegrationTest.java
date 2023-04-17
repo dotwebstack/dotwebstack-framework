@@ -1228,7 +1228,7 @@ class GraphQlPostgresIntegrationTest {
     var response = WebTestClientHelper.get(client, query);
 
     assertThat(response, hasEntry("status", 400));
-    assertThat(response, hasEntry("detail", "400 BAD_REQUEST \"Required String parameter 'query' is not present\""));
+    assertThat(response, hasEntry("detail", "400 BAD_REQUEST \"Required query parameter 'query' is not present.\""));
   }
 
   @Test

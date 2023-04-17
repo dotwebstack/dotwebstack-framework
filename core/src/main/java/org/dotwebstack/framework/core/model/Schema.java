@@ -2,10 +2,10 @@ package org.dotwebstack.framework.core.model;
 
 import static java.util.Optional.ofNullable;
 
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import javax.validation.Valid;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.EnumerationConfiguration;
 

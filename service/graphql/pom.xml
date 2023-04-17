@@ -32,6 +32,10 @@
       <artifactId>problem-spring-webflux</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.zalando</groupId>
+      <artifactId>jackson-datatype-problem</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
     </dependency>

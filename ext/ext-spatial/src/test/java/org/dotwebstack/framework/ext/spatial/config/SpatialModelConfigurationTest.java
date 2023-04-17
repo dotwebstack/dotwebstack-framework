@@ -9,9 +9,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import jakarta.validation.ConstraintViolationException;
 import java.io.File;
 import java.net.MalformedURLException;
-import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.ext.spatial.backend.SpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialBackendModule;
 import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialReferenceSystem;

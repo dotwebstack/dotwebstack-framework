@@ -1,9 +1,9 @@
 package org.dotwebstack.framework.core.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.Valid;
 import lombok.Data;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 

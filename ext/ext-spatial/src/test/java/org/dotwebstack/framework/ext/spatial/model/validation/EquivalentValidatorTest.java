@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.Map;
-import javax.validation.ConstraintValidatorContext;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 import org.dotwebstack.framework.ext.spatial.testhelper.TestSpatialReferenceSystem;
 import org.junit.jupiter.api.Test;

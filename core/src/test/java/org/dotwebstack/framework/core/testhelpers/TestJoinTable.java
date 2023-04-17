@@ -1,8 +1,8 @@
 package org.dotwebstack.framework.core.testhelpers;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data

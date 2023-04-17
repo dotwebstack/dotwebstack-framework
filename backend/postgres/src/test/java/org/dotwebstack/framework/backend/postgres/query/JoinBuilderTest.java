@@ -8,9 +8,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.Map;
-import javax.validation.ConstraintViolationException;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.JoinTable;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -50,6 +50,7 @@ class JoinBuilderTest {
   @Test
   void build_returnsJoinConditions_forMappedByJoinTable() {
     var joinTable = new JoinTable();
+    joinTable.setName("p_c");
 
     var joinColumn = new JoinColumn();
     joinColumn.setName("k_p_identifier");
@@ -148,6 +149,7 @@ class JoinBuilderTest {
     objectField.setTargetType(childObjectType);
 
     var joinTable = new JoinTable();
+    joinTable.setName("p_c");
 
     var joinColumn = new JoinColumn();
     joinColumn.setName("k_p_identifier");

@@ -53,23 +53,23 @@ class FilterConditionBuilderTest {
         arguments(Map.of("contains", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("not", Map.of("contains", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"),
+            "not (ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("contains", Map.of("fromWKT", "POINT(1 2)"), "srid", 2),
             "(ST_Contains(\"x1\".\"geometry_column2\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("not", Map.of("contains", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"),
+            "not (ST_Contains(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("within", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Within(cast('POINT (1 2)' as geometry), \"x1\".\"geometry_column\"))"),
         arguments(Map.of("not", Map.of("within", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Within(cast('POINT (1 2)' as geometry), \"x1\".\"geometry_column\")))"),
+            "not (ST_Within(cast('POINT (1 2)' as geometry), \"x1\".\"geometry_column\"))"),
         arguments(Map.of("intersects", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Intersects(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("not", Map.of("intersects", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Intersects(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"),
+            "not (ST_Intersects(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("touches", Map.of("fromWKT", "POINT(1 2)")),
             "(ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("not", Map.of("touches", Map.of("fromWKT", "POINT(1 2)"))),
-            "not ((ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry))))"),
+            "not (ST_Touches(\"x1\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("type", "POINT"), "(GeometryType(\"x1\".\"geometry_column\") = 'POINT')"));
   }
 
@@ -165,20 +165,24 @@ class FilterConditionBuilderTest {
 
   private static Stream<Arguments> getListArguments() {
     return Stream.of(arguments("String", Map.of("eq", List.of("foo")), "\"x1\".\"column\" = array['foo']"),
-        arguments("String", Map.of("containsAllOf", List.of("foo")), "\"x1\".\"column\" @> array['foo']"),
+        arguments("String", Map.of("containsAllOf", List.of("foo")),
+            "\"x1\".\"column\" like (('%' || cast(array['foo'] as varchar)) || '%') escape '!'"),
         arguments("String", Map.of("containsAnyOf", List.of("foo")), "(\"x1\".\"column\" && array['foo'])"),
         arguments("String", Map.of("not", Map.of("containsAnyOf", List.of("foo"))),
-            "not ((\"x1\".\"column\" && array['foo']))"),
+            "not (\"x1\".\"column\" && array['foo'])"),
         arguments("Int", Map.of("eq", List.of(33, 44)), "\"x1\".\"column\" = array[33, 44]"),
-        arguments("Int", Map.of("containsAllOf", List.of(33, 44)), "\"x1\".\"column\" @> array[33, 44]"),
+        arguments("Int", Map.of("containsAllOf", List.of(33, 44)),
+            "\"x1\".\"column\" like (('%' || cast(array[33, 44] as varchar)) || '%') escape '!'"),
         arguments("Int", Map.of("containsAnyOf", List.of(33, 44)), "(\"x1\".\"column\" && array[33, 44])"),
         arguments("Int", Map.of("not", Map.of("containsAnyOf", List.of(33, 44))),
-            "not ((\"x1\".\"column\" && array[33, 44]))"),
-        arguments("Float", Map.of("eq", List.of(33.3f, 44.4f)), "\"x1\".\"column\" = array[33.3, 44.4]"),
-        arguments("Float", Map.of("containsAllOf", List.of(33.3f, 44.4f)), "\"x1\".\"column\" @> array[33.3, 44.4]"),
-        arguments("Float", Map.of("containsAnyOf", List.of(33.3f, 44.4f)), "(\"x1\".\"column\" && array[33.3, 44.4])"),
+            "not (\"x1\".\"column\" && array[33, 44])"),
+        arguments("Float", Map.of("eq", List.of(33.3f, 44.4f)), "\"x1\".\"column\" = array[3.3299999E1, 4.4400002E1]"),
+        arguments("Float", Map.of("containsAllOf", List.of(33.3f, 44.4f)),
+            "\"x1\".\"column\" like (('%' || cast(array[3.3299999E1, 4.4400002E1] as varchar)) || '%') escape '!'"),
+        arguments("Float", Map.of("containsAnyOf", List.of(33.3f, 44.4f)),
+            "(\"x1\".\"column\" && array[3.3299999E1, 4.4400002E1])"),
         arguments("Float", Map.of("not", Map.of("containsAnyOf", List.of(33.3f, 44.4f))),
-            "not ((\"x1\".\"column\" && array[33.3, 44.4]))"));
+            "not (\"x1\".\"column\" && array[3.3299999E1, 4.4400002E1])"));
   }
 
   @ParameterizedTest
@@ -198,11 +202,13 @@ class FilterConditionBuilderTest {
   }
 
   private static Stream<Arguments> getEnumListArguments() {
-    return Stream.of(arguments(Map.of("eq", List.of("foo")), "\"x1\".\"column\" = cast(array['foo'] as fooType[])"),
-        arguments(Map.of("containsAllOf", List.of("foo")), "\"x1\".\"column\" @> cast(array['foo'] as fooType[])"),
-        arguments(Map.of("containsAnyOf", List.of("foo")), "(\"x1\".\"column\" && cast(array['foo'] as fooType[]))"),
+    return Stream.of(arguments(Map.of("eq", List.of("foo")), "\"x1\".\"column\" = cast(array['foo'] as fooType array)"),
+        arguments(Map.of("containsAllOf", List.of("foo")),
+            "\"x1\".\"column\" like (('%' || cast(cast(array['foo'] as fooType array) as varchar)) || '%') escape '!'"),
+        arguments(Map.of("containsAnyOf", List.of("foo")),
+            "(\"x1\".\"column\" && cast(array['foo'] as fooType array))"),
         arguments(Map.of("not", Map.of("containsAnyOf", List.of("foo"))),
-            "not ((\"x1\".\"column\" && cast(array['foo'] as fooType[])))"));
+            "not (\"x1\".\"column\" && cast(array['foo'] as fooType array))"));
   }
 
   @ParameterizedTest
@@ -448,8 +454,8 @@ class FilterConditionBuilderTest {
     var condition = build(filterCriteria);
 
     assertThat(condition, notNullValue());
-    assertThat(condition.toString(), equalTo("not (exists (\n" + "  select 1\n" + "  from \"childtable\" \"x1\"\n"
-        + "  where \"x1\".\"fk_child_id\" = \"x1\".\"child_id\"\n" + "))"));
+    assertThat(condition.toString(), equalTo("not exists (\n" + "  select 1\n" + "  from \"childtable\" \"x1\"\n"
+        + "  where \"x1\".\"fk_child_id\" = \"x1\".\"child_id\"\n" + ")"));
   }
 
   private Condition build(FilterCriteria filterCriteria) {
