@@ -17,13 +17,11 @@ import org.springframework.stereotype.Component;
 public class TypeResolversFactory {
 
   private final Schema schema;
-  private final TypeDefinitionRegistry typeDefinitionRegistry;
 
   private final Map<String, TypeResolver> typeResolvers = new HashMap<>();
 
-  public TypeResolversFactory(Schema schema, TypeDefinitionRegistry typeDefinitionRegistry) {
+  public TypeResolversFactory(Schema schema) {
     this.schema = schema;
-    this.typeDefinitionRegistry = typeDefinitionRegistry;
   }
 
   public Map<String, TypeResolver> createTypeResolvers() {
@@ -38,20 +36,14 @@ public class TypeResolversFactory {
   }
 
   private TypeResolver createTypeResolver() {
-    // This method should be implemented when we wish to support the "... on" functionality of GraphQL.
     return typeResolutionEnvironment -> {
       if(typeResolutionEnvironment.getObject() instanceof Map<?,?> objectFields) {
         if (objectFields.containsKey("dtype")) {
-          String dtypeName = (String) objectFields.get("dtype");
+          var dtypeName = (String) objectFields.get("dtype");
           return typeResolutionEnvironment.getSchema().getObjectType(dtypeName);
         }
       }
-
-
-
-      System.out.println("something");
       return null;
-//      typeDefinitionRegistry.getType(typeResolutionEnvironment.)
     };
   }
 }

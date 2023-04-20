@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper;
 import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -53,6 +54,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
+import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
@@ -62,13 +64,14 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.JSONEntry;
 import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
@@ -157,18 +160,20 @@ class SelectBuilder {
     return createDataQuery(objectRequest);
   }
 
-  private SelectQuery<Record> createDataQuery(UnionObjectRequest objectRequest) {
-    return objectRequest.getObjectRequests().stream().map(this::createDataQuery)
+  private SelectQuery<Record> createDataQuery(UnionObjectRequest unionObjectRequest) {
+    return unionObjectRequest.getObjectRequests().stream().map(objectRequest -> createDataQuery(objectRequest, true))
         .map(query -> (Select) query)
         .reduce(Select::unionAll).map(val -> (SelectQuery<Record>) val)
         .orElseThrow();
   }
 
   private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest) {
+    return createDataQuery(objectRequest, false);
+  }
+
+  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean fromUnion) {
     var objectType = getObjectType(objectRequest);
-
     var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
-
     var dataQuery = dslContext.selectQuery(table);
 
     if (!objectRequest.getKeyCriterias()
@@ -176,10 +181,16 @@ class SelectBuilder {
       addKeyFields(objectRequest);
     }
 
-    processScalarFields(objectRequest, objectType, dataQuery, table);
     processAggregateObjectFields(objectRequest, table, dataQuery);
-    processObjectFields(objectRequest, objectType, dataQuery, table);
-    processObjectListFields(objectRequest, table, dataQuery);
+
+    List<JSONEntry<?>> jsonEntries = new ArrayList<>();
+
+    processScalarFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
+    processObjectFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
+    processObjectListFields(objectRequest, table, dataQuery, fromUnion).ifPresent(jsonEntries::addAll);
+    if (!jsonEntries.isEmpty()) {
+      dataQuery.addSelect(DSL.jsonObject(jsonEntries));
+    }
 
     List<Condition> keyConditions = objectRequest.getKeyCriterias()
         .stream()
@@ -195,8 +206,16 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private void processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
-      SelectQuery<Record> dataQuery) {
+  private Optional<List<JSONEntry<?>>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery, boolean asJson) {
+    List<JSONEntry<?>> jsonEntries;
+    if (asJson) {
+      jsonEntries = new ArrayList<>();
+    } else {
+      jsonEntries = null;
+    }
+
+
     objectRequest.getObjectListFields()
         .entrySet()
         .stream()
@@ -207,10 +226,18 @@ class SelectBuilder {
           return processObjectListFields(objectField, table).stream();
         })
         .filter(Objects::nonNull)
-        .forEach(dataQuery::addSelect);
+        .forEach(field -> {
+          if (asJson) {
+            jsonEntries.add(DSL.jsonEntry(field));
+          } else {
+            dataQuery.addSelect(field);
+          }
+        });
+
+    return Optional.ofNullable(jsonEntries);
   }
 
-  private List<SelectFieldOrAsterisk> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
+  private List<Field<?>> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
 
     if (objectField.getMappedByObjectField() != null) {
       var mappedByObjectField = objectField.getMappedByObjectField();
@@ -235,24 +262,39 @@ class SelectBuilder {
     return List.of();
   }
 
-  private void processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-      SelectQuery<Record> dataQuery, Table<Record> selectTable) {
+  private Optional<List<JSONEntry<?>>> processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    List<JSONEntry<?>> jsonEntries;
+    if (asJson) {
+      jsonEntries = new ArrayList<>();
+    } else {
+      jsonEntries = null;
+    }
+
     objectRequest.getObjectFields()
         .entrySet()
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getKey()
                 .getResultKey(),
-            entry.getValue(), selectTable, fieldMapper))
+            entry.getValue(), selectTable, fieldMapper, asJson))
         .map(selectResult -> {
           Optional.of(selectResult)
               .map(SelectResult::getSelectQuery)
               .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested()));
 
-          return selectResult.getSelectFieldOrAsterisk();
+          return selectResult.getSelectField();
         })
         .filter(Objects::nonNull)
-        .forEach(dataQuery::addSelect);
+        .forEach(field -> {
+          if (asJson) {
+            jsonEntries.add(DSL.jsonEntry(field));
+          } else {
+            dataQuery.addSelect(field);
+          }
+        });
+
+    return Optional.ofNullable(jsonEntries);
   }
 
   private void processAggregateObjectFields(SingleObjectRequest objectRequest, Table<Record> table,
@@ -265,18 +307,33 @@ class SelectBuilder {
             .isNested()));
   }
 
-  private void processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-      SelectQuery<Record> dataQuery, Table<Record> selectTable) {
+  private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+    //TODO: cleanup needed
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    List<JSONEntry<?>> jsonEntries;
+    if (asJson) {
+      jsonEntries = new ArrayList<>();
+    } else {
+      jsonEntries = null;
+    }
+
     objectRequest.getScalarFields()
         .stream()
-        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, objectType, selectTable, fieldMapper))
-        .forEach(dataQuery::addSelect);
-    //TODO: cleanup needed
+        .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, objectType, selectTable, fieldMapper, asJson))
+        .forEach(field -> {
+          if (asJson) {
+            jsonEntries.add(DSL.jsonEntry(field));
+          } else {
+            dataQuery.addSelect(field);
+          }
+        });
 
     var dtype = (Field) DSL.val(objectType.getName()).as("d1");
     dataQuery.addSelect(dtype);
     var dtypeMapper = new ColumnMapper(dtype);
     fieldMapper.register("dtype", dtypeMapper);
+
+    return Optional.ofNullable(jsonEntries);
   }
 
   private void addSubSelect(SelectQuery<Record> selectQuery, Select<Record> nestedSelectQuery, boolean addFrom) {
@@ -422,19 +479,19 @@ class SelectBuilder {
     return Optional.of(andCondition(List.of(condition)));
   }
 
-  private SelectFieldOrAsterisk processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+  private Field<?> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, boolean jsonObject) {
     var objectField = objectType.getField(fieldRequest.getName());
+
 
     ColumnMapper columnMapper;
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
       columnMapper = createSpatialColumnMapper(table, objectField, fieldRequest);
     } else {
-      columnMapper = createColumnMapper(objectField.getColumn(), table);
+      columnMapper = createColumnMapper(objectField.getColumn(), table, jsonObject);
     }
 
     parentMapper.register(fieldRequest.getName(), columnMapper);
-
     return columnMapper.getColumn();
   }
 
@@ -451,13 +508,27 @@ class SelectBuilder {
   }
 
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table) {
-    var column = column(table, columnName).as(aliasManager.newAlias());
+    return createColumnMapper(columnName, table, false);
+  }
+
+  private ColumnMapper createColumnMapper(String columnName, Table<Record> table, boolean jsonObject) {
+    var column = column(table, columnName);
+
+    if (!jsonObject) {
+      // Do not add alias when column should be part of jsonAggr otherwise the column field name will be lost.
+      column = column.as(aliasManager.newAlias());
+    }
 
     return new ColumnMapper(column);
   }
 
   private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
       SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
+    return createNestedSelect(objectField, resultKey, objectRequest, table, parentMapper, false);
+  }
+
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, boolean shouldBeJson) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
@@ -467,7 +538,7 @@ class SelectBuilder {
     // Create a new nested object and take data from the same table
     if (objectField.getTargetType()
         .isNested()) {
-      return createNestedObject(objectField, objectRequest, table, parentMapper, resultKey);
+      return createNestedObject(objectField, objectRequest, table, parentMapper, resultKey, shouldBeJson);
     }
 
     // Create a new object and take data from another table and join with it
@@ -545,7 +616,7 @@ class SelectBuilder {
           return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table)
               .stream()
               .map(field -> SelectResult.builder()
-                  .selectFieldOrAsterisk(field)
+                  .selectField((Field<?>) field)
                   .build());
         })
         .toList();
@@ -562,7 +633,7 @@ class SelectBuilder {
     Field<Object> existField = getExistFieldForRelationObject(joinColumns, table, objectMapper.getAlias());
 
     selectResults.add(SelectResult.builder()
-        .selectFieldOrAsterisk(existField)
+        .selectField(existField)
         .build());
 
     objectRequest.getObjectFields()
@@ -586,7 +657,7 @@ class SelectBuilder {
         .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
       return createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
-              .selectFieldOrAsterisk(selectField)
+              .selectField(selectField)
               .build())
           .toList();
     } else {
@@ -636,13 +707,14 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey, boolean scalarAsJson) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
     parentMapper.register(resultKey, objectMapper);
 
     List<SelectResult> selectResults = new ArrayList<>();
+    List<JSONEntry<?>> jsonEntries = new ArrayList<>();
 
     if (objectField.getPresenceColumn() != null) {
       SelectResult presenceColumnSelect = createPresenceColumnSelect(objectField, table, objectMapper);
@@ -652,10 +724,17 @@ class SelectBuilder {
     objectRequest.getScalarFields()
         .stream()
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest,
-            (PostgresObjectType) objectField.getTargetType(), table, objectMapper))
-        .map(columnMapper -> SelectResult.builder()
-            .selectFieldOrAsterisk(columnMapper)
-            .build())
+            (PostgresObjectType) objectField.getTargetType(), table, objectMapper, scalarAsJson))
+        .map(field -> {
+          if (scalarAsJson) {
+            jsonEntries.add(DSL.jsonEntry(StringUtils.substringAfter(field.getName(), "__"), field));
+            return null;
+          }
+          return SelectResult.builder()
+              .selectField(field)
+              .build();
+        })
+        .filter(Objects::nonNull)
         .forEach(selectResults::add);
 
     objectRequest.getObjectFields()
@@ -667,6 +746,13 @@ class SelectBuilder {
             entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
+    if (scalarAsJson) {
+      var obj = DSL.jsonObject("", jsonEntries);
+      var t  = obj.as(StringHelper.toSnakeCase(objectRequest.getObjectType().getName()));
+      selectResults.add(SelectResult.builder().selectField(t).build());
+    }
+
+
     return selectResults.stream();
   }
 
@@ -677,7 +763,7 @@ class SelectBuilder {
         .as(objectMapper.getPresenceAlias());
 
     return SelectResult.builder()
-        .selectFieldOrAsterisk(columnIsNotNull)
+        .selectField(columnIsNotNull)
         .build();
   }
 
@@ -714,7 +800,7 @@ class SelectBuilder {
     return query;
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
+  private List<Field<?>> handleJoinColumnSource(PostgresObjectField objectField, Table<Record> table) {
     var selectFields = objectField.getJoinColumns()
         .stream()
         .collect(Collectors.toMap(Function.identity(),
@@ -738,7 +824,7 @@ class SelectBuilder {
     return new ArrayList<>(selectFields.values());
   }
 
-  private List<SelectFieldOrAsterisk> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+  private List<Field<?>> handleJoinColumn(PostgresObjectField objectField, List<JoinColumn> joinColumns,
       Table<Record> table) {
     fieldMapper.register(JOIN_KEY_PREFIX.concat(objectField.getName()), row -> PostgresJoinCondition.builder()
         .key(getJoinColumnValues(joinColumns, row))
@@ -758,7 +844,7 @@ class SelectBuilder {
         }, HashMap::putAll);
   }
 
-  private List<SelectFieldOrAsterisk> selectJoinColumns(PostgresObjectType objectType, List<JoinColumn> joinColumns,
+  private List<Field<?>> selectJoinColumns(PostgresObjectType objectType, List<JoinColumn> joinColumns,
       Table<Record> table) {
     return joinColumns.stream()
         .map(joinColumn -> {
