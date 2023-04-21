@@ -9,6 +9,9 @@ import org.jooq.SelectQuery;
 @Builder
 @Getter
 public class SelectResult {
+
+  private String objectName;
+
   private Field<?> selectField;
 
   private SelectQuery<Record> selectQuery;

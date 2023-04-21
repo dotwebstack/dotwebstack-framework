@@ -54,7 +54,6 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
-import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateObjectRequest;
@@ -76,7 +75,6 @@ import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Select;
-import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.SelectQuery;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -189,7 +187,7 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, fromUnion).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
-      dataQuery.addSelect(DSL.jsonObject(jsonEntries));
+      dataQuery.addSelect(DSL.jsonObject(jsonEntries).as("json"));
     }
 
     List<Condition> keyConditions = objectRequest.getKeyCriterias()
@@ -278,19 +276,15 @@ class SelectBuilder {
             .getName()), entry.getKey()
                 .getResultKey(),
             entry.getValue(), selectTable, fieldMapper, asJson))
-        .map(selectResult -> {
-          Optional.of(selectResult)
-              .map(SelectResult::getSelectQuery)
-              .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested()));
-
-          return selectResult.getSelectField();
-        })
-        .filter(Objects::nonNull)
-        .forEach(field -> {
+        .peek(selectResult -> Optional.of(selectResult)
+            .map(SelectResult::getSelectQuery)
+            .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested())))
+        .filter(result -> result.getSelectField() != null)
+        .forEach(result -> {
           if (asJson) {
-            jsonEntries.add(DSL.jsonEntry(field));
+            jsonEntries.add(DSL.jsonEntry(result.getObjectName(), result.getSelectField()));
           } else {
-            dataQuery.addSelect(field);
+            dataQuery.addSelect(result.getSelectField());
           }
         });
 
@@ -322,7 +316,8 @@ class SelectBuilder {
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, objectType, selectTable, fieldMapper, asJson))
         .forEach(field -> {
           if (asJson) {
-            jsonEntries.add(DSL.jsonEntry(field));
+            var name = field.getName().contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            jsonEntries.add(DSL.jsonEntry(name, field));
           } else {
             dataQuery.addSelect(field);
           }
@@ -727,7 +722,8 @@ class SelectBuilder {
             (PostgresObjectType) objectField.getTargetType(), table, objectMapper, scalarAsJson))
         .map(field -> {
           if (scalarAsJson) {
-            jsonEntries.add(DSL.jsonEntry(StringUtils.substringAfter(field.getName(), "__"), field));
+            var fieldname = field.getName().contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            jsonEntries.add(DSL.jsonEntry(fieldname, field));
             return null;
           }
           return SelectResult.builder()
@@ -746,10 +742,9 @@ class SelectBuilder {
             entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
-    if (scalarAsJson) {
-      var obj = DSL.jsonObject("", jsonEntries);
-      var t  = obj.as(StringHelper.toSnakeCase(objectRequest.getObjectType().getName()));
-      selectResults.add(SelectResult.builder().selectField(t).build());
+    if (scalarAsJson && jsonEntries.size() > 0 ) {
+      var obj = DSL.jsonObject(jsonEntries);
+      selectResults.add(SelectResult.builder().objectName(objectField.getColumn()).selectField(obj).build());
     }
 
 
