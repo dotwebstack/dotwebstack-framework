@@ -30,6 +30,7 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnection
 
 import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
@@ -42,6 +43,7 @@ import graphql.schema.SelectedField;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,6 +54,7 @@ import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
@@ -115,11 +118,28 @@ public class BackendRequestFactory {
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
 
 
-
     if (unwrapAll(executionStepInfo.getType()) instanceof GraphQLInterfaceType interfaceType) {
-      var x = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName())).toList();
+      //TODO: cleanup (especially the magic numbers)
+      var types = executionStepInfo.getField().getFields().stream().map(field -> {
+        return field.getSelectionSet().getSelections().stream().map(selection -> {
+          var typeCondition = selection.getNamedChildren().getChildren("typeCondition");
+          if (typeCondition.size() > 0) {
+            return ((TypeName) typeCondition.get(0)).getName();
+          } else {
+            return null;
+          }
+        }).filter(Objects::nonNull).toList();
+      }).flatMap(List::stream).toList();
 
-      var y = x.stream().map(objectType ->
+      List<ObjectType<? extends ObjectField>> objectTypes;
+      if (types.size() > 0) {
+        objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName()))
+            .filter(objectType -> types.contains(objectType.getName())).toList();
+      } else {
+        objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName())).toList();
+      }
+
+      var y = objectTypes.stream().map(objectType ->
         createObjectRequest(executionStepInfo, selectionSet, objectType)
       ).map(SingleObjectRequest.class::cast).toList();
 
@@ -139,7 +159,8 @@ public class BackendRequestFactory {
     return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(keyCriterias)
-        .scalarFields(getScalarFields(selectionSet))
+        //TODO: fields should be filtered on objecttype name due to usage of the spread operator.
+        .scalarFields(getScalarFields(selectionSet, objectType.getName()))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
@@ -184,10 +205,23 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+    return getScalarFields(selectionSet, "");
+  }
+  private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet, String objectName) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
+        .filter(f -> {
+          //TODO: cleanup
+          if (objectName.isBlank()) {
+            return true;
+          } else if (f.getFullyQualifiedName().contains(".") && f.getFullyQualifiedName().contains(objectName)) {
+            return true;
+          } else
+            return !f.getFullyQualifiedName()
+                .contains(".");
+        } )
         .flatMap(this::mapScalarFieldToFieldRequests)
         .collect(Collectors.toList());
   }

@@ -187,7 +187,10 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, fromUnion).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
-      dataQuery.addSelect(DSL.jsonObject(jsonEntries).as("json"));
+      var json = DSL.jsonObject(jsonEntries).as("json");
+      dataQuery.addSelect(json);
+      var jsonMapper = new JsonMapper(json);
+      fieldMapper.register("json", jsonMapper);
     }
 
     List<Condition> keyConditions = objectRequest.getKeyCriterias()
@@ -212,7 +215,6 @@ class SelectBuilder {
     } else {
       jsonEntries = null;
     }
-
 
     objectRequest.getObjectListFields()
         .entrySet()
@@ -485,8 +487,9 @@ class SelectBuilder {
     } else {
       columnMapper = createColumnMapper(objectField.getColumn(), table, jsonObject);
     }
-
-    parentMapper.register(fieldRequest.getName(), columnMapper);
+    if (!jsonObject) {
+      parentMapper.register(fieldRequest.getName(), columnMapper);
+    }
     return columnMapper.getColumn();
   }
 
@@ -706,7 +709,9 @@ class SelectBuilder {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
-    parentMapper.register(resultKey, objectMapper);
+    if (!scalarAsJson) {
+      parentMapper.register(resultKey, objectMapper);
+    }
 
     List<SelectResult> selectResults = new ArrayList<>();
     List<JSONEntry<?>> jsonEntries = new ArrayList<>();
