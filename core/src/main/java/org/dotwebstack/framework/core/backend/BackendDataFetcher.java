@@ -80,7 +80,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
     }
 
     //TODO: Validators moeten nog aangezet worden m.b.t. GraphQLInterfaces
-//    graphQlValidators.forEach(validator -> validator.validate(environment));
+    graphQlValidators.forEach(validator -> validator.validate(environment));
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
     var requestContext = requestFactory.createRequestContext(environment);

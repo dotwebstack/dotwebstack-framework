@@ -51,6 +51,8 @@ class BatchQueryBuilder {
   @NotNull
   private Set<Map<String, Object>> joinKeys;
 
+  private boolean fromUnion;
+
   private JoinConfiguration joinConfiguration;
 
   private ContextCriteria contextCriteria;
@@ -207,16 +209,18 @@ class BatchQueryBuilder {
   }
 
   private void addExists(SelectQuery<Record> dataQuery, Collection<String> columnNames, Table<Record> table) {
-    var columnAliases = columnNames.stream()
-        .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
+    if (!fromUnion) {
+      var columnAliases = columnNames.stream()
+          .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
 
-    columnAliases.entrySet()
-        .stream()
-        .map(entry -> QueryHelper.column(table, entry.getKey())
-            .as(entry.getValue()))
-        .forEach(dataQuery::addSelect);
-
-    register(EXISTS_KEY, columnAliases);
+    //TODO: misschien gevolgen voor andere dingen?
+      columnAliases.entrySet()
+          .stream()
+          .map(entry -> QueryHelper.column(table, entry.getKey())
+              .as(entry.getValue()))
+          .forEach(dataQuery::addSelect);
+      register(EXISTS_KEY, columnAliases);
+    }
   }
 
   private void register(String name, Map<String, String> columnAliases) {

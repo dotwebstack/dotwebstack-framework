@@ -35,11 +35,13 @@ import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.J
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +65,7 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
@@ -110,38 +113,43 @@ class SelectBuilder {
 
     var objectRequest = collectionRequest.getObjectRequest();
 
-    SelectQuery<Record> dataQuery;
+//    SelectQuery<Record> dataQuery;
+    var dataQuerys = new ArrayList<SelectQuery<Record>>();
     if (objectRequest instanceof UnionObjectRequest unionObjectRequest) {
-      dataQuery = createDataQuery(unionObjectRequest);
+      dataQuerys.addAll(createDataQuerys(unionObjectRequest));
     } else {
       var singleObjectRequest = (SingleObjectRequest) objectRequest;
-      dataQuery = createDataQuery(singleObjectRequest);
+      dataQuerys.add(createDataQuery(singleObjectRequest));
     }
 
-    newSorting().sortCriterias(collectionRequest.getSortCriterias())
-        .fieldMapper(fieldMapper)
-        .build()
-        .forEach(dataQuery::addOrderBy);
+    return dataQuerys.stream().map(dataQuery -> {
+      newSorting().sortCriterias(collectionRequest.getSortCriterias())
+          .fieldMapper(fieldMapper)
+          .build()
+          .forEach(dataQuery::addOrderBy);
 
-    Optional.of(collectionRequest)
-        .map(CollectionRequest::getFilterCriteria)
-        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-            .filterCriteria(filterCriteria)
-            .table(DSL.table(tableAlias))
-            .contextCriteria(collectionRequest.getObjectRequest()
-                .getContextCriteria())
-            .build())
-        .ifPresent(dataQuery::addConditions);
+      Optional.of(collectionRequest)
+          .map(CollectionRequest::getFilterCriteria)
+          .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+              .filterCriteria(filterCriteria)
+              .table(DSL.table(tableAlias))
+              .contextCriteria(collectionRequest.getObjectRequest()
+                  .getContextCriteria())
+              .build())
+          .ifPresent(dataQuery::addConditions);
 
-    newPaging().requestContext(requestContext)
-        .dataQuery(dataQuery)
-        .build();
+      newPaging().requestContext(requestContext)
+          .dataQuery(dataQuery)
+          .build();
 
-    if (joinCriteria == null) {
+      if (joinCriteria != null) {
+        return doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria);
+      }
+
       return dataQuery;
-    }
-
-    return doBatchJoin((SingleObjectRequest) collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria);
+    }).map(query -> (Select) query)
+        .reduce(Select::unionAll).map(val -> (SelectQuery<Record>) val)
+        .orElseThrow();
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
@@ -158,11 +166,8 @@ class SelectBuilder {
     return createDataQuery(objectRequest);
   }
 
-  private SelectQuery<Record> createDataQuery(UnionObjectRequest unionObjectRequest) {
-    return unionObjectRequest.getObjectRequests().stream().map(objectRequest -> createDataQuery(objectRequest, true))
-        .map(query -> (Select) query)
-        .reduce(Select::unionAll).map(val -> (SelectQuery<Record>) val)
-        .orElseThrow();
+  private List<SelectQuery<Record>> createDataQuerys(UnionObjectRequest unionObjectRequest) {
+    return unionObjectRequest.getObjectRequests().stream().map(objectRequest -> createDataQuery(objectRequest, true)).toList();
   }
 
   private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest) {
@@ -873,7 +878,7 @@ class SelectBuilder {
     return columnMapper;
   }
 
-  private SelectQuery<Record> doBatchJoin(SingleObjectRequest objectRequest, SelectQuery<Record> dataQuery,
+  private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
       Table<Record> dataTable, JoinCriteria joinCriteria) {
 
     var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
@@ -884,6 +889,13 @@ class SelectBuilder {
         .dataQuery(dataQuery)
         .table(dataTable)
         .joinKeys(joinCriteria.getKeys());
+
+    if (objectRequest instanceof UnionObjectRequest) {
+      builder.fromUnion(true);
+    }
+
+
+
 
     ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)
         .map(objectField -> JoinConfiguration.toJoinConfiguration(objectField, joinCondition))

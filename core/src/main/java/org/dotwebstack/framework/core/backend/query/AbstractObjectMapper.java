@@ -18,16 +18,20 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
   @Override
   public Map<String, Object> apply(T row) {
-    return fieldMappers.entrySet()
+    Map<String, Object> x =  fieldMappers.entrySet()
         .stream()
         .collect(HashMap::new, (map, entry) -> {
           if (entry.getKey().equals("json")) {
             var val = (Map<String, Object>) entry.getValue().apply(row);
-            map.putAll(val);
+            if (!val.isEmpty()) {
+              map.putAll(val);
+            }
           } else {
             map.put(entry.getKey(), entry.getValue().apply(row));
           }
         }, HashMap::putAll);
+
+    return x;
   }
 
   public void register(String name, FieldMapper<T, ?> fieldMapper) {

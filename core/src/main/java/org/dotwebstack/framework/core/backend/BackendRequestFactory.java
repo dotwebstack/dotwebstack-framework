@@ -115,37 +115,11 @@ public class BackendRequestFactory {
 
   public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
-    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
-
-
     if (unwrapAll(executionStepInfo.getType()) instanceof GraphQLInterfaceType interfaceType) {
-      //TODO: cleanup (especially the magic numbers)
-      var types = executionStepInfo.getField().getFields().stream().map(field -> {
-        return field.getSelectionSet().getSelections().stream().map(selection -> {
-          var typeCondition = selection.getNamedChildren().getChildren("typeCondition");
-          if (typeCondition.size() > 0) {
-            return ((TypeName) typeCondition.get(0)).getName();
-          } else {
-            return null;
-          }
-        }).filter(Objects::nonNull).toList();
-      }).flatMap(List::stream).toList();
-
-      List<ObjectType<? extends ObjectField>> objectTypes;
-      if (types.size() > 0) {
-        objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName()))
-            .filter(objectType -> types.contains(objectType.getName())).toList();
-      } else {
-        objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName())).toList();
-      }
-
-      var y = objectTypes.stream().map(objectType ->
-        createObjectRequest(executionStepInfo, selectionSet, objectType)
-      ).map(SingleObjectRequest.class::cast).toList();
-
-      return UnionObjectRequest.builder()
-          .objectRequests(y).build();
+      return createUnionObjectRequest(executionStepInfo, selectionSet, interfaceType);
     }
+
+    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
     return createObjectRequest(executionStepInfo, selectionSet, objectType);
   }
@@ -159,7 +133,6 @@ public class BackendRequestFactory {
     return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(keyCriterias)
-        //TODO: fields should be filtered on objecttype name due to usage of the spread operator.
         .scalarFields(getScalarFields(selectionSet, objectType.getName()))
         .objectFields(getObjectFields(selectionSet, executionStepInfo))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
@@ -168,8 +141,13 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private SingleObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
-    var objectType = getObjectType(unwrapConnectionType(selectedField.getType()));
+  private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
+    var unwrappedType = unwrapConnectionType(selectedField.getType());
+
+    if (unwrapAll(unwrappedType) instanceof GraphQLInterfaceType interfaceType) {
+      return createUnionObjectRequest(executionStepInfo, selectedField.getSelectionSet(), interfaceType);
+    }
+    var objectType = getObjectType(unwrappedType);
 
     var fieldDefinition = selectedField.getFieldDefinitions()
         .stream()
@@ -185,6 +163,35 @@ public class BackendRequestFactory {
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
+  }
+
+  private UnionObjectRequest createUnionObjectRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet, GraphQLInterfaceType interfaceType) {
+    var types = executionStepInfo.getField().getFields().stream().map(field -> {
+      return field.getSelectionSet().getSelections().stream().map(selection -> {
+        var typeCondition = selection.getNamedChildren().getChildren("typeCondition");
+        if (typeCondition.size() > 0) {
+          return ((TypeName) typeCondition.get(0)).getName();
+        } else {
+          return null;
+        }
+      }).filter(Objects::nonNull).toList();
+    }).flatMap(List::stream).toList();
+
+    List<ObjectType<? extends ObjectField>> objectTypes;
+    if (types.size() > 0) {
+      objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName()))
+          .filter(objectType -> types.contains(objectType.getName())).toList();
+    } else {
+      objectTypes = schema.getObjectTypes().values().stream().filter(objectType -> objectType.getImplements().contains(interfaceType.getName())).toList();
+    }
+
+    var y = objectTypes.stream().map(objectType ->
+        createObjectRequest(executionStepInfo, selectionSet, objectType)
+    ).map(SingleObjectRequest.class::cast).toList();
+
+    return UnionObjectRequest.builder()
+        .objectRequests(y).build();
   }
 
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {
@@ -258,7 +265,7 @@ public class BackendRequestFactory {
         .stream()
         .filter(isObjectField)
         .collect(Collectors.toMap(this::mapToFieldRequest,
-            selectedField -> createObjectRequest(selectedField, executionStepInfo)));
+            selectedField -> (SingleObjectRequest) createObjectRequest(selectedField, executionStepInfo)));
   }
 
   private Map<FieldRequest, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,

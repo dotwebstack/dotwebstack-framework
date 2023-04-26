@@ -20,8 +20,14 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
 
   @Override
   public Map<String, Object> apply(Map<String, Object> row) {
+    var rowVal = row.get(column.getName());
+
+    if (rowVal == null) {
+      return Map.of();
+    }
+
     var objMapper =  new ObjectMapper();
-    var jsonString = ((Json) row.get(column.getName())).asString();
+    var jsonString = ((Json) rowVal).asString();
     try {
       TypeReference<HashMap<String,Object>> typeRef
           = new TypeReference<>() {

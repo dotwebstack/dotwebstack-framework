@@ -37,6 +37,14 @@ public class Schema {
     return ofNullable(objectTypes.get(name));
   }
 
+  public Optional<ObjectType<? extends ObjectField>> getObjectTypeOrInterface(String name) {
+    var objectType = objectTypes.get(name);
+    if (objectType == null) {
+      return ofNullable(interfaces.get(name));
+    }
+    return Optional.of(objectType);
+  }
+
   public Optional<Context> getContext(String contextName) {
     return ofNullable(contexts.get(contextName));
   }
