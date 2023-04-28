@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
+import static graphql.Assert.assertTrue;
+import static org.dotwebstack.framework.backend.postgres.PostgresSpatialBackendModule.FOREIGNKEYS_SEGMENT_TABLE_STMT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -17,11 +19,13 @@ import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
+import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,22 +34,19 @@ import reactor.core.publisher.Flux;
 @ExtendWith(MockitoExtension.class)
 class PostgresSpatialBackendModuleTest {
 
-  private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
-      "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name, tc.table_name, "
-          + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
-          + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc "
-          + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
-          + " AND tc.table_schema = kcu.table_schema"
-          + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name"
-          + "    AND ccu.table_schema = tc.table_schema "
-          + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'";
-
   @Test
-  void contructor_throwsNoException_onError() {
+  void contructor_throwsException_onError() {
     var schema = mock(Schema.class);
     var postgresClient = mockDatabaseCalls(Flux.error(new RuntimeException("Something went wrong.")));
 
-    assertDoesNotThrow(() -> new PostgresSpatialBackendModule(schema, postgresClient));
+    Exception exception = Assertions.assertThrows(InvalidConfigurationException.class, () -> {
+      new PostgresSpatialBackendModule(schema, postgresClient);
+    });
+
+    String expectedMessage = "Something went wrong.";
+    String actualMessage = exception.getMessage();
+
+    assertTrue(actualMessage.equals(expectedMessage));
   }
 
   @Test
