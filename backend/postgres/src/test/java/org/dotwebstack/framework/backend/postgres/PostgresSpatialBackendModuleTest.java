@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres;
 
 import static graphql.Assert.assertTrue;
+import static org.dotwebstack.framework.backend.postgres.PostgresSpatialBackendModule.FOREIGNKEYS_SEGMENT_TABLE_STMT;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
@@ -32,20 +33,6 @@ import reactor.core.publisher.Flux;
 
 @ExtendWith(MockitoExtension.class)
 class PostgresSpatialBackendModuleTest {
-
-  // private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
-  // "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name,
-  // tc.table_name, "
-  // + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
-  // + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc
-  // "
-  // + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
-  // + " AND tc.table_schema = kcu.table_schema"
-  // + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name =
-  // tc.constraint_name"
-  // + " AND ccu.table_schema = tc.table_schema "
-  // + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND
-  // tc.table_name='%s'";
 
   @Test
   void contructor_throwsException_onError() {
@@ -208,8 +195,7 @@ class PostgresSpatialBackendModuleTest {
         + "SELECT f_table_schema, f_table_name, f_geography_column as f_geometry_column, srid FROM geography_columns";
     when(postgresClient.fetch(geometryColumnsQuery)).thenReturn(createGeoSridRows());
 
-    var foreignkeysQuery = String.format(PostgresSpatialBackendModule.FOREIGNKEYS_SEGMENT_TABLE_STMT,
-        "brewery__brewery_geometry__segments");
+    var foreignkeysQuery = String.format(FOREIGNKEYS_SEGMENT_TABLE_STMT, "brewery__brewery_geometry__segments");
 
     Map<String, Object> joinColumnRow =
         Map.of("join_column_name", "brewery__record_id", "referenced_column_name", "record_id");
