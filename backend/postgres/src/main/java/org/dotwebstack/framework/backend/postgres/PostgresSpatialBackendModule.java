@@ -110,7 +110,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     return postgresClient.fetch(GEO_COLUMNS_STMT)
         .map(row -> mapToGeoMetadata(row, segmentsTables))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        .onErrorMap((exception) -> invalidConfigurationException("Retrieving geometry columns failed.", exception))
+        .onErrorMap(exception -> invalidConfigurationException("Retrieving geometry columns failed.", exception))
         .block();
   }
 
@@ -127,7 +127,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
               .map(joinColumnList -> createSegmentsTable(schemaName, tableName, geoColumn, joinColumnList));
         })
         .collect(Collectors.toMap(GeometrySegmentsTable::getTableName, identity()))
-        .onErrorMap((exception) -> invalidConfigurationException(exception.getMessage()))
+        .onErrorMap(exception -> invalidConfigurationException(exception.getMessage()))
         .block();
   }
 
