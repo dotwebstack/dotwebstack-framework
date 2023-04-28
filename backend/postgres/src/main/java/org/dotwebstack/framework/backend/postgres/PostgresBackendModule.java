@@ -45,6 +45,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
     setMappedByObjectField(objectTypes, allFields);
     setAggregationOfType(objectTypes, allFields);
     initColumns(objectTypes.values());
+
   }
 
   private void initColumns(Collection<ObjectType<? extends ObjectField>> objectTypes) {
@@ -61,6 +62,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
           // Initialize nested columns
           initColumns(List.of(), objectType);
+
         });
   }
 
@@ -69,6 +71,7 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .values()
         .stream()
         .filter(PostgresObjectField::hasNestedFields)
+        // .filter(Predicate.not(JoinHelper::hasNestedReference))
         .flatMap(objectField -> {
           var targetType = (PostgresObjectType) objectField.getTargetType();
 

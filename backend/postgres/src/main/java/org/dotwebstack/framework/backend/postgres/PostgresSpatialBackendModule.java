@@ -3,6 +3,8 @@ package org.dotwebstack.framework.backend.postgres;
 import static java.util.function.Function.identity;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSegmentsTableName;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -58,15 +60,41 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
       String.format("SELECT %s, %s, %s FROM geometry_columns where %s LIKE '%%__segments'", F_TABLE_SCHEMA,
           F_TABLE_NAME, F_GEOMETRY_COLUMN, F_TABLE_NAME);
 
-  private static final String FOREIGNKEYS_SEGMENT_TABLE_STMT =
-      "SELECT DISTINCT kcu.column_name AS join_column_name, tc.table_schema, tc.constraint_name, tc.table_name, "
-          + "ccu.table_schema AS foreign_table_schema, ccu.table_name AS foreign_table_name, "
-          + "ccu.column_name AS referenced_column_name" + " FROM information_schema.table_constraints AS tc "
-          + " JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name"
-          + " AND tc.table_schema = kcu.table_schema"
-          + " JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name"
-          + "    AND ccu.table_schema = tc.table_schema "
-          + "WHERE kcu.column_name <> 'tile_id' AND tc.constraint_type = 'FOREIGN KEY' AND tc.table_name='%s'";
+  static final String FOREIGNKEYS_SEGMENT_TABLE_STMT = """
+          WITH cte_fk_constraints
+          AS
+          ( SELECT
+              unnest(con.conkey) AS "parent",
+              unnest(con.confkey) AS "child",
+              con.confrelid,
+              con.conrelid,
+              ns.nspname AS schema_name,
+              cl.relname AS table_name,
+              con.conname AS fk_name
+            FROM
+              pg_class cl
+              join pg_namespace ns on cl.relnamespace = ns.oid
+              join pg_constraint con on con.conrelid = cl.oid
+            WHERE
+              cl.relname = '%s'
+              AND con.contype = 'f'
+          )
+
+          SELECT
+            constr.schema_name,
+            constr.table_name,
+            constr.fk_name,
+            child.attname AS join_column_name,
+            cl.relname as referenced_table_name,
+            parent.attname AS referenced_column_name
+          FROM cte_fk_constraints constr
+            JOIN pg_attribute parent ON
+                 parent.attrelid = constr.confrelid AND parent.attnum = constr.child
+            JOIN pg_class cl ON
+                 cl.oid = constr.confrelid
+            JOIN pg_attribute child ON
+                 child.attrelid = constr.conrelid AND child.attnum = constr.parent
+      """;
 
   private final Map<String, GeometryMetadata> geoMetadataByTableColumn;
 
@@ -82,8 +110,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     return postgresClient.fetch(GEO_COLUMNS_STMT)
         .map(row -> mapToGeoMetadata(row, segmentsTables))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
-        .onErrorContinue((e, i) -> LOG.warn("Retrieving geometry columns failed. Exception: {}", e.getMessage()))
-        .onErrorReturn(Map.of())
+        .onErrorMap((exception) -> invalidConfigurationException("Retrieving geometry columns failed.", exception))
         .block();
   }
 
@@ -94,12 +121,13 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
           var tableName = (String) row.get(F_TABLE_NAME);
           var geoColumn = (String) row.get(F_GEOMETRY_COLUMN);
           var joinColumns = getJoinColumns(tableName, postgresClient);
+
           return joinColumns
+              .switchIfEmpty(Mono.error(illegalStateException("Empty join columns for segments table %s", tableName)))
               .map(joinColumnList -> createSegmentsTable(schemaName, tableName, geoColumn, joinColumnList));
         })
         .collect(Collectors.toMap(GeometrySegmentsTable::getTableName, identity()))
-        .onErrorContinue((e, i) -> LOG.warn("Retrieving segments tables failed. Exception: {}", e.getMessage()))
-        .onErrorReturn(Map.of())
+        .onErrorMap((exception) -> invalidConfigurationException(exception.getMessage()))
         .block();
   }
 
@@ -163,7 +191,8 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     var tableNames = objectType.getTable()
         .split("\\.");
     var table = tableNames[tableNames.length - 1];
-    return new AbstractMap.SimpleEntry<>(table, getFields(objectType));
+    var fields = getFields(objectType);
+    return new AbstractMap.SimpleEntry<>(table, fields);
   }
 
   private List<PostgresObjectField> getFields(PostgresObjectType objectType) {
