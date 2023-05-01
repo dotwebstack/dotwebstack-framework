@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.query;
 
 import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
 import static java.util.function.Predicate.not;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getRequestedSrid;
 import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.isRequestedBbox;
@@ -35,13 +34,11 @@ import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.J
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -112,6 +109,7 @@ class SelectBuilder {
     addSortFields(collectionRequest);
 
     var objectRequest = collectionRequest.getObjectRequest();
+    var isFromUnion = objectRequest instanceof UnionObjectRequest;
 
 //    SelectQuery<Record> dataQuery;
     var dataQuerys = new ArrayList<SelectQuery<Record>>();
@@ -142,14 +140,32 @@ class SelectBuilder {
           .dataQuery(dataQuery)
           .build();
 
-      if (joinCriteria != null) {
-        return doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria);
-      }
+      //TODO: joinBuilder introduceren, zat nu verstopt in de batchBuilder.
+
+//      if (joinCriteria != null) {
+//        var batch = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria);
+//        if (isFromUnion) {
+//          var field = dataQuery.getSelect().stream().filter(f -> f.getName().equals("d1")).findFirst().orElseThrow();
+//          dataQuery.addConditions(field.isNotNull());
+//        }
+//        return batch;
+//      }
 
       return dataQuery;
     }).map(query -> (Select) query)
         .reduce(Select::unionAll).map(val -> (SelectQuery<Record>) val)
-        .orElseThrow();
+        .map(query -> {
+          if (joinCriteria != null) {
+            var batchQuery = doBatch(collectionRequest.getObjectRequest(), query, DSL.table(tableAlias), joinCriteria);
+            if (isFromUnion) {
+              var field = batchQuery.getSelect().stream().filter(f -> f.getName().equals("d1")).findFirst().orElseThrow();
+              batchQuery.addConditions(field.isNotNull());
+            }
+            return batchQuery;
+          }
+
+          return query;
+        }).orElseThrow();
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
@@ -159,7 +175,7 @@ class SelectBuilder {
         .keys(batchRequest.getKeys())
         .build();
 
-    return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria);
+    return doBatch(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria);
   }
 
   public SelectQuery<Record> build(SingleObjectRequest objectRequest) {
@@ -878,10 +894,10 @@ class SelectBuilder {
     return columnMapper;
   }
 
-  private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
+  private SelectQuery<Record> doBatch(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
       Table<Record> dataTable, JoinCriteria joinCriteria) {
 
-    var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
+//    var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
 
     var builder = newBatchQuery().contextCriteria(objectRequest.getContextCriteria())
         .aliasManager(aliasManager)
@@ -894,13 +910,10 @@ class SelectBuilder {
       builder.fromUnion(true);
     }
 
-
-
-
-    ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)
-        .map(objectField -> JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
-        .ifPresent(builder::joinConfiguration);
-
+//    ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)
+//        .map(objectField -> JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
+//        .ifPresent(builder::joinConfiguration);
+//
     return builder.build();
   }
 }

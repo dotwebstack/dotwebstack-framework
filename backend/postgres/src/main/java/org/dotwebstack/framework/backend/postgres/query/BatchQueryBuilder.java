@@ -53,7 +53,7 @@ class BatchQueryBuilder {
 
   private boolean fromUnion;
 
-  private JoinConfiguration joinConfiguration;
+//  private JoinConfiguration joinConfiguration;
 
   private ContextCriteria contextCriteria;
 
@@ -68,44 +68,44 @@ class BatchQueryBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    if (joinConfiguration == null) {
+//    if (joinConfiguration == null) {
       return batchQueryWithKeys();
-    }
+//    }
 
-    if (joinConfiguration.getMappedBy() != null) {
-      var mappedBy = joinConfiguration.getMappedBy();
-
-      var mappedByJoinConfiguration = JoinConfiguration.builder()
-          .objectField(mappedBy)
-          .joinTable(JoinHelper.invert(mappedBy.getJoinTable()))
-          .joinColumns(mappedBy.getJoinColumns())
-          .objectType((PostgresObjectType) joinConfiguration.getObjectField()
-              .getObjectType())
-          .targetType((PostgresObjectType) mappedBy.getObjectType())
-          .build();
-
-      return newBatchQuery().joinConfiguration(mappedByJoinConfiguration)
-          .contextCriteria(contextCriteria)
-          .aliasManager(aliasManager)
-          .fieldMapper(fieldMapper)
-          .dataQuery(dataQuery)
-          .table(table)
-          .joinKeys(joinKeys)
-          .build();
-    }
-
-    if (!joinConfiguration.getJoinColumns()
-        .isEmpty()) {
-      return batchQuery(invertOnList(joinConfiguration.getObjectField(), joinConfiguration.getJoinColumns()), table);
-    }
-
-    if (joinConfiguration.getJoinTable() != null) {
-      return batchQueryWithJoinTable();
-    }
-
-    throw illegalArgumentException("Object field '{}' has no relation configuration!",
-        joinConfiguration.getObjectField()
-            .getName());
+//    if (joinConfiguration.getMappedBy() != null) {
+//      var mappedBy = joinConfiguration.getMappedBy();
+//
+//      var mappedByJoinConfiguration = JoinConfiguration.builder()
+//          .objectField(mappedBy)
+//          .joinTable(JoinHelper.invert(mappedBy.getJoinTable()))
+//          .joinColumns(mappedBy.getJoinColumns())
+//          .objectType((PostgresObjectType) joinConfiguration.getObjectField()
+//              .getObjectType())
+//          .targetType((PostgresObjectType) mappedBy.getObjectType())
+//          .build();
+//
+//      return newBatchQuery().joinConfiguration(mappedByJoinConfiguration)
+//          .contextCriteria(contextCriteria)
+//          .aliasManager(aliasManager)
+//          .fieldMapper(fieldMapper)
+//          .dataQuery(dataQuery)
+//          .table(table)
+//          .joinKeys(joinKeys)
+//          .build();
+//    }
+//
+//    if (!joinConfiguration.getJoinColumns()
+//        .isEmpty()) {
+//      return batchQuery(invertOnList(joinConfiguration.getObjectField(), joinConfiguration.getJoinColumns()), table);
+//    }
+//
+//    if (joinConfiguration.getJoinTable() != null) {
+//      return batchQueryWithJoinTable();
+//    }
+//
+//    throw illegalArgumentException("Object field '{}' has no relation configuration!",
+//        joinConfiguration.getObjectField()
+//            .getName());
   }
 
   private SelectQuery<Record> batchQueryWithKeys() {
@@ -129,29 +129,29 @@ class BatchQueryBuilder {
     return batchQuery(keyTable);
   }
 
-  private SelectQuery<Record> batchQuery(List<JoinColumn> joinColumns, Table<Record> joinConditionTable) {
-    var objectType = joinConfiguration.getObjectType();
+//  private SelectQuery<Record> batchQuery(List<JoinColumn> joinColumns, Table<Record> joinConditionTable) {
+//    var objectType = joinConfiguration.getObjectType();
 
-    var keyJoinColumnAliasMap = joinColumns.stream()
-        .collect(Collectors.toMap(joinColumn -> joinColumn, joinColumn -> aliasManager.newAlias()));
+//    var keyJoinColumnAliasMap = joinColumns.stream()
+//        .collect(Collectors.toMap(joinColumn -> joinColumn, joinColumn -> aliasManager.newAlias()));
 
-    var keyColumnAliases = keyJoinColumnAliasMap.entrySet()
-        .stream()
-        .collect(Collectors.toMap(e -> columnName(e.getKey(), objectType), Map.Entry::getValue));
+//    var keyColumnAliases = keyJoinColumnAliasMap.entrySet()
+//        .stream()
+//        .collect(Collectors.toMap(e -> columnName(e.getKey(), objectType), Map.Entry::getValue));
 
-    var keyTable = createValuesTable(keyColumnAliases, joinKeys);
+//    var keyTable = createValuesTable(keyColumnAliases, joinKeys);
 
-    keyJoinColumnAliasMap.entrySet()
-        .stream()
-        .map(entry -> QueryHelper.column(joinConditionTable, entry.getKey()
-            .getName())
-            .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
-        .forEach(dataQuery::addConditions);
-
-    addExistsJoinColumns(dataQuery, joinColumns, joinConditionTable);
-
-    return batchQuery(keyTable);
-  }
+//    keyJoinColumnAliasMap.entrySet()
+//        .stream()
+//        .map(entry -> QueryHelper.column(joinConditionTable, entry.getKey()
+//            .getName())
+//            .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
+//        .forEach(dataQuery::addConditions);
+//
+//    addExistsJoinColumns(dataQuery, joinColumns, joinConditionTable);
+//
+//    return batchQuery(keyTable);
+//  }
 
   private SelectQuery<Record> batchQuery(Table<Record> keyTable) {
     var batchQuery = dslContext.selectQuery(keyTable);
@@ -162,21 +162,21 @@ class BatchQueryBuilder {
     return batchQuery;
   }
 
-  private SelectQuery<Record> batchQueryWithJoinTable() {
-    var joinTable = joinConfiguration.getJoinTable();
-
-    var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
-        .as(aliasManager.newAlias());
-
-    dataQuery.addFrom(junctionTable);
-
-    var joinConditions = createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
-        joinConfiguration.getTargetType());
-
-    dataQuery.addConditions(joinConditions);
-
-    return batchQuery(joinTable.getJoinColumns(), junctionTable);
-  }
+//  private SelectQuery<Record> batchQueryWithJoinTable() {
+//    var joinTable = joinConfiguration.getJoinTable();
+//
+//    var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
+//        .as(aliasManager.newAlias());
+//
+//    dataQuery.addFrom(junctionTable);
+//
+//    var joinConditions = createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
+//        joinConfiguration.getTargetType());
+//
+//    dataQuery.addConditions(joinConditions);
+//
+//    return batchQuery(joinTable.getJoinColumns(), junctionTable);
+//  }
 
   private Table<Record> createValuesTable(Map<String, String> keyColumnAliases, Collection<Map<String, Object>> keys) {
     var keyTableRows = keys.stream()
@@ -200,13 +200,13 @@ class BatchQueryBuilder {
             .toArray(String[]::new));
   }
 
-  private void addExistsJoinColumns(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
-    var columnsNames = joinColumns.stream()
-        .map(JoinColumn::getName)
-        .collect(Collectors.toList());
-
-    addExists(dataQuery, columnsNames, table);
-  }
+//  private void addExistsJoinColumns(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
+//    var columnsNames = joinColumns.stream()
+//        .map(JoinColumn::getName)
+//        .collect(Collectors.toList());
+//
+//    addExists(dataQuery, columnsNames, table);
+//  }
 
   private void addExists(SelectQuery<Record> dataQuery, Collection<String> columnNames, Table<Record> table) {
     if (!fromUnion) {
