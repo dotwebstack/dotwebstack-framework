@@ -12,6 +12,8 @@ public class JoinTable {
   @NotBlank
   private String name;
 
+  private String inverseTableName;
+
   @Valid
   @NotNull
   private List<JoinColumn> joinColumns;

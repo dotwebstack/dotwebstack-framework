@@ -68,6 +68,7 @@ objectTypes:
         type: BeerIngredient
         joinTable:
           name: db.beer_ingredient
+          inverseTableName: db.beer
           joinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
@@ -170,6 +171,7 @@ objectTypes:
         list: true
         joinTable:
           name: db.breweries__related_to
+          inverseTableName: db.brewery
           joinColumns:
             - name: brewery_identifier
               referencedField: identifier

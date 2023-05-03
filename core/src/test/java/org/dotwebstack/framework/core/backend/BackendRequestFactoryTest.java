@@ -37,6 +37,7 @@ import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
@@ -127,7 +128,7 @@ class BackendRequestFactoryTest {
 
     var backendRequestFactory =
         new BackendRequestFactory(schema, new BackendExecutionStepInfo(), customValueFetcherDispatcher);
-    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, selectionSet);
+    var objectRequest = (SingleObjectRequest) backendRequestFactory.createObjectRequest(executionStepInfo, selectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
     assertThat(objectRequest.getScalarFields(), equalTo(List.of(FieldRequest.builder()
@@ -165,7 +166,7 @@ class BackendRequestFactoryTest {
     when(brewerySelectionSet.getImmediateFields()).thenReturn(List.of(beerField));
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
-    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+    var objectRequest = (SingleObjectRequest) backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
 
@@ -209,7 +210,7 @@ class BackendRequestFactoryTest {
 
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
 
-    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+    var objectRequest = (SingleObjectRequest) backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
     assertThat(objectRequest.getKeyCriterias(), is(notNullValue()));
 
     var keyCriteria = objectRequest.getKeyCriterias();
@@ -258,7 +259,7 @@ class BackendRequestFactoryTest {
     var result = backendRequestFactory.createCollectionRequest(executionStepInfo, selectionSetParent);
 
     assertThat(result, is(notNullValue()));
-    assertThat(result.getObjectRequest()
+    assertThat(((SingleObjectRequest)result.getObjectRequest())
         .getObjectType()
         .getName(), is("Brewery"));
     assertThat(result.getFilterCriteria(), is(notNullValue()));

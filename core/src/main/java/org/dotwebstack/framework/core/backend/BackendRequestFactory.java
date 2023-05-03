@@ -1,4 +1,4 @@
-package org.dotwebstack.framework.core.backend;
+ package org.dotwebstack.framework.core.backend;
 
 import static graphql.schema.GraphQLTypeUtil.unwrapAll;
 import static java.util.Objects.requireNonNull;
@@ -91,18 +91,17 @@ public class BackendRequestFactory {
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
-    //TODO: fixme - omgaan met interfaces
-//    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
-//    var objectType = getObjectType(unwrappedType);
 
-//    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+    var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
+    var objectType = getObjectType(unwrappedType);
 
-//    Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
+    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+    var filterCriteria = getFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriteria(null)
-        .sortCriterias(Collections.emptyList())
+        .filterCriteria(filterCriteria.orElse(null))
+        .sortCriterias(createSortCriteria(executionStepInfo, objectType))
         .build();
   }
 

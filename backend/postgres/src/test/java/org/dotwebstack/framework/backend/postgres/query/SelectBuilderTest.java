@@ -91,10 +91,14 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select distinct\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
-            + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n" + "  \"x1\".\"identifier_column\" as \"x4\",\n"
-            + "  \"x1\".\"age_column\" as \"x5\"\n" + "from \"beer\" as \"x1\"\n"
-            + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("""
+            select distinct
+              "x1"."name_column" as "x2",
+              "x1"."soldPerYear_column" as "x3",
+              "x1"."identifier_column" as "x4",
+              "x1"."age_column" as "x5"
+            from "beer" as "x1"
+            where "x1"."identifier_column" = 'id-1'"""));
   }
 
   @Test
@@ -105,10 +109,15 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n" + "  \"x1\".\"soldPerYear_column\" as \"x3\",\n"
-            + "  \"x1\".\"identifier_column\" as \"x4\",\n" + "  (\"x1\".\"age_column\" is not null) as \"x5\",\n"
-            + "  \"x1\".\"age_column\" as \"x6\"\n" + "from \"beer\" as \"x1\"\n"
-            + "where \"x1\".\"identifier_column\" = 'id-1'"));
+        equalTo("""
+            select
+              "x1"."name_column" as "x2",
+              "x1"."soldPerYear_column" as "x3",
+              "x1"."identifier_column" as "x4",
+              ("x1"."age_column" is not null) as "x5",
+              "x1"."age_column" as "x6"
+            from "beer" as "x1"
+            where "x1"."identifier_column" = 'id-1'"""));
   }
 
   private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
@@ -301,6 +310,8 @@ class SelectBuilderTest {
             + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
+
+
   }
 
   @Test

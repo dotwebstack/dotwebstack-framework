@@ -112,6 +112,7 @@ public class JoinHelper {
 
     var result = new JoinTable();
     result.setName(joinTable.getName());
+    result.setInverseTableName(joinTable.getInverseTableName());
 
     var joinColumns = joinTable.getJoinColumns()
         .stream()

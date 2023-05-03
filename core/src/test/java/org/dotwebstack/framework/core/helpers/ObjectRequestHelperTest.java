@@ -43,14 +43,13 @@ class ObjectRequestHelperTest {
         .sortCriterias(List.of(nameSortAsc))
         .build();
 
-    var expectedScalarFieldSize = collectionRequest.getObjectRequest()
-        .getScalarFields()
+    var objectRequest = (SingleObjectRequest) collectionRequest.getObjectRequest();
+    var expectedScalarFieldSize = objectRequest.getScalarFields()
         .size();
 
     ObjectRequestHelper.addSortFields(collectionRequest);
 
-    assertThat(collectionRequest.getObjectRequest()
-        .getScalarFields()
+    assertThat(objectRequest.getScalarFields()
         .size(), is(expectedScalarFieldSize));
   }
 
@@ -83,14 +82,13 @@ class ObjectRequestHelperTest {
         .sortCriterias(List.of(breweryIdSortCriteria))
         .build();
 
-    var expectedObjectFieldsSize = collectionRequest.getObjectRequest()
-        .getObjectFields()
+    var objectRequest = (SingleObjectRequest) collectionRequest.getObjectRequest();
+    var expectedObjectFieldsSize = objectRequest.getObjectFields()
         .size();
 
     ObjectRequestHelper.addSortFields(collectionRequest);
 
-    assertThat(collectionRequest.getObjectRequest()
-        .getObjectFields()
+    assertThat(objectRequest.getObjectFields()
         .size(), is(expectedObjectFieldsSize));
   }
 
@@ -107,11 +105,11 @@ class ObjectRequestHelperTest {
 
     ObjectRequestHelper.addSortFields(collectionRequest);
 
-    assertThat(collectionRequest.getObjectRequest()
-        .getScalarFields()
+    var objectRequest = (SingleObjectRequest) collectionRequest.getObjectRequest();
+
+    assertThat(objectRequest.getScalarFields()
         .size(), is(4));
-    assertThat(collectionRequest.getObjectRequest()
-        .getScalarFields()
+    assertThat(objectRequest.getScalarFields()
         .stream()
         .filter(field -> field.getName()
             .equals("abv"))
@@ -142,13 +140,12 @@ class ObjectRequestHelperTest {
         .build();
 
     ObjectRequestHelper.addSortFields(collectionRequest);
+    var objectRequest = (SingleObjectRequest) collectionRequest.getObjectRequest();
 
-    assertThat(collectionRequest.getObjectRequest()
-        .getObjectFields()
+    assertThat(objectRequest.getObjectFields()
         .size(), is(1));
 
-    var newObjectRequest = collectionRequest.getObjectRequest()
-        .getObjectFields()
+    var newObjectRequest = objectRequest.getObjectFields()
         .entrySet()
         .stream()
         .filter(entry -> entry.getKey()
