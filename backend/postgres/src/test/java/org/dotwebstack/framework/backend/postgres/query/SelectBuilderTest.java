@@ -276,8 +276,8 @@ class SelectBuilderTest {
     var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
         .orElseThrow();
 
-    var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
     var addressIdentifierFieldPath = createFieldPath(breweryObjectType, "postalAddress.ref.identifier");
+    var breweryIdentifierFieldPath = createFieldPath(breweryObjectType, "identifier");
 
     // change name to force mismatch
     addressIdentifierFieldPath.get(2)

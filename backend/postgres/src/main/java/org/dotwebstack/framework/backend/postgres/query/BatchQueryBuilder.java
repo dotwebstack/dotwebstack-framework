@@ -51,11 +51,13 @@ class BatchQueryBuilder {
   @NotNull
   private Set<Map<String, Object>> joinKeys;
 
-//  private JoinConfiguration joinConfiguration;
+  private JoinConfiguration joinConfiguration;
 
   private ContextCriteria contextCriteria;
 
   private Table<Record> table;
+
+  private boolean fromUnion = false;
 
   private BatchQueryBuilder() {}
 
@@ -66,7 +68,44 @@ class BatchQueryBuilder {
   SelectQuery<Record> build() {
     validateFields(this);
 
-    return batchQueryWithKeys();
+    if (joinConfiguration == null) {
+      return batchQueryWithKeys();
+    }
+
+    if (joinConfiguration.getMappedBy() != null) {
+      var mappedBy = joinConfiguration.getMappedBy();
+
+      var mappedByJoinConfiguration = JoinConfiguration.builder()
+          .objectField(mappedBy)
+          .joinTable(JoinHelper.invert(mappedBy.getJoinTable()))
+          .joinColumns(mappedBy.getJoinColumns())
+          .objectType((PostgresObjectType) joinConfiguration.getObjectField()
+              .getObjectType())
+          .targetType((PostgresObjectType) mappedBy.getObjectType())
+          .build();
+
+      return newBatchQuery().joinConfiguration(mappedByJoinConfiguration)
+          .contextCriteria(contextCriteria)
+          .aliasManager(aliasManager)
+          .fieldMapper(fieldMapper)
+          .dataQuery(dataQuery)
+          .table(table)
+          .joinKeys(joinKeys)
+          .build();
+    }
+
+    if (!joinConfiguration.getJoinColumns()
+        .isEmpty()) {
+      return batchQuery(invertOnList(joinConfiguration.getObjectField(), joinConfiguration.getJoinColumns()), table);
+    }
+
+    if (joinConfiguration.getJoinTable() != null) {
+      return batchQueryWithJoinTable();
+    }
+
+    throw illegalArgumentException("Object field '{}' has no relation configuration!",
+        joinConfiguration.getObjectField()
+            .getName());
   }
 
   private SelectQuery<Record> batchQueryWithKeys() {
@@ -79,33 +118,64 @@ class BatchQueryBuilder {
 
     var keyTable = createValuesTable(columnAliases, joinKeys);
 
+    columnAliases.entrySet()
+        .stream()
+        .map(entry -> QueryHelper.column(entry.getKey())
+            .equal(QueryHelper.column(keyTable, entry.getValue())))
+        .forEach(dataQuery::addConditions);
+
+    addExists(dataQuery, columnAliases.keySet(), table);
+
+    return batchQuery(keyTable);
+  }
+
+  private SelectQuery<Record> batchQuery(List<JoinColumn> joinColumns, Table<Record> joinConditionTable) {
+    var objectType = joinConfiguration.getObjectType();
+
+    var keyJoinColumnAliasMap = joinColumns.stream()
+        .collect(Collectors.toMap(joinColumn -> joinColumn, joinColumn -> aliasManager.newAlias()));
+
+    var keyColumnAliases = keyJoinColumnAliasMap.entrySet()
+        .stream()
+        .collect(Collectors.toMap(e -> columnName(e.getKey(), objectType), Map.Entry::getValue));
+
+    var keyTable = createValuesTable(keyColumnAliases, joinKeys);
+
+    keyJoinColumnAliasMap.entrySet()
+        .stream()
+        .map(entry -> QueryHelper.column(joinConditionTable, entry.getKey()
+                .getName())
+            .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
+        .forEach(dataQuery::addConditions);
+
+    addExistsJoinColumns(dataQuery, joinColumns, joinConditionTable);
+
     return batchQuery(keyTable);
   }
 
   private SelectQuery<Record> batchQuery(Table<Record> keyTable) {
-//      var keyJoinColumnAliasMap = joinColumns.stream()
-//          .collect(Collectors.toMap(joinColumn -> joinColumn, JoinColumn::getReferencedColumn));
-//
-//      //      var keyColumnAliases = keyJoinColumnAliasMap.entrySet()
-//      //          .stream()
-//      //          .collect(Collectors.toMap(e -> columnName(e.getKey(), objectType), Map.Entry::getValue));
-//
-//      //          var keyTable = createValuesTable(keyColumnAliases, joinKeys);
-//
-//      keyJoinColumnAliasMap.entrySet()
-//          .stream()
-//          .map(entry -> QueryHelper.column(joinConditionTable, entry.getKey()
-//                  .getName())
-//              .equal(DSL.field(DSL.name(table.getName(), entry.getValue()))))
-//          .forEach(dataQuery::addConditions);
-
-
     var batchQuery = dslContext.selectQuery(keyTable);
 
     batchQuery.addJoin(DSL.lateral(dataQuery.asTable(aliasManager.newAlias())), JoinType.LEFT_OUTER_JOIN);
     batchQuery.addSelect(DSL.asterisk());
 
     return batchQuery;
+  }
+
+  private SelectQuery<Record> batchQueryWithJoinTable() {
+    var joinTable = joinConfiguration.getJoinTable();
+
+    var junctionTable = QueryHelper.findTable(joinTable.getName(), contextCriteria)
+        .as(aliasManager.newAlias());
+
+    dataQuery.addFrom(junctionTable);
+
+    var joinConditions = createJoinConditions(junctionTable, table, joinTable.getInverseJoinColumns(),
+        joinConfiguration.getTargetType());
+
+    dataQuery.addConditions(joinConditions);
+
+    return batchQuery(joinTable.getJoinColumns(), junctionTable);
   }
 
   private Table<Record> createValuesTable(Map<String, String> keyColumnAliases, Collection<Map<String, Object>> keys) {
@@ -123,11 +193,36 @@ class BatchQueryBuilder {
 
   private Table<Record> createValuesTable(Map<String, String> keyColumnAliases, RowN[] keyTableRows) {
     // Register field mapper for grouping rows per key
-    register(GROUP_KEY, keyColumnAliases);
+    if (!fromUnion) {
+      register(GROUP_KEY, keyColumnAliases);
+    }
 
     return DSL.values(keyTableRows)
         .as(aliasManager.newAlias(), keyColumnAliases.values()
             .toArray(String[]::new));
+  }
+
+  private void addExistsJoinColumns(SelectQuery<Record> dataQuery, List<JoinColumn> joinColumns, Table<Record> table) {
+    var columnsNames = joinColumns.stream()
+        .map(JoinColumn::getName)
+        .collect(Collectors.toList());
+
+    addExists(dataQuery, columnsNames, table);
+  }
+
+  private void addExists(SelectQuery<Record> dataQuery, Collection<String> columnNames, Table<Record> table) {
+      var columnAliases = columnNames.stream()
+          .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
+
+      columnAliases.entrySet()
+          .stream()
+          .map(entry -> QueryHelper.column(table, entry.getKey())
+              .as(entry.getValue()))
+          .forEach(dataQuery::addSelect);
+
+    if (!fromUnion) {
+      register(EXISTS_KEY, columnAliases);
+    }
   }
 
   private void register(String name, Map<String, String> columnAliases) {

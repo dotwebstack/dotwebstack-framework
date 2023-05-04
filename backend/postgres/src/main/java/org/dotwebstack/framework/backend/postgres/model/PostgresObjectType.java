@@ -34,23 +34,17 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
 
     this.table = objectType.getTable();
     this.distinct = objectType.isDistinct();
+
     var fields = objectType.getFields()
-          .values()
-          .stream()
-          .map(PostgresObjectField::new)
-          .toList();
+        .values()
+        .stream()
+        .map(PostgresObjectField::new)
+        .toList();
+
     fields.forEach(field -> field.setObjectType(this));
     fields.forEach(field -> field.initColumns(ancestors));
 
-
-    //TODO: niet echt netjes tbh...
-    var cleanedUpFields = fields.stream().peek(field -> {
-      if (field.getColumn().contains("__nodes")) {
-        field.setColumn(StringUtils.remove(field.getColumn(), "__nodes"));
-      }
-    }).toList();
-
-    this.fields = cleanedUpFields.stream()
+    this.fields = fields.stream()
         .collect(Collectors.toMap(AbstractObjectField::getName, field -> field));
   }
 }

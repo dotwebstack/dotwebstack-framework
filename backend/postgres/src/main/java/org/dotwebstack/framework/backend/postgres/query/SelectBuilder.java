@@ -15,7 +15,6 @@ import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.create
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.getExistFieldForRelationObject;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinColumns;
 import static org.dotwebstack.framework.backend.postgres.query.JoinHelper.resolveJoinTable;
-import static org.dotwebstack.framework.backend.postgres.query.JoinQueryBuilder.newJoinQuery;
 import static org.dotwebstack.framework.backend.postgres.query.PagingBuilder.newPaging;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.column;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.createTableCreator;
@@ -111,20 +110,20 @@ class SelectBuilder {
 
     addSortFields(collectionRequest);
 
-    final boolean isFromUnion;
+    final boolean asJson;
     var objectRequests = new ArrayList<SingleObjectRequest>();
     if (collectionRequest.getObjectRequest() instanceof UnionObjectRequest unionObjectRequest) {
-      isFromUnion = true;
+      asJson = true;
       objectRequests.addAll(unionObjectRequest.getObjectRequests());
     } else {
-      isFromUnion = false;
+      asJson = false;
       objectRequests.add((SingleObjectRequest) collectionRequest.getObjectRequest());
     }
 
-    List<JoinColumn> batchJoinKeys = new ArrayList<>();
-
+    AtomicReference<Boolean> isUnion = new AtomicReference<>();
+    isUnion.set(false);
     return objectRequests.stream().map(objectRequest -> {
-      var dataQuery = createDataQuery(objectRequest, isFromUnion);
+      var dataQuery = createDataQuery(objectRequest, asJson);
 
       newSorting().sortCriterias(collectionRequest.getSortCriterias())
           .fieldMapper(fieldMapper)
@@ -146,26 +145,19 @@ class SelectBuilder {
           .build();
 
       if (joinCriteria != null) {
-        var joincols = doJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria,((PostgresObjectType) objectRequest.getObjectType()).getTable());
-        batchJoinKeys.addAll(joincols);
+        var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria, isUnion.get());
+        batchQuery.getSelect().stream().filter(f -> f.getName().equals("d1")).findFirst()
+            .ifPresent(field -> batchQuery.addConditions(field.isNotNull()));
+        isUnion.set(true); // Set true because all succeeding queries are unions.
+        return batchQuery;
       }
 
       return dataQuery;
     }).map(val -> (Select<Record>) val)
         .reduce(Select::unionAll)
         .map(val -> (SelectQuery<Record>) val)
-        .map(query -> {
-          if (joinCriteria != null) {
-            var batchQuery = doBatch(collectionRequest.getObjectRequest(), query, DSL.table(tableAlias), joinCriteria);
-            if (isFromUnion) {
-              batchQuery.getSelect().stream().filter(f -> f.getName().equals("d1")).findFirst()
-                  .ifPresent(field -> batchQuery.addConditions(field.isNotNull()));
-            }
-            return batchQuery;
-          }
-
-          return query;
-        }).orElseThrow();
+        .map(q -> q)
+        .orElseThrow();
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
@@ -175,7 +167,7 @@ class SelectBuilder {
         .keys(batchRequest.getKeys())
         .build();
 
-    return doBatch(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria);
+    return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria, false);
   }
 
   public SelectQuery<Record> build(SingleObjectRequest objectRequest) {
@@ -186,7 +178,7 @@ class SelectBuilder {
     return createDataQuery(objectRequest, false);
   }
 
-  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean fromUnion) {
+  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson) {
     var objectType = getObjectType(objectRequest);
     var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
     var dataQuery = dslContext.selectQuery(table);
@@ -200,9 +192,9 @@ class SelectBuilder {
 
     List<JSONEntry<?>> jsonEntries = new ArrayList<>();
 
-    processScalarFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
-    processObjectFields(objectRequest, objectType, dataQuery, table, fromUnion).ifPresent(jsonEntries::addAll);
-    processObjectListFields(objectRequest, table, dataQuery, fromUnion).ifPresent(jsonEntries::addAll);
+    processScalarFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
+    processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
+    processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
       var json = DSL.jsonObject(jsonEntries).as("json");
       dataQuery.addSelect(json);
@@ -321,8 +313,8 @@ class SelectBuilder {
   }
 
   private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-    //TODO: cleanup needed
       SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    //TODO: cleanup needed
     List<JSONEntry<?>> jsonEntries;
     if (asJson) {
       jsonEntries = new ArrayList<>();
@@ -342,7 +334,7 @@ class SelectBuilder {
           }
         });
 
-    if (objectType.getName() != null) {
+    if (objectType.getName() != null && asJson) {
       var dtype = (Field) DSL.val(objectType.getName())
           .as("d1");
       dataQuery.addSelect(dtype);
@@ -892,32 +884,17 @@ class SelectBuilder {
     return columnMapper;
   }
 
-  private SelectQuery<Record> doBatch(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
-      Table<Record> dataTable, JoinCriteria joinCriteria) {
-    var builder = newBatchQuery()
+  private SelectQuery<Record> doBatchJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
+      Table<Record> dataTable, JoinCriteria joinCriteria, boolean isUnion) {
+
+    var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
+
+    var builder = newBatchQuery().contextCriteria(objectRequest.getContextCriteria())
         .aliasManager(aliasManager)
         .fieldMapper(fieldMapper)
-        .dataQuery(dataQuery)
-        .joinKeys(joinCriteria.getKeys());
-
-//    ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)
-//        .map(objectField -> JoinConfiguration.toJoinConfiguration(objectField, joinCondition))
-//        .ifPresent(builder::joinConfiguration);
-//
-    return builder.build();
-  }
-
-  private List<JoinColumn> doJoin(ObjectRequest objectRequest, SelectQuery<Record> dataQuery,
-      Table<Record> dataTable, JoinCriteria joinCriteria, String fullTableName) {
-
-        var joinCondition = (PostgresJoinCondition) joinCriteria.getJoinCondition();
-
-    var builder = newJoinQuery().contextCriteria(objectRequest.getContextCriteria())
-        .aliasManager(aliasManager)
-        .fieldMapper(fieldMapper)
-        .fullTableName(fullTableName)
         .dataQuery(dataQuery)
         .table(dataTable)
+        .fromUnion(isUnion)
         .joinKeys(joinCriteria.getKeys());
 
     ofNullable(requestContext.getObjectField()).map(PostgresObjectField.class::cast)

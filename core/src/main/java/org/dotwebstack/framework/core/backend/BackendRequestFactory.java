@@ -426,11 +426,11 @@ public class BackendRequestFactory {
   private ObjectType<?> getObjectType(GraphQLType type) {
     var rawType = unwrapAll(type);
 
-    if (!(rawType instanceof GraphQLObjectType)) {
+    if (!(rawType instanceof GraphQLObjectType) && !(rawType instanceof GraphQLInterfaceType)) {
       throw illegalStateException("Not an object type.");
     }
 
-    return schema.getObjectType(rawType.getName())
+    return schema.getObjectTypeOrInterface(rawType.getName())
         .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
   }
 }

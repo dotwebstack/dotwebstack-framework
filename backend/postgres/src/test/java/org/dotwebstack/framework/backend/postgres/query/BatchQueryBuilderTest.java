@@ -55,12 +55,21 @@ class BatchQueryBuilderTest {
     partsOf.setObjectType(ingredientType);
     partsOf.setTargetType(beerType);
 
+    var joinConfiguration = JoinConfiguration.builder()
+        .objectField(partsOf)
+        .mappedBy(ingredients)
+        .objectType(ingredientType)
+        .targetType(beerType)
+        .build();
+
     var table = DSL.table("ingredients");
+
     var dataQuery = DSL.select(DSL.asterisk())
         .from(table)
         .getQuery();
 
     batchQueryBuilder.table(table)
+        .joinConfiguration(joinConfiguration)
         .dataQuery(dataQuery)
         .joinKeys(Set.of(Map.of("identifier", "id-1")));
 
@@ -68,14 +77,13 @@ class BatchQueryBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("""
-            select *
-            from (values ('id-1')) as "x2" ("x1")
-              left outer join lateral (
-                select *
-                from ingredients
-              ) as "x3"
-                on true"""));
+        equalTo("select *\n" + "from (values ('id-1')) as \"x3\" (\"x2\")\n" + "  left outer join lateral (\n"
+            + "    select\n" + "      *,\n" + "      \"x1\".\"ingredient__identifier\" as \"x4\"\n" + "    from\n"
+            + "      ingredients,\n" + "      \"beer_ingredients\" as \"x1\"\n" + "    where (\n"
+            + "      \"x1\".\"beer__identifier\" = \"ingredients\".\"identifier\"\n"
+            + "      and \"x1\".\"ingredient__identifier\" = \"x3\".\"x2\"\n" + "    )\n" + "  ) as \"x5\"\n"
+            + "    on true"));
+
   }
 
   @Test
@@ -98,38 +106,38 @@ class BatchQueryBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("""
-            select *
-            from (values
-              ('id-1'),
-              ('id-2')
-            ) as "x2" ("x1")
-              left outer join lateral (
-                select *
-                from beers
-              ) as "x3"
-                on true"""));
+        equalTo("select *\n" + "from (values\n" + "  ('id-1'),\n" + "  ('id-2')\n" + ") as \"x2\" (\"x1\")\n"
+            + "  left outer join lateral (\n" + "    select\n" + "      *,\n"
+            + "      \"beers\".\"identifier\" as \"x3\"\n" + "    from beers\n"
+            + "    where \"identifier\" = \"x2\".\"x1\"\n" + "  ) as \"x4\"\n" + "    on true"));
   }
 
-//  @Test
-//  void build_throwsException_whileMissingJoinConfiguration() {
-//    var table = DSL.table("beers");
-//
-//    var dataQuery = DSL.select(DSL.asterisk())
-//        .from(table)
-//        .getQuery();
-//
-//    var objectField = new PostgresObjectField();
-//    objectField.setName("testField");
-//
-//    var builder = batchQueryBuilder.table(table)
-//        .dataQuery(dataQuery)
-//        .joinKeys(Set.of(Map.of("identifier", "id-1")));
-//
-//    var thrown = assertThrows(IllegalArgumentException.class, builder::build);
-//
-//    assertThat(thrown.getMessage(), equalTo("Object field 'testField' has no relation configuration!"));
-//  }
+  @Test
+  void build_throwsException_whileMissingJoinConfiguration() {
+    var table = DSL.table("beers");
+
+    var dataQuery = DSL.select(DSL.asterisk())
+        .from(table)
+        .getQuery();
+
+    var objectField = new PostgresObjectField();
+    objectField.setName("testField");
+
+    var joinConfiguration = JoinConfiguration.builder()
+        .objectField(objectField)
+        .objectType(new PostgresObjectType())
+        .targetType(new PostgresObjectType())
+        .build();
+
+    var builder = batchQueryBuilder.table(table)
+        .dataQuery(dataQuery)
+        .joinConfiguration(joinConfiguration)
+        .joinKeys(Set.of(Map.of("identifier", "id-1")));
+
+    var thrown = assertThrows(IllegalArgumentException.class, builder::build);
+
+    assertThat(thrown.getMessage(), equalTo("Object field 'testField' has no relation configuration!"));
+  }
 
   private JoinTable createJoinTable() {
     var joinTable = new JoinTable();
