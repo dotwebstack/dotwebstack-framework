@@ -79,7 +79,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
       throw illegalStateException("BackendLoader can't be null.");
     }
 
-    //TODO: Validators moeten nog aangezet worden m.b.t. GraphQLInterfaces
     graphQlValidators.forEach(validator -> validator.validate(environment));
 
     var isSubscription = isSubscription(environment.getOperationDefinition());
@@ -119,7 +118,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    var objectRequest = (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest =
+        (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
@@ -224,7 +224,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
-    var objectRequest = (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest =
+        (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
 

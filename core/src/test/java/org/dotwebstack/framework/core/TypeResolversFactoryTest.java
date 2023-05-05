@@ -17,22 +17,22 @@ class TypeResolversFactoryTest {
   void doBefore() {
     schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
   }
-//TODO: FIXME
-//  @Test
-//  void typeResolver_createResolvers_whenInterfacesAreConfigured() {
-//    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml");
-//    var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
-//
-//    assertThat(typeResolvers.size(), is(2));
-//    assertThat(typeResolvers.get("Organization"), notNullValue());
-//    assertThat(typeResolvers.get("Object"), notNullValue());
-//  }
 
-//  @Test
-//  void typeResolver_doNotCreateResolvers_whenNoInterfacesAreConfigured() {
-//    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
-//    var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
-//
-//    assertThat(typeResolvers.size(), is(0));
-//  }
+  @Test
+  void typeResolver_createResolvers_whenInterfacesAreConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml");
+    var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
+
+    assertThat(typeResolvers.size(), is(2));
+    assertThat(typeResolvers.get("Organization"), notNullValue());
+    assertThat(typeResolvers.get("Object"), notNullValue());
+  }
+
+  @Test
+  void typeResolver_doNotCreateResolvers_whenNoInterfacesAreConfigured() {
+    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
+    var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
+
+    assertThat(typeResolvers.size(), is(0));
+  }
 }

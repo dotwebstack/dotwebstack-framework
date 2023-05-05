@@ -1,7 +1,6 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

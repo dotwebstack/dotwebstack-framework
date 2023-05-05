@@ -84,17 +84,17 @@ public class GraphQlHelper {
     var unwrappedType = unwrapAll(selectedField.getType());
     var additionalData = getAdditionalData(unwrappedType);
 
-    return !isList(unwrapNonNull(selectedField.getType())) &&
-        (isObjectType(unwrappedType) || isInterfaceOrUnion(unwrappedType))
-        && !isScalarType(unwrappedType) && !additionalData.containsKey(IS_CONNECTION_TYPE) && !unwrappedType.getName()
+    return !isList(unwrapNonNull(selectedField.getType()))
+        && (isObjectType(unwrappedType) || isInterfaceOrUnion(unwrappedType)) && !isScalarType(unwrappedType)
+        && !additionalData.containsKey(IS_CONNECTION_TYPE) && !unwrappedType.getName()
             .equals(AGGREGATE_TYPE);
   };
 
   public static final Predicate<SelectedField> isObjectListField = selectedField -> {
     var unwrappedType = unwrapAll(selectedField.getType());
 
-    return (isList(unwrapNonNull(selectedField.getType())) &&
-        (isObjectType(unwrapAll(selectedField.getType())) || isInterfaceOrUnion(unwrapAll(selectedField.getType()))))
+    return (isList(unwrapNonNull(selectedField.getType()))
+        && (isObjectType(unwrapAll(selectedField.getType())) || isInterfaceOrUnion(unwrapAll(selectedField.getType()))))
         && !unwrappedType.getName()
             .equals(AGGREGATE_TYPE)
         || getAdditionalData(unwrappedType).containsKey(IS_CONNECTION_TYPE);

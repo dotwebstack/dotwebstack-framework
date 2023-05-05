@@ -144,7 +144,7 @@ class BatchQueryBuilder {
     keyJoinColumnAliasMap.entrySet()
         .stream()
         .map(entry -> QueryHelper.column(joinConditionTable, entry.getKey()
-                .getName())
+            .getName())
             .equal(DSL.field(DSL.name(keyTable.getName(), entry.getValue()))))
         .forEach(dataQuery::addConditions);
 
@@ -211,14 +211,14 @@ class BatchQueryBuilder {
   }
 
   private void addExists(SelectQuery<Record> dataQuery, Collection<String> columnNames, Table<Record> table) {
-      var columnAliases = columnNames.stream()
-          .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
+    var columnAliases = columnNames.stream()
+        .collect(Collectors.toMap(Function.identity(), columnName -> aliasManager.newAlias()));
 
-      columnAliases.entrySet()
-          .stream()
-          .map(entry -> QueryHelper.column(table, entry.getKey())
-              .as(entry.getValue()))
-          .forEach(dataQuery::addSelect);
+    columnAliases.entrySet()
+        .stream()
+        .map(entry -> QueryHelper.column(table, entry.getKey())
+            .as(entry.getValue()))
+        .forEach(dataQuery::addSelect);
 
     if (!fromUnion) {
       register(EXISTS_KEY, columnAliases);

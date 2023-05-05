@@ -2,11 +2,11 @@ package org.dotwebstack.framework.backend.postgres.query;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jooq.Field;
 import org.jooq.JSON;
 
@@ -26,12 +26,10 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
       return Map.of();
     }
 
-    var objMapper =  new ObjectMapper();
+    var objMapper = new ObjectMapper();
     var jsonString = ((Json) rowVal).asString();
     try {
-      TypeReference<HashMap<String,Object>> typeRef
-          = new TypeReference<>() {
-      };
+      TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
       return objMapper.readValue(jsonString, typeRef);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);

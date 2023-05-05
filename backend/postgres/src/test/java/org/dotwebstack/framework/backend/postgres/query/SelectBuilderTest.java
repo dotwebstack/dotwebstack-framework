@@ -39,9 +39,9 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.ScalarType;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,15 +90,14 @@ class SelectBuilderTest {
     var result = selectBuilder.build(objectRequest);
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(),
-        equalTo("""
-            select distinct
-              "x1"."name_column" as "x2",
-              "x1"."soldPerYear_column" as "x3",
-              "x1"."identifier_column" as "x4",
-              "x1"."age_column" as "x5"
-            from "beer" as "x1"
-            where "x1"."identifier_column" = 'id-1'"""));
+    assertThat(result.toString(), equalTo("""
+        select distinct
+          "x1"."name_column" as "x2",
+          "x1"."soldPerYear_column" as "x3",
+          "x1"."identifier_column" as "x4",
+          "x1"."age_column" as "x5"
+        from "beer" as "x1"
+        where "x1"."identifier_column" = 'id-1'"""));
   }
 
   @Test
@@ -108,16 +107,15 @@ class SelectBuilderTest {
     var result = selectBuilder.build(objectRequest);
 
     assertThat(result, notNullValue());
-    assertThat(result.toString(),
-        equalTo("""
-            select
-              "x1"."name_column" as "x2",
-              "x1"."soldPerYear_column" as "x3",
-              "x1"."identifier_column" as "x4",
-              ("x1"."age_column" is not null) as "x5",
-              "x1"."age_column" as "x6"
-            from "beer" as "x1"
-            where "x1"."identifier_column" = 'id-1'"""));
+    assertThat(result.toString(), equalTo("""
+        select
+          "x1"."name_column" as "x2",
+          "x1"."soldPerYear_column" as "x3",
+          "x1"."identifier_column" as "x4",
+          ("x1"."age_column" is not null) as "x5",
+          "x1"."age_column" as "x6"
+        from "beer" as "x1"
+        where "x1"."identifier_column" = 'id-1'"""));
   }
 
   private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {

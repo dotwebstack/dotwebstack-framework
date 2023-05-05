@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.backend.postgres.query.JoinHelper;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
@@ -70,7 +69,10 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .values()
         .stream()
         .filter(PostgresObjectField::hasNestedFields)
-        .filter(Predicate.not(JoinHelper::hasNestedReference))
+        // FIXME beter bepalen of het doeltype niet een lijst van en ref constructie is.
+        .filter(f -> !f.getTargetType()
+            .getFields()
+            .containsKey("nodes"))
         .flatMap(objectField -> {
           var targetType = (PostgresObjectType) objectField.getTargetType();
 

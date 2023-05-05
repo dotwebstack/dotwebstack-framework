@@ -122,38 +122,45 @@ class SelectBuilder {
 
     AtomicReference<Boolean> isUnion = new AtomicReference<>();
     isUnion.set(false);
-    return objectRequests.stream().map(objectRequest -> {
-      var dataQuery = createDataQuery(objectRequest, asJson);
+    return objectRequests.stream()
+        .map(objectRequest -> {
+          var dataQuery = createDataQuery(objectRequest, asJson);
 
-      newSorting().sortCriterias(collectionRequest.getSortCriterias())
-          .fieldMapper(fieldMapper)
-          .build()
-          .forEach(dataQuery::addOrderBy);
+          newSorting().sortCriterias(collectionRequest.getSortCriterias())
+              .fieldMapper(fieldMapper)
+              .build()
+              .forEach(dataQuery::addOrderBy);
 
-      Optional.of(collectionRequest)
-          .map(CollectionRequest::getFilterCriteria)
-          .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-              .filterCriteria(filterCriteria)
-              .table(DSL.table(tableAlias))
-              .contextCriteria(collectionRequest.getObjectRequest()
-                  .getContextCriteria())
-              .build())
-          .ifPresent(dataQuery::addConditions);
+          Optional.of(collectionRequest)
+              .map(CollectionRequest::getFilterCriteria)
+              .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+                  .filterCriteria(filterCriteria)
+                  .table(DSL.table(tableAlias))
+                  .contextCriteria(collectionRequest.getObjectRequest()
+                      .getContextCriteria())
+                  .build())
+              .ifPresent(dataQuery::addConditions);
 
-      newPaging().requestContext(requestContext)
-          .dataQuery(dataQuery)
-          .build();
+          newPaging().requestContext(requestContext)
+              .dataQuery(dataQuery)
+              .build();
 
-      if (joinCriteria != null) {
-        var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria, isUnion.get());
-        batchQuery.getSelect().stream().filter(f -> f.getName().equals("d1")).findFirst()
-            .ifPresent(field -> batchQuery.addConditions(field.isNotNull()));
-        isUnion.set(true); // Set true because all succeeding queries are unions.
-        return batchQuery;
-      }
+          if (joinCriteria != null) {
+            var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias),
+                joinCriteria, isUnion.get());
+            batchQuery.getSelect()
+                .stream()
+                .filter(f -> f.getName()
+                    .equals("d1"))
+                .findFirst()
+                .ifPresent(field -> batchQuery.addConditions(field.isNotNull()));
+            isUnion.set(true); // Set true because all succeeding queries are unions.
+            return batchQuery;
+          }
 
-      return dataQuery;
-    }).map(val -> (Select<Record>) val)
+          return dataQuery;
+        })
+        .map(val -> (Select<Record>) val)
         .reduce(Select::unionAll)
         .map(val -> (SelectQuery<Record>) val)
         .map(q -> q)
@@ -196,7 +203,8 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
-      var json = DSL.jsonObject(jsonEntries).as("json");
+      var json = DSL.jsonObject(jsonEntries)
+          .as("json");
       dataQuery.addSelect(json);
       var jsonMapper = new JsonMapper(json);
       fieldMapper.register("json", jsonMapper);
@@ -271,8 +279,8 @@ class SelectBuilder {
     return List.of();
   }
 
-  private Optional<List<JSONEntry<?>>> processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+  private Optional<List<JSONEntry<?>>> processObjectFields(SingleObjectRequest objectRequest,
+      PostgresObjectType objectType, SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
     List<JSONEntry<?>> jsonEntries;
     if (asJson) {
       jsonEntries = new ArrayList<>();
@@ -312,9 +320,9 @@ class SelectBuilder {
             .isNested()));
   }
 
-  private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
-    //TODO: cleanup needed
+  private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest,
+      PostgresObjectType objectType, SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    // TODO: cleanup needed
     List<JSONEntry<?>> jsonEntries;
     if (asJson) {
       jsonEntries = new ArrayList<>();
@@ -327,7 +335,8 @@ class SelectBuilder {
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, objectType, selectTable, fieldMapper, asJson))
         .forEach(field -> {
           if (asJson) {
-            var name = field.getName().contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            var name = field.getName()
+                .contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
             jsonEntries.add(DSL.jsonEntry(name, field));
           } else {
             dataQuery.addSelect(field);
@@ -487,10 +496,9 @@ class SelectBuilder {
     return Optional.of(andCondition(List.of(condition)));
   }
 
-  private Field<?> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, boolean jsonObject) {
+  private Field<?> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType, Table<Record> table,
+      ObjectFieldMapper<Map<String, Object>> parentMapper, boolean jsonObject) {
     var objectField = objectType.getField(fieldRequest.getName());
-
 
     ColumnMapper columnMapper;
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
@@ -524,7 +532,8 @@ class SelectBuilder {
     var column = column(table, columnName);
 
     if (!jsonObject) {
-      // Do not add alias when column should be part of jsonAggr otherwise the column field name will be lost.
+      // Do not add alias when column should be part of jsonAggr otherwise the column field name will be
+      // lost.
       column = column.as(aliasManager.newAlias());
     }
 
@@ -537,7 +546,8 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
-      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, boolean shouldBeJson) {
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
+      boolean shouldBeJson) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
@@ -695,8 +705,8 @@ class SelectBuilder {
             .startsWith(fieldRequest.getName()));
   }
 
-  private Stream<Field<Object>> createReferenceObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectMapper parentMapper, FieldRequest fieldRequest) {
+  private Stream<Field<Object>> createReferenceObject(PostgresObjectField objectField,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectMapper parentMapper, FieldRequest fieldRequest) {
     var objectMapper = new ObjectMapper(parentMapper.getAlias());
     parentMapper.register(fieldRequest.getName(), objectMapper);
 
@@ -716,7 +726,8 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey, boolean scalarAsJson) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey,
+      boolean scalarAsJson) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
@@ -738,7 +749,8 @@ class SelectBuilder {
             (PostgresObjectType) objectField.getTargetType(), table, objectMapper, scalarAsJson))
         .map(field -> {
           if (scalarAsJson) {
-            var fieldname = field.getName().contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            var fieldname = field.getName()
+                .contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
             jsonEntries.add(DSL.jsonEntry(fieldname, field));
             return null;
           }
@@ -758,9 +770,12 @@ class SelectBuilder {
             entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
-    if (scalarAsJson && jsonEntries.size() > 0 ) {
+    if (scalarAsJson && jsonEntries.size() > 0) {
       var obj = DSL.jsonObject(jsonEntries);
-      selectResults.add(SelectResult.builder().objectName(objectField.getColumn()).selectField(obj).build());
+      selectResults.add(SelectResult.builder()
+          .objectName(objectField.getColumn())
+          .selectField(obj)
+          .build());
     }
 
 

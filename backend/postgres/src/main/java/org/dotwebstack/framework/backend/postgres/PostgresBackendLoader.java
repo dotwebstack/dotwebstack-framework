@@ -9,8 +9,8 @@ import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -42,7 +42,8 @@ public class PostgresBackendLoader implements BackendLoader {
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest, RequestContext requestContext) {
     var query = new Query(collectionRequest, requestContext);
 
-    return postgresClient.fetch(query).map(stringObjectMap -> stringObjectMap);
+    return postgresClient.fetch(query)
+        .map(stringObjectMap -> stringObjectMap);
   }
 
   @Override
