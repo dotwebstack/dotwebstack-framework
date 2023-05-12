@@ -50,13 +50,8 @@ import org.dotwebstack.framework.core.helpers.ObjectHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
-import org.jooq.Condition;
-import org.jooq.DSLContext;
-import org.jooq.DataType;
-import org.jooq.Field;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.SQLDialect;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.jooq.util.postgres.PostgresDSL;
@@ -287,16 +282,30 @@ class FilterConditionBuilder {
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (objectField.isList()) {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()), Object[].class);
-      var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
-      return createCondition(objectField, field, operator, arrayValue);
+      if (operator == MATCH) {
+        return createConditionForList(objectField, field, operator, value);
+      } else {
+        var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
+        return createConditionForList(objectField, field, operator, arrayValue);
+      }
     } else {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
       return createCondition(objectField, field, operator, value);
     }
   }
 
-  private Condition createCondition(PostgresObjectField objectField, Field<Object[]> field, FilterOperator operator,
-      Object[] value) {
+  private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
+      FilterOperator operator, Object value) {
+    if (MATCH == operator) {
+      return PostgresDSL.arrayToString(field, ",")
+          .contains((String) value);
+    }
+
+    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+  }
+
+  private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
+      FilterOperator operator, Object[] value) {
 
     if (EQ == operator) {
       return field.eq(getArrayValue(objectField, value));

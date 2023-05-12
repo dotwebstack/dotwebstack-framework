@@ -9,28 +9,7 @@ import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ListType.newListType;
 import static graphql.language.NonNullType.newNonNullType;
 import static graphql.language.TypeName.newTypeName;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.BOOLEAN_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ALL_OF_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ANY_OF_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.DATE_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.DATE_TIME_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EQ_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FLOAT_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GTE_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GT_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_LIST_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.IN_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LTE_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LT_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.MATCH_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.SCALAR_LIST_FILTER_POSTFIX;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.*;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATE;
 import static org.dotwebstack.framework.core.scalars.CoreScalars.DATETIME;
 
@@ -59,6 +38,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     registry.add(createDateFilterType());
     registry.add(createDateTimeFilterType());
     registry.add(createStringPartialFilterType());
+    registry.add(createStringPartialListFilterType());
     registry.add(createBooleanFilterType());
   }
 
@@ -77,6 +57,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     fieldFilterMap.put(DATETIME.getName(), DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLBoolean.getName(), BOOLEAN_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(STRING_PARTIAL, STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put(STRING_LIST_PARTIAL, STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE);
   }
 
   private InputObjectTypeDefinition createBooleanFilterType() {
@@ -94,6 +75,14 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     return newInputObjectDefinition().name(STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE)
         .inputValueDefinition(createInputValueDefinition(MATCH_FIELD, typeName))
         .inputValueDefinition(createInputValueDefinition(NOT_FIELD, STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE))
+        .build();
+  }
+
+  private InputObjectTypeDefinition createStringPartialListFilterType() {
+    var typeName = Scalars.GraphQLString.getName();
+
+    return newInputObjectDefinition().name(STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE)
+        .inputValueDefinition(createInputValueDefinition(MATCH_FIELD, typeName))
         .build();
   }
 

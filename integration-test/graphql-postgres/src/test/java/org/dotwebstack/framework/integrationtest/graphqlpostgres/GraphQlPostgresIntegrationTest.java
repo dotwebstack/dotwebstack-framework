@@ -1649,6 +1649,29 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsBeers_forStringListPartialFilter() {
+    var query = """
+          {
+            beers(
+              filter: {
+                partialSecretIngredient: {
+                  match: "ng"
+                }
+              }
+            ) {
+              name
+            }
+          }
+        """;
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data, equalTo(Map.of("beers", List.of(Map.of("name", "Beer 3"), Map.of("name", "Beer 5")))));
+  }
+
+
+  @Test
   void getRequest_returnsBreweries_forEnumListFilter() {
     var query =
         "{\n" + "  beers(filter: {taste: {containsAllOf: [\"MEATY\", \"FRUITY\"]}}) {\n" + "    name\n" + "  }\n" + "}";

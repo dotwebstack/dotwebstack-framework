@@ -48,6 +48,7 @@ CREATE TABLE db.beer (
   taste db.taste[] NULL,
   since date NOT NULL,
   last_brewed timestamp NOT NULL,
+  secret_ingredients varchar[] NULL,
   predecessor character varying REFERENCES db.beer (identifier_beer)
 );
 
