@@ -1,9 +1,6 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLFloat;
-import static graphql.Scalars.GraphQLInt;
-import static graphql.Scalars.GraphQLString;
+import static graphql.Scalars.*;
 import static graphql.language.InputObjectTypeDefinition.newInputObjectDefinition;
 import static graphql.language.InputValueDefinition.newInputValueDefinition;
 import static graphql.language.ListType.newListType;
