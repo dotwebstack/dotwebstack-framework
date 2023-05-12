@@ -55,7 +55,6 @@ import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Record;
-import org.jooq.Record;
 import org.jooq.SQLDialect;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
@@ -351,17 +350,17 @@ class FilterConditionBuilder {
   }
 
   private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
-                                           FilterOperator operator, Object value) {
+      FilterOperator operator, Object value) {
     if (MATCH == operator) {
       return PostgresDSL.arrayToString(field, ",")
-              .contains((String) value);
+          .contains((String) value);
     }
 
     throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
   }
 
   private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
-                                           FilterOperator operator, Object[] value) {
+      FilterOperator operator, Object[] value) {
 
     if (EQ == operator) {
       return field.eq(getArrayValue(objectField, value));
