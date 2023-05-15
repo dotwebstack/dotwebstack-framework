@@ -1655,7 +1655,7 @@ class GraphQlPostgresIntegrationTest {
             beers(
               filter: {
                 partialSecretIngredient: {
-                  match: "ng"
+                  match: "li"
                 }
               }
             ) {
@@ -1667,7 +1667,7 @@ class GraphQlPostgresIntegrationTest {
     var data = WebTestClientHelper.get(client, query);
 
     assertThat(data.size(), is(1));
-    assertThat(data, equalTo(Map.of("beers", List.of(Map.of("name", "Beer 3"), Map.of("name", "Beer 5")))));
+    assertThat(data, equalTo(Map.of("beers", List.of(Map.of("name", "Beer 1"), Map.of("name", "Beer 2"), Map.of("name", "Beer 6")))));
   }
 
 

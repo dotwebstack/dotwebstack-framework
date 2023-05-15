@@ -68,6 +68,8 @@ class FilterConditionBuilder {
 
   private static final char LIKE_ESCAPE_CHARACTER = '\\';
 
+  private static final String ARRAY_TO_STRING_SEPARATOR = "@||@";
+
   private final DSLContext dslContext = DSL.using(SQLDialect.POSTGRES);
 
   @NotNull
@@ -352,7 +354,7 @@ class FilterConditionBuilder {
   private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
       FilterOperator operator, Object value) {
     if (MATCH == operator) {
-      return PostgresDSL.arrayToString(field, ",")
+      return DSL.lower(PostgresDSL.arrayToString(field, ARRAY_TO_STRING_SEPARATOR))
           .contains((String) value);
     }
 
