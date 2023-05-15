@@ -1,6 +1,26 @@
 package org.dotwebstack.framework.core.datafetchers.filter;
 
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.*;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.BOOLEAN_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ALL_OF_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.CONTAINS_ANY_OF_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.DATE_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.DATE_TIME_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EQ_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FLOAT_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FLOAT_LIST_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GTE_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.GT_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.INT_LIST_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.IN_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LTE_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.LT_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.MATCH_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.NOT_FIELD;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
