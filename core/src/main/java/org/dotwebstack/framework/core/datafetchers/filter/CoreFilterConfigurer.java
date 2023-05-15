@@ -106,6 +106,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
 
     return newInputObjectDefinition().name(STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE)
         .inputValueDefinition(createInputValueDefinition(MATCH_FIELD, typeName))
+        .inputValueDefinition(createInputValueDefinition(NOT_FIELD, STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE))
         .build();
   }
 
