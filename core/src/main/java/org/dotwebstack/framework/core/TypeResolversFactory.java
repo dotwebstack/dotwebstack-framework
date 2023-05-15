@@ -32,12 +32,11 @@ public class TypeResolversFactory {
 
   private TypeResolver createTypeResolver() {
     return typeResolutionEnvironment -> {
-      if (typeResolutionEnvironment.getObject() instanceof Map<?, ?> objectFields) {
-        if (objectFields.containsKey("dtype")) {
-          var dtypeName = (String) objectFields.get("dtype");
-          return typeResolutionEnvironment.getSchema()
-              .getObjectType(dtypeName);
-        }
+      if (typeResolutionEnvironment.getObject() instanceof Map<?, ?> objectFields
+          && objectFields.containsKey("dtype")) {
+        var dtypeName = (String) objectFields.get("dtype");
+        return typeResolutionEnvironment.getSchema()
+            .getObjectType(dtypeName);
       }
       return null;
     };

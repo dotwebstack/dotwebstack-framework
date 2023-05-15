@@ -295,9 +295,14 @@ class SelectBuilder {
             .getName()), entry.getKey()
                 .getResultKey(),
             entry.getValue(), selectTable, fieldMapper, asJson))
-        .peek(selectResult -> Optional.of(selectResult)
-            .map(SelectResult::getSelectQuery)
-            .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested())))
+        .map(result -> {
+          // add all items before filtering them.
+          Optional.of(result)
+              .map(SelectResult::getSelectQuery)
+              .ifPresent(selectQuery -> addSubSelect(dataQuery, selectQuery, objectType.isNested()));
+
+          return result;
+        })
         .filter(result -> result.getSelectField() != null)
         .forEach(result -> {
           if (asJson) {
@@ -306,6 +311,7 @@ class SelectBuilder {
             dataQuery.addSelect(result.getSelectField());
           }
         });
+
 
     return Optional.ofNullable(jsonEntries);
   }
@@ -344,7 +350,7 @@ class SelectBuilder {
         });
 
     if (objectType.getName() != null && asJson) {
-      var dtype = (Field) DSL.val(objectType.getName())
+      Field dtype = DSL.val(objectType.getName())
           .as("d1");
       dataQuery.addSelect(dtype);
       var dtypeMapper = new ColumnMapper(dtype);
@@ -770,7 +776,7 @@ class SelectBuilder {
             entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
-    if (scalarAsJson && jsonEntries.size() > 0) {
+    if (scalarAsJson && !jsonEntries.isEmpty()) {
       var obj = DSL.jsonObject(jsonEntries);
       selectResults.add(SelectResult.builder()
           .objectName(objectField.getColumn())

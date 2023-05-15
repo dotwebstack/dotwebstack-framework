@@ -32,7 +32,7 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
       TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
       return objMapper.readValue(jsonString, typeRef);
     } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      throw new JsonMappingException("Unable to convert Json column to GraphQL type.", e);
     }
   }
 }

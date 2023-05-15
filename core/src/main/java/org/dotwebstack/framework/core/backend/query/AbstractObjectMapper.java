@@ -18,7 +18,7 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
   @Override
   public Map<String, Object> apply(T row) {
-    Map<String, Object> x = fieldMappers.entrySet()
+    return fieldMappers.entrySet()
         .stream()
         .collect(HashMap::new, (map, entry) -> {
           if (entry.getKey()
@@ -33,8 +33,6 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
                 .apply(row));
           }
         }, HashMap::putAll);
-
-    return x;
   }
 
   public void register(String name, FieldMapper<T, ?> fieldMapper) {

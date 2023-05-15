@@ -123,7 +123,7 @@ public class BackendRequestFactory {
   }
 
   public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
-      DataFetchingFieldSelectionSet selectionSet, ObjectType objectType) {
+      DataFetchingFieldSelectionSet selectionSet, ObjectType<?> objectType) {
 
     var keyCriterias =
         createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
@@ -168,27 +168,25 @@ public class BackendRequestFactory {
     var types = executionStepInfo.getField()
         .getFields()
         .stream()
-        .map(field -> {
-          return field.getSelectionSet()
-              .getSelections()
-              .stream()
-              .map(selection -> {
-                var typeCondition = selection.getNamedChildren()
-                    .getChildren("typeCondition");
-                if (typeCondition.size() > 0) {
-                  return ((TypeName) typeCondition.get(0)).getName();
-                } else {
-                  return null;
-                }
-              })
-              .filter(Objects::nonNull)
-              .toList();
-        })
+        .map(field -> field.getSelectionSet()
+            .getSelections()
+            .stream()
+            .map(selection -> {
+              var typeCondition = selection.getNamedChildren()
+                  .getChildren("typeCondition");
+              if (!typeCondition.isEmpty()) {
+                return ((TypeName) typeCondition.get(0)).getName();
+              } else {
+                return null;
+              }
+            })
+            .filter(Objects::nonNull)
+            .toList())
         .flatMap(List::stream)
         .toList();
 
     List<ObjectType<? extends ObjectField>> objectTypes;
-    if (types.size() > 0) {
+    if (!types.isEmpty()) {
       objectTypes = schema.getObjectTypes()
           .values()
           .stream()
