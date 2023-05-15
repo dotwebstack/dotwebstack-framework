@@ -350,7 +350,7 @@ class SelectBuilder {
         });
 
     if (objectType.getName() != null && asJson) {
-      Field dtype = DSL.val(objectType.getName())
+      var dtype = DSL.val((Object) objectType.getName())
           .as("d1");
       dataQuery.addSelect(dtype);
       var dtypeMapper = new ColumnMapper(dtype);
