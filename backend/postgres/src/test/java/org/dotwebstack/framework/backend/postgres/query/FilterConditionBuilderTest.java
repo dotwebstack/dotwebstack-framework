@@ -232,8 +232,16 @@ class FilterConditionBuilderTest {
   }
 
   private static Stream<Arguments> getEnumListPartialArguments() {
-    return Stream.of(arguments(Map.of("match", "foo"),
-        "lower(array_to_string(\"x1\".\"column\", '@||@')) like (('%' || replace(\n  replace(\n    replace('foo', '!', '!!'),\n    '%',\n    '!%'\n  ),\n  '_',\n  '!_'\n)) || '%') escape '!'"));
+    return Stream.of(arguments(Map.of("match", "foo"), """
+        lower(array_to_string("x1"."column", '@||@')) like (('%' || replace(
+          replace(
+            replace('foo', '!', '!!'),
+            '%',
+            '!%'
+          ),
+          '_',
+          '!_'
+        )) || '%') escape '!'"""));
   }
 
   @ParameterizedTest
