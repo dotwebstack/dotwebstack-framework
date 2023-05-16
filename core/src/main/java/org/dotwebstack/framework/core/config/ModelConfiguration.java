@@ -41,7 +41,7 @@ public class ModelConfiguration {
   }
 
   @Bean
-  Schema schema(@Value("${dotwebstack.config:dotwebstack.yaml}") String configFile, List<SchemaValidator> validators) {
+  public Schema schema(@Value("${dotwebstack.config:dotwebstack.yaml}") String configFile, List<SchemaValidator> validators) {
     var objectMapper = createObjectMapper();
 
     Schema schema = new SchemaReader(objectMapper).read(configFile);

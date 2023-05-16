@@ -20,16 +20,16 @@ objectTypes:
         type: String
 
 interfaces:
+  Object:
+    fields:
+      code:
+        type: String
+        nullable: false
+
   Organization:
     implements:
       - Object
     fields:
       name:
-        type: String
-        nullable: false
-
-  Object:
-    fields:
-      code:
         type: String
         nullable: false

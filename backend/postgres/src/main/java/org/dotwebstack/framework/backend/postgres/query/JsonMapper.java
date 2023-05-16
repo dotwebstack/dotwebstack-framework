@@ -7,20 +7,18 @@ import io.r2dbc.postgresql.codec.Json;
 import java.util.HashMap;
 import java.util.Map;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
-import org.jooq.Field;
-import org.jooq.JSON;
 
 public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
 
-  private final Field<JSON> column;
+  private final String columnName;
 
-  public JsonMapper(Field<JSON> column) {
-    this.column = column;
+  public JsonMapper(String columnName) {
+    this.columnName = columnName;
   }
 
   @Override
   public Map<String, Object> apply(Map<String, Object> row) {
-    var rowVal = row.get(column.getName());
+    var rowVal = row.get(columnName);
 
     if (rowVal == null) {
       return Map.of();

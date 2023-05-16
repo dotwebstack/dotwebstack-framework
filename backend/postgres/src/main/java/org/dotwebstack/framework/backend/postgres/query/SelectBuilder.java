@@ -206,7 +206,7 @@ class SelectBuilder {
       var json = DSL.jsonObject(jsonEntries)
           .as("json");
       dataQuery.addSelect(json);
-      var jsonMapper = new JsonMapper(json);
+      var jsonMapper = new JsonMapper(json.getName());
       fieldMapper.register("json", jsonMapper);
     }
 
