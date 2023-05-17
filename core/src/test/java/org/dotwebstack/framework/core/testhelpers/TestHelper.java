@@ -87,9 +87,8 @@ public class TestHelper {
     return schemaToGraphQl(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }
 
-  public static GraphQLSchema schemaToGraphQl(TypeDefinitionRegistry typeDefinitionRegistry, RuntimeWiring runtimeWiring) {
-
-
+  public static GraphQLSchema schemaToGraphQl(TypeDefinitionRegistry typeDefinitionRegistry,
+      RuntimeWiring runtimeWiring) {
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
   }
 

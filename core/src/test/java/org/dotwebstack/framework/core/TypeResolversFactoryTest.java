@@ -44,9 +44,9 @@ class TypeResolversFactoryTest {
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "Brewery"));
 
-    var graphQLObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
-    assertThat(graphQLObjectType, notNullValue());
-    assertThat(graphQLObjectType.getName(), is("Brewery"));
+    var graphqlObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
+    assertThat(graphqlObjectType, notNullValue());
+    assertThat(graphqlObjectType.getName(), is("Brewery"));
   }
 
   @Test
@@ -54,8 +54,8 @@ class TypeResolversFactoryTest {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "DoesNotExist"));
-    var graphQLObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
-    assertNull(graphQLObjectType);
+    var graphqlObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
+    assertNull(graphqlObjectType);
   }
 
   @Test
@@ -63,8 +63,8 @@ class TypeResolversFactoryTest {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("wrong", "DoesNotExist"));
-    var graphQLObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
-    assertNull(graphQLObjectType);
+    var graphqlObjectType = typeResolvers.get("Organization").getType(typeResolutionEnvironment);
+    assertNull(graphqlObjectType);
   }
 
   private Map<String, TypeResolver> getTypeResolvers(String pathToConfigFile) {
@@ -72,17 +72,20 @@ class TypeResolversFactoryTest {
     return new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
   }
 
-  private TypeResolutionEnvironment getTypeResolutionEnvironment(String pathToConfigFile, Map<String, String> envObjects) {
+  private TypeResolutionEnvironment getTypeResolutionEnvironment(String pathToConfigFile,
+      Map<String, String> envObjects) {
     var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
     var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
-    var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of()).createTypeDefinitionRegistry();
+    var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration,
+        List.of()).createTypeDefinitionRegistry();
 
     var typeResolutionEnvironment = mock(TypeResolutionEnvironment.class);
     when(typeResolutionEnvironment.getObject()).thenReturn(envObjects);
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
         typeWriting -> typeWriting.typeResolver(resolver)));
-    when(typeResolutionEnvironment.getSchema()).thenReturn(TestHelper.schemaToGraphQl(typeDefinitionRegistry,  runtimeWiringBuilder.build()));
+    when(typeResolutionEnvironment.getSchema()).thenReturn(TestHelper.schemaToGraphQl(typeDefinitionRegistry,
+        runtimeWiringBuilder.build()));
 
     return typeResolutionEnvironment;
   }
