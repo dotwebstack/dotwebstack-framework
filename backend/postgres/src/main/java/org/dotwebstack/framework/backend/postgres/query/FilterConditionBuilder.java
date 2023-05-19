@@ -355,7 +355,7 @@ class FilterConditionBuilder {
 
     var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
 
-    return switch(operator) {
+    return switch (operator) {
       case EQ -> field.eq(getArrayValue(objectField, arrayValue));
       case CONTAINS_ALL_OF -> field.contains(getArrayValue(objectField, arrayValue));
       case CONTAINS_ANY_OF -> PostgresDSL.arrayOverlap(field, getArrayValue(objectField, arrayValue));
