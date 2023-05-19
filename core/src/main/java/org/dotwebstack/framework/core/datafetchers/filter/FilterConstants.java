@@ -8,7 +8,7 @@ public class FilterConstants {
 
   public static final String STRING_PARTIAL = "StringPartial";
 
-  public static final String STRING_LIST_PARTIAL = "StringPartialList";
+  public static final String STRING_PARTIAL_LIST = "StringPartialList";
 
   public static final String STRING_FILTER_INPUT_OBJECT_TYPE = "StringFilter";
 

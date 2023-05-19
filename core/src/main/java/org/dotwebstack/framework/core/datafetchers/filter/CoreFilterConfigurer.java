@@ -29,7 +29,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.SCALAR_LIST_FILTER_POSTFIX;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_FILTER_INPUT_OBJECT_TYPE;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_PARTIAL;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_LIST;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE;
@@ -80,7 +80,7 @@ public class CoreFilterConfigurer implements GraphqlConfigurer, FilterConfigurer
     fieldFilterMap.put(DATETIME.getName(), DATE_TIME_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(GraphQLBoolean.getName(), BOOLEAN_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put(STRING_PARTIAL, STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE);
-    fieldFilterMap.put(STRING_LIST_PARTIAL, STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE);
+    fieldFilterMap.put(STRING_PARTIAL_LIST, STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE);
   }
 
   private InputObjectTypeDefinition createBooleanFilterType() {

@@ -289,12 +289,7 @@ class FilterConditionBuilder {
   private Condition createCondition(PostgresObjectField objectField, FilterOperator operator, Object value) {
     if (objectField.isList()) {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()), Object[].class);
-      if (operator == MATCH) {
-        return createConditionForList(objectField, field, operator, value);
-      } else {
-        var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
-        return createConditionForList(objectField, field, operator, arrayValue);
-      }
+      return createConditionForList(objectField, field, operator, value);
     } else {
       var field = DSL.field(DSL.name(table.getName(), objectField.getColumn()));
       return createCondition(objectField, field, operator, value);
@@ -358,25 +353,14 @@ class FilterConditionBuilder {
           .contains((String) value);
     }
 
-    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
-  }
+    var arrayValue = ObjectHelper.castToArray(value, objectField.getType());
 
-  private Condition createConditionForList(PostgresObjectField objectField, Field<Object[]> field,
-      FilterOperator operator, Object[] value) {
-
-    if (EQ == operator) {
-      return field.eq(getArrayValue(objectField, value));
-    }
-
-    if (CONTAINS_ALL_OF == operator) {
-      return field.contains(getArrayValue(objectField, value));
-    }
-
-    if (CONTAINS_ANY_OF == operator) {
-      return PostgresDSL.arrayOverlap(field, getArrayValue(objectField, value));
-    }
-
-    throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+    return switch(operator) {
+      case EQ -> field.eq(getArrayValue(objectField, arrayValue));
+      case CONTAINS_ALL_OF -> field.contains(getArrayValue(objectField, arrayValue));
+      case CONTAINS_ANY_OF -> PostgresDSL.arrayOverlap(field, getArrayValue(objectField, arrayValue));
+      default -> throw illegalArgumentException(ERROR_MESSAGE, operator, objectField.getType());
+    };
   }
 
   private boolean isInIgnoreCaseAndOfTypeString(FilterOperator operator, PostgresObjectField objectField) {
