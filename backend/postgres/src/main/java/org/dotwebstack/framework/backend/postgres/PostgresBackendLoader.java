@@ -3,14 +3,19 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.dotwebstack.framework.backend.postgres.query.Query;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -26,16 +31,39 @@ public class PostgresBackendLoader implements BackendLoader {
   }
 
   @Override
-  public Mono<Map<String, Object>> loadSingle(SingleObjectRequest objectRequest, RequestContext requestContext) {
-    if (objectRequest.getObjectType()
-        .isNested()) {
-      return Mono.just(Map.of());
+  public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
+
+    if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
+      if (singleObjectRequest.getObjectType()
+          .isNested()) {
+        return Mono.just(Map.of());
+      }
+
+      Query query = new Query(singleObjectRequest, requestContext);
+
+      return postgresClient.fetch(query)
+          .singleOrEmpty();
+    } else if (objectRequest instanceof UnionObjectRequest unionObjectRequest) {
+      if (unionObjectRequest.getObjectRequests()
+          .isEmpty()) {
+        return Mono.just(Map.of());
+      }
+
+      return unionObjectRequest.getObjectRequests()
+          .stream()
+          .map(objRequest -> loadSingle(objRequest, requestContext))
+          .reduce((a, b) -> Mono.from(Flux.merge(a, b)))
+          .orElseThrow();
+
     }
 
-    var query = new Query(objectRequest, requestContext);
+    return Mono.just(Map.of());
+  }
 
-    return postgresClient.fetch(query)
-        .singleOrEmpty();
+  private static <T1, T2, O> Function<Mono<T1>, Publisher<O>> flatZipTransformer(Mono<T2> p2,
+      BiFunction<T1, T2, Mono<O>> function) {
+    return p1 -> Mono.zip(p1, p2, function)
+        .flatMap(Function.identity());
   }
 
   @Override

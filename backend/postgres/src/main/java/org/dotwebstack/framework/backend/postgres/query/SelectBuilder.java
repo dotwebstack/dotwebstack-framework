@@ -163,7 +163,6 @@ class SelectBuilder {
         .map(val -> (Select<Record>) val)
         .reduce(Select::unionAll)
         .map(val -> (SelectQuery<Record>) val)
-        .map(q -> q)
         .orElseThrow();
   }
 

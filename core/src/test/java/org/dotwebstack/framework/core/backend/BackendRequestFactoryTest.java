@@ -6,6 +6,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.STRING_JOIN_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -38,6 +39,7 @@ import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.dotwebstack.framework.core.scalars.DateSupplier;
 import org.dotwebstack.framework.core.testhelpers.TestBackendLoaderFactory;
 import org.dotwebstack.framework.core.testhelpers.TestBackendModule;
@@ -229,6 +231,56 @@ class BackendRequestFactoryTest {
         .getName(), is("Brewery"));
     assertThat(keyCriteria.get(0)
         .getValue(), is("id-1"));
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequestWithKeyCriteria_forInterfaceWithKey() {
+    var pathToConfigFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
+    var schema = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
+    var graphQlSchema = TestHelper.schemaToGraphQlWithDefaultTypeResolvers(pathToConfigFile);
+
+    var breweryFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("baseObject");
+
+    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
+        .fieldContainer(objectType)
+        .type(breweryFieldDefinition.getType())
+        .arguments(() -> Map.of("identifier", "id-1"))
+        .parentInfo(queryExecutionStepInfo)
+        .build();
+
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
+
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+
+    assertThat(objectRequest, is(notNullValue()));
+    assertThat(objectRequest, instanceOf(UnionObjectRequest.class));
+
+    var unionObjectRequest = (UnionObjectRequest) objectRequest;
+
+    assertThat(unionObjectRequest.getObjectRequests()
+        .size(), is(3));
+    unionObjectRequest.getObjectRequests()
+        .forEach(singleObjectRequest -> {
+          assertThat(singleObjectRequest.getKeyCriterias(), is(notNullValue()));
+
+          var keyCriteria = singleObjectRequest.getKeyCriterias();
+          assertThat(keyCriteria.size(), is(1));
+
+          var fieldPath = keyCriteria.get(0)
+              .getFieldPath();
+          assertThat(fieldPath.size(), is(1));
+          assertThat(fieldPath.get(0)
+              .getName(), is("identifier"));
+          assertThat(fieldPath.get(0)
+              .getObjectType()
+              .getName(), is("BaseObject"));
+          assertThat(keyCriteria.get(0)
+              .getValue(), is("id-1"));
+        });
   }
 
   @Test

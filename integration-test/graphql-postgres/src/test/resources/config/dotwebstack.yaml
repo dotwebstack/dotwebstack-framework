@@ -89,11 +89,11 @@ objectTypes:
 
   Beer:
     table: db.beer
+    implements:
+      - BaseObject
     fields:
       identifier_beer:
         type: ID
-      name:
-        type: String
       abv:
         type: Float
       soldPerYear:
@@ -169,11 +169,11 @@ objectTypes:
 
   Ingredient:
     table: db.ingredient
+    implements:
+      - BaseObject
     fields:
       identifier_ingredient:
         type: ID
-      name:
-        type: String
       weight:
         type: Float
       code:
@@ -200,11 +200,11 @@ objectTypes:
 
   Brewery:
     table: db.brewery
+    implements:
+      - BaseObject
     fields:
       identifier_brewery:
         type: ID
-      name:
-        type: String
       shortName:
         valueFetcher: shortname-valuefetcher
         type: String
@@ -300,6 +300,12 @@ objectTypes:
         type: String
     filters:
       age: {}
+
+interfaces:
+  BaseObject:
+    fields:
+      name:
+        type: String
 
 enumerations:
   Taste:

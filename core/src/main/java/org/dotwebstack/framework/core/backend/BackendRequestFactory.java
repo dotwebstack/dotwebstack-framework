@@ -40,6 +40,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -165,51 +166,76 @@ public class BackendRequestFactory {
 
   private UnionObjectRequest createUnionObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet, GraphQLInterfaceType interfaceType) {
-    var types = executionStepInfo.getField()
-        .getFields()
+    var types = new ArrayList<String>();
+    if (executionStepInfo.getField() != null) {
+      executionStepInfo.getField()
+          .getFields()
+          .stream()
+          .map(field -> field.getSelectionSet()
+              .getSelections()
+              .stream()
+              .map(selection -> {
+                var typeCondition = selection.getNamedChildren()
+                    .getChildren("typeCondition");
+                if (!typeCondition.isEmpty()) {
+                  return ((TypeName) typeCondition.get(0)).getName();
+                } else {
+                  return null;
+                }
+              })
+              .filter(Objects::nonNull)
+              .toList())
+          .flatMap(List::stream)
+          .forEach(types::add);
+    }
+
+    // Needs to be done so inheritance on interfaces is possible.
+    var interfaceNames = Stream.concat(schema.getInterfaces()
+        .values()
         .stream()
-        .map(field -> field.getSelectionSet()
-            .getSelections()
-            .stream()
-            .map(selection -> {
-              var typeCondition = selection.getNamedChildren()
-                  .getChildren("typeCondition");
-              if (!typeCondition.isEmpty()) {
-                return ((TypeName) typeCondition.get(0)).getName();
-              } else {
-                return null;
-              }
-            })
-            .filter(Objects::nonNull)
-            .toList())
-        .flatMap(List::stream)
+        .filter(iface -> iface.getImplements()
+            .contains(interfaceType.getName()))
+        .map(ObjectType::getName), Stream.of(interfaceType.getName()))
         .toList();
+
 
     List<ObjectType<? extends ObjectField>> objectTypes;
     if (!types.isEmpty()) {
       objectTypes = schema.getObjectTypes()
           .values()
           .stream()
-          .filter(objectType -> objectType.getImplements()
-              .contains(interfaceType.getName()))
+          .filter(objectType -> {
+            if (interfaceNames.contains(objectType.getName())) {
+              return false;
+            }
+            return objectType.getImplements()
+                .stream()
+                .anyMatch(interfaceNames::contains);
+          })
           .filter(objectType -> types.contains(objectType.getName()))
           .toList();
     } else {
       objectTypes = schema.getObjectTypes()
           .values()
           .stream()
-          .filter(objectType -> objectType.getImplements()
-              .contains(interfaceType.getName()))
+          .filter(objectType -> {
+            if (interfaceNames.contains(objectType.getName())) {
+              return false;
+            }
+            return objectType.getImplements()
+                .stream()
+                .anyMatch(interfaceNames::contains);
+          })
           .toList();
     }
 
-    var y = objectTypes.stream()
+    var objectRequests = objectTypes.stream()
         .map(objectType -> createObjectRequest(executionStepInfo, selectionSet, objectType))
         .map(SingleObjectRequest.class::cast)
         .toList();
 
     return UnionObjectRequest.builder()
-        .objectRequests(y)
+        .objectRequests(objectRequests)
         .build();
   }
 

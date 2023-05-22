@@ -9,6 +9,7 @@ import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
 import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
@@ -34,7 +35,7 @@ public class Query {
 
   private final SelectQuery selectQuery;
 
-  public Query(SingleObjectRequest objectRequest, NodeShape nodeShape) {
+  public Query(ObjectRequest objectRequest, NodeShape nodeShape) {
     selectQuery = createSelect(objectRequest, nodeShape);
   }
 
@@ -65,12 +66,12 @@ public class Query {
     return query;
   }
 
-  private SelectQuery createSelect(SingleObjectRequest objectRequest, NodeShape nodeShape) {
+  private SelectQuery createSelect(ObjectRequest objectRequest, NodeShape nodeShape) {
     return Queries.SELECT()
         .where(createPattern(objectRequest, nodeShape));
   }
 
-  private GraphPattern createPattern(SingleObjectRequest objectRequest, NodeShape nodeShape) {
+  private GraphPattern createPattern(ObjectRequest objectRequest, NodeShape nodeShape) {
     var subject = SparqlBuilder.var(aliasManager.newAlias());
 
     return newGraphPattern().objectRequest(objectRequest)

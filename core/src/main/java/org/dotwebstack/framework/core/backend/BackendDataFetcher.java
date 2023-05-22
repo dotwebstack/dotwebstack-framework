@@ -118,8 +118,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    var objectRequest =
-        (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();

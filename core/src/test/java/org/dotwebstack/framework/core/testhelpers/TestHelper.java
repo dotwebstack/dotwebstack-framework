@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import org.dotwebstack.framework.core.CoreConfigurer;
 import org.dotwebstack.framework.core.TypeDefinitionRegistrySchemaFactory;
+import org.dotwebstack.framework.core.TypeResolversFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.ModelConfiguration;
 import org.dotwebstack.framework.core.config.SchemaReader;
@@ -91,6 +92,21 @@ public class TestHelper {
       RuntimeWiring runtimeWiring) {
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
   }
+
+  public static GraphQLSchema schemaToGraphQlWithDefaultTypeResolvers(String configFile) {
+    var dwsConfig = TestHelper.loadSchemaWithDefaultBackendModule(configFile);
+    var typeResolvers = new TypeResolversFactory(dwsConfig).createTypeResolvers();
+    var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
+    typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
+        typeWriting -> typeWriting.typeResolver(resolver)));
+
+    var typeDefinitionRegistry =
+        new TypeDefinitionRegistrySchemaFactory(dwsConfig, List.of()).createTypeDefinitionRegistry();
+
+
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
+  }
+
 
   private ObjectMapper createObjectMapper() {
     var deserializerModule =

@@ -23,8 +23,7 @@ class TypeResolversFactoryTest {
     var typeResolvers = getTypeResolvers(configFile);
 
     assertThat(typeResolvers.size(), is(2));
-    assertThat(typeResolvers.get("Organization"), notNullValue());
-    assertThat(typeResolvers.get("Object"), notNullValue());
+    assertThat(typeResolvers.get("BaseObject"), notNullValue());
   }
 
   @Test
@@ -41,7 +40,7 @@ class TypeResolversFactoryTest {
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "Brewery"));
 
-    var graphqlObjectType = typeResolvers.get("Organization")
+    var graphqlObjectType = typeResolvers.get("BaseObject")
         .getType(typeResolutionEnvironment);
     assertThat(graphqlObjectType, notNullValue());
     assertThat(graphqlObjectType.getName(), is("Brewery"));
@@ -52,7 +51,7 @@ class TypeResolversFactoryTest {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "DoesNotExist"));
-    var graphqlObjectType = typeResolvers.get("Organization")
+    var graphqlObjectType = typeResolvers.get("BaseObject")
         .getType(typeResolutionEnvironment);
     assertNull(graphqlObjectType);
   }
@@ -62,7 +61,7 @@ class TypeResolversFactoryTest {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
     var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("wrong", "DoesNotExist"));
-    var graphqlObjectType = typeResolvers.get("Organization")
+    var graphqlObjectType = typeResolvers.get("BaseObject")
         .getType(typeResolutionEnvironment);
     assertNull(graphqlObjectType);
   }
