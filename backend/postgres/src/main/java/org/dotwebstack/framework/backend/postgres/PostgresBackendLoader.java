@@ -3,8 +3,6 @@ package org.dotwebstack.framework.backend.postgres;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import org.dotwebstack.framework.backend.postgres.query.Query;
 import org.dotwebstack.framework.core.backend.BackendLoader;
 import org.dotwebstack.framework.core.datafetchers.KeyGroupedFlux;
@@ -15,7 +13,6 @@ import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;

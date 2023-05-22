@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectField;
 import org.dotwebstack.framework.backend.rdf4j.model.Rdf4jObjectType;
 import org.dotwebstack.framework.backend.rdf4j.shacl.NodeShape;
