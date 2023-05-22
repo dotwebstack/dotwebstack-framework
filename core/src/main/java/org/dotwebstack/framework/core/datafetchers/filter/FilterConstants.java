@@ -8,11 +8,15 @@ public class FilterConstants {
 
   public static final String STRING_PARTIAL = "StringPartial";
 
+  public static final String STRING_PARTIAL_LIST = "StringPartialList";
+
   public static final String STRING_FILTER_INPUT_OBJECT_TYPE = "StringFilter";
 
   public static final String STRING_LIST_FILTER_INPUT_OBJECT_TYPE = "StringListFilter";
 
   public static final String STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE = "StringPartialFilter";
+
+  public static final String STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE = "StringPartialListFilter";
 
   public static final String INT_FILTER_INPUT_OBJECT_TYPE = "IntFilter";
 

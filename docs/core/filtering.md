@@ -3,13 +3,17 @@
 It is possible to make use of filters while quering a list of (nested) objects. 
 
 The following types are currently supported:
-- A `String` field can be filtered in two ways; exact, with operators `eq`, `in` and `not` or partial based, with operators `match` and `not`.
+- A `String` field can be filtered in two ways:
+  - exact, with the operators `eq`, `in` and `not`;
+  - partial based, with the operators `match` and `not`.
 - An `Int` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Float` field can be filtered with the operators: `eq`, `in`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Date` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `DateTime` field can be filtered with the operators: `eq`, `lt`,`lte`,`gt`,`gte` and `not`.
 - A `Boolean` field can be filtered with `true` or `false`.
-- The list fields of type `String`, `Int`, `Float` and enumerations can be filtered with the operators: `eq`, `containsAllOf`, `containsAnyOf` and `not`.
+- The list fields of type `String`, `Int`, `Float` and enumerations can be filtered in two ways:
+  - exact, with the operators: `eq`, `containsAllOf`, `containsAnyOf` and `not`;
+  - partial based, with the operators `match` and `not`.
 
 The filter type can be configured on each filter with the `type` property. The default filter type is `exact`, the `partial` filter type can be used by `String` field types for partial matching.
 

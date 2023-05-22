@@ -231,6 +231,39 @@ class FilterConditionBuilderTest {
     assertThat(condition.toString(), equalTo(expected));
   }
 
+  private static Stream<Arguments> getEnumListPartialArguments() {
+    return Stream.of(arguments(Map.of("match", "foo"), """
+        lower(array_to_string("x1"."column", '@||@')) like (('%' || replace(
+          replace(
+            replace('foo', '!', '!!'),
+            '%',
+            '!%'
+          ),
+          '_',
+          '!_'
+        )) || '%') escape '!'"""));
+  }
+
+  @ParameterizedTest
+  @MethodSource("getEnumListPartialArguments")
+  void build_returnsCondition_forEnumListPartialFilterCriteria(Map<String, Object> values, String expected) {
+    var objectField = new PostgresObjectField();
+    objectField.setColumn("column");
+    objectField.setList(true);
+    objectField.setType("String");
+
+    var enumConfiguration = new FieldEnumConfiguration();
+    enumConfiguration.setType("fooType");
+    objectField.setEnumeration(enumConfiguration);
+
+    var filterCriteria = createObjectFieldFilterCriteria(FilterType.PARTIAL, values, objectField, true);
+
+    var condition = build(filterCriteria);
+
+    assertThat(condition, notNullValue());
+    assertThat(condition.toString(), equalTo(expected));
+  }
+
   private static Stream<Arguments> getEnumArguments() {
     return Stream.of(arguments(Map.of("eq", "foo"), "\"x1\".\"column\" = cast('foo' as fooType)"),
         arguments(Map.of("lt", "foo"), "\"x1\".\"column\" < cast('foo' as fooType)"),

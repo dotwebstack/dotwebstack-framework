@@ -20,6 +20,7 @@ import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_LIST_FILTER_INPUT_OBJECT_TYPE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE;
+import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -105,6 +106,12 @@ class CoreFilterConfigurerTest {
   void configureTypeDefinitionRegistry_addFilter_forStringPartial() {
     List<String> expectedFieldNames = List.of(MATCH_FIELD, NOT_FIELD);
     configureTypeDefinitionRegistry_addFilter_forType(expectedFieldNames, STRING_PARTIAL_FILTER_INPUT_OBJECT_TYPE);
+  }
+
+  @Test
+  void configureTypeDefinitionRegistry_addFilter_forStringPartialList() {
+    List<String> expectedFieldNames = List.of(MATCH_FIELD, NOT_FIELD);
+    configureTypeDefinitionRegistry_addFilter_forType(expectedFieldNames, STRING_PARTIAL_LIST_FILTER_INPUT_OBJECT_TYPE);
   }
 
   @SuppressWarnings("rawtypes")

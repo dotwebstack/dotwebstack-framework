@@ -145,6 +145,9 @@ objectTypes:
         type: Date
       lastBrewed:
         type: DateTime
+      secretIngredients:
+        type: String
+        list: true
     filters:
       name: {}
       sinceDate:
@@ -153,6 +156,10 @@ objectTypes:
       brewery: {}
       taste:
         field: taste
+      partialSecretIngredient:
+        field: secretIngredients
+        type: partial
+
     sortableBy:
       name:
         - field: name
