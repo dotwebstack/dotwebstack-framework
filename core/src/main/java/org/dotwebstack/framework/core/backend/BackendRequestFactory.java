@@ -265,18 +265,17 @@ public class BackendRequestFactory {
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .filter(f -> {
-          // TODO: cleanup
+        .filter(selectedField -> {
           if (objectName.isBlank()) {
             return true;
-          } else if (f.getFullyQualifiedName() != null) {
-            if (f.getFullyQualifiedName()
+          } else if (selectedField.getFullyQualifiedName() != null) {
+            if (selectedField.getFullyQualifiedName()
                 .contains(".")
-                && f.getFullyQualifiedName()
+                && selectedField.getFullyQualifiedName()
                     .contains(objectName)) {
               return true;
             } else {
-              return !f.getFullyQualifiedName()
+              return !selectedField.getFullyQualifiedName()
                   .contains(".");
             }
           } else {

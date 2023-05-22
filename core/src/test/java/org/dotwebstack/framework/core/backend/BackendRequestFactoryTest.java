@@ -18,7 +18,12 @@ import graphql.Scalars;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
+import graphql.language.Field;
 import graphql.language.FieldDefinition;
+import graphql.language.NodeChildrenContainer;
+import graphql.language.Selection;
+import graphql.language.SelectionSet;
+import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironmentImpl;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
@@ -121,6 +126,7 @@ class BackendRequestFactoryTest {
         .name("shortName")
         .build()));
     when(selectedField.getName()).thenReturn("shortName");
+    when(selectedField.getFullyQualifiedName()).thenReturn("TestObject.shortName");
     when(selectedField.getType()).thenReturn(Scalars.GraphQLString);
 
     when(selectionSet.getImmediateFields()).thenReturn(List.of(selectedField));
@@ -234,26 +240,37 @@ class BackendRequestFactoryTest {
   }
 
   @Test
-  void createObjectRequest_returnsObjectRequestWithKeyCriteria_forInterfaceWithKey() {
+  void createObjectRequest_returnsObjectRequestWithKeyCriteriaAndSelections_forInterfaceWithKey() {
     var pathToConfigFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var schema = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
     var graphQlSchema = TestHelper.schemaToGraphQlWithDefaultTypeResolvers(pathToConfigFile);
 
-    var breweryFieldDefinition = graphQlSchema.getQueryType()
+    var baseObjectFieldDefinition = graphQlSchema.getQueryType()
         .getFieldDefinition("baseObject");
 
-    GraphQLObjectType objectType = mock(GraphQLObjectType.class);
-    var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
+    var mergedField = mock(MergedField.class);
+    var field = mock(Field.class);
+    var selectionSet = mock(SelectionSet.class);
+    var brewery = createGraphqlSelection("Brewery");
+    var address = createGraphqlSelection("Address");
+    var beer = createGraphqlSelection("Beer");
+    var somethingElse = createGraphqlSelection(null);
+
+    when(selectionSet.getSelections()).thenReturn(List.of(brewery, address, beer, somethingElse));
+    when(field.getSelectionSet()).thenReturn(selectionSet);
+    when(mergedField.getFields()).thenReturn(List.of(field));
+
+    var objectType = mock(GraphQLObjectType.class);
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(baseObjectFieldDefinition)
         .fieldContainer(objectType)
-        .type(breweryFieldDefinition.getType())
+        .field(mergedField)
+        .type(baseObjectFieldDefinition.getType())
         .arguments(() -> Map.of("identifier", "id-1"))
         .parentInfo(queryExecutionStepInfo)
         .build();
 
     var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
-
     var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
-
     var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
 
     assertThat(objectRequest, is(notNullValue()));
@@ -266,10 +283,8 @@ class BackendRequestFactoryTest {
     unionObjectRequest.getObjectRequests()
         .forEach(singleObjectRequest -> {
           assertThat(singleObjectRequest.getKeyCriterias(), is(notNullValue()));
-
           var keyCriteria = singleObjectRequest.getKeyCriterias();
           assertThat(keyCriteria.size(), is(1));
-
           var fieldPath = keyCriteria.get(0)
               .getFieldPath();
           assertThat(fieldPath.size(), is(1));
@@ -281,6 +296,67 @@ class BackendRequestFactoryTest {
           assertThat(keyCriteria.get(0)
               .getValue(), is("id-1"));
         });
+  }
+
+  @Test
+  void createObjectRequest_returnsObjectRequestWithKeyCriteriaWithoutSelections_forInterfaceWithKey() {
+    var pathToConfigFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
+    var schema = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
+    var graphQlSchema = TestHelper.schemaToGraphQlWithDefaultTypeResolvers(pathToConfigFile);
+
+    var baseObjectFieldDefinition = graphQlSchema.getQueryType()
+        .getFieldDefinition("baseObject");
+
+    var objectType = mock(GraphQLObjectType.class);
+    var executionStepInfo = newExecutionStepInfo().fieldDefinition(baseObjectFieldDefinition)
+        .fieldContainer(objectType)
+        .type(baseObjectFieldDefinition.getType())
+        .arguments(() -> Map.of("identifier", "id-1"))
+        .parentInfo(queryExecutionStepInfo)
+        .build();
+
+    var brewerySelectionSet = mock(DataFetchingFieldSelectionSet.class);
+    var backendRequestFactory = new BackendRequestFactory(schema, new BackendExecutionStepInfo(), null);
+    var objectRequest = backendRequestFactory.createObjectRequest(executionStepInfo, brewerySelectionSet);
+
+    assertThat(objectRequest, is(notNullValue()));
+    assertThat(objectRequest, instanceOf(UnionObjectRequest.class));
+
+    var unionObjectRequest = (UnionObjectRequest) objectRequest;
+
+    assertThat(unionObjectRequest.getObjectRequests()
+        .size(), is(3));
+    unionObjectRequest.getObjectRequests()
+        .forEach(singleObjectRequest -> {
+          assertThat(singleObjectRequest.getKeyCriterias(), is(notNullValue()));
+          var keyCriteria = singleObjectRequest.getKeyCriterias();
+          assertThat(keyCriteria.size(), is(1));
+          var fieldPath = keyCriteria.get(0)
+              .getFieldPath();
+          assertThat(fieldPath.size(), is(1));
+          assertThat(fieldPath.get(0)
+              .getName(), is("identifier"));
+          assertThat(fieldPath.get(0)
+              .getObjectType()
+              .getName(), is("BaseObject"));
+          assertThat(keyCriteria.get(0)
+              .getValue(), is("id-1"));
+        });
+  }
+
+  private Selection createGraphqlSelection(String name) {
+    var selection = mock(Selection.class);
+    var nodeChildrenContainer = mock(NodeChildrenContainer.class);
+    if (name != null) {
+      var typeName = mock(TypeName.class);
+      when(typeName.getName()).thenReturn(name);
+      when(nodeChildrenContainer.getChildren("typeCondition")).thenReturn(List.of(typeName));
+    } else {
+      when(nodeChildrenContainer.getChildren("typeCondition")).thenReturn(List.of());
+    }
+    when(selection.getNamedChildren()).thenReturn(nodeChildrenContainer);
+
+    return selection;
   }
 
   @Test
