@@ -24,6 +24,7 @@ import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -48,7 +49,7 @@ class PostgresBackendLoaderTest {
   }
 
   @Test
-  void loadSingle_returnsMonoObject() {
+  void loadSingle_returnsMonoObject_forSingleObjectRequest() {
     when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Collections.emptyMap()));
     Map<String, Object> source = Map.of("a", "bbb");
 
@@ -57,7 +58,7 @@ class PostgresBackendLoaderTest {
         .source(source)
         .build();
 
-    var objectRequest = initObjectRequest();
+    var objectRequest = initSingleObjectRequest(false);
 
     var result = backendLoader.loadSingle(objectRequest, requestContext);
 
@@ -67,7 +68,25 @@ class PostgresBackendLoaderTest {
   }
 
   @Test
-  void loadMany_returnsFluxObject() {
+  void loadSingle_returnsMonoEmptyMap_forSingleObjectRequest() {
+    Map<String, Object> source = Map.of("a", "bbb");
+
+    var requestContext = RequestContext.builder()
+        .objectField(mock(ObjectField.class))
+        .source(source)
+        .build();
+
+    var objectRequest = initSingleObjectRequest(true);
+
+    var result = backendLoader.loadSingle(objectRequest, requestContext);
+
+    StepVerifier.create(result)
+        .expectNext(Collections.emptyMap())
+        .verifyComplete();
+  }
+
+  @Test
+  void loadMany_returnsFluxObject_forSingleObjectRequest() {
     when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Collections.emptyMap()));
     Map<String, Object> source = Map.of("a", "bbb");
 
@@ -76,7 +95,7 @@ class PostgresBackendLoaderTest {
         .source(source)
         .build();
 
-    var objectRequest = initObjectRequest();
+    var objectRequest = initSingleObjectRequest(false);
 
     var request = CollectionRequest.builder()
         .objectRequest(objectRequest)
@@ -91,7 +110,7 @@ class PostgresBackendLoaderTest {
 
   @Test
   @Disabled("fix me")
-  void batchLoadMany_returnsFluxObject() {
+  void batchLoadMany_returnsFluxObject_forSingleObjectRequest() {
     when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Map.of("@@@", "ccc")));
     PostgresObjectField objectFieldMock = mock(PostgresObjectField.class);
     when(objectFieldMock.getJoinTable()).thenReturn(mock(JoinTable.class));
@@ -103,7 +122,7 @@ class PostgresBackendLoaderTest {
         .build();
 
     var collectionRequest = CollectionRequest.builder()
-        .objectRequest(initObjectRequest())
+        .objectRequest(initSingleObjectRequest(false))
         .sortCriterias(List.of())
         .build();
 
@@ -117,20 +136,65 @@ class PostgresBackendLoaderTest {
     assertThat(res, CoreMatchers.is(notNullValue()));
   }
 
-  private SingleObjectRequest initObjectRequest() {
+  @Test
+  void loadSingle_returnsMonoEmptyMap_forUnionObjectRequest() {
+    when(postgresClient.fetch(any(Query.class))).thenReturn(Flux.just(Collections.emptyMap()));
+    Map<String, Object> source = Map.of("a", "bbb");
+
+    var requestContext = RequestContext.builder()
+        .objectField(mock(ObjectField.class))
+        .source(source)
+        .build();
+
+    var objectRequest = UnionObjectRequest.builder()
+        .objectRequests(List.of(initSingleObjectRequest(false)))
+        .build();
+
+    var result = backendLoader.loadSingle(objectRequest, requestContext);
+
+    StepVerifier.create(result)
+        .expectNext(Collections.emptyMap())
+        .verifyComplete();
+  }
+
+  @Test
+  void loadSingle_returnsMonoEmptyMap_forUnionObjectRequestWithoutSubRequests() {
+    Map<String, Object> source = Map.of("a", "bbb");
+
+    var requestContext = RequestContext.builder()
+        .objectField(mock(ObjectField.class))
+        .source(source)
+        .build();
+
+    var objectRequest = UnionObjectRequest.builder()
+        .objectRequests(List.of())
+        .build();
+
+    var result = backendLoader.loadSingle(objectRequest, requestContext);
+
+    StepVerifier.create(result)
+        .expectNext(Collections.emptyMap())
+        .verifyComplete();
+  }
+
+  private SingleObjectRequest initSingleObjectRequest(boolean isNested) {
     var objectType = mock(PostgresObjectType.class);
-    when(objectType.getTable()).thenReturn("anyTable");
-
-    Map<String, Object> mapValues = Map.of("a", "bbb");
     var contextCriteria = mock(ContextCriteria.class);
+    if (isNested) {
+      when(objectType.isNested()).thenReturn(isNested);
+    } else {
+      when(objectType.getTable()).thenReturn("anyTable");
 
-    var context = mock(Context.class);
-    when(context.getFields()).thenReturn(Map.of("a", mock(ContextField.class)));
+      Map<String, Object> mapValues = Map.of("a", "bbb");
 
-    when(contextCriteria.getContext()).thenReturn(context);
-    when(contextCriteria.getValues()).thenReturn(mapValues);
-    when(contextCriteria.getName()).thenReturn("Brewery");
+      var context = mock(Context.class);
+      when(context.getFields()).thenReturn(Map.of("a", mock(ContextField.class)));
 
+      when(contextCriteria.getContext()).thenReturn(context);
+      when(contextCriteria.getValues()).thenReturn(mapValues);
+      when(contextCriteria.getName()).thenReturn("Brewery");
+
+    }
     Map<FieldRequest, SingleObjectRequest> objectFields = Map.of();
 
     return SingleObjectRequest.builder()

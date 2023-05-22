@@ -56,7 +56,7 @@ public class Query {
   }
 
   private SelectQuery createSelect(CollectionRequest collectionRequest, NodeShape nodeShape) {
-    var query = createSelect((SingleObjectRequest) collectionRequest.getObjectRequest(), nodeShape);
+    var query = createSelect(collectionRequest.getObjectRequest(), nodeShape);
     var sortCriterias = collectionRequest.getSortCriterias();
 
     if (!sortCriterias.isEmpty()) {

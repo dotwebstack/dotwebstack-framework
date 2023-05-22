@@ -29,7 +29,7 @@ class QueryHelper {
     return nodeShape.getClasses()
         .stream()
         .map(classes -> createTypePattern(subject, type, classes))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   private static GraphPattern createTypePattern(Variable subject, Variable type, Set<IRI> classes) {

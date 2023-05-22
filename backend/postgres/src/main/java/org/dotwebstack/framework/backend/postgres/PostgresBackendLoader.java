@@ -43,27 +43,19 @@ public class PostgresBackendLoader implements BackendLoader {
 
       return postgresClient.fetch(query)
           .singleOrEmpty();
-    } else if (objectRequest instanceof UnionObjectRequest unionObjectRequest) {
-      if (unionObjectRequest.getObjectRequests()
-          .isEmpty()) {
-        return Mono.just(Map.of());
-      }
-
-      return unionObjectRequest.getObjectRequests()
-          .stream()
-          .map(objRequest -> loadSingle(objRequest, requestContext))
-          .reduce((a, b) -> Mono.from(Flux.merge(a, b)))
-          .orElseThrow();
-
     }
 
-    return Mono.just(Map.of());
-  }
+    var unionObjectRequest = (UnionObjectRequest) objectRequest;
+    if (unionObjectRequest.getObjectRequests()
+        .isEmpty()) {
+      return Mono.just(Map.of());
+    }
 
-  private static <T1, T2, O> Function<Mono<T1>, Publisher<O>> flatZipTransformer(Mono<T2> p2,
-      BiFunction<T1, T2, Mono<O>> function) {
-    return p1 -> Mono.zip(p1, p2, function)
-        .flatMap(Function.identity());
+    return unionObjectRequest.getObjectRequests()
+        .stream()
+        .map(objRequest -> loadSingle(objRequest, requestContext))
+        .reduce((a, b) -> Mono.from(Flux.merge(a, b)))
+        .orElseThrow();
   }
 
   @Override
