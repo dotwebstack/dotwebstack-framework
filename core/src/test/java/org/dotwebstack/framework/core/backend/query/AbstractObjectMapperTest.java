@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,6 +38,23 @@ class AbstractObjectMapperTest {
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof Map);
     assertThat(result.size(), is(1));
+  }
+
+  @Test
+  void apply_returnsMap_forJson() {
+    var fieldMapper = mock(FieldMapper.class);
+    when(fieldMapper.apply(any())).thenReturn(Map.of("brewery", Map.of("name", "A")));
+
+    mapper.register("json", fieldMapper);
+    Map<String, Object> row = Map.of("json", "{brewery: { name: \"A\"}}");
+
+    var result = mapper.apply(row);
+
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertThat(result.size(), is(1));
+    var brewery = (Map<String, Object>) result.get("brewery");
+    assertThat(brewery.size(), is(1));
+    assertThat(brewery.get("name"), is("A"));
   }
 
   @Test
