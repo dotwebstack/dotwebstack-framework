@@ -327,7 +327,6 @@ class SelectBuilder {
 
   private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest,
       PostgresObjectType objectType, SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
-    // TODO: cleanup needed
     List<JSONEntry<?>> jsonEntries;
     if (asJson) {
       jsonEntries = new ArrayList<>();

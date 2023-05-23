@@ -42,6 +42,7 @@ import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -376,6 +377,78 @@ class SelectBuilderTest {
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("select\n" + "  \"x1\".\"name_column\" as \"x2\",\n"
         + "  \"x1\".\"soldPerYear_column\" as \"x3\"\n" + "from \"beer\" as \"x1\""));
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithUnionObject() {
+    var beerObjectType = createObjectType("beer", "identifier", "name");
+    beerObjectType.setName("Beer");
+    var breweryObjectType = createObjectType("brewery", "identifier", "name");
+    breweryObjectType.setName("Brewery");
+    var nestedObjectType = createObjectType(null, "age");
+
+    var identifierObjectField = createObjectField("identifier");
+    beerObjectType.getFields()
+        .put("identifier", identifierObjectField);
+
+    var historyObjectField = createObjectField("history");
+    historyObjectField.setTargetType(nestedObjectType);
+    historyObjectField.setPresenceColumn(null);
+    beerObjectType.getFields()
+        .put("history", historyObjectField);
+
+    var nestedObject = SingleObjectRequest.builder()
+        .objectType(nestedObjectType)
+        .scalarFields(new ArrayList<>(List.of(FieldRequest.builder()
+            .name("age")
+            .resultKey("age")
+            .build())))
+        .build();
+
+    var beerObjectRequest = SingleObjectRequest.builder()
+        .objectType(beerObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .resultKey("name")
+            .build()))
+        .objectFields(Map.of(FieldRequest.builder()
+            .name("history")
+            .resultKey("history")
+            .build(), nestedObject))
+        .build();
+
+    var breweryObjectRequest = SingleObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .resultKey("name")
+            .build()))
+        .build();
+
+    var unionRequest = UnionObjectRequest.builder()
+        .objectRequests(List.of(beerObjectRequest, breweryObjectRequest))
+        .build();
+
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(unionRequest)
+        .build();
+
+    var result = selectBuilder.build(collectionRequest, null);
+
+    assertThat(result, notNullValue());
+    assertThat(result.toString(), equalTo("""
+        select
+          'Beer' as "d1",
+          json_build_object(
+            'name_column', "x1"."name_column",
+            'history_column', json_build_object('age_column', "x1"."age_column")
+          ) as "json"
+        from "beer" as "x1"
+        union all
+        select
+          'Brewery' as "d1",
+          json_build_object('name_column', "x1"."name_column") as "json"
+        from "brewery" as "x1\""""));
   }
 
   @Test
