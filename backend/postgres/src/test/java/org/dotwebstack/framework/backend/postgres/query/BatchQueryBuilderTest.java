@@ -77,7 +77,7 @@ class BatchQueryBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select *\n" + "from (values ('id-1')) as \"x3\" (\"x2\")\n" + "  left outer join lateral (\n"
+        equalTo("select *\n" + "from (\n  values ('id-1')\n) as \"x3\" (\"x2\")\n" + "  left outer join lateral (\n"
             + "    select\n" + "      *,\n" + "      \"x1\".\"ingredient__identifier\" as \"x4\"\n" + "    from\n"
             + "      ingredients,\n" + "      \"beer_ingredients\" as \"x1\"\n" + "    where (\n"
             + "      \"x1\".\"beer__identifier\" = \"ingredients\".\"identifier\"\n"
@@ -106,7 +106,7 @@ class BatchQueryBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
-        equalTo("select *\n" + "from (values\n" + "  ('id-1'),\n" + "  ('id-2')\n" + ") as \"x2\" (\"x1\")\n"
+        equalTo("select *\n" + "from (\n  values\n" + "    ('id-1'),\n" + "    ('id-2')\n" + ") as \"x2\" (\"x1\")\n"
             + "  left outer join lateral (\n" + "    select\n" + "      *,\n"
             + "      \"beers\".\"identifier\" as \"x3\"\n" + "    from beers\n"
             + "    where \"identifier\" = \"x2\".\"x1\"\n" + "  ) as \"x4\"\n" + "    on true"));
