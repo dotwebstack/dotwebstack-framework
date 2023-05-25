@@ -39,6 +39,7 @@ import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.ScalarType;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
@@ -73,9 +74,9 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequest() {
-    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject(null);
+    var objectRequest = getObjectRequestWithNestedObject(null);
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build((SingleObjectRequest) objectRequest, false);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -86,9 +87,9 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forDistinctObjectRequest() {
-    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject(null, true);
+    var objectRequest = getObjectRequestWithNestedObject(null, true);
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build((SingleObjectRequest) objectRequest, false);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("""
@@ -103,9 +104,9 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forObjectRequestWithPresenceColumn() {
-    SingleObjectRequest objectRequest = getObjectRequestWithNestedObject("age_column");
+    var objectRequest = getObjectRequestWithNestedObject("age_column");
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build((SingleObjectRequest) objectRequest, false);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("""
@@ -119,11 +120,11 @@ class SelectBuilderTest {
         where "x1"."identifier_column" = 'id-1'"""));
   }
 
-  private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
+  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn) {
     return getObjectRequestWithNestedObject(presenceColumn, false);
   }
 
-  private SingleObjectRequest getObjectRequestWithNestedObject(String presenceColumn, boolean distinct) {
+  private ObjectRequest getObjectRequestWithNestedObject(String presenceColumn, boolean distinct) {
     var objectType = createObjectType("beer", distinct, "identifier", "name", "soldPerYear");
 
     var nestedObjectType = createObjectType(null, "age");
@@ -192,7 +193,7 @@ class SelectBuilderTest {
             .build()))
         .build();
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build(objectRequest, false);
 
     assertThat(result, notNullValue());
     assertThat(result.toString(),
@@ -225,7 +226,7 @@ class SelectBuilderTest {
                 .build()))
         .build();
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build(objectRequest, false);
 
     var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
         + "  \"x6\".*\n" + "from \"brewery\" as \"x1\"\n" + "  left outer join lateral (\n" + "    select\n"
@@ -260,7 +261,7 @@ class SelectBuilderTest {
                 .build()))
         .build();
 
-    var result = selectBuilder.build(objectRequest);
+    var result = selectBuilder.build(objectRequest, false);
 
     var expectedQuery = "select\n" + "  \"x1\".\"identifier\" as \"x2\",\n" + "  \"x1\".\"postal_address\" as \"x3\",\n"
         + "  \"x1\".\"postal_address\" as \"x4\"\n" + "from \"brewery\" as \"x1\"\n" + "where (\n"
@@ -298,7 +299,7 @@ class SelectBuilderTest {
                 .build()))
         .build();
 
-    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest));
+    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest, false));
 
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
@@ -340,7 +341,7 @@ class SelectBuilderTest {
                 .build()))
         .build();
 
-    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest));
+    var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest, false));
 
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "

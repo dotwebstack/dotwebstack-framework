@@ -37,9 +37,9 @@ public class Query {
     selectQuery = createSelect(collectionBatchRequest);
   }
 
-  public Query(SingleObjectRequest objectRequest, RequestContext requestContext) {
+  public Query(SingleObjectRequest objectRequest, RequestContext requestContext, boolean fromUnion) {
     this.requestContext = requestContext;
-    selectQuery = createSelect(objectRequest);
+    selectQuery = createSelect(objectRequest, fromUnion);
   }
 
   public Query(BatchRequest batchRequest, RequestContext requestContext) {
@@ -73,12 +73,12 @@ public class Query {
         .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
-  private SelectQuery<Record> createSelect(SingleObjectRequest objectRequest) {
+  private SelectQuery<Record> createSelect(SingleObjectRequest objectRequest, boolean fromUnion) {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .tableAlias(aliasManager.newAlias())
-        .build(objectRequest);
+        .build(objectRequest, fromUnion);
   }
 
   private SelectQuery<Record> createSelect(BatchRequest batchRequest) {

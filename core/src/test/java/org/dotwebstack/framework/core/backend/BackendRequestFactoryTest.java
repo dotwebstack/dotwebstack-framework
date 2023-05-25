@@ -185,6 +185,7 @@ class BackendRequestFactoryTest {
 
     var beerObjectRequest = objectFields.values()
         .stream()
+        .map(SingleObjectRequest.class::cast)
         .findFirst()
         .orElseThrow();
 

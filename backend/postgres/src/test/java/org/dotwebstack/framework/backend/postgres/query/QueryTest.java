@@ -12,6 +12,7 @@ import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.hamcrest.CoreMatchers;
@@ -30,7 +31,7 @@ class QueryTest {
   void createSelect_initQuery_forObjectRequest() {
     SingleObjectRequest objectRequest = initObjectRequest();
 
-    var result = new Query(objectRequest, requestContext);
+    var result = new Query(objectRequest, requestContext, false);
     assertThat(result, CoreMatchers.is(notNullValue()));
   }
 
@@ -57,7 +58,7 @@ class QueryTest {
   private SingleObjectRequest initObjectRequest() {
     PostgresObjectType objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
-    Map<FieldRequest, SingleObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     return SingleObjectRequest.builder()
         .objectType(objectType)

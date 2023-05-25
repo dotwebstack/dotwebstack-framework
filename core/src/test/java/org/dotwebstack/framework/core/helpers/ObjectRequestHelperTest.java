@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 import org.dotwebstack.framework.core.query.model.SortDirection;
@@ -70,7 +71,7 @@ class ObjectRequestHelperTest {
 
     var breweryIdSortCriteria = getSortCriteria(List.of(nestedObjectField, idObjectField), DESC);
 
-    Map<FieldRequest, SingleObjectRequest> objectFieldMap = new HashMap<>();
+    Map<FieldRequest, ObjectRequest> objectFieldMap = new HashMap<>();
 
     objectFieldMap.put(FieldRequest.builder()
         .name("nestedField")
@@ -148,6 +149,7 @@ class ObjectRequestHelperTest {
     var newObjectRequest = objectRequest.getObjectFields()
         .entrySet()
         .stream()
+        .map(entry -> Map.entry(entry.getKey(), (SingleObjectRequest) entry.getValue()))
         .filter(entry -> entry.getKey()
             .getResultKey()
             .equals("brewery.$system"))
@@ -200,7 +202,7 @@ class ObjectRequestHelperTest {
         .value("id-1")
         .build());
 
-    Map<FieldRequest, SingleObjectRequest> objectFieldMap = new HashMap<>();
+    Map<FieldRequest, ObjectRequest> objectFieldMap = new HashMap<>();
 
     objectFieldMap.put(FieldRequest.builder()
         .name("nestedField")
@@ -276,6 +278,7 @@ class ObjectRequestHelperTest {
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
         .stream()
+        .map(entry -> Map.entry(entry.getKey(), (SingleObjectRequest) entry.getValue()))
         .filter(objectField -> objectField.getKey()
             .getName()
             .equals("brewery"))
@@ -328,6 +331,7 @@ class ObjectRequestHelperTest {
     var newBreweryObjectField = objectRequest.getObjectFields()
         .entrySet()
         .stream()
+        .map(entry -> Map.entry(entry.getKey(), (SingleObjectRequest) entry.getValue()))
         .filter(objectField -> objectField.getKey()
             .getName()
             .equals("history"))
@@ -361,7 +365,7 @@ class ObjectRequestHelperTest {
   }
 
   private SingleObjectRequest getObjectRequest(List<KeyCriteria> keyCriterias,
-      Map<FieldRequest, SingleObjectRequest> objectFields) {
+      Map<FieldRequest, ObjectRequest> objectFields) {
     var objectType = mock(ObjectType.class);
 
     return SingleObjectRequest.builder()

@@ -19,7 +19,7 @@ public class SingleObjectRequest implements ObjectRequest {
   private final Collection<FieldRequest> scalarFields = new ArrayList<>();
 
   @Builder.Default
-  private final Map<FieldRequest, SingleObjectRequest> objectFields = new HashMap<>();
+  private final Map<FieldRequest, ObjectRequest> objectFields = new HashMap<>();
 
   @Builder.Default
   private final Map<FieldRequest, CollectionRequest> objectListFields = new HashMap<>();

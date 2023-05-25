@@ -29,6 +29,11 @@ public class PostgresBackendLoader implements BackendLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
+    return loadSingle(objectRequest, requestContext, false);
+  }
+
+  public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext,
+      boolean fromUnion) {
 
     if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
       if (singleObjectRequest.getObjectType()
@@ -36,7 +41,7 @@ public class PostgresBackendLoader implements BackendLoader {
         return Mono.just(Map.of());
       }
 
-      Query query = new Query(singleObjectRequest, requestContext);
+      Query query = new Query(singleObjectRequest, requestContext, fromUnion);
 
       return postgresClient.fetch(query)
           .singleOrEmpty();
@@ -50,7 +55,7 @@ public class PostgresBackendLoader implements BackendLoader {
 
     return unionObjectRequest.getObjectRequests()
         .stream()
-        .map(objRequest -> loadSingle(objRequest, requestContext))
+        .map(objRequest -> loadSingle(objRequest, requestContext, true))
         .reduce((a, b) -> Mono.from(Flux.merge(a, b)))
         .orElseThrow();
   }

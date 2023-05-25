@@ -167,7 +167,7 @@ class SelectBuilder {
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
-    var dataQuery = build(batchRequest.getObjectRequest());
+    var dataQuery = build(batchRequest.getObjectRequest(), false);
 
     var joinCriteria = JoinCriteria.builder()
         .keys(batchRequest.getKeys())
@@ -176,12 +176,8 @@ class SelectBuilder {
     return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria, false);
   }
 
-  public SelectQuery<Record> build(SingleObjectRequest objectRequest) {
-    return createDataQuery(objectRequest);
-  }
-
-  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest) {
-    return createDataQuery(objectRequest, false);
+  public SelectQuery<Record> build(SingleObjectRequest objectRequest, boolean fromUnion) {
+    return createDataQuery(objectRequest, fromUnion);
   }
 
   private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson) {
@@ -293,7 +289,7 @@ class SelectBuilder {
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getKey()
                 .getResultKey(),
-            entry.getValue(), selectTable, fieldMapper, asJson))
+            (SingleObjectRequest) entry.getValue(), selectTable, fieldMapper, asJson))
         .map(result -> {
           // add all items before filtering them.
           Optional.of(result)
@@ -579,7 +575,7 @@ class SelectBuilder {
         .fieldMapper(objectMapper)
         .aliasManager(aliasManager)
         .tableAlias(objectMapper.getAlias())
-        .build(objectRequest);
+        .build(objectRequest, false);
 
     select.addSelect(DSL.field("1")
         .as(objectMapper.getAlias()));
@@ -639,7 +635,7 @@ class SelectBuilder {
           return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table)
               .stream()
               .map(field -> SelectResult.builder()
-                  .selectField((Field<?>) field)
+                  .selectField(field)
                   .build());
         })
         .toList();
@@ -678,7 +674,8 @@ class SelectBuilder {
         .map(JoinColumn::getReferencedField)
         .filter(Objects::nonNull)
         .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
-      return createReferenceObject(objectField, childObjectRequest, table, objectMapper, fieldRequest)
+      return createReferenceObject(
+          objectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
               .selectField(selectField)
               .build())
@@ -695,8 +692,8 @@ class SelectBuilder {
           .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
           .build();
 
-      return createObject(childObjectField, childObjectRequest, table, objectMapper, joinConfiguration,
-          childObjectField.getName()).toList();
+      return createObject(childObjectField, (SingleObjectRequest) childObjectRequest, table, objectMapper,
+          joinConfiguration, childObjectField.getName()).toList();
     }
   }
 
@@ -771,7 +768,7 @@ class SelectBuilder {
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getKey()
                 .getResultKey(),
-            entry.getValue(), table, objectMapper))
+            (SingleObjectRequest) entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
     if (scalarAsJson && !jsonEntries.isEmpty()) {
@@ -781,7 +778,6 @@ class SelectBuilder {
           .selectField(obj)
           .build());
     }
-
 
     return selectResults.stream();
   }

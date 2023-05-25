@@ -22,6 +22,7 @@ import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
@@ -195,7 +196,7 @@ class PostgresBackendLoaderTest {
       when(contextCriteria.getName()).thenReturn("Brewery");
 
     }
-    Map<FieldRequest, SingleObjectRequest> objectFields = Map.of();
+    Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 
     return SingleObjectRequest.builder()
         .objectType(objectType)

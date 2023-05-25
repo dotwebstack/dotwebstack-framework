@@ -312,13 +312,13 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Map<FieldRequest, SingleObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+  private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
         .collect(Collectors.toMap(this::mapToFieldRequest,
-            selectedField -> (SingleObjectRequest) createObjectRequest(selectedField, executionStepInfo)));
+            selectedField -> createObjectRequest(selectedField, executionStepInfo)));
   }
 
   private Map<FieldRequest, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,

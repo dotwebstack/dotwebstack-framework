@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
@@ -34,7 +35,8 @@ public class ObjectRequestHelper {
       } else {
         ObjectField nextSortField = sortCriteria.getFieldPath()
             .get(index + 1);
-        objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
+        objectRequest =
+            (SingleObjectRequest) findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
     }
   }
@@ -53,14 +55,14 @@ public class ObjectRequestHelper {
           findOrAddScalarField(current.get(), keyField);
         } else {
           ObjectField nextKeyField = fieldPath.get(index + 1);
-          current.set(findOrAddObjectRequest(current.get()
+          current.set((SingleObjectRequest) findOrAddObjectRequest(current.get()
               .getObjectFields(), keyField, nextKeyField));
         }
       }
     });
   }
 
-  private static SingleObjectRequest findOrAddObjectRequest(Map<FieldRequest, SingleObjectRequest> objectFields,
+  private static ObjectRequest findOrAddObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     return objectFields.entrySet()
         .stream()
@@ -75,7 +77,7 @@ public class ObjectRequestHelper {
         .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
   }
 
-  private static SingleObjectRequest createObjectRequest(Map<FieldRequest, SingleObjectRequest> objectFields,
+  private static SingleObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     var objectRequest = SingleObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())
