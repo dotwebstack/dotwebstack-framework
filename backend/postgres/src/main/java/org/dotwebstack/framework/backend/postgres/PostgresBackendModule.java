@@ -70,12 +70,12 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
         .stream()
         .filter(PostgresObjectField::hasNestedFields)
         // Filter out the ref node(s).
-        .filter(field -> !field.getTargetType()
-            .getFields()
-            .containsKey("nodes")
-            && !field.getTargetType()
-                .getFields()
-                .containsKey("node"))
+        // .filter(field -> !field.getTargetType()
+        // .getFields()
+        // .containsKey("nodes")
+        // && !field.getTargetType()
+        // .getFields()
+        // .containsKey("node"))
         .flatMap(objectField -> {
           var targetType = (PostgresObjectType) objectField.getTargetType();
 

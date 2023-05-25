@@ -529,14 +529,22 @@ class SelectBuilder {
   }
 
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table, boolean jsonObject) {
-    var column = column(table, columnName);
+    Field<Object> column;
+    if (jsonObject) {
+      var columnNameWithoutPrefix = columnName
+          .contains("__") ? StringUtils.substringAfter(columnName, "__") : columnName;
+      // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
+      var sanitizedColumnName = columnNameWithoutPrefix.replaceAll("(node[s{1}]?__)", "");
+      column = column(table, sanitizedColumnName);
+    } else {
+      column = column(table, columnName);
+    }
 
     if (!jsonObject) {
       // Do not add alias when column should be part of jsonAggr otherwise the column field name will be
       // lost.
       column = column.as(aliasManager.newAlias());
     }
-
     return new ColumnMapper(column);
   }
 
@@ -752,6 +760,8 @@ class SelectBuilder {
           if (scalarAsJson) {
             var fieldname = field.getName()
                 .contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
+            fieldname = fieldname.replaceAll("(node[s{1}]?__)", "");
             jsonEntries.add(DSL.jsonEntry(fieldname, field));
             return null;
           }
