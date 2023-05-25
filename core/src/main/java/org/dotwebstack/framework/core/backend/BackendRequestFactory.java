@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
@@ -133,7 +134,7 @@ public class BackendRequestFactory {
         .objectType(objectType)
         .keyCriterias(keyCriterias)
         .scalarFields(getScalarFields(selectionSet, objectType.getName()))
-        .objectFields(getObjectFields(selectionSet, executionStepInfo))
+        .objectFields(getObjectFields(selectionSet, executionStepInfo, objectType.getName()))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
@@ -257,7 +258,7 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
-    return getScalarFields(selectionSet, "");
+    return getScalarFields(selectionSet, StringUtils.EMPTY);
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet, String objectName) {
@@ -265,23 +266,7 @@ public class BackendRequestFactory {
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .filter(selectedField -> {
-          if (objectName.isBlank()) {
-            return true;
-          } else if (selectedField.getFullyQualifiedName() != null) {
-            if (selectedField.getFullyQualifiedName()
-                .contains(".")
-                && selectedField.getFullyQualifiedName()
-                    .contains(objectName)) {
-              return true;
-            } else {
-              return !selectedField.getFullyQualifiedName()
-                  .contains(".");
-            }
-          } else {
-            return true;
-          }
-        })
+        .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
         .flatMap(this::mapScalarFieldToFieldRequests)
         .collect(Collectors.toList());
   }
@@ -314,11 +299,35 @@ public class BackendRequestFactory {
 
   private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
+    return getObjectFields(selectionSet, executionStepInfo, StringUtils.EMPTY);
+  }
+
+  private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+      ExecutionStepInfo executionStepInfo, String objectName) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
+        .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
         .collect(Collectors.toMap(this::mapToFieldRequest,
             selectedField -> createObjectRequest(selectedField, executionStepInfo)));
+  }
+
+  private boolean selectedFieldIsPartOfObject(String parentObjectName, SelectedField selectedField) {
+    if (parentObjectName.isBlank()) {
+      return true;
+    } else if (selectedField.getFullyQualifiedName() != null) {
+      if (selectedField.getFullyQualifiedName()
+          .contains(".")
+          && selectedField.getFullyQualifiedName()
+              .contains(parentObjectName)) {
+        return true;
+      } else {
+        return !selectedField.getFullyQualifiedName()
+            .contains(".");
+      }
+    } else {
+      return true;
+    }
   }
 
   private Map<FieldRequest, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,

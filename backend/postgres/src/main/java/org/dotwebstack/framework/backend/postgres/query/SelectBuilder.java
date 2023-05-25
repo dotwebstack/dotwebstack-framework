@@ -531,8 +531,8 @@ class SelectBuilder {
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table, boolean jsonObject) {
     Field<Object> column;
     if (jsonObject) {
-      var columnNameWithoutPrefix = columnName
-          .contains("__") ? StringUtils.substringAfter(columnName, "__") : columnName;
+      var columnNameWithoutPrefix =
+          columnName.contains("__") ? StringUtils.substringAfter(columnName, "__") : columnName;
       // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
       var sanitizedColumnName = columnNameWithoutPrefix.replaceAll("(node[s{1}]?__)", "");
       column = column(table, sanitizedColumnName);
