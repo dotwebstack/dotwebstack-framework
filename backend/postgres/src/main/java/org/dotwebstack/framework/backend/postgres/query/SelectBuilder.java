@@ -200,7 +200,7 @@ class SelectBuilder {
     if (!jsonEntries.isEmpty()) {
       Field json;
       // TODO: cleanup
-      var name = DSL.jsonEntry("dtype", DSL.val((Object) objectType.getName()));
+      var name = DSL.jsonEntry("dtype", DSL.val(objectType.getName()));
       jsonEntries.add(name);
 
       if (parentFieldName != null && !parentFieldName.isBlank()) {
