@@ -32,6 +32,7 @@ import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,6 +72,7 @@ import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.JSONEntry;
 import org.jooq.JoinType;
@@ -200,7 +202,9 @@ class SelectBuilder {
     if (!jsonEntries.isEmpty()) {
       Field json;
       // TODO: cleanup
-      var name = DSL.jsonEntry("dtype", DSL.val(objectType.getName()));
+      var name = DSL.jsonEntry("dtype", DSL.val(objectType.getName())
+          // Casting to varchar because Github Actions does this for some reason.
+          .cast(VARCHAR));
       jsonEntries.add(name);
 
       if (parentFieldName != null && !parentFieldName.isBlank()) {

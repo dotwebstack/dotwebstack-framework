@@ -441,13 +441,13 @@ class SelectBuilderTest {
         select json_build_object(
           'name_column', "x1"."name_column",
           'history_column', json_build_object('age_column', "x1"."age_column"),
-          'dtype', 'Beer'
+          'dtype', cast('Beer' as varchar)
         ) as "json"
         from "beer" as "x1"
         union all
         select json_build_object(
           'name_column', "x1"."name_column",
-          'dtype', 'Brewery'
+          'dtype', cast('Brewery' as varchar)
         ) as "json"
         from "brewery" as "x1\""""));
   }
