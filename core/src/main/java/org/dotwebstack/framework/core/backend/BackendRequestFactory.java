@@ -191,6 +191,7 @@ public class BackendRequestFactory {
     }
 
     // Needs to be done so inheritance on interfaces is possible.
+    // TODO: controleren of dit wel uberhaubt nodig is.
     var interfaceNames = Stream.concat(schema.getInterfaces()
         .values()
         .stream()

@@ -438,17 +438,17 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("""
-        select
-          'Beer' as "d1",
-          json_build_object(
-            'name_column', "x1"."name_column",
-            'history_column', json_build_object('age_column', "x1"."age_column")
-          ) as "json"
+        select json_build_object(
+          'name_column', "x1"."name_column",
+          'history_column', json_build_object('age_column', "x1"."age_column"),
+          'dtype', 'Beer'
+        ) as "json"
         from "beer" as "x1"
         union all
-        select
-          'Brewery' as "d1",
-          json_build_object('name_column', "x1"."name_column") as "json"
+        select json_build_object(
+          'name_column', "x1"."name_column",
+          'dtype', 'Brewery'
+        ) as "json"
         from "brewery" as "x1\""""));
   }
 

@@ -120,11 +120,10 @@ class SelectBuilder {
       objectRequests.add((SingleObjectRequest) collectionRequest.getObjectRequest());
     }
 
-    AtomicReference<Boolean> isUnion = new AtomicReference<>();
-    isUnion.set(false);
+    var isUnion = new AtomicReference<>(false);
     return objectRequests.stream()
         .map(objectRequest -> {
-          var dataQuery = createDataQuery(objectRequest, asJson);
+          var dataQuery = createDataQuery(objectRequest, asJson, null);
 
           newSorting().sortCriterias(collectionRequest.getSortCriterias())
               .fieldMapper(fieldMapper)
@@ -148,12 +147,6 @@ class SelectBuilder {
           if (joinCriteria != null) {
             var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias),
                 joinCriteria, isUnion.get());
-            batchQuery.getSelect()
-                .stream()
-                .filter(f -> f.getName()
-                    .equals("d1"))
-                .findFirst()
-                .ifPresent(field -> batchQuery.addConditions(field.isNotNull()));
             isUnion.set(true); // Set true because all succeeding queries are unions.
             return batchQuery;
           }
@@ -176,11 +169,18 @@ class SelectBuilder {
     return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria, false);
   }
 
-  public SelectQuery<Record> build(SingleObjectRequest objectRequest, boolean fromUnion) {
-    return createDataQuery(objectRequest, fromUnion);
+  public SelectQuery<Record> build(SingleObjectRequest objectRequest, String tableAlias, String parentFieldName,
+      boolean fromUnion) {
+    this.tableAlias = tableAlias;
+    return createDataQuery(objectRequest, fromUnion, parentFieldName);
   }
 
-  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson) {
+  public SelectQuery<Record> build(SingleObjectRequest objectRequest, boolean fromUnion) {
+    return createDataQuery(objectRequest, fromUnion, null);
+  }
+
+  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson,
+      String parentFieldName) {
     var objectType = getObjectType(objectRequest);
     var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
     var dataQuery = dslContext.selectQuery(table);
@@ -198,8 +198,24 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
-      var json = DSL.jsonObject(jsonEntries)
-          .as("json");
+      Field json;
+      // TODO: cleanup
+      var name = DSL.jsonEntry("dtype", DSL.val((Object) objectType.getName()));
+      jsonEntries.add(name);
+
+      if (parentFieldName != null && !parentFieldName.isBlank()) {
+
+        var obj = DSL.jsonObject(jsonEntries);
+        var something = DSL.jsonEntry(parentFieldName, obj);
+
+        json = DSL.jsonObject(something)
+            .as("json");
+      } else {
+        json = DSL.jsonObject(jsonEntries)
+            .as("json");
+      }
+
+
       dataQuery.addSelect(json);
       var jsonMapper = new JsonMapper(json.getName());
       fieldMapper.register("json", jsonMapper);
@@ -286,10 +302,17 @@ class SelectBuilder {
     objectRequest.getObjectFields()
         .entrySet()
         .stream()
-        .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
-            .getName()), entry.getKey()
-                .getResultKey(),
-            (SingleObjectRequest) entry.getValue(), selectTable, fieldMapper, asJson))
+        .flatMap(entry -> {
+          var key = entry.getKey();
+          var value = entry.getValue();
+
+          if (value instanceof UnionObjectRequest unionObjectRequest) {
+            return processUnionObjectRequestObjectField(unionObjectRequest, objectType, key.getName(), selectTable);
+          }
+          return createNestedSelect(getObjectField(objectRequest, key.getName()), key.getResultKey(),
+              (SingleObjectRequest) value, selectTable, fieldMapper, asJson);
+        })
+        .filter(Objects::nonNull)
         .map(result -> {
           // add all items before filtering them.
           Optional.of(result)
@@ -309,6 +332,37 @@ class SelectBuilder {
 
 
     return Optional.ofNullable(jsonEntries);
+  }
+
+  private Stream<SelectResult> processUnionObjectRequestObjectField(UnionObjectRequest unionObjectRequest,
+      PostgresObjectType objectType, String fieldName, Table<Record> selectTable) {
+    var field = objectType.getField(fieldName);
+
+    var unionRequest = unionObjectRequest.getObjectRequests()
+        .stream()
+        .map(childObjectRequest -> {
+          var tableAlias = aliasManager.newAlias();
+          var subQuery = build(childObjectRequest, tableAlias, field.getName(), true);
+
+          field.getJoinColumns()
+              .forEach(joinColumn -> {
+                var sqlField = DSL.field(DSL.name(tableAlias, joinColumn.getReferencedColumn()));
+                var equalsCondition = column(selectTable, joinColumn.getName()).equal(sqlField);
+                subQuery.addConditions(equalsCondition);
+
+              });
+
+          return subQuery;
+        })
+        .map(query -> (Select<Record>) query)
+        .reduce(Select::unionAll)
+        .map(query -> (SelectQuery<Record>) query)
+        .orElseThrow();
+
+    return Stream.of(SelectResult.builder()
+        .objectName(fieldName)
+        .selectQuery(unionRequest)
+        .build());
   }
 
   private void processAggregateObjectFields(SingleObjectRequest objectRequest, Table<Record> table,
@@ -343,13 +397,6 @@ class SelectBuilder {
           }
         });
 
-    if (objectType.getName() != null && asJson) {
-      var dtype = DSL.val((Object) objectType.getName())
-          .as("d1");
-      dataQuery.addSelect(dtype);
-      var dtypeMapper = new ColumnMapper(dtype);
-      fieldMapper.register("dtype", dtypeMapper);
-    }
     return Optional.ofNullable(jsonEntries);
   }
 
@@ -504,7 +551,8 @@ class SelectBuilder {
     if (SpatialConstants.GEOMETRY.equals(objectField.getType())) {
       columnMapper = createSpatialColumnMapper(table, objectField, fieldRequest);
     } else {
-      columnMapper = createColumnMapper(objectField.getColumn(), table, jsonObject);
+      var columnName = objectField.getColumn() != null ? objectField.getColumn() : objectField.getName();
+      columnMapper = createColumnMapper(columnName, table, jsonObject);
     }
     if (!jsonObject) {
       parentMapper.register(fieldRequest.getName(), columnMapper);
