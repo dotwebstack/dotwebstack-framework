@@ -382,7 +382,7 @@ class SelectBuilderTest {
 
   @Test
   void build_returnsSelectQuery_forCollectionRequestWithUnionObject() {
-    var beerObjectType = createObjectType("beer", "identifier", "name");
+    var beerObjectType = createObjectType("beer", "identifier", "name", "subRequest");
     beerObjectType.setName("Beer");
     var breweryObjectType = createObjectType("brewery", "identifier", "name");
     breweryObjectType.setName("Brewery");
@@ -406,6 +406,18 @@ class SelectBuilderTest {
             .build())))
         .build();
 
+    var subUnion = UnionObjectRequest.builder()
+        .objectRequests(List.of(
+            SingleObjectRequest.builder().objectType(beerObjectType).scalarFields(List.of(FieldRequest.builder()
+            .name("name")
+            .resultKey("name")
+            .build())).build(),
+            SingleObjectRequest.builder().objectType(breweryObjectType).scalarFields(List.of(FieldRequest.builder()
+                .name("name")
+                .resultKey("name")
+                .build())).build()))
+        .build();
+
     var beerObjectRequest = SingleObjectRequest.builder()
         .objectType(beerObjectType)
         .scalarFields(List.of(FieldRequest.builder()
@@ -415,7 +427,9 @@ class SelectBuilderTest {
         .objectFields(Map.of(FieldRequest.builder()
             .name("history")
             .resultKey("history")
-            .build(), nestedObject))
+            .build(), nestedObject
+            , FieldRequest.builder().name("subRequest").resultKey("subRequest").build(), subUnion
+        ))
         .build();
 
     var breweryObjectRequest = SingleObjectRequest.builder()
@@ -430,6 +444,7 @@ class SelectBuilderTest {
         .objectRequests(List.of(beerObjectRequest, breweryObjectRequest))
         .build();
 
+
     var collectionRequest = CollectionRequest.builder()
         .objectRequest(unionRequest)
         .build();
@@ -438,18 +453,34 @@ class SelectBuilderTest {
 
     assertThat(result, notNullValue());
     assertThat(result.toString(), equalTo("""
-        select json_build_object(
+      select
+        "x4".*,
+        json_build_object(
           'name_column', "x1"."name_column",
           'history_column', json_build_object('age_column', "x1"."age_column"),
           'dtype', cast('Beer' as varchar)
         ) as "json"
-        from "beer" as "x1"
-        union all
-        select json_build_object(
-          'name_column', "x1"."name_column",
-          'dtype', cast('Brewery' as varchar)
-        ) as "json"
-        from "brewery" as "x1\""""));
+      from "beer" as "x1"
+        left outer join lateral (
+          select json_build_object('subRequest', json_build_object(
+            'name_column', "x2"."name_column",
+            'dtype', cast('Beer' as varchar)
+          )) as "json"
+          from "beer" as "x2"
+          union all
+          select json_build_object('subRequest', json_build_object(
+            'name_column', "x3"."name_column",
+            'dtype', cast('Brewery' as varchar)
+          )) as "json"
+          from "brewery" as "x3"
+        ) as "x4"
+          on true
+      union all
+      select json_build_object(
+        'name_column', "x3"."name_column",
+        'dtype', cast('Brewery' as varchar)
+      ) as "json"
+      from "brewery" as "x3\""""));
   }
 
   @Test
