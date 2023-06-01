@@ -72,7 +72,6 @@ import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.JSONEntry;
 import org.jooq.JoinType;
