@@ -190,8 +190,7 @@ public class BackendRequestFactory {
           .forEach(types::add);
     }
 
-    // Needs to be done so inheritance on interfaces is possible.
-    // TODO: controleren of dit wel uberhaubt nodig is.
+    // Needs to be done so inheritance on interfaces is possible and is propagated properly.
     var interfaceNames = Stream.concat(schema.getInterfaces()
         .values()
         .stream()

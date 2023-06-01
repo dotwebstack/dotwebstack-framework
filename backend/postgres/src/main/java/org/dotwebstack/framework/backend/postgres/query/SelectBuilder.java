@@ -199,25 +199,23 @@ class SelectBuilder {
     processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
     if (!jsonEntries.isEmpty()) {
-      Field json;
-      // TODO: cleanup
-      var name = DSL.jsonEntry("dtype", DSL.val(objectType.getName())
-          // Casting to varchar because Github Actions does this for some reason.
+      Field<?> json;
+      // Adding dtype for the TypeResolver to the json object.
+      var dtype = DSL.jsonEntry("dtype", DSL.val(objectType.getName())
+          // Casting to varchar because Github Actions does this for some reason and makes unit-tests fail.
           .cast(VARCHAR));
-      jsonEntries.add(name);
+      jsonEntries.add(dtype);
 
-      if (parentFieldName != null && !parentFieldName.isBlank()) {
-
-        var obj = DSL.jsonObject(jsonEntries);
-        var something = DSL.jsonEntry(parentFieldName, obj);
-
-        json = DSL.jsonObject(something)
+      if (StringUtils.isNotEmpty(parentFieldName)) {
+        // Allows a subfield which is from a relation to be in json format.
+        var jsonEntriesAsObject = DSL.jsonObject(jsonEntries);
+        var parentJsonEntry = DSL.jsonEntry(parentFieldName, jsonEntriesAsObject);
+        json = DSL.jsonObject(parentJsonEntry)
             .as("json");
       } else {
         json = DSL.jsonObject(jsonEntries)
             .as("json");
       }
-
 
       dataQuery.addSelect(json);
       var jsonMapper = new JsonMapper(json.getName());
@@ -344,12 +342,12 @@ class SelectBuilder {
     var unionRequest = unionObjectRequest.getObjectRequests()
         .stream()
         .map(childObjectRequest -> {
-          var tableAlias = aliasManager.newAlias();
-          var subQuery = build(childObjectRequest, tableAlias, field.getName(), true);
+          var newAlias = aliasManager.newAlias();
+          var subQuery = build(childObjectRequest, newAlias, field.getName(), true);
 
           field.getJoinColumns()
               .forEach(joinColumn -> {
-                var sqlField = DSL.field(DSL.name(tableAlias, joinColumn.getReferencedColumn()));
+                var sqlField = DSL.field(DSL.name(newAlias, joinColumn.getReferencedColumn()));
                 var equalsCondition = column(selectTable, joinColumn.getName()).equal(sqlField);
                 subQuery.addConditions(equalsCondition);
 
