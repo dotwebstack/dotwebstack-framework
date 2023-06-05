@@ -30,7 +30,7 @@ class QueryTest {
   @Test
   void createSelect_initQuery_forObjectRequest() {
     var objectRequest = initObjectRequest();
-    var result = new Query(objectRequest, requestContext, false);
+    var result = new Query(objectRequest, requestContext);
     assertThat(result, CoreMatchers.is(notNullValue()));
   }
 

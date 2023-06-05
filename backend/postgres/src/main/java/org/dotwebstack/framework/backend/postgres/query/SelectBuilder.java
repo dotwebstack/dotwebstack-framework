@@ -124,15 +124,33 @@ class SelectBuilder {
     }
 
     var isUnion = new AtomicReference<>(false);
-    return objectRequests.stream()
+    var selectQueries = objectRequests.stream()
         .map(objectRequest -> processSingleObjectRequest(objectRequest, collectionRequest, joinCriteria, asJson,
             isUnion))
-        // Not using the stream cast way because generic parameters are not allowed. This will cause
-        // compiler warnings.
-        .map(val -> (Select<Record>) val)
-        .reduce(Select::unionAll)
-        .map(val -> (SelectQuery<Record>) val)
-        .orElseThrow();
+        .toList();
+
+    return unionAllMultipleSelectQueries(selectQueries).orElseThrow();
+  }
+
+  public SelectQuery<Record> build(ObjectRequest objectRequest) {
+    if (objectRequest instanceof UnionObjectRequest unionObjectRequest) {
+      var selectQueries = unionObjectRequest.getObjectRequests()
+          .stream()
+          .map(singleObjectRequest -> createDataQuery(singleObjectRequest, true, null))
+          .toList();
+
+      // Might return null, which is fine.
+      // The BackendLoader will return an empty map if it is null.
+      return unionAllMultipleSelectQueries(selectQueries).orElse(null);
+
+    } else if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
+      if (!singleObjectRequest.getObjectType()
+          .isNested()) {
+        return createDataQuery(singleObjectRequest, false, null);
+      }
+    }
+
+    return null;
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
@@ -153,6 +171,13 @@ class SelectBuilder {
 
   public SelectQuery<Record> build(SingleObjectRequest objectRequest, boolean fromUnion) {
     return createDataQuery(objectRequest, fromUnion, null);
+  }
+
+  private Optional<SelectQuery<Record>> unionAllMultipleSelectQueries(List<SelectQuery<Record>> selectQueries) {
+    return selectQueries.stream()
+        .map(val -> (Select<Record>) val)
+        .reduce(Select::unionAll)
+        .map(val -> (SelectQuery<Record>) val);
   }
 
   public SelectQuery<Record> processSingleObjectRequest(SingleObjectRequest objectRequest,
@@ -210,12 +235,14 @@ class SelectBuilder {
 
     addJsonEntriesToSelect(jsonEntries, dataQuery, objectType.getName(), parentFieldName);
 
-    List<Condition> keyConditions = objectRequest.getKeyCriterias()
-        .stream()
-        .flatMap(keyCriteria -> createKeyCondition(keyCriteria, table).stream())
-        .toList();
+    if (!asJson) {
+      List<Condition> keyConditions = objectRequest.getKeyCriterias()
+          .stream()
+          .flatMap(keyCriteria -> createKeyCondition(keyCriteria, table).stream())
+          .toList();
 
-    dataQuery.addConditions(keyConditions);
+      dataQuery.addConditions(keyConditions);
+    }
 
     if (objectType.isDistinct()) {
       dataQuery.setDistinct(true);

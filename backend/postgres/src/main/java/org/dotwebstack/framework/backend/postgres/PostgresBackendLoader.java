@@ -11,8 +11,6 @@ import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
-import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.core.publisher.Mono;
@@ -29,35 +27,14 @@ public class PostgresBackendLoader implements BackendLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
-    return loadSingle(objectRequest, requestContext, false);
-  }
+    var query = new Query(objectRequest, requestContext);
 
-  public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext,
-      boolean fromUnion) {
-
-    if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
-      if (singleObjectRequest.getObjectType()
-          .isNested()) {
-        return Mono.just(Map.of());
-      }
-
-      var query = new Query(singleObjectRequest, requestContext, fromUnion);
-
-      return postgresClient.fetch(query)
-          .singleOrEmpty();
-    }
-
-    var unionObjectRequest = (UnionObjectRequest) objectRequest;
-    if (unionObjectRequest.getObjectRequests()
-        .isEmpty()) {
+    if (query.getSelectQuery() == null) {
       return Mono.just(Map.of());
     }
 
-    return unionObjectRequest.getObjectRequests()
-        .stream()
-        .map(objRequest -> loadSingle(objRequest, requestContext, true))
-        .reduce((a, b) -> Mono.from(Flux.merge(a, b)))
-        .orElseThrow();
+    return postgresClient.fetch(query)
+        .singleOrEmpty();
   }
 
   @Override

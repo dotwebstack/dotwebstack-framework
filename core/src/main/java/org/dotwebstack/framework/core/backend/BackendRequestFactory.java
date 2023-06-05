@@ -56,6 +56,7 @@ import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
@@ -169,23 +170,45 @@ public class BackendRequestFactory {
 
   private UnionObjectRequest createUnionObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet, GraphQLInterfaceType interfaceType) {
-    var types = new ArrayList<String>();
+    var typeNames = new ArrayList<String>();
 
     if (executionStepInfo.getField() != null) {
-      types.addAll(getTypeConditionNamesFromFields(executionStepInfo.getField()
+      typeNames.addAll(getTypeConditionNamesFromFields(executionStepInfo.getField()
           .getFields()));
     }
 
-    // Needs to be done so inheritance on interfaces is possible and is propagated properly.
-    var interfaceNames = Stream.concat(schema.getInterfaces()
+    var interfaceNames = getAllImplementedInterfaceNames(interfaceType.getName());
+    var objectTypes = getRequestedObjectTypes(interfaceNames, typeNames);
+
+    var objectRequests = objectTypes.stream()
+        .map(objectType -> createObjectRequest(executionStepInfo, selectionSet, objectType))
+        .map(SingleObjectRequest.class::cast)
+        .toList();
+
+    return UnionObjectRequest.builder()
+        .objectRequests(objectRequests)
+        .build();
+  }
+
+  /**
+   * Returns all interface names which are inherited from the implemented interface.
+   *
+   * @param baseInterfaceName - interface which is implemented
+   * @return All implicitly implemented Interfaces
+   */
+  private List<String> getAllImplementedInterfaceNames(String baseInterfaceName) {
+    return Stream.concat(schema.getInterfaces()
         .values()
         .stream()
         .filter(iface -> iface.getImplements()
-            .contains(interfaceType.getName()))
-        .map(ObjectType::getName), Stream.of(interfaceType.getName()))
+            .contains(baseInterfaceName))
+        .map(ObjectType::getName), Stream.of(baseInterfaceName))
         .toList();
+  }
 
-    var objectTypes = schema.getObjectTypes()
+  private List<ObjectType<? extends ObjectField>> getRequestedObjectTypes(List<String> interfaceNames,
+      List<String> typeNames) {
+    return schema.getObjectTypes()
         .values()
         .stream()
         .filter(objectType -> {
@@ -197,22 +220,13 @@ public class BackendRequestFactory {
               .anyMatch(interfaceNames::contains);
         })
         .filter(objectType -> {
-          if (types.isEmpty()) {
+          if (typeNames.isEmpty()) {
             return true;
           } else {
-            return types.contains(objectType.getName());
+            return typeNames.contains(objectType.getName());
           }
         })
         .toList();
-
-    var objectRequests = objectTypes.stream()
-        .map(objectType -> createObjectRequest(executionStepInfo, selectionSet, objectType))
-        .map(SingleObjectRequest.class::cast)
-        .toList();
-
-    return UnionObjectRequest.builder()
-        .objectRequests(objectRequests)
-        .build();
   }
 
   private List<String> getTypeConditionNamesFromFields(List<Field> fields) {

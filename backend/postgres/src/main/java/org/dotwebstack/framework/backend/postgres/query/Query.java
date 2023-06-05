@@ -8,8 +8,8 @@ import org.dotwebstack.framework.core.backend.query.RowMapper;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.jooq.Record;
 import org.jooq.SelectQuery;
 
@@ -37,9 +37,9 @@ public class Query {
     selectQuery = createSelect(collectionBatchRequest);
   }
 
-  public Query(SingleObjectRequest objectRequest, RequestContext requestContext, boolean fromUnion) {
+  public Query(ObjectRequest objectRequest, RequestContext requestContext) {
     this.requestContext = requestContext;
-    selectQuery = createSelect(objectRequest, fromUnion);
+    selectQuery = createSelect(objectRequest);
   }
 
   public Query(BatchRequest batchRequest, RequestContext requestContext) {
@@ -73,12 +73,12 @@ public class Query {
         .build(collectionRequest, collectionBatchRequest.getJoinCriteria());
   }
 
-  private SelectQuery<Record> createSelect(SingleObjectRequest objectRequest, boolean fromUnion) {
+  private SelectQuery<Record> createSelect(ObjectRequest objectRequest) {
     return newSelect().requestContext(requestContext)
         .fieldMapper(rowMapper)
         .aliasManager(aliasManager)
         .tableAlias(aliasManager.newAlias())
-        .build(objectRequest, fromUnion);
+        .build(objectRequest);
   }
 
   private SelectQuery<Record> createSelect(BatchRequest batchRequest) {
