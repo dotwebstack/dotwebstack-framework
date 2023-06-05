@@ -14,6 +14,8 @@ import org.dotwebstack.framework.core.model.ObjectField;
 @Getter
 public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
+  public static final String JSON = "json";
+
   protected final Map<String, FieldMapper<T, ?>> fieldMappers = new HashMap<>();
 
   @Override
@@ -22,7 +24,7 @@ public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
         .stream()
         .collect(HashMap::new, (map, entry) -> {
           if (entry.getKey()
-              .equals("json")) {
+              .equals(JSON)) {
             var val = (Map<String, Object>) entry.getValue()
                 .apply(row);
             if (!val.isEmpty()) {

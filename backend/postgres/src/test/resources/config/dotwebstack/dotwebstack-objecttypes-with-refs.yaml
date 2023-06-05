@@ -21,7 +21,6 @@ objectTypes:
         type: BeerIngredient
         joinTable:
           name: dbeerpedia.beers_ingredients
-          inverseTableName: dbeerpedia.beers
           joinColumns:
             - name: beers_identifier
               referencedField: identifier
@@ -86,7 +85,6 @@ objectTypes:
         list: true
         joinTable:
           name: dbeerpedia.breweries__related_to
-          inverseTableName: dbeerpedia.breweries
           joinColumns:
             - name: brewery_identifier
               referencedField: identifier

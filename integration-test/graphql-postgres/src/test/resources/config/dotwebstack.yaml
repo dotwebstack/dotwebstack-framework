@@ -108,7 +108,6 @@ objectTypes:
         list: true
         joinTable:
           name: db.beer_ingredient
-          inverseTableName: db.beer
           joinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
@@ -120,7 +119,6 @@ objectTypes:
         nullable: true
         joinTable:
           name: db.beer_ingredient
-          inverseTableName: db.beer
           joinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
@@ -131,7 +129,6 @@ objectTypes:
         aggregationOf: Ingredient
         joinTable:
           name: db.beer_ingredient
-          inverseTableName: db.beer
           joinColumns:
             - name: beer_identifier
               referencedField: identifier_beer
@@ -185,7 +182,6 @@ objectTypes:
         nullable: true
         joinTable:
           name: db.beer_ingredient
-          inverseTableName: db.ingredient
           joinColumns:
             - name: ingredient_code
               referencedField: code

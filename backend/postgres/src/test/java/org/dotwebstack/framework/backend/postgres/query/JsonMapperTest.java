@@ -44,7 +44,7 @@ class JsonMapperTest {
   @Test
   void apply_returnEmptyMap_forNull() {
     var jsonMapper = new JsonMapper("json");
-    Map<String, Object> row = new HashMap<>();
+    var row = new HashMap<String, Object>();
     row.put("json", null);
     var result = jsonMapper.apply(row);
 
@@ -64,7 +64,7 @@ class JsonMapperTest {
 
     Map<String, Object> row = Map.of("json", json);
 
-    Exception exception = assertThrows(JsonMappingException.class, () -> {
+    var exception = assertThrows(JsonMappingException.class, () -> {
       jsonMapper.apply(row);
     });
 

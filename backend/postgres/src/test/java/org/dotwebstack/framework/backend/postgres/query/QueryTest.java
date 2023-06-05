@@ -29,22 +29,21 @@ class QueryTest {
 
   @Test
   void createSelect_initQuery_forObjectRequest() {
-    SingleObjectRequest objectRequest = initObjectRequest();
-
+    var objectRequest = initObjectRequest();
     var result = new Query(objectRequest, requestContext, false);
     assertThat(result, CoreMatchers.is(notNullValue()));
   }
 
   @Test
   void createSelect_initQuery_forCollectionRequest() {
-    Map<String, Object> source = new HashMap<>();
+    var source = new HashMap<String, Object>();
     source.put("a", "bbb");
     RequestContext requestContext = RequestContext.builder()
         .objectField(mock(PostgresObjectField.class))
         .source(source)
         .build();
 
-    SingleObjectRequest objectRequest = initObjectRequest();
+    var objectRequest = initObjectRequest();
 
     CollectionRequest request = CollectionRequest.builder()
         .objectRequest(objectRequest)
@@ -56,7 +55,7 @@ class QueryTest {
   }
 
   private SingleObjectRequest initObjectRequest() {
-    PostgresObjectType objectType = mock(PostgresObjectType.class);
+    var objectType = mock(PostgresObjectType.class);
     when(objectType.getTable()).thenReturn("anyTable");
     Map<FieldRequest, ObjectRequest> objectFields = Map.of();
 

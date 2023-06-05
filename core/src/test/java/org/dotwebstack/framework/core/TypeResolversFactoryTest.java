@@ -1,5 +1,6 @@
 package org.dotwebstack.framework.core;
 
+import static org.dotwebstack.framework.core.TypeResolversFactory.DTYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,7 +39,7 @@ class TypeResolversFactoryTest {
   void typeResolver_resolveType_whenTypeExists() {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
-    var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "Brewery"));
+    var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of(DTYPE, "Brewery"));
 
     var graphqlObjectType = typeResolvers.get("BaseObject")
         .getType(typeResolutionEnvironment);
@@ -50,7 +51,7 @@ class TypeResolversFactoryTest {
   void typeResolver_resolveType_withUnknownDtype() {
     var configFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var typeResolvers = getTypeResolvers(configFile);
-    var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of("dtype", "DoesNotExist"));
+    var typeResolutionEnvironment = getTypeResolutionEnvironment(configFile, Map.of(DTYPE, "DoesNotExist"));
     var graphqlObjectType = typeResolvers.get("BaseObject")
         .getType(typeResolutionEnvironment);
     assertNull(graphqlObjectType);

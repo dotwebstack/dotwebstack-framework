@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @Conditional(OnLocalSchema.class)
 public class TypeResolversFactory {
 
+  public static final String DTYPE = "dtype";
+
   private final Schema schema;
 
   private final Map<String, TypeResolver> typeResolvers = new HashMap<>();
@@ -32,9 +34,8 @@ public class TypeResolversFactory {
 
   private TypeResolver createTypeResolver() {
     return typeResolutionEnvironment -> {
-      if (typeResolutionEnvironment.getObject() instanceof Map<?, ?> objectFields
-          && objectFields.containsKey("dtype")) {
-        var dtypeName = (String) objectFields.get("dtype");
+      if (typeResolutionEnvironment.getObject() instanceof Map<?, ?> objectFields && objectFields.containsKey(DTYPE)) {
+        var dtypeName = (String) objectFields.get(DTYPE);
         return typeResolutionEnvironment.getSchema()
             .getObjectType(dtypeName);
       }

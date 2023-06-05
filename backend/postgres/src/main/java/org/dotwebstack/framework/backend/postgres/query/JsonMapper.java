@@ -12,8 +12,11 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
 
   private final String columnName;
 
+  private final ObjectMapper objectMapper;
+
   public JsonMapper(String columnName) {
     this.columnName = columnName;
+    this.objectMapper = new ObjectMapper();
   }
 
   @Override
@@ -24,11 +27,10 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
       return Map.of();
     }
 
-    var objMapper = new ObjectMapper();
     var jsonString = ((Json) rowVal).asString();
     try {
-      TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
-      return objMapper.readValue(jsonString, typeRef);
+      var typeRef = new TypeReference<HashMap<String, Object>>() {};
+      return objectMapper.readValue(jsonString, typeRef);
     } catch (JsonProcessingException e) {
       throw new JsonMappingException("Unable to convert Json column to GraphQL type.", e);
     }

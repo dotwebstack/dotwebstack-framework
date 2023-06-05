@@ -74,10 +74,10 @@ public class ObjectRequestHelper {
         })
         .map(Map.Entry::getValue)
         .findFirst()
-        .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
+        .orElseGet(() -> createSingleObjectRequest(objectFields, objectField, nextObjectField));
   }
 
-  private static SingleObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  private static SingleObjectRequest createSingleObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
     var objectRequest = SingleObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())

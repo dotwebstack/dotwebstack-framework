@@ -30,6 +30,7 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnection
 
 import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.Field;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -55,7 +56,6 @@ import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
-import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
@@ -76,6 +76,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Conditional(OnLocalSchema.class)
 public class BackendRequestFactory {
+
+  private static final String TYPE_CONDITION = "typeCondition";
 
   private final Schema schema;
 
@@ -168,26 +170,10 @@ public class BackendRequestFactory {
   private UnionObjectRequest createUnionObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet, GraphQLInterfaceType interfaceType) {
     var types = new ArrayList<String>();
+
     if (executionStepInfo.getField() != null) {
-      executionStepInfo.getField()
-          .getFields()
-          .stream()
-          .map(field -> field.getSelectionSet()
-              .getSelections()
-              .stream()
-              .map(selection -> {
-                var typeCondition = selection.getNamedChildren()
-                    .getChildren("typeCondition");
-                if (!typeCondition.isEmpty()) {
-                  return ((TypeName) typeCondition.get(0)).getName();
-                } else {
-                  return null;
-                }
-              })
-              .filter(Objects::nonNull)
-              .toList())
-          .flatMap(List::stream)
-          .forEach(types::add);
+      types.addAll(getTypeConditionNamesFromFields(executionStepInfo.getField()
+          .getFields()));
     }
 
     // Needs to be done so inheritance on interfaces is possible and is propagated properly.
@@ -199,36 +185,25 @@ public class BackendRequestFactory {
         .map(ObjectType::getName), Stream.of(interfaceType.getName()))
         .toList();
 
-
-    List<ObjectType<? extends ObjectField>> objectTypes;
-    if (!types.isEmpty()) {
-      objectTypes = schema.getObjectTypes()
-          .values()
-          .stream()
-          .filter(objectType -> {
-            if (interfaceNames.contains(objectType.getName())) {
-              return false;
-            }
-            return objectType.getImplements()
-                .stream()
-                .anyMatch(interfaceNames::contains);
-          })
-          .filter(objectType -> types.contains(objectType.getName()))
-          .toList();
-    } else {
-      objectTypes = schema.getObjectTypes()
-          .values()
-          .stream()
-          .filter(objectType -> {
-            if (interfaceNames.contains(objectType.getName())) {
-              return false;
-            }
-            return objectType.getImplements()
-                .stream()
-                .anyMatch(interfaceNames::contains);
-          })
-          .toList();
-    }
+    var objectTypes = schema.getObjectTypes()
+        .values()
+        .stream()
+        .filter(objectType -> {
+          if (interfaceNames.contains(objectType.getName())) {
+            return false;
+          }
+          return objectType.getImplements()
+              .stream()
+              .anyMatch(interfaceNames::contains);
+        })
+        .filter(objectType -> {
+          if (types.isEmpty()) {
+            return true;
+          } else {
+            return types.contains(objectType.getName());
+          }
+        })
+        .toList();
 
     var objectRequests = objectTypes.stream()
         .map(objectType -> createObjectRequest(executionStepInfo, selectionSet, objectType))
@@ -238,6 +213,26 @@ public class BackendRequestFactory {
     return UnionObjectRequest.builder()
         .objectRequests(objectRequests)
         .build();
+  }
+
+  private List<String> getTypeConditionNamesFromFields(List<Field> fields) {
+    return fields.stream()
+        .map(field -> field.getSelectionSet()
+            .getSelections()
+            .stream()
+            .map(selection -> {
+              var typeCondition = selection.getNamedChildren()
+                  .getChildren(TYPE_CONDITION);
+              if (!typeCondition.isEmpty()) {
+                return ((TypeName) typeCondition.get(0)).getName();
+              } else {
+                return null;
+              }
+            })
+            .filter(Objects::nonNull)
+            .toList())
+        .flatMap(List::stream)
+        .toList();
   }
 
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {

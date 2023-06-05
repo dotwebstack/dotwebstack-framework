@@ -126,7 +126,7 @@ class GraphPatternBuilder {
         .of(applyCardinality(propertyShape, subject.has(propertyShape.toPredicate(), SparqlBuilder.var(objectAlias))));
   }
 
-  private Stream<GraphPattern> createNestedPattern(FieldRequest fieldRequest, ObjectRequest nestedSingleObjectRequest) {
+  private Stream<GraphPattern> createNestedPattern(FieldRequest fieldRequest, ObjectRequest nestedObjectRequest) {
     var propertyShape = nodeShape.getPropertyShape(fieldRequest.getName());
 
     if (fieldRequest.isList()) {
@@ -144,7 +144,7 @@ class GraphPatternBuilder {
     fieldMapper.register(fieldRequest.getName(), nestedResourceMapper);
 
     var nestedPattern = GraphPatternBuilder.newGraphPattern()
-        .objectRequest(nestedSingleObjectRequest)
+        .objectRequest(nestedObjectRequest)
         .nodeShape(propertyShape.getNode())
         .subject(nestedResource)
         .fieldMapper(nestedResourceMapper)

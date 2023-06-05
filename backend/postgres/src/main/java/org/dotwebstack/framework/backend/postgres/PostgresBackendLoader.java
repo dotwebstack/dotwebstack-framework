@@ -41,7 +41,7 @@ public class PostgresBackendLoader implements BackendLoader {
         return Mono.just(Map.of());
       }
 
-      Query query = new Query(singleObjectRequest, requestContext, fromUnion);
+      var query = new Query(singleObjectRequest, requestContext, fromUnion);
 
       return postgresClient.fetch(query)
           .singleOrEmpty();
@@ -64,8 +64,7 @@ public class PostgresBackendLoader implements BackendLoader {
   public Flux<Map<String, Object>> loadMany(CollectionRequest collectionRequest, RequestContext requestContext) {
     var query = new Query(collectionRequest, requestContext);
 
-    return postgresClient.fetch(query)
-        .map(stringObjectMap -> stringObjectMap);
+    return postgresClient.fetch(query);
   }
 
   @Override

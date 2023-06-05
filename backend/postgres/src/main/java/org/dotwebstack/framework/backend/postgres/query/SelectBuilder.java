@@ -23,7 +23,9 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFi
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectField;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getObjectType;
 import static org.dotwebstack.framework.backend.postgres.query.SortBuilder.newSorting;
+import static org.dotwebstack.framework.core.TypeResolversFactory.DTYPE;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
+import static org.dotwebstack.framework.core.backend.query.AbstractObjectMapper.JSON;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.fieldPathContainsRef;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getLeaf;
@@ -123,37 +125,10 @@ class SelectBuilder {
 
     var isUnion = new AtomicReference<>(false);
     return objectRequests.stream()
-        .map(objectRequest -> {
-          var dataQuery = createDataQuery(objectRequest, asJson, null);
-
-          newSorting().sortCriterias(collectionRequest.getSortCriterias())
-              .fieldMapper(fieldMapper)
-              .build()
-              .forEach(dataQuery::addOrderBy);
-
-          Optional.of(collectionRequest)
-              .map(CollectionRequest::getFilterCriteria)
-              .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-                  .filterCriteria(filterCriteria)
-                  .table(DSL.table(tableAlias))
-                  .contextCriteria(collectionRequest.getObjectRequest()
-                      .getContextCriteria())
-                  .build())
-              .ifPresent(dataQuery::addConditions);
-
-          newPaging().requestContext(requestContext)
-              .dataQuery(dataQuery)
-              .build();
-
-          if (joinCriteria != null) {
-            var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias),
-                joinCriteria, isUnion.get());
-            isUnion.set(true); // Set true because all succeeding queries are unions.
-            return batchQuery;
-          }
-
-          return dataQuery;
-        })
+        .map(objectRequest -> processSingleObjectRequest(objectRequest, collectionRequest, joinCriteria, asJson,
+            isUnion))
+        // Not using the stream cast way because generic parameters are not allowed. This will cause
+        // compiler warnings.
         .map(val -> (Select<Record>) val)
         .reduce(Select::unionAll)
         .map(val -> (SelectQuery<Record>) val)
@@ -180,6 +155,40 @@ class SelectBuilder {
     return createDataQuery(objectRequest, fromUnion, null);
   }
 
+  public SelectQuery<Record> processSingleObjectRequest(SingleObjectRequest objectRequest,
+      CollectionRequest collectionRequest, JoinCriteria joinCriteria, boolean asJson,
+      AtomicReference<Boolean> isUnion) {
+    var dataQuery = createDataQuery(objectRequest, asJson, null);
+
+    newSorting().sortCriterias(collectionRequest.getSortCriterias())
+        .fieldMapper(fieldMapper)
+        .build()
+        .forEach(dataQuery::addOrderBy);
+
+    Optional.of(collectionRequest)
+        .map(CollectionRequest::getFilterCriteria)
+        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+            .filterCriteria(filterCriteria)
+            .table(DSL.table(tableAlias))
+            .contextCriteria(collectionRequest.getObjectRequest()
+                .getContextCriteria())
+            .build())
+        .ifPresent(dataQuery::addConditions);
+
+    newPaging().requestContext(requestContext)
+        .dataQuery(dataQuery)
+        .build();
+
+    if (joinCriteria != null) {
+      var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria,
+          isUnion.get());
+      isUnion.set(true); // Set true because all succeeding queries are unions.
+      return batchQuery;
+    }
+
+    return dataQuery;
+  }
+
   private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson,
       String parentFieldName) {
     var objectType = getObjectType(objectRequest);
@@ -198,29 +207,8 @@ class SelectBuilder {
     processScalarFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
     processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
     processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
-    if (!jsonEntries.isEmpty()) {
-      Field<?> json;
-      // Adding dtype for the TypeResolver to the json object.
-      var dtype = DSL.jsonEntry("dtype", DSL.val(objectType.getName())
-          // Casting to varchar because Github Actions does this for some reason and makes unit-tests fail.
-          .cast(VARCHAR));
-      jsonEntries.add(dtype);
 
-      if (StringUtils.isNotEmpty(parentFieldName)) {
-        // Allows a subfield which is from a relation to be in json format.
-        var jsonEntriesAsObject = DSL.jsonObject(jsonEntries);
-        var parentJsonEntry = DSL.jsonEntry(parentFieldName, jsonEntriesAsObject);
-        json = DSL.jsonObject(parentJsonEntry)
-            .as("json");
-      } else {
-        json = DSL.jsonObject(jsonEntries)
-            .as("json");
-      }
-
-      dataQuery.addSelect(json);
-      var jsonMapper = new JsonMapper(json.getName());
-      fieldMapper.register("json", jsonMapper);
-    }
+    addJsonEntriesToSelect(jsonEntries, dataQuery, objectType.getName(), parentFieldName);
 
     List<Condition> keyConditions = objectRequest.getKeyCriterias()
         .stream()
@@ -234,6 +222,33 @@ class SelectBuilder {
     }
 
     return dataQuery;
+  }
+
+  private void addJsonEntriesToSelect(List<JSONEntry<?>> jsonEntries, SelectQuery<Record> dataQuery,
+      String objectTypeName, String parentFieldName) {
+    if (!jsonEntries.isEmpty()) {
+      Field<?> json;
+      // Adding dtype for the TypeResolver to the json object.
+      var dtype = DSL.jsonEntry(DTYPE, DSL.val(objectTypeName)
+          // Casting to varchar because Github Actions does this for some reason and makes unit-tests fail.
+          .cast(VARCHAR));
+      jsonEntries.add(dtype);
+
+      if (StringUtils.isNotEmpty(parentFieldName)) {
+        // Allows a subfield which is from a relation to be in json format.
+        var jsonEntriesAsObject = DSL.jsonObject(jsonEntries);
+        var parentJsonEntry = DSL.jsonEntry(parentFieldName, jsonEntriesAsObject);
+        json = DSL.jsonObject(parentJsonEntry)
+            .as(JSON);
+      } else {
+        json = DSL.jsonObject(jsonEntries)
+            .as(JSON);
+      }
+
+      dataQuery.addSelect(json);
+      var jsonMapper = new JsonMapper(json.getName());
+      fieldMapper.register(JSON, jsonMapper);
+    }
   }
 
   private Optional<List<JSONEntry<?>>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
@@ -330,7 +345,6 @@ class SelectBuilder {
             dataQuery.addSelect(result.getSelectField());
           }
         });
-
 
     return Optional.ofNullable(jsonEntries);
   }
@@ -580,11 +594,7 @@ class SelectBuilder {
   private ColumnMapper createColumnMapper(String columnName, Table<Record> table, boolean jsonObject) {
     Field<Object> column;
     if (jsonObject) {
-      var columnNameWithoutPrefix =
-          columnName.contains("__") ? StringUtils.substringAfter(columnName, "__") : columnName;
-      // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
-      var sanitizedColumnName = columnNameWithoutPrefix.replaceAll("(node[s{1}]?__)", "");
-      column = column(table, sanitizedColumnName);
+      column = column(table, sanitizeName(columnName));
     } else {
       column = column(table, columnName);
     }
@@ -807,11 +817,7 @@ class SelectBuilder {
             (PostgresObjectType) objectField.getTargetType(), table, objectMapper, scalarAsJson))
         .map(field -> {
           if (scalarAsJson) {
-            var fieldname = field.getName()
-                .contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
-            // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
-            fieldname = fieldname.replaceAll("(node[s{1}]?__)", "");
-            jsonEntries.add(DSL.jsonEntry(fieldname, field));
+            jsonEntries.add(DSL.jsonEntry(sanitizeName(field.getName()), field));
             return null;
           }
           return SelectResult.builder()
@@ -976,5 +982,11 @@ class SelectBuilder {
         .ifPresent(builder::joinConfiguration);
 
     return builder.build();
+  }
+
+  private String sanitizeName(String name) {
+    var nameWithoutPrefix = name.contains("__") ? StringUtils.substringAfter(name, "__") : name;
+    // remove all 'node__' and 'nodes__´ which might come from the ref nodes.
+    return nameWithoutPrefix.replaceAll("(node[s{1}]?__)", "");
   }
 }
