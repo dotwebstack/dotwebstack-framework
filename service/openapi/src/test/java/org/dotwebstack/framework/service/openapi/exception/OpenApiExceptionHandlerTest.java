@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -173,7 +174,8 @@ class OpenApiExceptionHandlerTest {
     when(serverWebExchange.getRequest()).thenReturn(mockServerHttpRequest);
 
     JexlScript customParamScript = getJexlScript("`foo`");
-    when(jexlEngine.createScript("`foo`")).thenReturn(customParamScript);
+    lenient().when(jexlEngine.createScript("`foo`"))
+        .thenReturn(customParamScript);
 
     JexlScript acceptableScript = getJexlScript("acceptableMimeTypes");
     when(jexlEngine.createScript("acceptableMimeTypes")).thenReturn(acceptableScript);
