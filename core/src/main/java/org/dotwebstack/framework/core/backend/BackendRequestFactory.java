@@ -31,6 +31,7 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnection
 import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
 import graphql.language.Field;
+import graphql.language.Selection;
 import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
@@ -234,19 +235,21 @@ public class BackendRequestFactory {
         .map(field -> field.getSelectionSet()
             .getSelections()
             .stream()
-            .map(selection -> {
-              var typeCondition = selection.getNamedChildren()
-                  .getChildren(TYPE_CONDITION);
-              if (!typeCondition.isEmpty()) {
-                return ((TypeName) typeCondition.get(0)).getName();
-              } else {
-                return null;
-              }
-            })
+            .map(this::getFieldTypeConditionName)
             .filter(Objects::nonNull)
             .toList())
         .flatMap(List::stream)
         .toList();
+  }
+
+  private String getFieldTypeConditionName(Selection<?> field) {
+    var typeCondition = field.getNamedChildren()
+        .getChildren(TYPE_CONDITION);
+    if (!typeCondition.isEmpty()) {
+      return ((TypeName) typeCondition.get(0)).getName();
+    } else {
+      return null;
+    }
   }
 
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {

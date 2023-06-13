@@ -2,11 +2,11 @@ package org.dotwebstack.framework.backend.postgres.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 
-@Log4j2
+@Slf4j
 public class CyclicRefDetector {
 
   private final List<String> processedFields;

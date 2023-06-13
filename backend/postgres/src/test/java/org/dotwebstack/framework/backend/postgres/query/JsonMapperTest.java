@@ -10,6 +10,7 @@ import io.r2dbc.postgresql.codec.Json;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -64,7 +65,7 @@ class JsonMapperTest {
 
     Map<String, Object> row = Map.of("json", json);
 
-    var exception = assertThrows(JsonMappingException.class, () -> {
+    var exception = assertThrows(DotWebStackRuntimeException.class, () -> {
       jsonMapper.apply(row);
     });
 

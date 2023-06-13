@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.postgresql.codec.Json;
 import java.util.HashMap;
 import java.util.Map;
+import org.dotwebstack.framework.core.DotWebStackRuntimeException;
 import org.dotwebstack.framework.core.backend.query.AbstractObjectMapper;
 
 public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
@@ -32,7 +33,7 @@ public class JsonMapper extends AbstractObjectMapper<Map<String, Object>> {
       var typeRef = new TypeReference<HashMap<String, Object>>() {};
       return objectMapper.readValue(jsonString, typeRef);
     } catch (JsonProcessingException e) {
-      throw new JsonMappingException("Unable to convert Json column to GraphQL type.", e);
+      throw new DotWebStackRuntimeException("Unable to convert Json column to GraphQL type.", e);
     }
   }
 }

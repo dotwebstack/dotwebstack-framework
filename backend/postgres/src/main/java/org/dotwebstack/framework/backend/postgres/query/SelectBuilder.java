@@ -143,11 +143,9 @@ class SelectBuilder {
       // The BackendLoader will return an empty map if it is null.
       return unionAllMultipleSelectQueries(selectQueries).orElse(null);
 
-    } else if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
-      if (!singleObjectRequest.getObjectType()
-          .isNested()) {
-        return createDataQuery(singleObjectRequest, false, null);
-      }
+    } else if (objectRequest instanceof SingleObjectRequest singleObjectRequest && !singleObjectRequest.getObjectType()
+        .isNested()) {
+      return createDataQuery(singleObjectRequest, false, null);
     }
 
     return null;
@@ -227,11 +225,9 @@ class SelectBuilder {
 
     processAggregateObjectFields(objectRequest, table, dataQuery);
 
-    List<JSONEntry<?>> jsonEntries = new ArrayList<>();
-
-    processScalarFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
-    processObjectFields(objectRequest, objectType, dataQuery, table, asJson).ifPresent(jsonEntries::addAll);
-    processObjectListFields(objectRequest, table, dataQuery, asJson).ifPresent(jsonEntries::addAll);
+    var jsonEntries = processScalarFields(objectRequest, objectType, dataQuery, table, asJson);
+    jsonEntries.addAll(processObjectFields(objectRequest, objectType, dataQuery, table, asJson));
+    jsonEntries.addAll(processObjectListFields(objectRequest, table, dataQuery, asJson));
 
     addJsonEntriesToSelect(jsonEntries, dataQuery, objectType.getName(), parentFieldName);
 
@@ -278,14 +274,9 @@ class SelectBuilder {
     }
   }
 
-  private Optional<List<JSONEntry<?>>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
+  private List<JSONEntry<?>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
       SelectQuery<Record> dataQuery, boolean asJson) {
-    List<JSONEntry<?>> jsonEntries;
-    if (asJson) {
-      jsonEntries = new ArrayList<>();
-    } else {
-      jsonEntries = null;
-    }
+    var jsonEntries = new ArrayList<JSONEntry<?>>();
 
     objectRequest.getObjectListFields()
         .entrySet()
@@ -305,7 +296,7 @@ class SelectBuilder {
           }
         });
 
-    return Optional.ofNullable(jsonEntries);
+    return jsonEntries;
   }
 
   private List<Field<?>> processObjectListFields(PostgresObjectField objectField, Table<Record> table) {
@@ -333,14 +324,9 @@ class SelectBuilder {
     return List.of();
   }
 
-  private Optional<List<JSONEntry<?>>> processObjectFields(SingleObjectRequest objectRequest,
-      PostgresObjectType objectType, SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
-    List<JSONEntry<?>> jsonEntries;
-    if (asJson) {
-      jsonEntries = new ArrayList<>();
-    } else {
-      jsonEntries = null;
-    }
+  private List<JSONEntry<?>> processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    var jsonEntries = new ArrayList<JSONEntry<?>>();
 
     objectRequest.getObjectFields()
         .entrySet()
@@ -373,7 +359,7 @@ class SelectBuilder {
           }
         });
 
-    return Optional.ofNullable(jsonEntries);
+    return jsonEntries;
   }
 
   private Stream<SelectResult> processUnionObjectRequestObjectField(UnionObjectRequest unionObjectRequest,
@@ -391,7 +377,6 @@ class SelectBuilder {
                 var sqlField = DSL.field(DSL.name(newAlias, joinColumn.getReferencedColumn()));
                 var equalsCondition = column(selectTable, joinColumn.getName()).equal(sqlField);
                 subQuery.addConditions(equalsCondition);
-
               });
 
           return subQuery;
@@ -417,29 +402,22 @@ class SelectBuilder {
             .isNested()));
   }
 
-  private Optional<List<JSONEntry<?>>> processScalarFields(SingleObjectRequest objectRequest,
-      PostgresObjectType objectType, SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
-    List<JSONEntry<?>> jsonEntries;
-    if (asJson) {
-      jsonEntries = new ArrayList<>();
-    } else {
-      jsonEntries = null;
-    }
-
+  private List<JSONEntry<?>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
+    var jsonEntries = new ArrayList<JSONEntry<?>>();
     objectRequest.getScalarFields()
         .stream()
         .map(scalarFieldRequest -> processScalarField(scalarFieldRequest, objectType, selectTable, fieldMapper, asJson))
         .forEach(field -> {
           if (asJson) {
-            var name = field.getName()
-                .contains("__") ? StringUtils.substringAfter(field.getName(), "__") : field.getName();
+            var name = sanitizeName(field.getName());
             jsonEntries.add(DSL.jsonEntry(name, field));
           } else {
             dataQuery.addSelect(field);
           }
         });
 
-    return Optional.ofNullable(jsonEntries);
+    return jsonEntries;
   }
 
   private void addSubSelect(SelectQuery<Record> selectQuery, Select<Record> nestedSelectQuery, boolean addFrom) {

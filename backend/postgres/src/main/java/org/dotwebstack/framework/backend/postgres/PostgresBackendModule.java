@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.backend.postgres.helpers.CyclicRefDetector;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
 @Component
-@Log4j2
 class PostgresBackendModule implements BackendModule<PostgresObjectType> {
 
   private final PostgresBackendLoaderFactory backendLoaderFactory;
