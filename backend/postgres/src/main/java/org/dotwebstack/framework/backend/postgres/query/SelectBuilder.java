@@ -113,15 +113,8 @@ class SelectBuilder {
 
     addSortFields(collectionRequest);
 
-    final boolean asJson;
-    var objectRequests = new ArrayList<SingleObjectRequest>();
-    if (collectionRequest.getObjectRequest() instanceof UnionObjectRequest unionObjectRequest) {
-      asJson = true;
-      objectRequests.addAll(unionObjectRequest.getObjectRequests());
-    } else {
-      asJson = false;
-      objectRequests.add((SingleObjectRequest) collectionRequest.getObjectRequest());
-    }
+    var objectRequests = getObjectRequests(collectionRequest.getObjectRequest());
+    final boolean asJson = objectRequests.size() > 1;
 
     var isUnion = new AtomicReference<>(false);
     var selectQueries = objectRequests.stream()
@@ -152,13 +145,22 @@ class SelectBuilder {
   }
 
   public SelectQuery<Record> build(BatchRequest batchRequest) {
-    var dataQuery = build(batchRequest.getObjectRequest(), false);
+    var objectRequests = getObjectRequests(batchRequest.getObjectRequest());
+    final boolean asJson = objectRequests.size() > 1;
 
-    var joinCriteria = JoinCriteria.builder()
-        .keys(batchRequest.getKeys())
-        .build();
+    var selectQueries = objectRequests.stream()
+        .map(objectRequest -> {
+          var dataQuery = build(objectRequest, asJson);
 
-    return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria, false);
+          var joinCriteria = JoinCriteria.builder()
+              .keys(batchRequest.getKeys())
+              .build();
+
+          return doBatchJoin(batchRequest.getObjectRequest(), dataQuery, null, joinCriteria, asJson);
+        })
+        .toList();
+
+    return unionAllMultipleSelectQueries(selectQueries).orElseThrow();
   }
 
   public SelectQuery<Record> build(SingleObjectRequest objectRequest, String tableAlias, String parentFieldName,
@@ -169,6 +171,15 @@ class SelectBuilder {
 
   public SelectQuery<Record> build(SingleObjectRequest objectRequest, boolean fromUnion) {
     return createDataQuery(objectRequest, fromUnion, null);
+  }
+
+  private List<SingleObjectRequest> getObjectRequests(ObjectRequest objectRequest) {
+    if (objectRequest instanceof UnionObjectRequest unionObjectRequest) {
+      return unionObjectRequest.getObjectRequests();
+    } else if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
+      return List.of(singleObjectRequest);
+    }
+    return List.of();
   }
 
   private Optional<SelectQuery<Record>> unionAllMultipleSelectQueries(List<SelectQuery<Record>> selectQueries) {

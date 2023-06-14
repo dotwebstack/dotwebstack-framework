@@ -34,7 +34,6 @@ import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
 import org.dotwebstack.framework.core.query.model.RequestContext;
-import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -222,9 +221,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
   private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
       DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
-
-    var objectRequest =
-        (SingleObjectRequest) requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {
 
