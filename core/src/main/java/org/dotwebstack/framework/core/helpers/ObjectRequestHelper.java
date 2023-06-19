@@ -9,6 +9,7 @@ import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.CollectionRequest;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
 
 public class ObjectRequestHelper {
@@ -21,7 +22,7 @@ public class ObjectRequestHelper {
   }
 
   private static void addSortFields(CollectionRequest collectionRequest, SortCriteria sortCriteria) {
-    ObjectRequest objectRequest = collectionRequest.getObjectRequest();
+    var objectRequest = (SingleObjectRequest) collectionRequest.getObjectRequest();
 
     for (int index = 0; index < sortCriteria.getFieldPath()
         .size(); index++) {
@@ -34,16 +35,17 @@ public class ObjectRequestHelper {
       } else {
         ObjectField nextSortField = sortCriteria.getFieldPath()
             .get(index + 1);
-        objectRequest = findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
+        objectRequest =
+            (SingleObjectRequest) findOrAddObjectRequest(objectRequest.getObjectFields(), sortField, nextSortField);
       }
     }
   }
 
-  public static void addKeyFields(final ObjectRequest objectRequest) {
+  public static void addKeyFields(final SingleObjectRequest objectRequest) {
     var keyCriterias = objectRequest.getKeyCriterias();
 
     keyCriterias.forEach(keyCriteria -> {
-      final AtomicReference<ObjectRequest> current = new AtomicReference<>(objectRequest);
+      final AtomicReference<SingleObjectRequest> current = new AtomicReference<>(objectRequest);
 
       var fieldPath = keyCriteria.getFieldPath();
 
@@ -53,7 +55,7 @@ public class ObjectRequestHelper {
           findOrAddScalarField(current.get(), keyField);
         } else {
           ObjectField nextKeyField = fieldPath.get(index + 1);
-          current.set(findOrAddObjectRequest(current.get()
+          current.set((SingleObjectRequest) findOrAddObjectRequest(current.get()
               .getObjectFields(), keyField, nextKeyField));
         }
       }
@@ -72,12 +74,12 @@ public class ObjectRequestHelper {
         })
         .map(Map.Entry::getValue)
         .findFirst()
-        .orElseGet(() -> createObjectRequest(objectFields, objectField, nextObjectField));
+        .orElseGet(() -> createSingleObjectRequest(objectFields, objectField, nextObjectField));
   }
 
-  private static ObjectRequest createObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
+  private static SingleObjectRequest createSingleObjectRequest(Map<FieldRequest, ObjectRequest> objectFields,
       ObjectField objectField, ObjectField nextObjectField) {
-    var objectRequest = ObjectRequest.builder()
+    var objectRequest = SingleObjectRequest.builder()
         .objectType(nextObjectField.getObjectType())
         .build();
 
@@ -89,7 +91,7 @@ public class ObjectRequestHelper {
     return objectRequest;
   }
 
-  private static void findOrAddScalarField(ObjectRequest objectRequest, ObjectField objectField) {
+  private static void findOrAddScalarField(SingleObjectRequest objectRequest, ObjectField objectField) {
     Optional<FieldRequest> scalarField = objectRequest.getScalarFields()
         .stream()
         .filter(field -> field.getName()

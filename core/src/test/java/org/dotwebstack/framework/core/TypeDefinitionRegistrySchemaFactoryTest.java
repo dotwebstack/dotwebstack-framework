@@ -225,21 +225,22 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
   @Test
   void typeDefinitionRegistry_registerInterfaces_whenConfigured() {
-    var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml");
+    var pathToConfigFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
+    var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
 
     var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
         .createTypeDefinitionRegistry();
 
     var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
         .orElse(null);
-    var organization = (InterfaceTypeDefinition) registry.getType("Organization")
+    var namedObject = (InterfaceTypeDefinition) registry.getType("NamedObject")
         .orElse(null);
 
     assertThat(brewery, notNullValue());
     assertThat(brewery.getImplements()
         .size(), is(2));
-    assertThat(organization, notNullValue());
-    assertThat(organization.getImplements()
+    assertThat(namedObject, notNullValue());
+    assertThat(namedObject.getImplements()
         .size(), is(1));
   }
 

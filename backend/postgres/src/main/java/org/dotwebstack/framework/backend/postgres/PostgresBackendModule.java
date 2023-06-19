@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.dotwebstack.framework.backend.postgres.helpers.CyclicRefDetector;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
 import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
 import org.dotwebstack.framework.core.backend.BackendLoaderFactory;
@@ -60,29 +61,51 @@ class PostgresBackendModule implements BackendModule<PostgresObjectType> {
               .forEach(PostgresObjectField::initColumns);
 
           // Initialize nested columns
-          initColumns(List.of(), objectType);
+          initColumns(List.of(), objectType, new CyclicRefDetector());
         });
   }
 
-  private List<PostgresObjectType> initColumns(List<PostgresObjectField> ancestors, PostgresObjectType objectType) {
+  private List<PostgresObjectType> initColumns(List<PostgresObjectField> ancestors, PostgresObjectType objectType,
+      CyclicRefDetector cyclicRefDetector) {
     return objectType.getFields()
         .values()
         .stream()
         .filter(PostgresObjectField::hasNestedFields)
-        .flatMap(objectField -> {
-          var targetType = (PostgresObjectType) objectField.getTargetType();
-
-          var fieldAncestors = new ArrayList<>(ancestors);
-          fieldAncestors.add(objectField);
-
-          var nestedObjectType = initColumns(fieldAncestors, targetType);
-          var resultObjectType = new PostgresObjectType(targetType, fieldAncestors);
-
-          objectField.setTargetType(resultObjectType);
-
-          return Stream.concat(Stream.of(resultObjectType), nestedObjectType.stream());
-        })
+        .flatMap(objectField -> initObjectType(ancestors, objectType, objectField, cyclicRefDetector))
         .toList();
+  }
+
+  private Stream<PostgresObjectType> initObjectType(List<PostgresObjectField> ancestors, PostgresObjectType objectType,
+      PostgresObjectField objectField, CyclicRefDetector cyclicRefDetector) {
+    if (isRefNode(objectField)) {
+      return Stream.empty();
+    }
+
+    if (!cyclicRefDetector.isProcessed(objectType, objectField)) {
+      var fieldAncestors = new ArrayList<>(ancestors);
+      fieldAncestors.add(objectField);
+
+      var targetType = (PostgresObjectType) objectField.getTargetType();
+      var nestedObjectType = initColumns(fieldAncestors, targetType, cyclicRefDetector);
+      var resultObjectType = new PostgresObjectType(targetType, fieldAncestors);
+
+      objectField.setTargetType(resultObjectType);
+
+      return Stream.concat(Stream.of(resultObjectType), nestedObjectType.stream());
+    } else {
+      return Stream.empty();
+    }
+  }
+
+  /**
+   * When using a "ref" en "refs" construction then the column name should always be null. The node
+   * itself should not be discovered. This is because the ref(s) field(s) will always point to
+   * required field, not the node(s).
+   */
+  private boolean isRefNode(PostgresObjectField objectField) {
+    var nameIsNode = objectField.getName()
+        .matches("^node$|^nodes$");
+    return objectField.getColumn() == null && nameIsNode;
   }
 
   private List<PostgresObjectField> getAllFields(Map<String, ObjectType<? extends ObjectField>> objectTypes) {

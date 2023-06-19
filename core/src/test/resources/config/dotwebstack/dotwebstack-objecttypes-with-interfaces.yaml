@@ -3,33 +3,73 @@ queries:
     type: Brewery
     keys:
       - identifier
+  baseObject:
+    type: BaseObject
+    keys:
+      - identifier
 
 objectTypes:
   Brewery:
     implements:
-      - Organization
+      - NamedObject
     fields:
-      identifier:
-        type: ID
+      status:
+        type: Status
+      numberOfEmpoyees:
+        type: Int
+      revenue:
+        type: Float
+      registrationDate:
+        type: String
+      addresses:
+        type: Address
+        list: true
+        nullable: true
+        arguments:
+          - name: addressType
+            type: String
+            nullable: true
+            list: true
+      visitAddress:
+        type: Address
+        nullable: true
+      beer:
+        type: Beer
+        mappedBy: brewery
+        nullable: true
+        keys:
+          - identifier
+      beers:
+        type: Beer
+        mappedBy: brewery
+        list: true
+        nullable: true
 
-  Transporter:
+  Beer:
     implements:
-      - Organization
+      - NamedObject
+
+  Address:
+    implements:
+      - BaseObject
     fields:
-      mileage:
+      street:
+        type: String
+      city:
         type: String
 
+enumerations:
+  Status:
+    values: [ACTIVE, INACTIVE]
+
 interfaces:
-  Organization:
+  NamedObject:
     implements:
-      - Object
+      - BaseObject
     fields:
       name:
         type: String
-        nullable: false
-
-  Object:
+  BaseObject:
     fields:
-      code:
-        type: String
-        nullable: false
+      identifier:
+        type: ID

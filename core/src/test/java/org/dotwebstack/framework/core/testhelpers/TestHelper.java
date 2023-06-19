@@ -1,5 +1,7 @@
 package org.dotwebstack.framework.core.testhelpers;
 
+import static org.mockito.Mockito.mock;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -11,17 +13,21 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import org.dotwebstack.framework.core.CoreConfigurer;
 import org.dotwebstack.framework.core.TypeDefinitionRegistrySchemaFactory;
+import org.dotwebstack.framework.core.TypeResolversFactory;
 import org.dotwebstack.framework.core.backend.BackendModule;
+import org.dotwebstack.framework.core.config.ModelConfiguration;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.filter.CoreFilterConfigurer;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
+import org.springframework.r2dbc.core.DatabaseClient;
 
 public class TestHelper {
 
@@ -63,6 +69,12 @@ public class TestHelper {
     return schema;
   }
 
+  public static Schema loadSchemaWithDefaultBackendModule(String pathToConfigFile) {
+    var backendModule = new TestBackendModule(new TestBackendLoaderFactory(mock(DatabaseClient.class)));
+    var modelConfig = new ModelConfiguration(backendModule);
+    return modelConfig.schema(pathToConfigFile, List.of());
+  }
+
   public static GraphQLSchema schemaToGraphQl(Schema schema) {
     var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(schema, List.of(new CoreFilterConfigurer()))
         .createTypeDefinitionRegistry();
@@ -73,8 +85,28 @@ public class TestHelper {
     coreConfigurer.configureTypeDefinitionRegistry(typeDefinitionRegistry);
     coreConfigurer.configureRuntimeWiring(runtimeWiringBuilder);
 
+    return schemaToGraphQl(typeDefinitionRegistry, runtimeWiringBuilder.build());
+  }
+
+  public static GraphQLSchema schemaToGraphQl(TypeDefinitionRegistry typeDefinitionRegistry,
+      RuntimeWiring runtimeWiring) {
+    return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+  }
+
+  public static GraphQLSchema schemaToGraphQlWithDefaultTypeResolvers(String configFile) {
+    var dwsConfig = TestHelper.loadSchemaWithDefaultBackendModule(configFile);
+    var typeResolvers = new TypeResolversFactory(dwsConfig).createTypeResolvers();
+    var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
+    typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
+        typeWriting -> typeWriting.typeResolver(resolver)));
+
+    var typeDefinitionRegistry =
+        new TypeDefinitionRegistrySchemaFactory(dwsConfig, List.of()).createTypeDefinitionRegistry();
+
+
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());
   }
+
 
   private ObjectMapper createObjectMapper() {
     var deserializerModule =

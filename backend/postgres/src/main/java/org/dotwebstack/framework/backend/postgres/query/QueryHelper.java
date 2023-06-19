@@ -14,7 +14,7 @@ import org.dotwebstack.framework.core.backend.query.AliasManager;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
-import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -56,7 +56,7 @@ class QueryHelper {
         .getColumn();
   }
 
-  public static PostgresObjectType getObjectType(ObjectRequest objectRequest) {
+  public static PostgresObjectType getObjectType(SingleObjectRequest objectRequest) {
     var objectType = objectRequest.getObjectType();
 
     if (!(objectType instanceof PostgresObjectType)) {
@@ -66,7 +66,7 @@ class QueryHelper {
     return (PostgresObjectType) objectType;
   }
 
-  public static PostgresObjectField getObjectField(ObjectRequest objectRequest, String name) {
+  public static PostgresObjectField getObjectField(SingleObjectRequest objectRequest, String name) {
     return getObjectType(objectRequest).getField(name);
   }
 

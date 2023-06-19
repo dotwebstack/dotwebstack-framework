@@ -31,10 +31,14 @@ import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnection
 
 import com.google.common.base.CaseFormat;
 import graphql.execution.ExecutionStepInfo;
+import graphql.language.Field;
+import graphql.language.Selection;
+import graphql.language.TypeName;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
@@ -42,16 +46,19 @@ import graphql.schema.SelectedField;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
@@ -63,13 +70,17 @@ import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.core.query.model.SortCriteria;
+import org.dotwebstack.framework.core.query.model.UnionObjectRequest;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 @Component
 @Conditional(OnLocalSchema.class)
 public class BackendRequestFactory {
+
+  private static final String TYPE_CONDITION = "typeCondition";
 
   private final Schema schema;
 
@@ -86,12 +97,12 @@ public class BackendRequestFactory {
 
   public CollectionRequest createCollectionRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
+
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
 
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
-
-    Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, objectType);
+    var filterCriteria = getFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
@@ -109,16 +120,26 @@ public class BackendRequestFactory {
 
   public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
       DataFetchingFieldSelectionSet selectionSet) {
+    if (unwrapAll(executionStepInfo.getType()) instanceof GraphQLInterfaceType interfaceType) {
+      return createUnionObjectRequest(executionStepInfo, selectionSet, interfaceType);
+    }
+
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
+    return createObjectRequest(executionStepInfo, selectionSet, objectType);
+  }
+
+  public ObjectRequest createObjectRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet, ObjectType<?> objectType) {
+
     var keyCriterias =
         createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(keyCriterias)
-        .scalarFields(getScalarFields(selectionSet))
-        .objectFields(getObjectFields(selectionSet, executionStepInfo))
+        .scalarFields(getScalarFields(selectionSet, objectType.getName()))
+        .objectFields(getObjectFields(selectionSet, executionStepInfo, objectType.getName()))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectionSet))
@@ -126,14 +147,19 @@ public class BackendRequestFactory {
   }
 
   private ObjectRequest createObjectRequest(SelectedField selectedField, ExecutionStepInfo executionStepInfo) {
-    var objectType = getObjectType(unwrapConnectionType(selectedField.getType()));
+    var unwrappedType = unwrapConnectionType(selectedField.getType());
+
+    if (unwrapAll(unwrappedType) instanceof GraphQLInterfaceType interfaceType) {
+      return createUnionObjectRequest(executionStepInfo, selectedField.getSelectionSet(), interfaceType);
+    }
+    var objectType = getObjectType(unwrappedType);
 
     var fieldDefinition = selectedField.getFieldDefinitions()
         .stream()
         .findFirst()
         .orElseThrow();
 
-    return ObjectRequest.builder()
+    return SingleObjectRequest.builder()
         .objectType(objectType)
         .keyCriterias(createKeyCriterias(objectType, fieldDefinition, selectedField.getArguments()))
         .scalarFields(getScalarFields(selectedField.getSelectionSet()))
@@ -142,6 +168,89 @@ public class BackendRequestFactory {
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
         .aggregateObjectFields(getAggregateObjectFields(objectType, selectedField.getSelectionSet()))
         .build();
+  }
+
+  private UnionObjectRequest createUnionObjectRequest(ExecutionStepInfo executionStepInfo,
+      DataFetchingFieldSelectionSet selectionSet, GraphQLInterfaceType interfaceType) {
+    var typeNames = new ArrayList<String>();
+
+    if (executionStepInfo.getField() != null) {
+      typeNames.addAll(getTypeConditionNamesFromFields(executionStepInfo.getField()
+          .getFields()));
+    }
+
+    var interfaceNames = getAllImplementedInterfaceNames(interfaceType.getName());
+    var objectTypes = getRequestedObjectTypes(interfaceNames, typeNames);
+
+    var objectRequests = objectTypes.stream()
+        .map(objectType -> createObjectRequest(executionStepInfo, selectionSet, objectType))
+        .map(SingleObjectRequest.class::cast)
+        .toList();
+
+    return UnionObjectRequest.builder()
+        .objectRequests(objectRequests)
+        .build();
+  }
+
+  /**
+   * Returns all interface names which are inherited from the implemented interface.
+   *
+   * @param baseInterfaceName - interface which is implemented
+   * @return All implicitly implemented Interfaces
+   */
+  private List<String> getAllImplementedInterfaceNames(String baseInterfaceName) {
+    return Stream.concat(schema.getInterfaces()
+        .values()
+        .stream()
+        .filter(iface -> iface.getImplements()
+            .contains(baseInterfaceName))
+        .map(ObjectType::getName), Stream.of(baseInterfaceName))
+        .toList();
+  }
+
+  private List<ObjectType<? extends ObjectField>> getRequestedObjectTypes(List<String> interfaceNames,
+      List<String> typeNames) {
+    return schema.getObjectTypes()
+        .values()
+        .stream()
+        .filter(objectType -> {
+          if (interfaceNames.contains(objectType.getName())) {
+            return false;
+          }
+          return objectType.getImplements()
+              .stream()
+              .anyMatch(interfaceNames::contains);
+        })
+        .filter(objectType -> {
+          if (typeNames.isEmpty()) {
+            return true;
+          } else {
+            return typeNames.contains(objectType.getName());
+          }
+        })
+        .toList();
+  }
+
+  private List<String> getTypeConditionNamesFromFields(List<Field> fields) {
+    return fields.stream()
+        .map(field -> field.getSelectionSet()
+            .getSelections()
+            .stream()
+            .map(this::getFieldTypeConditionName)
+            .filter(Objects::nonNull)
+            .toList())
+        .flatMap(List::stream)
+        .toList();
+  }
+
+  private String getFieldTypeConditionName(Selection<?> field) {
+    var typeCondition = field.getNamedChildren()
+        .getChildren(TYPE_CONDITION);
+    if (!typeCondition.isEmpty()) {
+      return ((TypeName) typeCondition.get(0)).getName();
+    } else {
+      return null;
+    }
   }
 
   public RequestContext createRequestContext(DataFetchingEnvironment environment) {
@@ -162,10 +271,15 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
+    return getScalarFields(selectionSet, StringUtils.EMPTY);
+  }
+
+  private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet, String objectName) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
+        .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
         .flatMap(this::mapScalarFieldToFieldRequests)
         .collect(toCollection(ArrayList::new));
   }
@@ -198,11 +312,35 @@ public class BackendRequestFactory {
 
   private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
       ExecutionStepInfo executionStepInfo) {
+    return getObjectFields(selectionSet, executionStepInfo, StringUtils.EMPTY);
+  }
+
+  private Map<FieldRequest, ObjectRequest> getObjectFields(DataFetchingFieldSelectionSet selectionSet,
+      ExecutionStepInfo executionStepInfo, String objectName) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectField)
+        .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
         .collect(Collectors.toMap(this::mapToFieldRequest,
             selectedField -> createObjectRequest(selectedField, executionStepInfo)));
+  }
+
+  private boolean selectedFieldIsPartOfObject(String parentObjectName, SelectedField selectedField) {
+    if (parentObjectName.isBlank()) {
+      return true;
+    } else if (selectedField.getFullyQualifiedName() != null) {
+      if (selectedField.getFullyQualifiedName()
+          .contains(".")
+          && selectedField.getFullyQualifiedName()
+              .contains(parentObjectName)) {
+        return true;
+      } else {
+        return !selectedField.getFullyQualifiedName()
+            .contains(".");
+      }
+    } else {
+      return true;
+    }
   }
 
   private Map<FieldRequest, CollectionRequest> getObjectListFields(DataFetchingFieldSelectionSet selectionSet,
@@ -364,11 +502,11 @@ public class BackendRequestFactory {
   private ObjectType<?> getObjectType(GraphQLType type) {
     var rawType = unwrapAll(type);
 
-    if (!(rawType instanceof GraphQLObjectType)) {
+    if (!(rawType instanceof GraphQLObjectType) && !(rawType instanceof GraphQLInterfaceType)) {
       throw illegalStateException("Not an object type.");
     }
 
-    return schema.getObjectType(rawType.getName())
+    return schema.getObjectTypeOrInterface(rawType.getName())
         .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
   }
 }

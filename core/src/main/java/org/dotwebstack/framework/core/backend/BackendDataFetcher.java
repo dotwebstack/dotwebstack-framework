@@ -221,7 +221,6 @@ class BackendDataFetcher implements DataFetcher<Object> {
   private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
       DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
-
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
     MappedBatchLoader<Map<String, Object>, Map<String, Object>> batchLoader = keys -> {

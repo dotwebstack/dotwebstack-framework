@@ -14,14 +14,27 @@ import org.dotwebstack.framework.core.model.ObjectField;
 @Getter
 public abstract class AbstractObjectMapper<T> implements ObjectFieldMapper<T> {
 
+  public static final String JSON = "json";
+
   protected final Map<String, FieldMapper<T, ?>> fieldMappers = new HashMap<>();
 
   @Override
   public Map<String, Object> apply(T row) {
     return fieldMappers.entrySet()
         .stream()
-        .collect(HashMap::new, (map, entry) -> map.put(entry.getKey(), entry.getValue()
-            .apply(row)), HashMap::putAll);
+        .collect(HashMap::new, (map, entry) -> {
+          if (entry.getKey()
+              .equals(JSON)) {
+            var val = (Map<String, Object>) entry.getValue()
+                .apply(row);
+            if (!val.isEmpty()) {
+              map.putAll(val);
+            }
+          } else {
+            map.put(entry.getKey(), entry.getValue()
+                .apply(row));
+          }
+        }, HashMap::putAll);
   }
 
   public void register(String name, FieldMapper<T, ?> fieldMapper) {

@@ -57,6 +57,8 @@ class BatchQueryBuilder {
 
   private Table<Record> table;
 
+  private boolean fromUnion = false;
+
   private BatchQueryBuilder() {}
 
   static BatchQueryBuilder newBatchQuery() {
@@ -191,7 +193,9 @@ class BatchQueryBuilder {
 
   private Table<Record> createValuesTable(Map<String, String> keyColumnAliases, RowN[] keyTableRows) {
     // Register field mapper for grouping rows per key
-    register(GROUP_KEY, keyColumnAliases);
+    if (!fromUnion) {
+      register(GROUP_KEY, keyColumnAliases);
+    }
 
     return DSL.values(keyTableRows)
         .as(aliasManager.newAlias(), keyColumnAliases.values()
@@ -216,7 +220,9 @@ class BatchQueryBuilder {
             .as(entry.getValue()))
         .forEach(dataQuery::addSelect);
 
-    register(EXISTS_KEY, columnAliases);
+    if (!fromUnion) {
+      register(EXISTS_KEY, columnAliases);
+    }
   }
 
   private void register(String name, Map<String, String> columnAliases) {

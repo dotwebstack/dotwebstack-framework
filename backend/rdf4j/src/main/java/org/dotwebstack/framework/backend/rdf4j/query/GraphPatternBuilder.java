@@ -21,6 +21,7 @@ import org.dotwebstack.framework.core.backend.query.ObjectFieldMapper;
 import org.dotwebstack.framework.core.query.model.FieldRequest;
 import org.dotwebstack.framework.core.query.model.KeyCriteria;
 import org.dotwebstack.framework.core.query.model.ObjectRequest;
+import org.dotwebstack.framework.core.query.model.SingleObjectRequest;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -52,42 +53,46 @@ class GraphPatternBuilder {
   }
 
   public GraphPattern build() {
-    var typeVar = SparqlBuilder.var(aliasManager.newAlias());
-    var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
-    var subPatterns = new ArrayList<>(typePatterns);
+    if (objectRequest instanceof SingleObjectRequest singleObjectRequest) {
+      var typeVar = SparqlBuilder.var(aliasManager.newAlias());
+      var typePatterns = createTypePatterns(subject, typeVar, nodeShape);
+      var subPatterns = new ArrayList<>(typePatterns);
 
-    objectRequest.getKeyCriterias()
-        .stream()
-        .flatMap(this::createPattern)
-        .forEach(subPatterns::add);
+      singleObjectRequest.getKeyCriterias()
+          .stream()
+          .flatMap(keyCriteria -> createPattern(singleObjectRequest, keyCriteria))
+          .forEach(subPatterns::add);
 
-    objectRequest.getScalarFields()
-        .stream()
-        .flatMap(this::createPattern)
-        .forEach(subPatterns::add);
+      singleObjectRequest.getScalarFields()
+          .stream()
+          .flatMap(fieldRequest -> createPattern(singleObjectRequest, fieldRequest))
+          .forEach(subPatterns::add);
 
-    objectRequest.getObjectFields()
-        .entrySet()
-        .stream()
-        .flatMap(entry -> createNestedPattern(entry.getKey(), entry.getValue()))
-        .forEach(subPatterns::add);
+      singleObjectRequest.getObjectFields()
+          .entrySet()
+          .stream()
+          .flatMap(entry -> createNestedPattern(entry.getKey(), entry.getValue()))
+          .forEach(subPatterns::add);
 
-    var graphPattern = GraphPatterns.and(subPatterns.toArray(GraphPattern[]::new));
+      var graphPattern = GraphPatterns.and(subPatterns.toArray(GraphPattern[]::new));
 
-    if (!valuesMap.isEmpty()) {
-      return new GraphPatternWithValues(graphPattern, valuesMap);
+      if (!valuesMap.isEmpty()) {
+        return new GraphPatternWithValues(graphPattern, valuesMap);
+      }
+
+      return graphPattern;
+    } else {
+      return null;
     }
-
-    return graphPattern;
   }
 
-  private Stream<GraphPattern> createPattern(KeyCriteria keyCriteria) {
+  private Stream<GraphPattern> createPattern(SingleObjectRequest objectRequest, KeyCriteria keyCriteria) {
     var fieldPath = keyCriteria.getFieldPath();
-    return createPattern(fieldPath.get(fieldPath.size() - 1)
+    return createPattern(objectRequest, fieldPath.get(fieldPath.size() - 1)
         .getName(), keyCriteria.getValue());
   }
 
-  private Stream<GraphPattern> createPattern(String name, Object value) {
+  private Stream<GraphPattern> createPattern(SingleObjectRequest objectRequest, String name, Object value) {
     var objectField = getObjectField(objectRequest, name);
 
     if (objectField.isResource()) {
@@ -100,7 +105,7 @@ class GraphPatternBuilder {
     return Stream.of(subject.has(propertyShape.toPredicate(), Values.literal(value)));
   }
 
-  private Stream<GraphPattern> createPattern(FieldRequest fieldRequest) {
+  private Stream<GraphPattern> createPattern(SingleObjectRequest objectRequest, FieldRequest fieldRequest) {
     var objectField = getObjectField(objectRequest, fieldRequest.getName());
 
     if (objectField.isResource()) {

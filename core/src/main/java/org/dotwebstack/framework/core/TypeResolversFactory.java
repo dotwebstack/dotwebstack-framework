@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @Conditional(OnLocalSchema.class)
 public class TypeResolversFactory {
 
+  public static final String DTYPE = "dtype";
+
   private final Schema schema;
 
   private final Map<String, TypeResolver> typeResolvers = new HashMap<>();
@@ -31,7 +33,13 @@ public class TypeResolversFactory {
   }
 
   private TypeResolver createTypeResolver() {
-    // This method should be implemented when we wish to support the "... on" functionality of GraphQL.
-    return typeResolutionEnvironment -> null;
+    return typeResolutionEnvironment -> {
+      if (typeResolutionEnvironment.getObject() instanceof Map<?, ?> objectFields && objectFields.containsKey(DTYPE)) {
+        var dtypeName = (String) objectFields.get(DTYPE);
+        return typeResolutionEnvironment.getSchema()
+            .getObjectType(dtypeName);
+      }
+      return null;
+    };
   }
 }

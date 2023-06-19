@@ -27,12 +27,11 @@ public class PostgresBackendLoader implements BackendLoader {
 
   @Override
   public Mono<Map<String, Object>> loadSingle(ObjectRequest objectRequest, RequestContext requestContext) {
-    if (objectRequest.getObjectType()
-        .isNested()) {
+    var query = new Query(objectRequest, requestContext);
+
+    if (query.getSelectQuery() == null) {
       return Mono.just(Map.of());
     }
-
-    var query = new Query(objectRequest, requestContext);
 
     return postgresClient.fetch(query)
         .singleOrEmpty();
