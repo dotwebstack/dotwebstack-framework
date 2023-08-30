@@ -48,16 +48,16 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <spring-boot.version>3.1.2</spring-boot.version>
-    <rdf4j.version>4.3.3</rdf4j.version>
+    <rdf4j.version>4.3.6</rdf4j.version>
     <graphql.java.version>20.4</graphql.java.version>
     <graphql.java.orchestrate.version>0.2.0</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
     <commons.text.version>1.10.0</commons.text.version>
-    <commons.lang3.version>3.12.0</commons.lang3.version>
+    <commons.lang3.version>3.13.0</commons.lang3.version>
     <pebble.version>3.2.1</pebble.version>
     <swagger-parser.version>2.1.16</swagger-parser.version>
     <lombok.version>1.18.28</lombok.version>
-    <guava.version>32.1.1-jre</guava.version>
+    <guava.version>32.1.2-jre</guava.version>
     <problem.version>0.27.1</problem.version>
     <problem.spring.webflux.version>0.29.1</problem.spring.webflux.version>
     <json-path.version>2.8.0</json-path.version>
@@ -85,7 +85,7 @@
       <dependency>
         <groupId>org.checkerframework</groupId>
         <artifactId>checker-qual</artifactId>
-        <version>3.36.0</version>
+        <version>3.37.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.code.findbugs</groupId>
@@ -310,7 +310,7 @@
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
           <artifactId>nexus-staging-maven-plugin</artifactId>
-          <version>1.6.12</version>
+          <version>1.6.13</version>
           <extensions>true</extensions>
           <configuration>
             <serverId>ossrh</serverId>
@@ -424,7 +424,7 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.37.0</version>
+          <version>2.38.0</version>
           <configuration>
             <java>
               <eclipse>
