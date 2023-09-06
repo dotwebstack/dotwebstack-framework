@@ -70,7 +70,7 @@ class DefaultGeometryConditionBuilderTest {
         arguments(Map.of("fromWKT", "POINT(1 2)"), FilterOperator.CONTAINS,
             "(ST_Contains(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("fromWKT", "POINT(1 2)"), FilterOperator.WITHIN,
-            "(ST_Within(cast('POINT (1 2)' as geometry), \"src\".\"geometry_column\"))"),
+            "(ST_Within(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("fromWKT", "POINT(1 2)"), FilterOperator.INTERSECTS,
             "(ST_Intersects(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("fromWKT", "POINT(1 2)"), FilterOperator.TOUCHES,

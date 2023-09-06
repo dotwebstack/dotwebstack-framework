@@ -51,7 +51,7 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
       case CONTAINS:
         return Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoFieldValue));
       case WITHIN:
-        return Optional.of(DSL.condition("ST_Within({0}, {1})", geoFieldValue, field));
+        return Optional.of(DSL.condition("ST_Within({0}, {1})", field, geoFieldValue));
       case INTERSECTS:
         return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
       case TOUCHES:
