@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>integration-test</artifactId>
-  <version>0.4.8</version>
+  <version>0.4.10-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
