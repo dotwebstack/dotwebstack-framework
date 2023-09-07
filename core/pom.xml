@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>core</artifactId>
-  <version>0.4.8</version>
+  <version>0.4.10-SNAPSHOT</version>
 
   <dependencies>
     <dependency>
