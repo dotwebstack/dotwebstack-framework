@@ -23,6 +23,13 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <name>Kadaster</name>
+      <email>datahub@kadaster.nl</email>
+    </developer>
+  </developers>
+
   <organization>
     <name>DotWebStack</name>
     <url>https://dotwebstack.org</url>
