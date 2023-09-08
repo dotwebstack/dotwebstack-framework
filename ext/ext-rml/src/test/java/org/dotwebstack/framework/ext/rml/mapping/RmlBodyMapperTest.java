@@ -16,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.carml.engine.rdf.RdfRmlMapper;
 import io.carml.model.TriplesMap;
+import io.carml.model.impl.CarmlSubjectMap;
 import io.carml.model.impl.CarmlTriplesMap;
 import io.swagger.v3.oas.models.Operation;
 import java.io.IOException;
@@ -161,10 +162,14 @@ class RmlBodyMapperTest {
     var objectMapperBuilder = TestResources.objectMapperBuilder();
 
     TriplesMap triplesMap = CarmlTriplesMap.builder()
-        .id("test")
+        .subjectMap(CarmlSubjectMap.builder()
+            .reference("test")
+            .build())
         .build();
     TriplesMap otherTriplesMap = CarmlTriplesMap.builder()
-        .id("other")
+        .subjectMap(CarmlSubjectMap.builder()
+            .reference("other")
+            .build())
         .build();
 
     Map<Operation, Set<TriplesMap>> mappingsPerOperation =
