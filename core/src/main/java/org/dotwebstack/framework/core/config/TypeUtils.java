@@ -1,5 +1,11 @@
 package org.dotwebstack.framework.core.config;
 
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLFloat;
+import static graphql.Scalars.GraphQLID;
+import static graphql.Scalars.GraphQLInt;
+import static graphql.Scalars.GraphQLString;
+
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.Type;
@@ -34,8 +40,16 @@ public final class TypeUtils {
   }
 
   public static Type<NonNullType> createType(String key, ObjectType<?> objectType) {
+    return createType(key, objectType, "");
+  }
+
+  public static Type<NonNullType> createType(String key, ObjectType<?> objectType, String nonScalarTypePostfix) {
     var fieldConfig = objectType.getField(key);
-    return TypeUtils.newNonNullableType(fieldConfig.getType());
+    var type = isScalarType(fieldConfig.getType()) ? fieldConfig.getType()
+        : fieldConfig.getType()
+            .concat(nonScalarTypePostfix);
+
+    return TypeUtils.newNonNullableType(type);
   }
 
   public static Type<NonNullType> createType(Subscription subscription) {
@@ -62,4 +76,24 @@ public final class TypeUtils {
     return fieldArgument.isNullable() ? TypeUtils.newType(type) : TypeUtils.newNonNullableType(type);
   }
 
+  public static boolean isScalarType(String type) {
+    var result = false;
+    if (GraphQLBoolean.getName()
+        .equals(type)) {
+      result = true;
+    } else if (GraphQLInt.getName()
+        .equals(type)) {
+      result = true;
+    } else if (GraphQLFloat.getName()
+        .equals(type)) {
+      result = true;
+    } else if (GraphQLString.getName()
+        .equals(type)) {
+      result = true;
+    } else if (GraphQLID.getName()
+        .equals(type)) {
+      result = true;
+    }
+    return result;
+  }
 }
