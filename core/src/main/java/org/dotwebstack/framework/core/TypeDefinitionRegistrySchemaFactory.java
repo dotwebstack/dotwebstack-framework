@@ -523,7 +523,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
 
-    inputValueDefinitions.addAll(createKeyArguments(query, objectType, "Input"));
+    inputValueDefinitions.addAll(createKeyArguments(query, objectType));
     inputValueDefinitions.addAll(createPagingArguments(query));
     createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
 
@@ -546,7 +546,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return Map.of();
   }
 
-  private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType, String typePostfix) {
+  private List<InputValueDefinition> createKeyArguments(Query query, ObjectType<?> objectType) {
     return query.getKeyMap()
         .entrySet()
         .stream()
@@ -554,7 +554,7 @@ public class TypeDefinitionRegistrySchemaFactory {
           var aliasField = key.getKey();
           var keyField = getFieldKey(key.getValue());
           return createInputValueDefinition(aliasField, objectType,
-              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(), "Input");
+              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(), INPUT_OBJECTTYPE_POSTFIX);
         })
         .toList();
   }
@@ -670,7 +670,7 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private List<InputValueDefinition> createInputValueDefinitions(ObjectField objectField) {
-    List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
+    var inputValueDefinitions = new ArrayList<InputValueDefinition>();
 
     if (GEOMETRY_TYPE.equals(objectField.getType())) {
       inputValueDefinitions.addAll(createGeometryArguments());
@@ -715,7 +715,6 @@ public class TypeDefinitionRegistrySchemaFactory {
     return inputValueDefinitions;
   }
 
-  // new
   private List<InputValueDefinition> createInputValueDefinitions(ObjectType<?> objectType) {
     return objectType.getFields()
         .values()
@@ -755,7 +754,6 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  // new
   private Optional<InputValueDefinition> createInputValueDefinition(ObjectField objectField) {
     Type<?> type;
 
