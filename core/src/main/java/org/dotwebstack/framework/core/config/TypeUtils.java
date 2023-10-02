@@ -46,7 +46,8 @@ public final class TypeUtils {
   public static Type<NonNullType> createType(String key, ObjectType<?> objectType, String nonScalarTypePostfix) {
     var fieldConfig = objectType.getField(key);
     var type = isScalarType(fieldConfig.getType()) ? fieldConfig.getType()
-                            : fieldConfig.getType().concat(nonScalarTypePostfix);
+        : fieldConfig.getType()
+            .concat(nonScalarTypePostfix);
 
     return TypeUtils.newNonNullableType(type);
   }
