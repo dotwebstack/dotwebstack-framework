@@ -18,6 +18,7 @@ import static java.lang.Boolean.TRUE;
 import static java.util.function.Predicate.not;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.dotwebstack.framework.core.config.TypeUtils.createType;
+import static org.dotwebstack.framework.core.config.TypeUtils.isScalarType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableListType;
 import static org.dotwebstack.framework.core.config.TypeUtils.newNonNullableType;
@@ -105,6 +106,8 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private static final String GEOMETRY_TYPE_ARGUMENT_TYPE = "GeometryType";
 
+  public static final String INPUT_OBJECTTYPE_POSTFIX = "Input";
+
   private final Schema schema;
 
   private final Map<String, String> fieldFilterMap = new HashMap<>();
@@ -126,7 +129,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addConnectionTypes(typeDefinitionRegistry);
     addQueryTypes(typeDefinitionRegistry);
     addSubscriptionTypes(typeDefinitionRegistry);
-
+    addInputObjectTypeDefinitions(typeDefinitionRegistry);
     return typeDefinitionRegistry;
   }
 
@@ -413,52 +416,6 @@ public class TypeDefinitionRegistrySchemaFactory {
     }
   }
 
-  private List<InputValueDefinition> createInputValueDefinitions(ObjectField objectField) {
-    List<InputValueDefinition> inputValueDefinitions = new ArrayList<>();
-
-    if (GEOMETRY_TYPE.equals(objectField.getType())) {
-      inputValueDefinitions.addAll(createGeometryArguments());
-    }
-
-    schema.getObjectType(objectField.getType())
-        .ifPresent(objectType -> objectField.getKeys()
-            .stream()
-            .map(keyField -> createInputValueDefinition(keyField, objectType,
-                Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
-            .forEach(inputValueDefinitions::add));
-
-    objectField.getArguments()
-        .stream()
-        .map(this::createFieldInputValueDefinition)
-        .forEach(inputValueDefinitions::add);
-
-    if (objectField.isList() && schema.getObjectTypes()
-        .containsKey(objectField.getType())) {
-
-      var objectType = schema.getObjectType(objectField.getType())
-          .orElseThrow();
-
-      createFilterArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
-
-      createSortArgument(objectField.getType(), objectType.getSortableBy()).ifPresent(inputValueDefinitions::add);
-
-      if (objectField.isPageable() && objectField.isList()) {
-        createFirstArgument().ifPresent(inputValueDefinitions::add);
-        createOffsetArgument().ifPresent(inputValueDefinitions::add);
-      }
-    }
-
-    if (isAggregate(objectField)) {
-      var objectFieldType = objectField.getAggregationOf();
-      var objectType = schema.getObjectType(objectFieldType)
-          .orElseThrow();
-
-      createFilterArgument(objectFieldType, objectType).ifPresent(inputValueDefinitions::add);
-    }
-
-    return inputValueDefinitions;
-  }
-
   private void addQueryTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
     var queryFieldDefinitions = schema.getQueries()
         .entrySet()
@@ -504,6 +461,38 @@ public class TypeDefinitionRegistrySchemaFactory {
               .build();
 
           typeDefinitionRegistry.add(enumerationTypeDefinition);
+        });
+  }
+
+  private void addInputObjectTypeDefinitions(TypeDefinitionRegistry typeDefinitionRegistry) {
+    schema.getQueries()
+        .values()
+        .forEach(query -> addInputObjectTypeDefinitions(query, typeDefinitionRegistry));
+  }
+
+  private void addInputObjectTypeDefinitions(Query query, TypeDefinitionRegistry typeDefinitionRegistry) {
+    query.getKeyMap()
+        .entrySet()
+        .forEach(key -> {
+          var queryObjectType = schema.getObjectType(query.getType())
+              .orElseThrow();
+          var keyField = getFieldKey(key.getValue());
+          var keyPath = key.getValue();
+          var keyObjectType = getObjectType(queryObjectType, keyPath);
+
+          var keyObjectField = keyObjectType.getField(keyField);
+
+          if (!isScalarType(keyObjectField.getType()) && !typeDefinitionRegistry.types()
+              .containsKey(keyObjectField.getType() + INPUT_OBJECTTYPE_POSTFIX)) {
+            var objectType = schema.getObjectType(keyObjectField.getType())
+                .orElseThrow();
+            var objectTypeInputValueDefinitions = createInputValueDefinitions(objectType);
+
+            var inputObjectTypeDefinition = newInputObjectDefinition().name(keyObjectField.getType() + "Input")
+                .inputValueDefinitions(objectTypeInputValueDefinitions)
+                .build();
+            typeDefinitionRegistry.add(inputObjectTypeDefinition);
+          }
         });
   }
 
@@ -565,7 +554,7 @@ public class TypeDefinitionRegistrySchemaFactory {
           var aliasField = key.getKey();
           var keyField = getFieldKey(key.getValue());
           return createInputValueDefinition(aliasField, objectType,
-              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch());
+              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(), INPUT_OBJECTTYPE_POSTFIX);
         })
         .toList();
   }
@@ -680,6 +669,60 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build());
   }
 
+  private List<InputValueDefinition> createInputValueDefinitions(ObjectField objectField) {
+    var inputValueDefinitions = new ArrayList<InputValueDefinition>();
+
+    if (GEOMETRY_TYPE.equals(objectField.getType())) {
+      inputValueDefinitions.addAll(createGeometryArguments());
+    }
+
+    schema.getObjectType(objectField.getType())
+        .ifPresent(objectType -> objectField.getKeys()
+            .stream()
+            .map(keyField -> createInputValueDefinition(keyField, objectType,
+                Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
+            .forEach(inputValueDefinitions::add));
+
+    objectField.getArguments()
+        .stream()
+        .map(this::createFieldInputValueDefinition)
+        .forEach(inputValueDefinitions::add);
+
+    if (objectField.isList() && schema.getObjectTypes()
+        .containsKey(objectField.getType())) {
+
+      var objectType = schema.getObjectType(objectField.getType())
+          .orElseThrow();
+
+      createFilterArgument(objectField.getType(), objectType).ifPresent(inputValueDefinitions::add);
+
+      createSortArgument(objectField.getType(), objectType.getSortableBy()).ifPresent(inputValueDefinitions::add);
+
+      if (objectField.isPageable() && objectField.isList()) {
+        createFirstArgument().ifPresent(inputValueDefinitions::add);
+        createOffsetArgument().ifPresent(inputValueDefinitions::add);
+      }
+    }
+
+    if (isAggregate(objectField)) {
+      var objectFieldType = objectField.getAggregationOf();
+      var objectType = schema.getObjectType(objectFieldType)
+          .orElseThrow();
+
+      createFilterArgument(objectFieldType, objectType).ifPresent(inputValueDefinitions::add);
+    }
+
+    return inputValueDefinitions;
+  }
+
+  private List<InputValueDefinition> createInputValueDefinitions(ObjectType<?> objectType) {
+    return objectType.getFields()
+        .values()
+        .stream()
+        .flatMap(objectField -> createInputValueDefinition(objectField).stream())
+        .toList();
+  }
+
   private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType) {
     return createInputValueDefinition(keyPath, objectType, Map.of());
   }
@@ -692,17 +735,42 @@ public class TypeDefinitionRegistrySchemaFactory {
   private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
       Map<String, String> additionalData, boolean batch) {
 
+    return createInputValueDefinition(aliasField, objectType, additionalData, false, "");
+  }
+
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
+      Map<String, String> additionalData, boolean batch, String typePostfix) {
+
     var keyField = additionalData.get(KEY_FIELD);
     var keyPath = additionalData.get(KEY_PATH);
     var keyObjectType = getObjectType(objectType, keyPath);
 
-    var fieldType = createType(keyField, keyObjectType);
+    var fieldType = createType(keyField, keyObjectType, typePostfix);
 
     return newInputValueDefinition().name(aliasField)
         .type(batch ? ListType.newListType(fieldType)
             .build() : fieldType)
         .additionalData(additionalData)
         .build();
+  }
+
+  private Optional<InputValueDefinition> createInputValueDefinition(ObjectField objectField) {
+    Type<?> type;
+
+    if (StringUtils.isBlank(objectField.getType())) {
+      if (isAggregate(objectField)) {
+        type = NonNullType.newNonNullType(TypeUtils.newType(AGGREGATE_TYPE))
+            .build();
+      } else {
+        return Optional.empty();
+      }
+    } else {
+      type = createTypeForField(objectField);
+    }
+
+    return Optional.of(newInputValueDefinition().name(objectField.getName())
+        .type(type)
+        .build());
   }
 
   private InputValueDefinition createFieldInputValueDefinition(FieldArgument fieldArgument) {

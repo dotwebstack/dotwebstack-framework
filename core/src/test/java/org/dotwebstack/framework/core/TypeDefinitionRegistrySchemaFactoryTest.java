@@ -38,6 +38,7 @@ import graphql.language.NonNullType;
 import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.Type;
+import graphql.language.TypeDefinition;
 import graphql.language.TypeName;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import graphql.schema.idl.TypeUtil;
@@ -80,6 +81,29 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
   }
 
+  @Test
+  void typeDefinitionRegistry_registerInputObjectTypes_forObjecttypeWithCompositeKey() {
+    var pathToConfigFile = "dotwebstack/dotwebstack-objecttype-with-composite-key.yaml";
+    var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
+
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
+        .createTypeDefinitionRegistry();
+
+    List<InputValueDefinition> identifierInputObjectTypeDefinitions =
+        getInputValueDefinitions(registry, "IdentifierInput");
+    assertThat(identifierInputObjectTypeDefinitions.size(), is(2));
+
+    List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
+    assertThat(fieldDefinitions.size(), is(1));
+
+    var breweryFieldDefinition = fieldDefinitions.get(0);
+    assertThat(breweryFieldDefinition.getInputValueDefinitions()
+        .size(), is(1));
+    var breweryQueryIdentifierInputValueDefinition = breweryFieldDefinition.getInputValueDefinitions()
+        .get(0);
+    assertThat(breweryQueryIdentifierInputValueDefinition.getName(), is("identifier"));
+    assertNonNullType(breweryQueryIdentifierInputValueDefinition.getType(), "IdentifierInput");
+  }
 
   @Test
   void typeDefinitionRegistry_registerQueries_whenConfigured() {
@@ -506,18 +530,34 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertFieldDefinition(beerAggFieldDefinition, "beerAgg", "Aggregate");
   }
 
+  private List<InputValueDefinition> getInputValueDefinitions(TypeDefinitionRegistry registry,
+      String expectedTypeName) {
+    var typeDefinition = getTypeDefinition(registry, expectedTypeName);
+
+    assertThat(typeDefinition.getName(), is(expectedTypeName));
+    assertThat(typeDefinition, instanceOf(InputObjectTypeDefinition.class));
+
+    return ((InputObjectTypeDefinition) typeDefinition).getInputValueDefinitions();
+  }
+
   private List<FieldDefinition> getFieldDefinitions(TypeDefinitionRegistry registry, String expectedTypeName) {
+    var typeDefinition = getTypeDefinition(registry, expectedTypeName);
+
+    assertThat(typeDefinition.getName(), is(expectedTypeName));
+    assertThat(typeDefinition, instanceOf(ObjectTypeDefinition.class));
+
+    return ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions();
+  }
+
+  private TypeDefinition getTypeDefinition(TypeDefinitionRegistry registry, String expectedTypeName) {
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType(expectedTypeName)
         .isPresent(), is(true));
 
-    var queryTypeDefinition = registry.getType(expectedTypeName)
+    var typeDefinition = registry.getType(expectedTypeName)
         .orElseThrow();
 
-    assertThat(queryTypeDefinition.getName(), is(expectedTypeName));
-    assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
-
-    return ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
+    return typeDefinition;
   }
 
   private void assertGeometryFieldDefinition(FieldDefinition geometryFieldDefinition) {
@@ -621,6 +661,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
     var parentIdentifier = new TestObjectField();
     parentIdentifier.setName("parentIdentifier");
+    parentIdentifier.setType("String");
     parentObjectType.setFields(Map.of("parentIdentifier", parentIdentifier, "child", childObjectField));
 
     var schema = new Schema();

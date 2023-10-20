@@ -1,0 +1,30 @@
+queries:
+  brewery:
+    type: Brewery
+    keys:
+      - identifier
+
+objectTypes:
+  Brewery:
+    table: brewery_v
+    implements:
+      - BaseObject
+    fields:
+      name:
+        type: String
+      registrationDate:
+        type: String
+
+  Identifier:
+    implements: []
+    fields:
+      namespace:
+        type: String
+      lokaalId:
+        type: String
+
+interfaces:
+  BaseObject:
+    fields:
+      identifier:
+        type: Identifier
