@@ -1,27 +1,10 @@
 package org.dotwebstack.framework.backend.postgres;
 
-import static java.util.function.Function.identity;
-import static java.util.function.Predicate.not;
-import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSegmentsTableName;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.dotwebstack.framework.backend.postgres.model.GeometryMetadata;
-import org.dotwebstack.framework.backend.postgres.model.GeometrySegmentsTable;
-import org.dotwebstack.framework.backend.postgres.model.JoinColumn;
-import org.dotwebstack.framework.backend.postgres.model.PostgresObjectField;
-import org.dotwebstack.framework.backend.postgres.model.PostgresObjectType;
-import org.dotwebstack.framework.backend.postgres.model.PostgresSpatial;
-import org.dotwebstack.framework.backend.postgres.model.PostgresSpatialReferenceSystem;
+import org.dotwebstack.framework.backend.postgres.helpers.CyclicRefDetector;
+import org.dotwebstack.framework.backend.postgres.model.*;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -31,6 +14,19 @@ import org.dotwebstack.framework.ext.spatial.model.Spatial;
 import org.dotwebstack.framework.ext.spatial.model.SpatialReferenceSystem;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static java.util.function.Function.identity;
+import static java.util.function.Predicate.not;
+import static org.dotwebstack.framework.backend.postgres.helpers.PostgresSpatialHelper.getSegmentsTableName;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
+import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 @Component
 @Slf4j
@@ -191,22 +187,31 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
     var tableNames = objectType.getTable()
         .split("\\.");
     var table = tableNames[tableNames.length - 1];
-    var fields = getFields(objectType);
+    var fields = getFields(objectType, new CyclicRefDetector());
     return new AbstractMap.SimpleEntry<>(table, fields);
   }
 
-  private List<PostgresObjectField> getFields(PostgresObjectType objectType) {
+  private List<PostgresObjectField> getFields(PostgresObjectType objectType, CyclicRefDetector cyclicRefDetector) {
     return objectType.getFields()
         .values()
         .stream()
-        .map(this::getPostgresObjectFields)
+        .map(field -> getPostgresObjectFields(objectType, field, cyclicRefDetector))
         .flatMap(List::stream)
         .toList();
   }
 
-  private List<PostgresObjectField> getPostgresObjectFields(PostgresObjectField field) {
-    return field.getTargetType() == null || !field.getTargetType()
-        .isNested() ? List.of(field) : getFields((PostgresObjectType) field.getTargetType());
+  private List<PostgresObjectField> getPostgresObjectFields(PostgresObjectType objectType, PostgresObjectField field,
+      CyclicRefDetector cyclicRefDetector) {
+    if (field.getTargetType() == null || !field.getTargetType()
+        .isNested()) {
+      return List.of(field);
+    }
+
+    if (cyclicRefDetector.isProcessed(objectType, field)) {
+      return List.of();
+    }
+
+    return getFields((PostgresObjectType) field.getTargetType(), cyclicRefDetector);
   }
 
   private void setSpatial(Spatial spatial, Map.Entry<String, List<PostgresObjectField>> allFieldsPerTableName) {
