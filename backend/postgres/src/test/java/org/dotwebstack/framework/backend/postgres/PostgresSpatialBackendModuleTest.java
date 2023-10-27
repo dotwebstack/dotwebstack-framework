@@ -126,18 +126,18 @@ class PostgresSpatialBackendModuleTest {
 
     var company = new PostgresObjectType();
     company.setFields(createCompanyFields(company));
-    var companyRelatie = new PostgresObjectType();
-    companyRelatie.setFields(createCompanyRelatieFields(company));
+    var companyRelation = new PostgresObjectType();
+    companyRelation.setFields(createCompanyRelationFields(company));
 
     var brewery = new PostgresObjectType();
     brewery.setTable("brewery");
-    brewery.setFields(createBreweryFields(address, companyRelatie));
+    brewery.setFields(createBreweryFields(address, companyRelation));
 
     return Map.of("Brewery", brewery, "Address", address);
   }
 
   private Map<String, PostgresObjectField> createBreweryFields(ObjectType<? extends ObjectField> addressType,
-      ObjectType<? extends ObjectField> companyRelatieType) {
+      ObjectType<? extends ObjectField> companyRelationType) {
     var location = new PostgresObjectField();
     location.setName("breweryGeometry");
     location.setColumn("brewery_geometry");
@@ -150,8 +150,8 @@ class PostgresSpatialBackendModuleTest {
 
     var isPartOf = new PostgresObjectField();
     isPartOf.setName("isPartOf");
-    isPartOf.setType("CompanyRelatie");
-    isPartOf.setTargetType(companyRelatieType);
+    isPartOf.setType("CompanyRelation");
+    isPartOf.setTargetType(companyRelationType);
 
     return Map.of("breweryGeometry", location, "address", address, "isPartOf", isPartOf);
   }
@@ -172,15 +172,15 @@ class PostgresSpatialBackendModuleTest {
     return Map.of("isPartOf", isPartOf);
   }
 
-  private Map<String, PostgresObjectField> createCompanyRelatieFields(ObjectType<? extends ObjectField> companyType) {
+  private Map<String, PostgresObjectField> createCompanyRelationFields(ObjectType<? extends ObjectField> companyType) {
     var isPartOf = new PostgresObjectField();
     isPartOf.setName("isPartOf");
     isPartOf.setType("Company");
     isPartOf.setTargetType(companyType);
     isPartOf.setList(true);
     var joinColumn = new JoinColumn();
-    joinColumn.setName("identificatie");
-    joinColumn.setReferencedColumn("is_part_of__identificatie");
+    joinColumn.setName("identification");
+    joinColumn.setReferencedColumn("is_part_of__identification");
     isPartOf.setJoinColumns(List.of(joinColumn));
     return Map.of("isPartOf", isPartOf);
   }
