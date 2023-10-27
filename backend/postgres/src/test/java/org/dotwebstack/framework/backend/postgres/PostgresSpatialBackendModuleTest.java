@@ -124,14 +124,20 @@ class PostgresSpatialBackendModuleTest {
     var address = new PostgresObjectType();
     address.setFields(createAddressFields());
 
+    var company = new PostgresObjectType();
+    company.setFields(createCompanyFields(company));
+    var companyRelatie = new PostgresObjectType();
+    companyRelatie.setFields(createCompanyRelatieFields(company));
+
     var brewery = new PostgresObjectType();
     brewery.setTable("brewery");
-    brewery.setFields(createBreweryFields(address));
+    brewery.setFields(createBreweryFields(address, companyRelatie));
 
     return Map.of("Brewery", brewery, "Address", address);
   }
 
-  private Map<String, PostgresObjectField> createBreweryFields(ObjectType<? extends ObjectField> addressType) {
+  private Map<String, PostgresObjectField> createBreweryFields(ObjectType<? extends ObjectField> addressType,
+      ObjectType<? extends ObjectField> companyRelatieType) {
     var location = new PostgresObjectField();
     location.setName("breweryGeometry");
     location.setColumn("brewery_geometry");
@@ -142,7 +148,12 @@ class PostgresSpatialBackendModuleTest {
     address.setType("Address");
     address.setTargetType(addressType);
 
-    return Map.of("breweryGeometry", location, "address", address);
+    var isPartOf = new PostgresObjectField();
+    isPartOf.setName("isPartOf");
+    isPartOf.setType("CompanyRelatie");
+    isPartOf.setTargetType(companyRelatieType);
+
+    return Map.of("breweryGeometry", location, "address", address, "isPartOf", isPartOf);
   }
 
   private Map<String, PostgresObjectField> createAddressFields() {
@@ -151,6 +162,27 @@ class PostgresSpatialBackendModuleTest {
     location.setColumn("address_geometry");
     location.setType("Geometry");
     return Map.of("addressGeometry", location);
+  }
+
+  private Map<String, PostgresObjectField> createCompanyFields(ObjectType<? extends ObjectField> companyType) {
+    var isPartOf = new PostgresObjectField();
+    isPartOf.setName("isPartOf");
+    isPartOf.setType("Company");
+    isPartOf.setTargetType(companyType);
+    return Map.of("isPartOf", isPartOf);
+  }
+
+  private Map<String, PostgresObjectField> createCompanyRelatieFields(ObjectType<? extends ObjectField> companyType) {
+    var isPartOf = new PostgresObjectField();
+    isPartOf.setName("isPartOf");
+    isPartOf.setType("Company");
+    isPartOf.setTargetType(companyType);
+    isPartOf.setList(true);
+    var joinColumn = new JoinColumn();
+    joinColumn.setName("identificatie");
+    joinColumn.setReferencedColumn("is_part_of__identificatie");
+    isPartOf.setJoinColumns(List.of(joinColumn));
+    return Map.of("isPartOf", isPartOf);
   }
 
   private Spatial createSpatial() {
