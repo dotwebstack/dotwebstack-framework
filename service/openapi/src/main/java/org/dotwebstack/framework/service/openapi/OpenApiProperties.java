@@ -25,7 +25,7 @@ public class OpenApiProperties {
   private static final String VALID_PATH_REGEX = "^" + PATH_ABEMPTY + "$";
 
   @Pattern(regexp = VALID_PATH_REGEX)
-  private String apiDocPublicationPath = "";
+  private String apiDocPublicationPath = "/";
 
   private List<String> xdwsStringTypes = Collections.emptyList();
 
