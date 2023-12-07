@@ -88,6 +88,26 @@ class ConnectionDataFetcherTest {
   }
 
   @Test
+  void get_returnsResult_forNegativeMaxValue() {
+    lenient().when(pagingConfiguration.getFirstMaxValue())
+        .thenReturn(-1);
+    lenient().when(pagingConfiguration.getOffsetMaxValue())
+        .thenReturn(-1);
+
+    when(dataFetchingEnvironment.getArguments())
+        .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 0, OFFSET_ARGUMENT_NAME, 10000000));
+
+    Object result = connectionDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(result, CoreMatchers.instanceOf(DataFetcherResult.class));
+
+    var dataFetcherResult = (DataFetcherResult<?>) result;
+
+    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 10000000,
+        PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), 10000000, PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), 0)));
+  }
+
+  @Test
   void get_throwsException_forInvalidFirstArgumentValue() {
     when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, 101, OFFSET_ARGUMENT_NAME, 20));
 

@@ -67,11 +67,12 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
+    if (pagingConfiguration.getFirstMaxValue() != -1 && firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
       throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
           pagingConfiguration.getFirstMaxValue());
     }
-    if (offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
+    if (pagingConfiguration.getOffsetMaxValue() != -1
+        && offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
       throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.",
           pagingConfiguration.getOffsetMaxValue());
     }
