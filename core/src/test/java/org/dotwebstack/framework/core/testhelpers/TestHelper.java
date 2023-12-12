@@ -24,6 +24,7 @@ import org.dotwebstack.framework.core.backend.BackendModule;
 import org.dotwebstack.framework.core.config.ModelConfiguration;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.filter.CoreFilterConfigurer;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 import org.dotwebstack.framework.core.model.Schema;
@@ -76,8 +77,10 @@ public class TestHelper {
   }
 
   public static GraphQLSchema schemaToGraphQl(Schema schema) {
-    var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(schema, List.of(new CoreFilterConfigurer()))
-        .createTypeDefinitionRegistry();
+    var pagingConfiguration = new PagingConfiguration(100, 10, 10000, 0);
+    var typeDefinitionRegistry =
+        new TypeDefinitionRegistrySchemaFactory(schema, List.of(new CoreFilterConfigurer()), pagingConfiguration)
+            .createTypeDefinitionRegistry();
 
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
 
@@ -99,9 +102,9 @@ public class TestHelper {
     var runtimeWiringBuilder = RuntimeWiring.newRuntimeWiring();
     typeResolvers.forEach((interfaceName, resolver) -> runtimeWiringBuilder.type(interfaceName,
         typeWriting -> typeWriting.typeResolver(resolver)));
-
-    var typeDefinitionRegistry =
-        new TypeDefinitionRegistrySchemaFactory(dwsConfig, List.of()).createTypeDefinitionRegistry();
+    var pagingConfiguration = new PagingConfiguration(100, 10, 10000, 0);
+    var typeDefinitionRegistry = new TypeDefinitionRegistrySchemaFactory(dwsConfig, List.of(), pagingConfiguration)
+        .createTypeDefinitionRegistry();
 
 
     return new SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiringBuilder.build());

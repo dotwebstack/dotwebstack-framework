@@ -31,10 +31,8 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.FILTER_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.OR_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_DEFAULT_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
-import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_DEFAULT_VALUE;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
@@ -81,6 +79,7 @@ import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.config.TypeUtils;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterHelper;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.core.model.Context;
 import org.dotwebstack.framework.core.model.ContextField;
 import org.dotwebstack.framework.core.model.FieldArgument;
@@ -110,10 +109,14 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private final Schema schema;
 
+  private final PagingConfiguration pagingConfiguration;
+
   private final Map<String, String> fieldFilterMap = new HashMap<>();
 
-  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers) {
+  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers,
+      PagingConfiguration pagingConfiguration) {
     this.schema = schema;
+    this.pagingConfiguration = pagingConfiguration;
     filterConfigurers.forEach(configurer -> configurer.configureFieldFilterMapping(fieldFilterMap));
   }
 
@@ -656,16 +659,14 @@ public class TypeDefinitionRegistrySchemaFactory {
   private Optional<InputValueDefinition> createFirstArgument() {
     return Optional.of(newInputValueDefinition().name(FIRST_ARGUMENT_NAME)
         .type(newType(GraphQLInt.getName()))
-        .defaultValue(IntValue.newIntValue(FIRST_DEFAULT_VALUE)
-            .build())
+        .defaultValue(IntValue.of(pagingConfiguration.getFirstDefaultValue()))
         .build());
   }
 
   private Optional<InputValueDefinition> createOffsetArgument() {
     return Optional.of(newInputValueDefinition().name(OFFSET_ARGUMENT_NAME)
         .type(newType(GraphQLInt.getName()))
-        .defaultValue(IntValue.newIntValue(OFFSET_DEFAULT_VALUE)
-            .build())
+        .defaultValue(IntValue.of(pagingConfiguration.getOffsetDefaultValue()))
         .build());
   }
 
