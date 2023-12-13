@@ -18,5 +18,5 @@ public class Spatial {
   private Map<@NotNull Integer, @NotNull SpatialReferenceSystem> referenceSystems;
 
   @Valid
-  private boolean useSafeIntersects;
+  private boolean useWorkaroundForIntersects;
 }

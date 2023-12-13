@@ -80,7 +80,7 @@ class DefaultGeometryConditionBuilderTest {
             "(ST_Touches(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"));
   }
 
-  private PostgresObjectField mockObjectField(boolean safeIntersects) {
+  private PostgresObjectField mockObjectField(boolean useWorkaroundForIntersects) {
     var objectField = new PostgresObjectField();
 
     objectField.setType(SpatialConstants.GEOMETRY);
@@ -88,7 +88,7 @@ class DefaultGeometryConditionBuilderTest {
     var spatial = PostgresSpatial.builder()
         .srid(1)
         .spatialReferenceSystems(ImmutableBiMap.of(1, "geometry_column", 2, "geometry_column2"))
-        .useSafeIntersects(safeIntersects)
+        .useWorkaroundForIntersects(useWorkaroundForIntersects)
         .build();
 
     objectField.setSpatial(spatial);

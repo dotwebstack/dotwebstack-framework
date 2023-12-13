@@ -54,7 +54,7 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
         return Optional.of(DSL.condition("ST_Within({0}, {1})", field, geoFieldValue));
       case INTERSECTS:
         if (postgresObjectField.getSpatial()
-            .isUseSafeIntersects()) {
+            .isUseWorkaroundForIntersects()) {
           return Optional.of(DSL.condition("ST_Intersects(ST_UnaryUnion({0}), {1})", field, geoFieldValue));
         } else {
           return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
