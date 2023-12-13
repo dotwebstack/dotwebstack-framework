@@ -248,6 +248,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .bboxes(bboxes)
         .srid(srid)
         .segmentsTable(segmentsTable)
+        .useSafeIntersects(spatial.isUseSafeIntersects())
         .build();
     objectField.setSpatial(postgresSpatial);
   }

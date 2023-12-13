@@ -40,6 +40,7 @@ class SpatialModelConfigurationTest {
             hasEntry(is(7415), is(createTestSpatialReferenceSystem(3, 4, 28992, null))),
             hasEntry(is(9067), is(createTestSpatialReferenceSystem(2, 9, null, null))),
             hasEntry(is(7931), is(createTestSpatialReferenceSystem(3, 9, 9067, "test")))));
+    assertThat(result.isUseSafeIntersects(), is(true));
   }
 
   @Test
