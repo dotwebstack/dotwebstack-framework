@@ -62,9 +62,27 @@ class PagingBuilderTest {
   }
 
   @Test
+  void build_noLimitAddition_forNegativeLimit() {
+    RequestContext context = RequestContext.builder()
+        .source(Map.of(FIRST_KEY, -1))
+        .build();
+
+    testNoLimitAddition(context);
+  }
+
+  @Test
   void build_noLimitAddition_forMissingOffset() {
     RequestContext context = RequestContext.builder()
         .source(Map.of(OFFSET_KEY, 1))
+        .build();
+
+    testNoLimitAddition(context);
+  }
+
+  @Test
+  void build_noLimitAddition_forNegativeOffset() {
+    RequestContext context = RequestContext.builder()
+        .source(Map.of(OFFSET_KEY, -1))
         .build();
 
     testNoLimitAddition(context);

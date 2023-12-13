@@ -90,7 +90,7 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
     }
 
     if (pagingConfiguration.getOffsetMaxValue() >= 0 && offsetArgumentValue < 0) {
-      throw requestValidationException("Argument 'first' is not allowed to be lower than 0.",
+      throw requestValidationException("Argument 'offset' is not allowed to be lower than 0.",
           pagingConfiguration.getOffsetMaxValue());
     }
   }
