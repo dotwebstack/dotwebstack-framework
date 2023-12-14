@@ -82,7 +82,7 @@ class PagingBuilderTest {
   @Test
   void build_noLimitAddition_forNegativeOffset() {
     RequestContext context = RequestContext.builder()
-        .source(Map.of(OFFSET_KEY, -1))
+        .source(Map.of(OFFSET_KEY, -1, FIRST_KEY, 1))
         .build();
 
     testNoLimitAddition(context);
