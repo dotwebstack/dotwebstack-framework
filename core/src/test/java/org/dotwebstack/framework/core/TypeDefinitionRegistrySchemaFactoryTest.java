@@ -50,6 +50,7 @@ import java.util.stream.Collectors;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConfigurer;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.core.datafetchers.paging.PagingConstants;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
 import org.dotwebstack.framework.core.model.Query;
@@ -70,6 +71,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
 
   private SchemaReader schemaReader;
 
+  private PagingConfiguration pagingConfiguration;
+
   private final FilterConfigurer filterConfigurer = fieldFilterMap -> {
     fieldFilterMap.put("String", FilterConstants.STRING_FILTER_INPUT_OBJECT_TYPE);
     fieldFilterMap.put("Float", FilterConstants.FLOAT_FILTER_INPUT_OBJECT_TYPE);
@@ -79,6 +82,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   @BeforeEach
   void doBefore() {
     schemaReader = new SchemaReader(TestHelper.createSimpleObjectMapper());
+    pagingConfiguration = new PagingConfiguration(100, 10, 10000, 0);
   }
 
   @Test
@@ -86,8 +90,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var pathToConfigFile = "dotwebstack/dotwebstack-objecttype-with-composite-key.yaml";
     var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<InputValueDefinition> identifierInputObjectTypeDefinitions =
         getInputValueDefinitions(registry, "IdentifierInput");
@@ -111,8 +115,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var testHelper = new TestHelper(backendModule);
     var dotWebStackConfiguration = testHelper.loadSchema("dotwebstack/dotwebstack-queries.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(3));
@@ -152,8 +156,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerQueries_whenConfiguredWithPaging() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries-with-paging.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(2));
@@ -182,8 +186,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerQueriesWithFilters_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries-with-filters.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(2));
@@ -237,8 +241,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerQueriesWithSortableBy_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-queries-with-sortable-by.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(2));
@@ -252,8 +256,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     var pathToConfigFile = "dotwebstack/dotwebstack-objecttypes-with-interfaces.yaml";
     var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
         .orElse(null);
@@ -272,8 +276,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_NoRegisteredInterfaces_whenNotConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     var brewery = (ObjectTypeDefinition) registry.getType("Brewery")
         .orElse(null);
@@ -293,8 +297,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
       "dotwebstack/dotwebstack-objecttypes-with-incorrect-interfaces-on-interfaces.yaml, Interface, Organization"})
   void typeDefinitionRegistry_throwException_whenNonExistentInterface(String location, String type, String objectName) {
     var dotWebStackConfiguration = schemaReader.read(location);
-    var typeDefinitionRegistrySchemaFactory =
-        new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer));
+    var typeDefinitionRegistrySchemaFactory = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration,
+        List.of(filterConfigurer), pagingConfiguration);
     var exception = assertThrows(InvalidConfigurationException.class,
         typeDefinitionRegistrySchemaFactory::createTypeDefinitionRegistry);
 
@@ -366,8 +370,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerDummyQuery_whenNoQueriesConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-no-queries.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
     assertThat(fieldDefinitions.size(), is(1));
@@ -377,8 +381,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerSubscriptions_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-subscriptions.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Subscription");
     assertThat(fieldDefinitions.size(), is(1));
@@ -393,8 +397,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerSubscriptionsWithSortableBy_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-subscriptions-with-sortable-by.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Subscription");
     assertThat(fieldDefinitions.size(), is(1));
@@ -431,8 +435,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_noSubscriptions_whenNoSubscriptionsConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-no-subscriptions.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertTrue(registry.getType("Subscription")
@@ -443,8 +447,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerEnumerations_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-enumerations.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("Taste")
@@ -464,8 +468,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerObjectTypesWithScalarFields_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-scalar-fields.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Brewery");
     assertThat(fieldDefinitions.size(), is(6));
@@ -493,8 +497,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerObjectTypesWithComplexFields_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-objecttypes-complex-fields.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, "Brewery");
     assertThat(fieldDefinitions.size(), is(7));
@@ -585,8 +589,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   void typeDefinitionRegistry_registerContext_whenConfigured() {
     var dotWebStackConfiguration = schemaReader.read("dotwebstack/dotwebstack-context.yaml");
 
-    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer))
-        .createTypeDefinitionRegistry();
+    var registry = new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(filterConfigurer),
+        pagingConfiguration).createTypeDefinitionRegistry();
 
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType("HistoryContext")
@@ -678,7 +682,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     schema.getQueries()
         .put("queryParent", query);
 
-    var schemaFactory = new TypeDefinitionRegistrySchemaFactory(schema, List.of());
+    var schemaFactory = new TypeDefinitionRegistrySchemaFactory(schema, List.of(), pagingConfiguration);
 
     var typeDefinitionRegistry = schemaFactory.createTypeDefinitionRegistry();
 

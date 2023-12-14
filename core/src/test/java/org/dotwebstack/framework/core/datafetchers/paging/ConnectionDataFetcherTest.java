@@ -88,7 +88,27 @@ class ConnectionDataFetcherTest {
   }
 
   @Test
-  void get_throwsException_forInvalidFirstArgumentValue() {
+  void get_returnsResult_forNegativeMaxValue() {
+    lenient().when(pagingConfiguration.getFirstMaxValue())
+        .thenReturn(-1);
+    lenient().when(pagingConfiguration.getOffsetMaxValue())
+        .thenReturn(-1);
+
+    when(dataFetchingEnvironment.getArguments())
+        .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 0, OFFSET_ARGUMENT_NAME, 10000000));
+
+    Object result = connectionDataFetcher.get(dataFetchingEnvironment);
+
+    assertThat(result, CoreMatchers.instanceOf(DataFetcherResult.class));
+
+    var dataFetcherResult = (DataFetcherResult<?>) result;
+
+    assertThat(dataFetcherResult.getData(), equalTo(Map.of(OFFSET_ARGUMENT_NAME, 10000000,
+        PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), 10000000, PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), 0)));
+  }
+
+  @Test
+  void get_throwsException_forInvalidTooHighFirstArgumentValue() {
     when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, 101, OFFSET_ARGUMENT_NAME, 20));
 
     RequestValidationException exception =
@@ -97,12 +117,31 @@ class ConnectionDataFetcherTest {
   }
 
   @Test
-  void get_throwsException_forInvalidOffsetArgumentValue() {
+  void get_throwsException_forInvalidNegativeFirstArgumentValue() {
+    when(dataFetchingEnvironment.getArguments()).thenReturn(Map.of(FIRST_ARGUMENT_NAME, -1, OFFSET_ARGUMENT_NAME, 20));
+
+    RequestValidationException exception =
+        assertThrows(RequestValidationException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    assertThat(exception.getMessage(), is("Argument 'first' is not allowed to be lower than 0."));
+  }
+
+  @Test
+  void get_throwsException_forInvalidTooHighOffsetArgumentValue() {
     when(dataFetchingEnvironment.getArguments())
         .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 2, OFFSET_ARGUMENT_NAME, 10001));
 
     RequestValidationException exception =
         assertThrows(RequestValidationException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
     assertThat(exception.getMessage(), is("Argument 'offset' is not allowed to be higher than 10000."));
+  }
+
+  @Test
+  void get_throwsException_forInvalidNegativeOffsetArgumentValue() {
+    when(dataFetchingEnvironment.getArguments())
+        .thenReturn(Map.of(FIRST_ARGUMENT_NAME, 2, OFFSET_ARGUMENT_NAME, -1));
+
+    RequestValidationException exception =
+        assertThrows(RequestValidationException.class, () -> connectionDataFetcher.get(dataFetchingEnvironment));
+    assertThat(exception.getMessage(), is("Argument 'offset' is not allowed to be lower than 0."));
   }
 }

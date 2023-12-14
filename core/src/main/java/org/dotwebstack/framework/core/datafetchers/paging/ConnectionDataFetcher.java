@@ -13,7 +13,9 @@ import graphql.schema.GraphQLArgument;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   private final PagingConfiguration pagingConfiguration;
@@ -67,12 +69,28 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
+    if (firstArgumentValue < 0 || offsetArgumentValue < 0) {
+      LOG.warn("Paging arguments are negative, this may result in a slow response.\n'first': {}\n'offset':{}",
+          firstArgumentValue, offsetArgumentValue);
+    }
+
+    if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
       throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
           pagingConfiguration.getFirstMaxValue());
     }
-    if (offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
+
+    if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue < 0) {
+      throw requestValidationException("Argument 'first' is not allowed to be lower than 0.",
+          pagingConfiguration.getFirstMaxValue());
+    }
+
+    if (pagingConfiguration.getOffsetMaxValue() >= 0 && offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
       throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.",
+          pagingConfiguration.getOffsetMaxValue());
+    }
+
+    if (pagingConfiguration.getOffsetMaxValue() >= 0 && offsetArgumentValue < 0) {
+      throw requestValidationException("Argument 'offset' is not allowed to be lower than 0.",
           pagingConfiguration.getOffsetMaxValue());
     }
   }

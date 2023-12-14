@@ -13,6 +13,7 @@ import graphql.schema.TypeResolver;
 import graphql.schema.idl.RuntimeWiring;
 import java.util.List;
 import java.util.Map;
+import org.dotwebstack.framework.core.datafetchers.paging.PagingConfiguration;
 import org.dotwebstack.framework.core.testhelpers.TestHelper;
 import org.junit.jupiter.api.Test;
 
@@ -76,8 +77,11 @@ class TypeResolversFactoryTest {
       Map<String, String> envObjects) {
     var dotWebStackConfiguration = TestHelper.loadSchemaWithDefaultBackendModule(pathToConfigFile);
     var typeResolvers = new TypeResolversFactory(dotWebStackConfiguration).createTypeResolvers();
+    var pagingConfiguration = new PagingConfiguration(100, 10, 10000, 0);
+
     var typeDefinitionRegistry =
-        new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of()).createTypeDefinitionRegistry();
+        new TypeDefinitionRegistrySchemaFactory(dotWebStackConfiguration, List.of(), pagingConfiguration)
+            .createTypeDefinitionRegistry();
 
     var typeResolutionEnvironment = mock(TypeResolutionEnvironment.class);
     when(typeResolutionEnvironment.getObject()).thenReturn(envObjects);
