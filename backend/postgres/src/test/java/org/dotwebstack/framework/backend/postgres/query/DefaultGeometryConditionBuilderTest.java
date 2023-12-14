@@ -23,8 +23,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 class DefaultGeometryConditionBuilderTest {
   @ParameterizedTest
   @MethodSource("getGeometryConditionBuilderArguments")
-  void build_returnsCondition_forArguments(Object geometryValue, boolean useWorkaroundForIntersects, FilterOperator filterOperator,
-      String expectedCondition) {
+  void build_returnsCondition_forArguments(Object geometryValue, boolean useWorkaroundForIntersects,
+      FilterOperator filterOperator, String expectedCondition) {
     var objectField = mockObjectField(useWorkaroundForIntersects);
     var srid = 1;
     var sourceTable = DSL.table(DSL.name("db", "brewery"))
