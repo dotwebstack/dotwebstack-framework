@@ -51,7 +51,7 @@
     <graphql.java.version>21.3</graphql.java.version>
     <graphql.java.orchestrate.version>0.2.0</graphql.java.orchestrate.version>
     <commons.jexl3.version>3.2.1</commons.jexl3.version>
-    <commons.text.version>1.10.0</commons.text.version>
+    <commons.text.version>1.11.0</commons.text.version>
     <commons.lang3.version>3.13.0</commons.lang3.version>
     <pebble.version>3.2.1</pebble.version>
     <swagger-parser.version>2.1.16</swagger-parser.version>
