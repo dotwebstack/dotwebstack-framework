@@ -16,4 +16,7 @@ public class Spatial {
   @NotEmpty
   @JsonProperty("srid")
   private Map<@NotNull Integer, @NotNull SpatialReferenceSystem> referenceSystems;
+
+  @Valid
+  private boolean useWorkaroundForIntersects;
 }

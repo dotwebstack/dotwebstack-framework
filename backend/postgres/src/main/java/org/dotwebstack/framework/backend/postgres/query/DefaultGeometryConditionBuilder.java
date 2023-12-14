@@ -53,7 +53,12 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
       case WITHIN:
         return Optional.of(DSL.condition("ST_Within({0}, {1})", field, geoFieldValue));
       case INTERSECTS:
-        return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
+        if (postgresObjectField.getSpatial()
+            .isUseWorkaroundForIntersects()) {
+          return Optional.of(DSL.condition("ST_Intersects(ST_UnaryUnion({0}), {1})", field, geoFieldValue));
+        } else {
+          return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
+        }
       case TOUCHES:
         return Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoFieldValue));
       default:
