@@ -46,9 +46,12 @@ class PagingBuilder {
         ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME))).map(Integer.class::cast);
     Optional<Integer> first =
         ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME))).map(Integer.class::cast);
-
-    if (offset.isPresent() && offset.get() >= 0 && first.isPresent() && first.get() >= 0) {
+    if (offset.isPresent() && first.isPresent() && hasLimit(offset.get(), first.get())) {
       dataQuery.addLimit(offset.get(), first.get());
     }
+  }
+
+  private boolean hasLimit(int offset, int first) {
+    return offset >= 0 && first >= 0;
   }
 }
