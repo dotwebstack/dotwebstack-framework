@@ -43,8 +43,6 @@ class SpatialModelReaderTest {
     assertThat(result.getSpatial()
         .getReferenceSystems()
         .size(), is(4));
-    assertThat(result.getSpatial()
-        .isUseWorkaroundForIntersects(), is(true));
   }
 
   @Test

@@ -61,7 +61,7 @@ public abstract class GeometryConditionBuilderBase {
 
   protected void validateSupportedOperators(FilterOperator filterOperator) {
     if (!getSupportedOperators().contains(filterOperator)) {
-      throw illegalArgumentException("Unsupported filteroperator '{}' for geometry filter operation", filterOperator);
+      throw illegalArgumentException("Unsupported filter operator '{}' for geometry filter operation", filterOperator);
     }
   }
 
