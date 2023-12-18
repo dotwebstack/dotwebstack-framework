@@ -47,23 +47,13 @@ public class DefaultGeometryConditionBuilder extends GeometryConditionBuilderBas
 
     var geoFieldValue = createGeometryFieldValue(columnName);
 
-    switch (filterOperator) {
-      case CONTAINS:
-        return Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoFieldValue));
-      case WITHIN:
-        return Optional.of(DSL.condition("ST_Within({0}, {1})", field, geoFieldValue));
-      case INTERSECTS:
-        if (postgresObjectField.getSpatial()
-            .isUseWorkaroundForIntersects()) {
-          return Optional.of(DSL.condition("ST_Intersects(ST_UnaryUnion({0}), {1})", field, geoFieldValue));
-        } else {
-          return Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
-        }
-      case TOUCHES:
-        return Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoFieldValue));
-      default:
-        throw illegalArgumentException("Unsupported geometry filter operation");
-    }
+    return switch (filterOperator) {
+      case CONTAINS -> Optional.of(DSL.condition("ST_Contains({0}, {1})", field, geoFieldValue));
+      case WITHIN -> Optional.of(DSL.condition("ST_Within({0}, {1})", field, geoFieldValue));
+      case INTERSECTS -> Optional.of(DSL.condition("ST_Intersects({0}, {1})", field, geoFieldValue));
+      case TOUCHES -> Optional.of(DSL.condition("ST_Touches({0}, {1})", field, geoFieldValue));
+      default -> throw illegalArgumentException("Unsupported geometry filter operation");
+    };
   }
 
   protected Set<FilterOperator> getSupportedOperators() {
