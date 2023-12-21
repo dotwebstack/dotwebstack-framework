@@ -3,6 +3,7 @@ package org.dotwebstack.framework.service.openapi.handler;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.invalidConfigurationException;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +22,7 @@ public class OpenApiRequestHandler implements HandlerFunction<ServerResponse> {
 
   public OpenApiRequestHandler(InputStream openApiStream) {
     try {
-      var mapper = new YAMLMapper();
+      var mapper = new YAMLMapper().enable(YAMLGenerator.Feature.LITERAL_BLOCK_STYLE);
       ObjectNode specNode = VendorExtensionHelper.removeVendorExtensions(openApiStream, mapper);
       openApiSpec = mapper.writer()
           .writeValueAsString(specNode);
