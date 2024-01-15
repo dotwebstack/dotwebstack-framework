@@ -204,16 +204,16 @@ paths:
               x-dws-expr: "$header.'content-crs' == 'epsg:28992' ? 7415 : 7931"
             contains:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.contains)!"
+                x-dws-expr: "json:asString(args._geo.contains)!"
             intersects:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.intersects)!"
+                x-dws-expr: "json:asString(args._geo.intersects)!"
             touches:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.touches)!"
+                x-dws-expr: "json:asString(args._geo.touches)!"
             within:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.within)!"
+                x-dws-expr: "json:asString(args._geo.within)!"
       parameters:
         - name: content-crs
           in: header
