@@ -86,6 +86,8 @@ class GeometryCodec implements Codec<Geometry>, CodecMetadata {
     Assert.requireType(value, Geometry.class, "value must be Geometry type");
     var geometry = (Geometry) value;
 
+    Assert.requireNonNull(geometry.getCoordinate(), "Encoding of geometry failed, coordinate can't be empty.");
+
     var outputDimension = Double.isNaN(geometry.getCoordinate()
         .getZ()) ? 2 : 3;
 
