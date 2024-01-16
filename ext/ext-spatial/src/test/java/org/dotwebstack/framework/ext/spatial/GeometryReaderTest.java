@@ -70,9 +70,20 @@ class GeometryReaderTest {
 
   @Test
   void readGeometry_forGeoJson_returnsGeometry() {
-    var geoJson = "{\n" + "  \"type\": \"Point\",\n" + "  \"coordinates\": [\n" + "    194936.73,\n" + "    470973.96\n"
-        + "  ],\n" + "  \"crs\": {\n" + "    \"type\": \"name\",\n" + "    \"properties\": {\n"
-        + "      \"name\": \"EPSG:28992\"\n" + "    }\n" + "  }\n" + "}";
+    var geoJson = """
+        {
+          "type": "Point",
+          "coordinates": [
+            194936.73,
+            470973.96
+          ],
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:28992"
+            }
+          }
+        }""";
     Map<String, Object> data = Map.of(FROM_GEOJSON, geoJson);
 
     Geometry geometry = GeometryReader.readGeometry(data);
@@ -84,6 +95,25 @@ class GeometryReaderTest {
         .getY(), is(470973.96));
     assertThat(Double.isNaN(geometry.getCoordinate()
         .getZ()), is(true));
+  }
+
+  @Test
+  void getGeometryFromGeoJson_throwsException_whenCoordinatesAreNull() {
+    var geoJson = """
+        {
+          "type": "Point",
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:28992"
+            }
+          }
+        }""";
+
+    Map<String, Object> data = Map.of(FROM_GEOJSON, geoJson);
+
+    var exception = assertThrows(RequestValidationException.class, () -> GeometryReader.readGeometry(data));
+    assertThat(exception.getMessage(), is("Coordinates can't be null!"));
   }
 
   @Test

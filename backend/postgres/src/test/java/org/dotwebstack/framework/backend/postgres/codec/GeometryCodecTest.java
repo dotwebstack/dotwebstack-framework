@@ -101,6 +101,14 @@ class GeometryCodecTest {
   }
 
   @Test
+  void encode_throwsException_forInvalidGeometry() {
+    var geometry = geometryFactory.createPoint();
+
+    var thrown = Assertions.assertThrows(IllegalArgumentException.class, () -> geometryCodec.encode(geometry));
+    assertThat(thrown.getMessage(), equalTo("Encoding of geometry failed, coordinate can't be empty."));
+  }
+
+  @Test
   void decode_returnsGeometry_forByteBufTextFormatted() {
     var geometry = geometryFactory.createPoint(new Coordinate(1, 2));
 
