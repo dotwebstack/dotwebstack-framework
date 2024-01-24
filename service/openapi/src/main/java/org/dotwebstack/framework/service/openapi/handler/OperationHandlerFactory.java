@@ -32,7 +32,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -152,17 +151,11 @@ public class OperationHandlerFactory {
         .map("- "::concat)
         .collect(Collectors.joining("\n")));
 
-    Optional.of(errors.get(0))
+    return Mono.error(Optional.of(errors.get(0))
         .filter(ExceptionWhileDataFetching.class::isInstance)
         .map(ExceptionWhileDataFetching.class::cast)
         .map(ExceptionWhileDataFetching::getException)
-        .filter(ThrowableProblem.class::isInstance)
-        .map(ThrowableProblem.class::cast)
-        .ifPresent(throwableProblem -> {
-          throw throwableProblem;
-        });
-
-    return Mono.error(internalServerErrorException(executionInput));
+        .orElse(internalServerErrorException(executionInput)));
   }
 
   private ContentNegotiator createContentNegotiator(ApiResponse bodyResponse) {
