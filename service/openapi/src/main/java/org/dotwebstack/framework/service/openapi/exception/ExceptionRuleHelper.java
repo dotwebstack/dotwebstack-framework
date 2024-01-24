@@ -10,6 +10,7 @@ import static org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE;
 import java.util.List;
 import java.util.Optional;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.mapping.MappingException;
 
@@ -55,6 +56,12 @@ public class ExceptionRuleHelper {
           .build(),
       ExceptionRule.builder()
           .exception(BadRequestException.class)
+          .responseStatus(BAD_REQUEST)
+          .title("Error while processing the request")
+          .detail(true)
+          .build(),
+      ExceptionRule.builder()
+          .exception(RequestValidationException.class)
           .responseStatus(BAD_REQUEST)
           .title("Error while processing the request")
           .detail(true)

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.dotwebstack.framework.core.InternalServerErrorException;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
+import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.exception.NotAcceptableException;
 import org.dotwebstack.framework.service.openapi.exception.NotFoundException;
@@ -200,7 +201,7 @@ class OperationHandlerFactoryTest {
   }
 
   @Test
-  void create_createsFailingHandler_ifGraphQlErrorsOccur() {
+  void create_createsFailingHandlerForNonExceptionWhileDataFetchingError_ifGraphQlErrorsOccur() {
     var operation = createOperation("/breweries", Map.of());
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
@@ -221,7 +222,30 @@ class OperationHandlerFactoryTest {
   }
 
   @Test
-  void create_createsFailingHandler_ifThrowableProblemsOccur() {
+  void create_createsFailingHandlerForExceptionWhileDataFetchingError_ifExceptionsOccur() {
+    var operation = createOperation("/breweries", Map.of());
+    when(bodyMapper.supports(any(), any())).thenReturn(true);
+
+    var operationHandlerFactory = new OperationHandlerFactory(graphQl, queryMapper, List.of(bodyMapper),
+        parameterResolverFactory, responseHeaderResolver);
+
+    var executionInput = mock(ExecutionInput.class);
+    var executionResult = newExecutionResult()
+        .addError(new ExceptionWhileDataFetching(ResultPath.rootPath(), new RequestValidationException("Wrong request"),
+            SourceLocation.EMPTY))
+        .build();
+
+    when(queryMapper.map(any())).thenReturn(executionInput);
+    when(graphQl.executeAsync(executionInput)).thenReturn(CompletableFuture.completedFuture(executionResult));
+
+    var result = operationHandlerFactory.create(operation);
+
+    StepVerifier.create(result.handle(mockRequest(HttpMethod.GET, "/breweries")))
+        .verifyError(RequestValidationException.class);
+  }
+
+  @Test
+  void create_createsFailingHandlerForExceptionWhileDataFetchingError_ifThrowableProblemsOccur() {
     var operation = createOperation("/breweries", Map.of());
     when(bodyMapper.supports(any(), any())).thenReturn(true);
 
