@@ -19,6 +19,10 @@ public class ExceptionRuleHelper {
 
   private ExceptionRuleHelper() {}
 
+  private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
+
+  private static final String ERROR_WHILE_PROCESSING_REQUEST_MESSAGE = "Error while processing the request";
+
   public static final List<ExceptionRule> MAPPING = List.of(ExceptionRule.builder()
       .exception(NotAcceptableException.class)
       .responseStatus(NOT_ACCEPTABLE)
@@ -33,12 +37,12 @@ public class ExceptionRuleHelper {
       ExceptionRule.builder()
           .exception(MappingException.class)
           .responseStatus(INTERNAL_SERVER_ERROR)
-          .title("Internal server error")
+          .title(INTERNAL_SERVER_ERROR_MESSAGE)
           .build(),
       ExceptionRule.builder()
           .exception(GraphQlErrorException.class)
           .responseStatus(INTERNAL_SERVER_ERROR)
-          .title("Internal server error")
+          .title(INTERNAL_SERVER_ERROR_MESSAGE)
           .build(),
       ExceptionRule.builder()
           .exception(NoContentException.class)
@@ -58,13 +62,13 @@ public class ExceptionRuleHelper {
       ExceptionRule.builder()
           .exception(BadRequestException.class)
           .responseStatus(BAD_REQUEST)
-          .title("Error while processing the request")
+          .title(ERROR_WHILE_PROCESSING_REQUEST_MESSAGE)
           .detail(true)
           .build(),
       ExceptionRule.builder()
           .exception(RequestValidationException.class)
           .responseStatus(BAD_REQUEST)
-          .title("Error while processing the request")
+          .title(ERROR_WHILE_PROCESSING_REQUEST_MESSAGE)
           .detail(true)
           .build(),
       ExceptionRule.builder()
@@ -80,12 +84,12 @@ public class ExceptionRuleHelper {
       ExceptionRule.builder()
           .exception(GraphqlJavaOrchestrateException.class)
           .responseStatus(INTERNAL_SERVER_ERROR)
-          .title("Internal server error")
+          .title(INTERNAL_SERVER_ERROR_MESSAGE)
           .build(),
       ExceptionRule.builder()
           .exception(GraphqlJavaOrchestrateException.class)
           .responseStatus(BAD_REQUEST)
-          .title("Error while processing the request")
+          .title(ERROR_WHILE_PROCESSING_REQUEST_MESSAGE)
           .detail(true)
           .build());
 
@@ -101,10 +105,11 @@ public class ExceptionRuleHelper {
      * GraphqlJavaOrchestrateException.class can be matched using the HttpStatus.
      */
 
-    if (matchingRules.size() > 1 && throwable instanceof GraphqlJavaOrchestrateException) {
+    if (matchingRules.size() > 1
+        && throwable instanceof GraphqlJavaOrchestrateException graphqlJavaOrchestrateException) {
       return matchingRules.stream()
           .filter(matchingRule -> {
-            var httpStatus = ((GraphqlJavaOrchestrateException) throwable).getStatusCode();
+            var httpStatus = graphqlJavaOrchestrateException.getStatusCode();
             return matchingRule.getResponseStatus()
                 .equals(httpStatus);
           })

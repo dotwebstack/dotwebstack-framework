@@ -166,9 +166,9 @@ public class OperationHandlerFactory {
 
     if (optionalException.isPresent()) {
       var exception = optionalException.get();
-      if (exception instanceof DelegateException && !((DelegateException) exception).getErrors()
+      if (exception instanceof DelegateException delegateException && !delegateException.getErrors()
           .isEmpty()) {
-        return getExecutionResultMono(executionInput, ((DelegateException) exception).getErrors());
+        return getExecutionResultMono(executionInput, delegateException.getErrors());
       } else {
         return Mono.error(optionalException.get());
       }
