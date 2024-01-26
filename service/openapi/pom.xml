@@ -18,6 +18,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.dotwebstack</groupId>
+      <artifactId>graphql-java-orchestrate</artifactId>
+      <version>${graphql.java.orchestrate.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.dotwebstack.framework</groupId>
       <artifactId>test</artifactId>
       <version>${project.version}</version>

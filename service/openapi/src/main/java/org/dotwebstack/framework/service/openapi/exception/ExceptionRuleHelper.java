@@ -13,6 +13,7 @@ import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.core.RequestValidationException;
 import org.dotwebstack.framework.core.templating.TemplatingException;
 import org.dotwebstack.framework.service.openapi.mapping.MappingException;
+import org.dotwebstack.graphql.orchestrate.exception.GraphqlJavaOrchestrateException;
 
 public class ExceptionRuleHelper {
 
@@ -75,12 +76,42 @@ public class ExceptionRuleHelper {
           .exception(TemplatingException.class)
           .responseStatus(INTERNAL_SERVER_ERROR)
           .title("Templating went wrong")
+          .build(),
+      ExceptionRule.builder()
+          .exception(GraphqlJavaOrchestrateException.class)
+          .responseStatus(INTERNAL_SERVER_ERROR)
+          .title("Internal server error")
+          .build(),
+      ExceptionRule.builder()
+          .exception(GraphqlJavaOrchestrateException.class)
+          .responseStatus(BAD_REQUEST)
+          .title("Error while processing the request")
+          .detail(true)
           .build());
 
   public static Optional<ExceptionRule> getExceptionRule(Throwable throwable) {
-    return MAPPING.stream()
+    var matchingRules = MAPPING.stream()
         .filter(rule -> rule.getException()
             .isAssignableFrom(throwable.getClass()))
-        .findFirst();
+        .toList();
+
+    /*
+     * The dotwebstack graphql-java-orchestrate could return different exceptions of the
+     * GraphqlJavaOrchestrateException.class. These are identifiable bij HttpStatus. ExceptionRules of
+     * GraphqlJavaOrchestrateException.class can be matched using the HttpStatus.
+     */
+
+    if (matchingRules.size() > 1 && throwable instanceof GraphqlJavaOrchestrateException) {
+      return matchingRules.stream()
+          .filter(matchingRule -> {
+            var httpStatus = ((GraphqlJavaOrchestrateException) throwable).getStatusCode();
+            return matchingRule.getResponseStatus()
+                .equals(httpStatus);
+          })
+          .findFirst();
+    } else {
+      return matchingRules.stream()
+          .findFirst();
+    }
   }
 }
