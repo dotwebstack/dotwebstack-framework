@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.4.22-SNAPSHOT</version>
+    <version>0.4.22</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>example</artifactId>
-  <version>0.4.22-SNAPSHOT</version>
+  <version>0.4.22</version>
   <packaging>pom</packaging>
 
   <modules>
