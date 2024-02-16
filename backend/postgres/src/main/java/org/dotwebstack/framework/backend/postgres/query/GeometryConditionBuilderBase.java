@@ -22,6 +22,7 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
 
 @Accessors(fluent = true)
 @Setter
@@ -54,6 +55,11 @@ public abstract class GeometryConditionBuilderBase {
     var geometry = readGeometry(mapValue);
     var columnSrid = getSridOfColumnName(postgresObjectField.getSpatial(), columnName);
     geometry.setSRID(columnSrid);
+
+    if (postgresObjectField.getSpatial()
+        .isUnifyInputGeometry()) {
+      geometry = UnaryUnionOp.union(geometry);
+    }
 
     return DSL.val(geometry)
         .cast(GEOMETRY_DATATYPE);

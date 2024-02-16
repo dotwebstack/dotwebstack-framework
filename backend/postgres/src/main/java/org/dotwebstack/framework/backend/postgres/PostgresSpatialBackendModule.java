@@ -247,6 +247,7 @@ class PostgresSpatialBackendModule implements SpatialBackendModule<PostgresSpati
         .equivalents(equivalents)
         .bboxes(bboxes)
         .srid(srid)
+        .unifyInputGeometry(spatial.isUnifyInputGeometry())
         .segmentsTable(segmentsTable)
         .build();
     objectField.setSpatial(postgresSpatial);

@@ -22,6 +22,8 @@ public class PostgresSpatial {
 
   private BiMap<Integer, String> bboxes;
 
+  private boolean unifyInputGeometry;
+
   public boolean hasSegmentsTable() {
     return segmentsTable.isPresent();
   }
