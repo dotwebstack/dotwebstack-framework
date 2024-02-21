@@ -53,13 +53,14 @@ public abstract class GeometryConditionBuilderBase {
     var mapValue = ObjectHelper.castToMap(value);
 
     var geometry = readGeometry(mapValue);
-    var columnSrid = getSridOfColumnName(postgresObjectField.getSpatial(), columnName);
-    geometry.setSRID(columnSrid);
 
     if (postgresObjectField.getSpatial()
         .isUnifyInputGeometry()) {
       geometry = UnaryUnionOp.union(geometry);
     }
+
+    var columnSrid = getSridOfColumnName(postgresObjectField.getSpatial(), columnName);
+    geometry.setSRID(columnSrid);
 
     return DSL.val(geometry)
         .cast(GEOMETRY_DATATYPE);
