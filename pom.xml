@@ -54,7 +54,7 @@
     <commons.text.version>1.11.0</commons.text.version>
     <commons.lang3.version>3.14.0</commons.lang3.version>
     <pebble.version>3.2.1</pebble.version>
-    <swagger-parser.version>2.1.16</swagger-parser.version>
+    <swagger-parser.version>2.1.22</swagger-parser.version>
     <lombok.version>1.18.30</lombok.version>
     <guava.version>33.1.0-jre</guava.version>
     <problem.version>0.27.1</problem.version>
