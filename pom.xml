@@ -56,7 +56,7 @@
     <pebble.version>3.2.2</pebble.version>
     <swagger-parser.version>2.1.22</swagger-parser.version>
     <lombok.version>1.18.32</lombok.version>
-    <guava.version>32.1.2-jre</guava.version>
+    <guava.version>33.2.1-jre</guava.version>
     <problem.version>0.27.1</problem.version>
     <problem.spring.webflux.version>0.29.1</problem.spring.webflux.version>
     <json-path.version>2.9.0</json-path.version>
