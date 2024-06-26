@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationRequest;
 import org.dotwebstack.framework.service.openapi.mapping.EnvironmentProperties;
@@ -55,6 +56,7 @@ class QueryArgumentBuilderTest {
   void beforeAll() {
     queryArgumentBuilder = new QueryArgumentBuilder(environmentProperties, new JexlBuilder().silent(false)
         .strict(true)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .create());
   }
 

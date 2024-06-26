@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlScript;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -211,6 +212,7 @@ class OpenApiExceptionHandlerTest {
   private JexlScript getJexlScript(String scriptText) {
     JexlEngine sjexl = new JexlBuilder().silent(false)
         .strict(true)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .create();
     return sjexl.createScript(scriptText);
   }
