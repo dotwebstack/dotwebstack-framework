@@ -39,15 +39,15 @@ class AggregateConfigurerTest {
   @Test
   @SuppressWarnings("rawtypes")
   void configureTypeDefinitionRegistry_addGeometryDef_always() {
-    List<String> fieldNames = List.of(COUNT_FIELD, INT_SUM_FIELD, INT_MIN_FIELD, INT_MAX_FIELD, INT_AVG_FIELD,
-        FLOAT_SUM_FIELD, FLOAT_MIN_FIELD, FLOAT_MAX_FIELD, FLOAT_AVG_FIELD, STRING_JOIN_FIELD);
-
     aggregateConfigurer.configureTypeDefinitionRegistry(dataFetchingEnvironment);
 
     Optional<TypeDefinition> optional = dataFetchingEnvironment.getType(AGGREGATE_TYPE);
     assertThat(optional.isPresent(), is(true));
     assertThat(optional.get(), instanceOf(ObjectTypeDefinition.class));
     ObjectTypeDefinition enumTypeDefinition = (ObjectTypeDefinition) optional.get();
+
+    List<String> fieldNames = List.of(COUNT_FIELD, INT_SUM_FIELD, INT_MIN_FIELD, INT_MAX_FIELD, INT_AVG_FIELD,
+        FLOAT_SUM_FIELD, FLOAT_MIN_FIELD, FLOAT_MAX_FIELD, FLOAT_AVG_FIELD, STRING_JOIN_FIELD);
 
     for (FieldDefinition field : enumTypeDefinition.getFieldDefinitions()) {
       assertThat(fieldNames.contains(field.getName()), is(Boolean.TRUE));
