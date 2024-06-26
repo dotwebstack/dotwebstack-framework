@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.dotwebstack.framework</groupId>
     <artifactId>dotwebstack-framework</artifactId>
-    <version>0.4.16-SNAPSHOT</version>
+    <version>0.4.29-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>core</artifactId>
-  <version>0.4.16-SNAPSHOT</version>
+  <version>0.4.29-SNAPSHOT</version>
 
   <dependencies>
     <dependency>
@@ -83,7 +83,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.2</version>
         <executions>
           <execution>
             <goals>

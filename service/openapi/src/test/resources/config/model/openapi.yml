@@ -3,6 +3,10 @@ openapi: 3.0.2
 info:
   title: test API
   version: 3.0.0
+  description: |
+    This is an API for brewery data.
+    It tells you all about breweries and their beers.
+    And much much more.
 
 components:
   schemas:
