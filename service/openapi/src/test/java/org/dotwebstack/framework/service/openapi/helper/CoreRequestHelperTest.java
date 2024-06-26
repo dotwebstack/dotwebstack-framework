@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.core.jexl.JexlHelper;
 import org.dotwebstack.framework.core.query.GraphQlField;
 import org.dotwebstack.framework.service.openapi.exception.InvalidOpenApiConfigurationException;
@@ -86,7 +87,8 @@ class CoreRequestHelperTest {
     ServerRequest request = Mockito.mock(ServerRequest.class);
     when(request.path()).thenReturn("/path");
 
-    JexlEngine jexlEngine = new JexlBuilder().create();
+    JexlEngine jexlEngine = new JexlBuilder().permissions(JexlPermissions.UNRESTRICTED)
+        .create();
     JexlHelper jexlHelper = new JexlHelper(jexlEngine);
 
     when(environmentProperties.getAllProperties()).thenReturn(Map.of("baseUrl", "https://dotwebstack.org/api"));
