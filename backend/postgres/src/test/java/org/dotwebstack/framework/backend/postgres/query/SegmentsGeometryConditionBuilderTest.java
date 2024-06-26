@@ -43,7 +43,7 @@ class SegmentsGeometryConditionBuilderTest {
       segementGeometryCOnditionBuilder.build();
     });
 
-    String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";
+    String expectedMessage = "Unsupported filter operator 'EQ' for geometry filter operation";
     String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));

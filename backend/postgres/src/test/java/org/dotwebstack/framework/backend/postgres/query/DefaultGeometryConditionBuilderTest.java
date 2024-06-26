@@ -21,11 +21,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class DefaultGeometryConditionBuilderTest {
+
   @ParameterizedTest
   @MethodSource("getGeometryConditionBuilderArguments")
-  void build_returnsCondition_forArguments(Object geometryValue, boolean useWorkaroundForIntersects,
+  void build_returnsCondition_forArguments(Object geometryValue, boolean unifyInputGeometry,
       FilterOperator filterOperator, String expectedCondition) {
-    var objectField = mockObjectField(useWorkaroundForIntersects);
+    var objectField = mockObjectField(unifyInputGeometry);
     var srid = 1;
     var sourceTable = DSL.table(DSL.name("db", "brewery"))
         .as("src");
@@ -55,11 +56,10 @@ class DefaultGeometryConditionBuilderTest {
         .srid(srid)
         .sourceTable(sourceTable);
 
-    Exception exception = Assertions.assertThrows(IllegalArgumentException.class, () -> {
-      defaultGeometryConditionBuilder.build();
-    });
+    Exception exception =
+        Assertions.assertThrows(IllegalArgumentException.class, defaultGeometryConditionBuilder::build);
 
-    String expectedMessage = "Unsupported filteroperator 'EQ' for geometry filter operation";
+    String expectedMessage = "Unsupported filter operator 'EQ' for geometry filter operation";
     String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));
@@ -74,13 +74,19 @@ class DefaultGeometryConditionBuilderTest {
             "(ST_Within(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("fromWKT", "POINT(1 2)"), false, FilterOperator.INTERSECTS,
             "(ST_Intersects(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
-        arguments(Map.of("fromWKT", "POINT(1 2)"), true, FilterOperator.INTERSECTS,
-            "(ST_Intersects(ST_UnaryUnion(\"src\".\"geometry_column\"), cast('POINT (1 2)' as geometry)))"),
         arguments(Map.of("fromWKT", "POINT(1 2)"), false, FilterOperator.TOUCHES,
-            "(ST_Touches(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"));
+            "(ST_Touches(\"src\".\"geometry_column\", cast('POINT (1 2)' as geometry)))"),
+        arguments(Map.of("fromWKT", "MULTIPOLYGON (((0 0, 10 0, 10 10, 0 10, 0 0)),((5 5, 15 5, 15 15, 5 15, 5 5)))"),
+            false, FilterOperator.INTERSECTS,
+            "(ST_Intersects(\"src\".\"geometry_column\", cast('MULTIPOLYGON (((0 0, 10 0, 10 10, 0 10, 0 0)), "
+                + "((5 5, 15 5, 15 15, 5 15, 5 5)))' as geometry)))"),
+        arguments(Map.of("fromWKT", "MULTIPOLYGON (((0 0, 10 0, 10 10, 0 10, 0 0)),((5 5, 15 5, 15 15, 5 15, 5 5)))"),
+            true, FilterOperator.INTERSECTS,
+            "(ST_Intersects(\"src\".\"geometry_column\", cast('POLYGON ((10 5, 10 0, 0 0, 0 10, 5 10, "
+                + "5 15, 15 15, 15 5, 10 5))' as geometry)))"));
   }
 
-  private PostgresObjectField mockObjectField(boolean useWorkaroundForIntersects) {
+  private PostgresObjectField mockObjectField(boolean unifyInputGeometry) {
     var objectField = new PostgresObjectField();
 
     objectField.setType(SpatialConstants.GEOMETRY);
@@ -88,10 +94,12 @@ class DefaultGeometryConditionBuilderTest {
     var spatial = PostgresSpatial.builder()
         .srid(1)
         .spatialReferenceSystems(ImmutableBiMap.of(1, "geometry_column", 2, "geometry_column2"))
-        .useWorkaroundForIntersects(useWorkaroundForIntersects)
+        .unifyInputGeometry(unifyInputGeometry)
         .build();
 
     objectField.setSpatial(spatial);
     return objectField;
   }
+
+
 }

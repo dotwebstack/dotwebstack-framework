@@ -22,6 +22,7 @@ import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.DefaultDataType;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
 
 @Accessors(fluent = true)
 @Setter
@@ -52,6 +53,12 @@ public abstract class GeometryConditionBuilderBase {
     var mapValue = ObjectHelper.castToMap(value);
 
     var geometry = readGeometry(mapValue);
+
+    if (postgresObjectField.getSpatial()
+        .isUnifyInputGeometry()) {
+      geometry = UnaryUnionOp.union(geometry);
+    }
+
     var columnSrid = getSridOfColumnName(postgresObjectField.getSpatial(), columnName);
     geometry.setSRID(columnSrid);
 
@@ -61,7 +68,7 @@ public abstract class GeometryConditionBuilderBase {
 
   protected void validateSupportedOperators(FilterOperator filterOperator) {
     if (!getSupportedOperators().contains(filterOperator)) {
-      throw illegalArgumentException("Unsupported filteroperator '{}' for geometry filter operation", filterOperator);
+      throw illegalArgumentException("Unsupported filter operator '{}' for geometry filter operation", filterOperator);
     }
   }
 

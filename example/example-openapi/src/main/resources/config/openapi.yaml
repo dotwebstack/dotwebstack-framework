@@ -3,6 +3,10 @@ openapi: 3.0.2
 info:
   title: Breweries
   version: 3.0.0
+  description: |
+    This is an API for brewery data.
+    It tells you all about breweries and their beers.
+    And much much more.
 
 paths:
   /noop:
@@ -200,16 +204,16 @@ paths:
               x-dws-expr: "$header.'content-crs' == 'epsg:28992' ? 7415 : 7931"
             contains:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.contains)!"
+                x-dws-expr: "json:asString(args._geo.contains)!"
             intersects:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.intersects)!"
+                x-dws-expr: "json:asString(args._geo.intersects)!"
             touches:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.touches)!"
+                x-dws-expr: "json:asString(args._geo.touches)!"
             within:
               fromGeoJSON:
-                x-dws-expr: "json:asString($body._geo.within)!"
+                x-dws-expr: "json:asString(args._geo.within)!"
       parameters:
         - name: content-crs
           in: header

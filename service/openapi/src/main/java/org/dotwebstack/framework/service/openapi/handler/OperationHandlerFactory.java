@@ -15,6 +15,7 @@ import graphql.GraphQLError;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -26,13 +27,13 @@ import org.dotwebstack.framework.service.openapi.query.QueryMapper;
 import org.dotwebstack.framework.service.openapi.query.QueryProperties;
 import org.dotwebstack.framework.service.openapi.response.BodyMapper;
 import org.dotwebstack.framework.service.openapi.response.header.ResponseHeaderResolver;
+import org.dotwebstack.graphql.orchestrate.delegate.DelegateException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.zalando.problem.ThrowableProblem;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -152,15 +153,26 @@ public class OperationHandlerFactory {
         .map("- "::concat)
         .collect(Collectors.joining("\n")));
 
-    Optional.of(errors.get(0))
+    return getExecutionResultMono(executionInput, errors);
+  }
+
+  private static Mono<ExecutionResult> getExecutionResultMono(ExecutionInput executionInput,
+      List<GraphQLError> errors) {
+
+    var optionalException = Optional.of(errors.get(0))
         .filter(ExceptionWhileDataFetching.class::isInstance)
         .map(ExceptionWhileDataFetching.class::cast)
-        .map(ExceptionWhileDataFetching::getException)
-        .filter(ThrowableProblem.class::isInstance)
-        .map(ThrowableProblem.class::cast)
-        .ifPresent(throwableProblem -> {
-          throw throwableProblem;
-        });
+        .map(ExceptionWhileDataFetching::getException);
+
+    if (optionalException.isPresent()) {
+      var exception = optionalException.get();
+      if (exception instanceof DelegateException delegateException && !delegateException.getErrors()
+          .isEmpty()) {
+        return getExecutionResultMono(executionInput, delegateException.getErrors());
+      } else {
+        return Mono.error(optionalException.get());
+      }
+    }
 
     return Mono.error(internalServerErrorException(executionInput));
   }

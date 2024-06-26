@@ -15,4 +15,4 @@ spatial:
       scale: 9
       equivalent: 9067
       extraInfo: test
-  useWorkaroundForIntersects: true
+  unifyInputGeometry: true

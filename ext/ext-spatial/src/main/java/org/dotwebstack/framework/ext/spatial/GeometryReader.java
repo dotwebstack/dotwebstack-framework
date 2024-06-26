@@ -8,6 +8,7 @@ import static org.dotwebstack.framework.ext.spatial.SpatialConstants.FROM_WKT;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
@@ -72,8 +73,16 @@ public class GeometryReader {
 
   private static Geometry getGeometryFromGeoJson(String geoJson) {
     var geoJsonReader = new GeoJsonReader();
+
     try {
-      return geoJsonReader.read(geoJson);
+      var geometry = geoJsonReader.read(geoJson);
+
+      // Type is validated in het locationtech library.
+      if (Objects.isNull(geometry.getCoordinate())) {
+        throw requestValidationException("Coordinates can't be null!");
+      }
+
+      return geometry;
     } catch (ParseException e) {
       throw requestValidationException("The filter input GeoJSON is invalid!", e);
     }

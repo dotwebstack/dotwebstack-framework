@@ -44,7 +44,7 @@ class SpatialModelReaderTest {
         .getReferenceSystems()
         .size(), is(4));
     assertThat(result.getSpatial()
-        .isUseWorkaroundForIntersects(), is(true));
+        .isUnifyInputGeometry(), is(true));
   }
 
   @Test
