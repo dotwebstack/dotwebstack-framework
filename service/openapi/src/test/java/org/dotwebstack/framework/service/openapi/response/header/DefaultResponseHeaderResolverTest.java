@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -47,6 +48,7 @@ class DefaultResponseHeaderResolverTest {
     openApi = TestResources.openApi("openapi.yaml");
     jexlEngine = new JexlBuilder().silent(false)
         .strict(true)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .create();
   }
 

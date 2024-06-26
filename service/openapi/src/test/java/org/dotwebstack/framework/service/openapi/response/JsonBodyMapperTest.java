@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.service.openapi.OpenApiProperties;
 import org.dotwebstack.framework.service.openapi.TestResources;
 import org.dotwebstack.framework.service.openapi.handler.OperationContext;
@@ -53,6 +54,7 @@ class JsonBodyMapperTest {
     var pagingLinkFunctions = new PagingFunctions();
     bodyMapper = new JsonBodyMapper(TestResources.graphQl(), new JexlBuilder().silent(false)
         .strict(true)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .namespaces(Map.of(pagingLinkFunctions.getNamespace(), pagingLinkFunctions))
         .create(), properties, List.of(new GeometryTypeMapper(new OpenApiProperties())));
   }
