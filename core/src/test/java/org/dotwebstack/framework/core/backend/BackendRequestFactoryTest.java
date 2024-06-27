@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
+import graphql.collect.ImmutableMapWithNullValues;
 import graphql.execution.ExecutionStepInfo;
 import graphql.execution.MergedField;
 import graphql.execution.ResultPath;
@@ -213,7 +214,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = newExecutionStepInfo().fieldDefinition(breweryFieldDefinition)
         .fieldContainer(objectType)
         .type(breweryFieldDefinition.getType())
-        .arguments(() -> Map.of("identifier", "id-1"))
+        .arguments(() -> ImmutableMapWithNullValues.copyOf(Map.of("identifier", "id-1")))
         .parentInfo(queryExecutionStepInfo)
         .build();
 
@@ -266,7 +267,7 @@ class BackendRequestFactoryTest {
         .fieldContainer(objectType)
         .field(mergedField)
         .type(baseObjectFieldDefinition.getType())
-        .arguments(() -> Map.of("identifier", "id-1"))
+        .arguments(() -> ImmutableMapWithNullValues.copyOf(Map.of("identifier", "id-1")))
         .parentInfo(queryExecutionStepInfo)
         .build();
 
@@ -312,7 +313,7 @@ class BackendRequestFactoryTest {
     var executionStepInfo = newExecutionStepInfo().fieldDefinition(baseObjectFieldDefinition)
         .fieldContainer(objectType)
         .type(baseObjectFieldDefinition.getType())
-        .arguments(() -> Map.of("identifier", "id-1"))
+        .arguments(() -> ImmutableMapWithNullValues.copyOf(Map.of("identifier", "id-1")))
         .parentInfo(queryExecutionStepInfo)
         .build();
 
