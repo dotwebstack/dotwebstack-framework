@@ -46,21 +46,21 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <spring-boot.version>3.2.2</spring-boot.version>
+    <spring-boot.version>3.3.1</spring-boot.version>
     <rdf4j.version>4.3.12</rdf4j.version>
     <graphql.java.version>22.1</graphql.java.version>
     <graphql.java.orchestrate.version>0.2.2</graphql.java.orchestrate.version>
-    <commons.jexl3.version>3.2.1</commons.jexl3.version>
-    <commons.text.version>1.11.0</commons.text.version>
+    <commons.jexl3.version>3.4.0</commons.jexl3.version>
+    <commons.text.version>1.12.0</commons.text.version>
     <commons.lang3.version>3.14.0</commons.lang3.version>
-    <pebble.version>3.2.1</pebble.version>
-    <swagger-parser.version>2.1.16</swagger-parser.version>
-    <lombok.version>1.18.30</lombok.version>
-    <guava.version>33.1.0-jre</guava.version>
+    <pebble.version>3.2.2</pebble.version>
+    <swagger-parser.version>2.1.22</swagger-parser.version>
+    <lombok.version>1.18.32</lombok.version>
+    <guava.version>33.2.1-jre</guava.version>
     <problem.version>0.27.1</problem.version>
     <problem.spring.webflux.version>0.29.1</problem.spring.webflux.version>
     <json-path.version>2.9.0</json-path.version>
-    <testcontainers.version>1.19.0</testcontainers.version>
+    <testcontainers.version>1.19.8</testcontainers.version>
     <jts.version>1.19.0</jts.version>
     <carml.version>0.4.10</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -84,7 +84,7 @@
       <dependency>
         <groupId>org.checkerframework</groupId>
         <artifactId>checker-qual</artifactId>
-        <version>3.41.0</version>
+        <version>3.44.0</version>
       </dependency>
       <dependency>
         <groupId>com.google.code.findbugs</groupId>
@@ -236,7 +236,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.11.0</version>
+          <version>3.13.0</version>
           <configuration>
             <showWarnings>true</showWarnings>
             <showDeprecation>true</showDeprecation>
@@ -245,7 +245,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>3.0.1</version>
+          <version>3.1.0</version>
           <configuration>
             <tagNameFormat>v@{project.version}</tagNameFormat>
             <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -257,7 +257,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
           <executions>
             <execution>
               <id>validate</id>
@@ -278,14 +278,14 @@
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.12.3</version>
+              <version>10.17.0</version>
             </dependency>
           </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>3.4.1</version>
+          <version>3.5.0</version>
           <executions>
             <execution>
               <id>enforce-maven</id>
@@ -304,7 +304,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
+          <version>3.3.0</version>
         </plugin>
         <plugin>
           <groupId>org.sonatype.plugins</groupId>
@@ -320,7 +320,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
           <executions>
             <execution>
               <id>attach-sources</id>
@@ -333,7 +333,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.5.0</version>
+          <version>3.7.0</version>
           <configuration>
             <failOnError>false</failOnError>
           </configuration>
@@ -349,7 +349,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-gpg-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.2.4</version>
           <executions>
             <execution>
               <id>sign-artifacts</id>
@@ -370,7 +370,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.11</version>
+          <version>0.8.12</version>
           <configuration>
             <excludes>
               <exclude>org/dotwebstack/framework/backend/rdf4j/**/*</exclude>
@@ -423,7 +423,7 @@
         <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.39.0</version>
+          <version>2.43.0</version>
           <configuration>
             <java>
               <eclipse>
@@ -454,7 +454,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>3.9.1.2184</version>
+          <version>4.0.0.4121</version>
         </plugin>
       </plugins>
     </pluginManagement>

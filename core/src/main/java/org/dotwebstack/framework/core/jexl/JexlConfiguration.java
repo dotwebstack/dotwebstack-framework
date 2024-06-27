@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,6 +22,7 @@ public class JexlConfiguration {
     return new JexlBuilder().silent(false)
         .namespaces(namespaces)
         .strict(true)
+        .permissions(JexlPermissions.UNRESTRICTED)
         .create();
   }
 }

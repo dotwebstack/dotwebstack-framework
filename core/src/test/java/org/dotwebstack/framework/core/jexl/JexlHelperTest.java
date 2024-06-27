@@ -13,6 +13,7 @@ import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.dotwebstack.framework.core.InvalidConfigurationException;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +22,7 @@ class JexlHelperTest {
 
   private final JexlEngine jexlEngine = new JexlBuilder().silent(false)
       .strict(true)
+      .permissions(JexlPermissions.UNRESTRICTED)
       .create();
 
   private final JexlHelper jexlHelper = new JexlHelper(this.jexlEngine);
