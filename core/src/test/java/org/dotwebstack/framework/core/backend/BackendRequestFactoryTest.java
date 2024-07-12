@@ -485,7 +485,7 @@ class BackendRequestFactoryTest {
     var fieldDefinitionBuilder = newFieldDefinition();
     List<GraphQLArgument> argumentList = new ArrayList<>();
     fieldDefinitionBuilder.arguments(argumentList);
-    fieldDefinitionBuilder.name("brewery");
+    fieldDefinitionBuilder.name("breweryCollection");
     fieldDefinitionBuilder.description("any");
     fieldDefinitionBuilder.type(mock(GraphQLOutputType.class));
     fieldDefinitionBuilder.definition(FieldDefinition.newFieldDefinition()

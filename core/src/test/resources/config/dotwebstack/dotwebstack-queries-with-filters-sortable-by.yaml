@@ -6,6 +6,10 @@ queries:
   breweryCollection:
     type: Brewery
     list: true
+    sortableBy:
+      identifier:
+        - field: identifier
+          direction: ASC
 
 objectTypes:
   Beer:
