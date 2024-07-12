@@ -20,13 +20,13 @@ import static org.dotwebstack.framework.core.helpers.ContextCriteriaHelper.creat
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.createFieldPath;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
-import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getQueryName;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getRequestStepInfo;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isCustomValueField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isIntrospectionField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isObjectListField;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.isScalarField;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.QUERY_TYPE_NAME;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.unwrapConnectionType;
 
 import com.google.common.base.CaseFormat;
@@ -44,6 +44,7 @@ import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeUtil;
 import graphql.schema.SelectedField;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,12 +56,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
+import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
-import org.dotwebstack.framework.core.model.Query;
 import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.query.model.AggregateField;
 import org.dotwebstack.framework.core.query.model.AggregateFunctionType;
@@ -461,18 +462,26 @@ public class BackendRequestFactory {
   }
 
   private List<SortCriteria> createSortCriteria(ExecutionStepInfo executionStepInfo, ObjectType<?> objectType) {
-    var sortArgument = executionStepInfo.getArgument(SORT_ARGUMENT_NAME);
+    var queryName = Optional.of(executionStepInfo)
+        .filter(requestStepInfo -> requestStepInfo.getObjectType()
+            .getName()
+            .equals(QUERY_TYPE_NAME))
+        .map(ExecutionStepInfo::getFieldDefinition)
+        .map(GraphQLFieldDefinition::getName);
 
-    var sortableBy = getQueryName(executionStepInfo).map(queryName -> schema.getQueries()
-        .get(queryName))
-        .filter(query -> !query.getSortableBy()
-            .isEmpty())
-        .map(Query::getSortableBy)
-        .orElse(objectType.getSortableBy());
+    Map<String, List<SortableByConfiguration>> sortableBy = new HashMap<>();
+
+    queryName.ifPresent(name -> sortableBy.putAll(schema.getQueries()
+        .get(name)
+        .getSortableBy()));
+
+    sortableBy.putAll(objectType.getSortableBy());
 
     if (sortableBy.isEmpty()) {
       return List.of();
     }
+
+    var sortArgument = executionStepInfo.getArgument(SORT_ARGUMENT_NAME);
 
     var sortableByConfig = sortableBy.entrySet()
         .stream()
