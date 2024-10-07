@@ -62,7 +62,7 @@
     <json-path.version>2.9.0</json-path.version>
     <testcontainers.version>1.20.2</testcontainers.version>
     <jts.version>1.20.0</jts.version>
-    <carml.version>0.4.10</carml.version>
+    <carml.version>0.4.11</carml.version>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     <sonar.organization>dotwebstack</sonar.organization>
   </properties>
