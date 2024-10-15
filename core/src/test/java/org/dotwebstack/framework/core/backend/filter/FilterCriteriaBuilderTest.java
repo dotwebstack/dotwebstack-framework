@@ -35,7 +35,7 @@ class FilterCriteriaBuilderTest {
         .argument(arguments)
         .currentDepth(1);
 
-    var throwed = assertThrows(UnsupportedOperationException.class, builder::build);
+    var throwed = assertThrows(RequestValidationException.class, builder::build);
 
     assertThat(throwed.getMessage(), equalTo("Max depth of '0' is exceeded for filter path 'node'"));
   }
