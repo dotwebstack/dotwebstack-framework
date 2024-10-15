@@ -2,7 +2,6 @@ package org.dotwebstack.framework.core.backend.filter;
 
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
-import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
@@ -21,10 +20,14 @@ import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Setter
 @Accessors(fluent = true)
 public class FilterCriteriaBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(FilterCriteriaBuilder.class);
 
   @NotNull
   private ObjectType<?> objectType;
@@ -138,8 +141,9 @@ public class FilterCriteriaBuilder {
   }
 
   private void checkDepth() {
+    log.info(String.format("current %s > max %s", currentDepth, maxDepth));
     if (currentDepth > maxDepth) {
-      throw unsupportedOperationException("Max depth of '{}' is exceeded for filter path '{}'", maxDepth,
+      throw requestValidationException("Max depth of '{}' is exceeded for filter path '{}'", maxDepth,
           fieldPath.stream()
               .map(ObjectField::getName)
               .collect(Collectors.joining(".")));
