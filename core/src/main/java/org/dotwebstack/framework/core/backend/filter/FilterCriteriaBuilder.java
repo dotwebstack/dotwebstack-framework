@@ -141,7 +141,6 @@ public class FilterCriteriaBuilder {
   }
 
   private void checkDepth() {
-    log.info(String.format("current %s > max %s", currentDepth, maxDepth));
     if (currentDepth > maxDepth) {
       throw requestValidationException("Max depth of '{}' is exceeded for filter path '{}'", maxDepth,
           fieldPath.stream()
