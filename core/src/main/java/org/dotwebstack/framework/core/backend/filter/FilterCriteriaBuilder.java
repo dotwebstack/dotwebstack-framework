@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 @Accessors(fluent = true)
 public class FilterCriteriaBuilder {
 
-  private static final Logger log = LoggerFactory.getLogger(FilterCriteriaBuilder.class);
-
   @NotNull
   private ObjectType<?> objectType;
 
