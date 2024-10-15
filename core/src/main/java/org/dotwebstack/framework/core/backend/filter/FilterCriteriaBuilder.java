@@ -20,8 +20,6 @@ import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterConstants;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Setter
 @Accessors(fluent = true)
