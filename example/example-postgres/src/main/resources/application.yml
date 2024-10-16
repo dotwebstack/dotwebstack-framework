@@ -4,11 +4,12 @@ logging:
     org.dotwebstack: DEBUG
 
 dotwebstack:
-  config: dotwebstack.yaml
+  config: /home/kampa/project/dhub/tenants/datahub/brewery-v2/bulk/dotwebstack.yaml
   postgres:
-    host: localhost
+    host: pg-dhub-shared-test.postgres.database.azure.com
     port: 5432
-    username: postgres
-    password: postgres
-    database: postgres
-    schema: dbeerpedia
+    username: datahub_brewery_v2_test_bulk@pg-dhub-shared-test.postgres.database.azure.com
+    password: kFHs4ZWqDVEzthwx0iYoNrvu2SyBIObn
+    database: datahub_t
+    schema: datahub_brewery_v2_test_schema
+    ssl-mode: require
