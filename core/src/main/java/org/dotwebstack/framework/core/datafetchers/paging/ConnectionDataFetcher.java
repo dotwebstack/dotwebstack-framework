@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.datafetchers.paging;
 
 import static org.dotwebstack.framework.core.backend.BackendConstants.PAGING_KEY_PREFIX;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.FIRST_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.HAS_NEXT;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
@@ -13,7 +14,9 @@ import graphql.schema.GraphQLArgument;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 public class ConnectionDataFetcher implements DataFetcher<Object> {
@@ -31,18 +34,26 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
     validateArgumentValues(firstArgumentValue, offsetArgumentValue);
 
-    Map<String, Object> data = new HashMap<>();
+    var newData = Mono.just(Map.of(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), offsetArgumentValue, PagingConstants.OFFSET_FIELD_NAME,
+            PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), firstArgumentValue, offsetArgumentValue, HAS_NEXT, false))
+        .map(map -> {
+          if (environment.getSource() != null) {
+            map.putAll(environment.getSource());
+          }
+          return map;
+        });
+
+    var data = new HashMap<String, Object>();
     data.put(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME), offsetArgumentValue);
     data.put(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME), firstArgumentValue);
-    data.put(PagingConstants.OFFSET_ARGUMENT_NAME, offsetArgumentValue);
+    data.put(PagingConstants.OFFSET_FIELD_NAME, offsetArgumentValue);
+    data.put(HAS_NEXT, false);
 
     if (environment.getSource() != null) {
       data.putAll(environment.getSource());
     }
 
-    return DataFetcherResult.newResult()
-        .data(data)
-        .build();
+    return data;
   }
 
   private int getFirstArgumentValue(DataFetchingEnvironment environment) {
@@ -70,28 +81,23 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
     if (firstArgumentValue < 0 || offsetArgumentValue < 0) {
-      LOG.warn("Paging arguments are negative, this may result in a slow response.\n'first': {}\n'offset':{}",
-          firstArgumentValue, offsetArgumentValue);
+      LOG.warn("Paging arguments are negative, this may result in a slow response.\n'first': {}\n'offset':{}", firstArgumentValue, offsetArgumentValue);
     }
 
     if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
-      throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
-          pagingConfiguration.getFirstMaxValue());
+      throw requestValidationException("Argument 'first' is not allowed to be higher than {}.", pagingConfiguration.getFirstMaxValue());
     }
 
     if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue < 0) {
-      throw requestValidationException("Argument 'first' is not allowed to be lower than 0.",
-          pagingConfiguration.getFirstMaxValue());
+      throw requestValidationException("Argument 'first' is not allowed to be lower than 0.", pagingConfiguration.getFirstMaxValue());
     }
 
     if (pagingConfiguration.getOffsetMaxValue() >= 0 && offsetArgumentValue > pagingConfiguration.getOffsetMaxValue()) {
-      throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.",
-          pagingConfiguration.getOffsetMaxValue());
+      throw requestValidationException("Argument 'offset' is not allowed to be higher than {}.", pagingConfiguration.getOffsetMaxValue());
     }
 
     if (pagingConfiguration.getOffsetMaxValue() >= 0 && offsetArgumentValue < 0) {
-      throw requestValidationException("Argument 'offset' is not allowed to be lower than 0.",
-          pagingConfiguration.getOffsetMaxValue());
+      throw requestValidationException("Argument 'offset' is not allowed to be lower than 0.", pagingConfiguration.getOffsetMaxValue());
     }
   }
 }

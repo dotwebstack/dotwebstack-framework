@@ -8,6 +8,8 @@ public final class PagingConstants {
 
   public static final String OFFSET_FIELD_NAME = "offset";
 
+  public static final String HAS_NEXT = "hasNext";
+
   public static final String FIRST_ARGUMENT_NAME = "first";
 
   public static final String OFFSET_ARGUMENT_NAME = "offset";

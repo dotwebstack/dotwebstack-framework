@@ -42,12 +42,10 @@ class PagingBuilder {
       return;
     }
 
-    Optional<Integer> offset =
-        ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME))).map(Integer.class::cast);
-    Optional<Integer> first =
-        ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME))).map(Integer.class::cast);
+    Optional<Integer> offset = ofNullable(source.get(PAGING_KEY_PREFIX.concat(OFFSET_ARGUMENT_NAME))).map(Integer.class::cast);
+    Optional<Integer> first = ofNullable(source.get(PAGING_KEY_PREFIX.concat(FIRST_ARGUMENT_NAME))).map(Integer.class::cast);
     if (offset.isPresent() && first.isPresent() && hasLimit(offset.get(), first.get())) {
-      dataQuery.addLimit(offset.get(), first.get());
+      dataQuery.addLimit(offset.get(), first.get() + 1);
     }
   }
 

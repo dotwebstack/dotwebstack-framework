@@ -31,8 +31,8 @@ public class PostgresConfiguration {
 
   @Bean
   public DSLContext dslContext() {
-    System.getProperties()
-        .setProperty("org.jooq.no-logo", "true");
+    System.setProperty("org.jooq.no-logo", "true");
+    System.setProperty("org.jooq.no-tips", "true");
     return DSL.using(SQLDialect.POSTGRES);
   }
 

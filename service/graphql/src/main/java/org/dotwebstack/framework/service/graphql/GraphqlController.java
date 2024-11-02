@@ -10,7 +10,9 @@ import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.dataloader.DataLoaderRegistry;
@@ -47,8 +49,7 @@ class GraphqlController {
 
   @CrossOrigin
   @GetMapping(path = "/", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Mono<Map<String, Object>> handleGet(@RequestParam(QUERY) String query,
-      @RequestParam(value = OPERATION_NAME, required = false) String operationName,
+  public Mono<Map<String, Object>> handleGet(@RequestParam(QUERY) String query, @RequestParam(value = OPERATION_NAME, required = false) String operationName,
       @RequestParam(value = VARIABLES, required = false) String variablesJson) {
 
     if (operationName != null) {
@@ -97,11 +98,33 @@ class GraphqlController {
         .flatMap(executionResult -> handleErrors(executionInput, executionResult));
   }
 
+  private Map<String, Object> handlePagingMetadata(Map<String, Object> object) {
+    object.forEach((k, v) -> {
+      if (k.equalsIgnoreCase("data")) {
+        v = handlePagingMetadata((Map<String, Object>) v);
+      }
+      if (v instanceof List vList) {
+        vList.remove(vList.size() - 1);
+        object.put("hasNext", true);
+      } else if (v instanceof Map<?, ?>) {
+        var vMap = (Map<String, Object>) v;
+        if (vMap.containsKey("nodes")) {
+          v = handlePagingMetadata((Map<String, Object>) v);
+        }
+      }
+    });
+
+    return object;
+  }
+
   private Mono<Map<String, Object>> handleErrors(ExecutionInput executionInput, ExecutionResult executionResult) {
     var errors = executionResult.getErrors();
 
     if (errors.stream()
         .noneMatch(ExceptionWhileDataFetching.class::isInstance)) {
+
+      //      var spec = handlePagingMetadata(executionResult.toSpecification());
+      //      return Mono.just(spec);
       return Mono.just(executionResult.toSpecification());
     }
 
@@ -139,8 +162,7 @@ class GraphqlController {
   }
 
   private ExecutionInput getExecutionInput(Map<String, Object> requestBody) {
-    return getExecutionInput((String) requestBody.get(QUERY), (String) requestBody.get(OPERATION_NAME),
-        getNestedMap(requestBody, VARIABLES));
+    return getExecutionInput((String) requestBody.get(QUERY), (String) requestBody.get(OPERATION_NAME), getNestedMap(requestBody, VARIABLES));
   }
 
   private ExecutionInput getExecutionInput(String query, String operationName, Map<String, Object> variables) {
