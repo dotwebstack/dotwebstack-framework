@@ -18,6 +18,7 @@ import org.dotwebstack.framework.core.CustomValueDataFetcher;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
+import org.dotwebstack.framework.core.graphql.GraphQlConstants;
 import org.dotwebstack.framework.core.model.Schema;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
@@ -38,8 +39,8 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
   private final CustomValueFetcherDispatcher customValueFetcherDispatcher;
 
-  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory,
-      Schema schema, BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators,
+  public BackendDataFetcherWiringFactory(BackendModule<?> backendModule, BackendRequestFactory requestFactory, Schema schema,
+      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators,
       @Nullable CustomValueFetcherDispatcher customValueFetcherDispatcher) {
     this.backendModule = backendModule;
     this.requestFactory = requestFactory;
@@ -57,11 +58,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
       throw illegalStateException("Unknown ObjectType: %s", typeName);
     }
 
-    if (isCustomValueField(environment)) {
-      return true;
-    }
-
-    if (isAliasedType(typeName, environment)) {
+    if (isCustomValueField(environment) || isAliasedType(typeName, environment) || isCounterType(environment)) {
       return true;
     }
 
@@ -86,16 +83,14 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
 
     // Initialize BackendDataFetcher without BackendLoader to support aliases for Aggregates.
     if (isAliasedType(typeName, environment)) {
-      return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators,
-          schema.getSettings());
+      return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
     } else {
       var objectType = of(typeName).flatMap(schema::getObjectType)
           .orElseThrow();
 
       var backendLoader = backendModule.getBackendLoaderFactory()
           .create(objectType);
-      return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators,
-          schema.getSettings());
+      return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
     }
   }
 
@@ -107,5 +102,12 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
     return AGGREGATE_TYPE.equals(typeName) || ofNullable(environment.getParentType()).map(TypeDefinition::getName)
         .filter(name -> name.equals(AGGREGATE_TYPE))
         .isPresent();
+  }
+
+  private boolean isCounterType(FieldWiringEnvironment environment) {
+    return environment.getFieldDefinition()
+        .getType()
+        .getAdditionalData()
+        .containsKey(GraphQlConstants.IS_COUNTER_TYPE);
   }
 }

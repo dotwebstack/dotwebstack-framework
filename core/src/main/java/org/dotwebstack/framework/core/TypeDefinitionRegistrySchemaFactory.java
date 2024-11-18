@@ -37,6 +37,7 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
@@ -64,6 +65,7 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
+import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.math.BigDecimal;
@@ -113,8 +115,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private final Map<String, String> fieldFilterMap = new HashMap<>();
 
-  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers,
-      PagingConfiguration pagingConfiguration) {
+  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers, PagingConfiguration pagingConfiguration) {
     this.schema = schema;
     this.pagingConfiguration = pagingConfiguration;
     filterConfigurers.forEach(configurer -> configurer.configureFieldFilterMapping(fieldFilterMap));
@@ -130,6 +131,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addSortTypes(typeDefinitionRegistry);
     addContextTypes(typeDefinitionRegistry);
     addConnectionTypes(typeDefinitionRegistry);
+    addCounterType(typeDefinitionRegistry);
     addQueryTypes(typeDefinitionRegistry);
     addSubscriptionTypes(typeDefinitionRegistry);
     addInputObjectTypeDefinitions(typeDefinitionRegistry);
@@ -152,12 +154,10 @@ public class TypeDefinitionRegistrySchemaFactory {
                       .build());
 
                   implementedInterface.getImplements()
-                      .forEach(additionalImplements -> objectTypeDefinition
-                          .implementz(newTypeName().name(additionalImplements)
-                              .build()));
+                      .forEach(additionalImplements -> objectTypeDefinition.implementz(newTypeName().name(additionalImplements)
+                          .build()));
                 } else {
-                  throw invalidConfigurationException(
-                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz, name);
+                  throw invalidConfigurationException("Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz, name);
                 }
               });
 
@@ -182,8 +182,7 @@ public class TypeDefinitionRegistrySchemaFactory {
                   interfaceTypeDefinition.implementz(newTypeName().name(implementz)
                       .build());
                 } else {
-                  throw invalidConfigurationException(
-                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
+                  throw invalidConfigurationException("Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
                 }
               });
 
@@ -250,21 +249,21 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (GraphQLBoolean.getName()
         .equals(type)) {
       return BooleanValue.newBooleanValue(Boolean.parseBoolean(entry.getValue()
-          .getDefaultValue()))
+              .getDefaultValue()))
           .build();
     } else if (GraphQLInt.getName()
         .equals(type)) {
       return IntValue.newIntValue(new BigInteger(entry.getValue()
-          .getDefaultValue()))
+              .getDefaultValue()))
           .build();
     } else if (GraphQLFloat.getName()
         .equals(type)) {
       return FloatValue.newFloatValue(new BigDecimal(entry.getValue()
-          .getDefaultValue()))
+              .getDefaultValue()))
           .build();
     } else {
       return StringValue.newStringValue(entry.getValue()
-          .getDefaultValue())
+              .getDefaultValue())
           .build();
     }
   }
@@ -275,6 +274,10 @@ public class TypeDefinitionRegistrySchemaFactory {
         .stream()
         .map(this::createConnectionTypeDefinition)
         .forEach(typeDefinitionRegistry::add);
+  }
+
+  private void addCounterType(TypeDefinitionRegistry typeDefinitionRegistry) {
+    typeDefinitionRegistry.add(createCounterTypeDefinition());
   }
 
   private ObjectTypeDefinition createConnectionTypeDefinition(ObjectType<?> objectType) {
@@ -288,7 +291,14 @@ public class TypeDefinitionRegistrySchemaFactory {
         .fieldDefinition(newFieldDefinition().name(OFFSET_FIELD_NAME)
             .type(newNonNullableType(GraphQLInt.getName()))
             .build())
-        .additionalData(Map.of(IS_CONNECTION_TYPE, TRUE.toString()))
+        .build();
+  }
+
+  private ObjectTypeDefinition createCounterTypeDefinition() {
+    return newObjectTypeDefinition().name("Counter")
+        .fieldDefinition(newFieldDefinition().name("total")
+            .type(newNonNullableType(GraphQLInt.getName()))
+            .build())
         .build();
   }
 
@@ -305,8 +315,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> newInputValueDefinition().name(entry.getKey())
-            .type(newType(
-                FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
+            .type(newType(FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
             .build())
         .toList());
 
@@ -319,8 +328,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName,
-      Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName, Map<String, List<SortableByConfiguration>> sortableByConfig) {
     var orderName = createOrderName(objectTypeName);
 
     List<EnumValueDefinition> enumValueDefinitions = getEnumValueDefinitions(sortableByConfig);
@@ -330,8 +338,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private List<EnumValueDefinition> getEnumValueDefinitions(
-      Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private List<EnumValueDefinition> getEnumValueDefinitions(Map<String, List<SortableByConfiguration>> sortableByConfig) {
     return sortableByConfig.keySet()
         .stream()
         .map(key -> newEnumValueDefinition().name(formatSortEnumName(key))
@@ -420,15 +427,22 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private void addQueryTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
-    var queryFieldDefinitions = schema.getQueries()
+    var queryFieldDefinitions = new ArrayList<>(schema.getQueries()
         .entrySet()
         .stream()
         .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue()))
-        .toList();
+        .toList());
+
+    queryFieldDefinitions.addAll(schema.getQueries()
+        .entrySet()
+        .stream()
+        .filter(x -> x.getValue()
+            .isList())
+        .map(entry -> createCounterQueryFieldDefinition(entry.getKey(), entry.getValue()))
+        .toList());
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
-        .fieldDefinitions(
-            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
+        .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
         .build();
 
     typeDefinitionRegistry.add(queryTypeDefinition);
@@ -499,8 +513,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         });
   }
 
-  private FieldDefinition createSubscriptionFieldDefinition(String queryName, Subscription subscription,
-      ObjectType<?> objectType) {
+  private FieldDefinition createSubscriptionFieldDefinition(String queryName, Subscription subscription, ObjectType<?> objectType) {
     var inputValueDefinitions = new ArrayList<InputValueDefinition>();
 
     subscription.getKeys()
@@ -541,6 +554,24 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
+  private FieldDefinition createCounterQueryFieldDefinition(String queryName, Query query) {
+    var objectType = schema.getObjectType(query.getType())
+        .orElseThrow();
+
+    var inputValueDefinitions = new ArrayList<>(createKeyArguments(query, objectType));
+    createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
+
+    addOptionalContext(query.getContext(), inputValueDefinitions);
+
+    return newFieldDefinition().name(queryName.concat("Counter"))
+        .type(TypeName.newTypeName("Counter")
+            .additionalData(IS_COUNTER_TYPE, TRUE.toString())
+            .build())
+        .inputValueDefinitions(inputValueDefinitions)
+        .additionalData(createQueryAdditionalData(query))
+        .build();
+  }
+
   private Map<String, String> createQueryAdditionalData(Query query) {
     if (query.isBatch()) {
       return Map.of(IS_BATCH_KEY_QUERY, TRUE.toString());
@@ -556,8 +587,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(key -> {
           var aliasField = key.getKey();
           var keyField = getFieldKey(key.getValue());
-          return createInputValueDefinition(aliasField, objectType,
-              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(), INPUT_OBJECTTYPE_POSTFIX);
+          return createInputValueDefinition(aliasField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(),
+              INPUT_OBJECTTYPE_POSTFIX);
         })
         .toList();
   }
@@ -599,8 +630,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createSortArgument(subscription.getType(), objectType.getSortableBy());
   }
 
-  private Optional<InputValueDefinition> createSortArgument(String typeName,
-      Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private Optional<InputValueDefinition> createSortArgument(String typeName, Map<String, List<SortableByConfiguration>> sortableByConfig) {
     if (!sortableByConfig.isEmpty()) {
       var orderName = createOrderName(typeName);
 
@@ -680,8 +710,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getObjectType(objectField.getType())
         .ifPresent(objectType -> objectField.getKeys()
             .stream()
-            .map(keyField -> createInputValueDefinition(keyField, objectType,
-                Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
+            .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
             .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
@@ -728,19 +757,17 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createInputValueDefinition(keyPath, objectType, Map.of());
   }
 
-  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType,
-      Map<String, String> additionalData) {
+  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType, Map<String, String> additionalData) {
     return createInputValueDefinition(keyPath, objectType, additionalData, false);
   }
 
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
-      Map<String, String> additionalData, boolean batch) {
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType, Map<String, String> additionalData, boolean batch) {
 
     return createInputValueDefinition(aliasField, objectType, additionalData, false, "");
   }
 
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
-      Map<String, String> additionalData, boolean batch, String typePostfix) {
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType, Map<String, String> additionalData, boolean batch,
+      String typePostfix) {
 
     var keyField = additionalData.get(KEY_FIELD);
     var keyPath = additionalData.get(KEY_PATH);

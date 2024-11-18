@@ -16,6 +16,8 @@ public class GraphQlConstants {
 
   public static final String IS_CONNECTION_TYPE = "isConnectionType";
 
+  public static final String IS_COUNTER_TYPE = "isCounterType";
+
   public static final String IS_PAGING_NODE = "isPagingNode";
 
   public static final String IS_BATCH_KEY_QUERY = "isBatchKeyQuery";
