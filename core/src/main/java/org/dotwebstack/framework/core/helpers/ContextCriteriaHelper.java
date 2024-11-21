@@ -24,37 +24,40 @@ public class ContextCriteriaHelper {
     var selectionName = requestStepInfo.getFieldDefinition()
         .getName();
 
+    if (selectionName.endsWith("Counter")) {
+      selectionName = selectionName.replace("Counter", "");
+    }
+
     if (isQuery(parentType)) {
       return Optional.of(schema.getQueries()
-          .get(selectionName))
+              .get(selectionName))
           .map(Query::getContext);
     }
 
     if (isSubscription(parentType)) {
       return Optional.of(schema.getSubscriptions()
-          .get(selectionName))
+              .get(selectionName))
           .map(Subscription::getContext);
     }
 
-    throw illegalArgumentException(
-        "The parent type of the given requestStepInfo is not of type 'Query' or 'Subscription");
+    throw illegalArgumentException("The parent type of the given requestStepInfo is not of type 'Query' or 'Subscription");
   }
 
   public static ContextCriteria createContextCriteria(Schema schema, ExecutionStepInfo requestStepInfo) {
     return getContextName(schema, requestStepInfo).map(name -> {
-      var context = schema.getContexts()
-          .get(name);
+          var context = schema.getContexts()
+              .get(name);
 
-      var builder = ContextCriteria.builder()
-          .name(name)
-          .context(context);
+          var builder = ContextCriteria.builder()
+              .name(name)
+              .context(context);
 
-      Map<String, Object> arguments = getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
+          Map<String, Object> arguments = getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
 
-      builder.values(arguments);
+          builder.values(arguments);
 
-      return builder.build();
-    })
+          return builder.build();
+        })
         .orElse(null);
   }
 }

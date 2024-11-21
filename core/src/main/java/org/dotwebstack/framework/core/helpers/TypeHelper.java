@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 
@@ -9,6 +10,7 @@ import graphql.language.NonNullType;
 import graphql.language.OperationDefinition;
 import graphql.language.Type;
 import graphql.language.TypeName;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLNonNull;
@@ -72,6 +74,59 @@ public final class TypeHelper {
   private static boolean isConnectionType(GraphQLType type) {
     return type instanceof GraphQLObjectType objectType && objectType.getName()
         .endsWith("Connection");
+  }
+
+  public static boolean isCounterType(GraphQLType type) {
+    return type instanceof GraphQLObjectType objectType && objectType.getName()
+        .equals("Counter");
+  }
+
+  public static GraphQLType unwrapType(DataFetchingEnvironment environment) {
+    var type = environment.getFieldDefinition()
+        .getType();
+
+    if (type instanceof GraphQLNonNull nonNullType && isConnectionType(nonNullType.getWrappedType())) {
+      return unwrapConnectionType(nonNullType.getWrappedType());
+    }
+    if (isConnectionType(type)) {
+      return ((GraphQLObjectType) type).getFieldDefinition("nodes")
+          .getType();
+    }
+
+    if (isCounterType(type)) {
+
+      var definition = environment.getFieldDefinition()
+          .getDefinition();
+
+      if (definition != null && definition.getType()
+          .getAdditionalData()
+          .containsKey("counter_over")) {
+        var unwrapObj = definition.getType()
+            .getAdditionalData()
+            .get("counter_over")
+            .toString();
+
+        return environment.getGraphQLSchema()
+            .getType(unwrapObj);
+      }
+    }
+    return type;
+  }
+
+  public static String getCounterOver(DataFetchingEnvironment environment) {
+    var definition = environment.getFieldDefinition()
+        .getDefinition();
+
+    if (definition != null && definition.getType()
+        .getAdditionalData()
+        .containsKey("counter_over")) {
+      return definition.getType()
+          .getAdditionalData()
+          .get("counter_over")
+          .toString();
+    }
+
+    return "";
   }
 
   public static Type getBaseType(@NonNull Type<?> type) {

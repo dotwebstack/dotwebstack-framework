@@ -40,7 +40,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
 
-    var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
+    var unwrappedType = TypeHelper.unwrapType(environment);
     var objectType = getObjectType(schema, unwrappedType);
 
     validateFilters(objectType, filterArgument);
@@ -56,10 +56,9 @@ public class FilterArgumentValidator implements GraphQlValidator {
                 .map(FilterConfiguration::getDependsOn);
 
             if (dependsOn.isPresent() && !filterArguments.containsKey(dependsOn.get())) {
-              throw requestValidationException("Filter value for filter '{}' depends on filter '{}'.", filterName,
-                  objectType.getFilters()
-                      .get(filterName)
-                      .getDependsOn());
+              throw requestValidationException("Filter value for filter '{}' depends on filter '{}'.", filterName, objectType.getFilters()
+                  .get(filterName)
+                  .getDependsOn());
             }
           });
     }
@@ -102,16 +101,14 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var field = getField(objectType, filterName);
 
     if (isNullNotAllowed(field, entry) && entry.getValue() == null) {
-      throw requestValidationException("Filter value for filter '{}' for operator '{}' can't be null.", filterName,
-          entry.getKey());
+      throw requestValidationException("Filter value for filter '{}' for operator '{}' can't be null.", filterName, entry.getKey());
     }
   }
 
   private boolean isNullNotAllowed(ObjectField field, Map.Entry<?, ?> entry) {
     return !FilterOperator.EQ.name()
         .equalsIgnoreCase(entry.getKey()
-            .toString())
-        || !field.isNullable();
+            .toString()) || !field.isNullable();
   }
 
   private void validateEnumFilter(String filterName, ObjectType<?> objectType, Map.Entry<?, ?> filterArgumentEntry) {
@@ -125,8 +122,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
 
     if (!hasValidValue) {
       var validValuesAsString = getValidEnumValuesAsString(validValues);
-      throw requestValidationException("Invalid filter value for filter '{}'. Valid values are: [{}]", filterName,
-          validValuesAsString);
+      throw requestValidationException("Invalid filter value for filter '{}'. Valid values are: [{}]", filterName, validValuesAsString);
     }
   }
 

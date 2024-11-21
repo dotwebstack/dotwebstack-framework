@@ -2,6 +2,7 @@ package org.dotwebstack.framework.core.backend;
 
 import static graphql.schema.GraphQLTypeUtil.isList;
 import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isCounterType;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
@@ -18,7 +19,6 @@ public class BackendExecutionStepInfo {
     ExecutionStepInfo executionStepInfo;
 
     var type = unwrapNonNull(environment.getFieldType());
-
     var isList = isList(type);
 
     var usePaging = environment.getFieldDefinition()
@@ -32,6 +32,7 @@ public class BackendExecutionStepInfo {
     } else {
       executionStepInfo = environment.getExecutionStepInfo();
     }
+
     return executionStepInfo;
   }
 }

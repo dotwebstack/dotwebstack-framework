@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -298,6 +299,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newObjectTypeDefinition().name("Counter")
         .fieldDefinition(newFieldDefinition().name("total")
             .type(newNonNullableType(GraphQLInt.getName()))
+            .additionalData(IS_COUNTER_TYPE, TRUE.toString())
             .build())
         .build();
   }
@@ -433,13 +435,15 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue()))
         .toList());
 
-    queryFieldDefinitions.addAll(schema.getQueries()
+    var counterQueries = schema.getQueries()
         .entrySet()
         .stream()
         .filter(x -> x.getValue()
             .isList())
         .map(entry -> createCounterQueryFieldDefinition(entry.getKey(), entry.getValue()))
-        .toList());
+        .toList();
+
+    queryFieldDefinitions.addAll(counterQueries);
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
         .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
@@ -566,6 +570,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     return newFieldDefinition().name(queryName.concat("Counter"))
         .type(TypeName.newTypeName("Counter")
             .additionalData(IS_COUNTER_TYPE, TRUE.toString())
+            .additionalData("counter_over", objectType.getName())
             .build())
         .inputValueDefinitions(inputValueDefinitions)
         .additionalData(createQueryAdditionalData(query))

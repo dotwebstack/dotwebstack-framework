@@ -81,16 +81,31 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
       return new CustomValueDataFetcher(customValueFetcherDispatcher);
     }
 
+    if (isCounterType(environment)) {
+      var counterOver = environment.getFieldDefinition()
+          .getType()
+          .getAdditionalData()
+          .get("counter_over")
+          .toString();
+      var objectType = of(counterOver).flatMap(schema::getObjectType)
+          .orElseThrow();
+
+      var backendLoader = backendModule.getBackendLoaderFactory()
+          .create(objectType);
+
+      return new BackendDataFetcher(schema, backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
+    }
+
     // Initialize BackendDataFetcher without BackendLoader to support aliases for Aggregates.
     if (isAliasedType(typeName, environment)) {
-      return new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
+      return new BackendDataFetcher(schema, null, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
     } else {
       var objectType = of(typeName).flatMap(schema::getObjectType)
           .orElseThrow();
 
       var backendLoader = backendModule.getBackendLoaderFactory()
           .create(objectType);
-      return new BackendDataFetcher(backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
+      return new BackendDataFetcher(schema, backendLoader, requestFactory, backendExecutionStepInfo, graphQlValidators, schema.getSettings());
     }
   }
 
