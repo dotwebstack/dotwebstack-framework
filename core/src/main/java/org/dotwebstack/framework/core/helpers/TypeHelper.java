@@ -3,7 +3,6 @@ package org.dotwebstack.framework.core.helpers;
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 

@@ -206,10 +206,12 @@ class BackendDataFetcherTest {
     var objectRequest = SingleObjectRequest.builder()
         .build();
 
-    Flux<Tuple2<Map<String, Object>, Map<String, Object>>> fluxResult = Flux.fromIterable(
-        List.of(Tuples.of(Map.of("identifier", "id-1"), Map.of("name", "foo")), Tuples.of(Map.of("identifier", "id-2"), Map.of("name", "bar"))));
+    Flux<Tuple2<Map<String, Object>, Map<String, Object>>> fluxResult =
+        Flux.fromIterable(List.of(Tuples.of(Map.of("identifier", "id-1"), Map.of("name", "foo")),
+            Tuples.of(Map.of("identifier", "id-2"), Map.of("name", "bar"))));
 
-    when(backendLoader.batchLoadSingle(ArgumentMatchers.any(BatchRequest.class), ArgumentMatchers.isNull())).thenReturn(fluxResult);
+    when(backendLoader.batchLoadSingle(ArgumentMatchers.any(BatchRequest.class), ArgumentMatchers.isNull()))
+        .thenReturn(fluxResult);
 
     when(requestFactory.createObjectRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(objectRequest);
 
@@ -241,11 +243,13 @@ class BackendDataFetcherTest {
         .build();
 
     Flux<GroupedFlux<Map<String, Object>, Map<String, Object>>> fluxResult = Flux.fromIterable(List.of(
-        new KeyGroupedFlux(Map.of("identifier", "id-1"), Flux.fromIterable(List.of(Map.of("name", "foo", "version", 1), Map.of("name", "foo", "version", 2)))),
+        new KeyGroupedFlux(Map.of("identifier", "id-1"),
+            Flux.fromIterable(List.of(Map.of("name", "foo", "version", 1), Map.of("name", "foo", "version", 2)))),
         new KeyGroupedFlux(Map.of("identifier", "id-2"),
             Flux.fromIterable(List.of(Map.of("name", "bar", "version", 1), Map.of("name", "bar", "version", 2))))));
 
-    when(backendLoader.batchLoadMany(ArgumentMatchers.any(CollectionBatchRequest.class), ArgumentMatchers.isNull())).thenReturn(fluxResult);
+    when(backendLoader.batchLoadMany(ArgumentMatchers.any(CollectionBatchRequest.class), ArgumentMatchers.isNull()))
+        .thenReturn(fluxResult);
 
     when(requestFactory.createCollectionRequest(any(ExecutionStepInfo.class), isNull())).thenReturn(collectionRequest);
 
@@ -263,8 +267,9 @@ class BackendDataFetcherTest {
     var result = backendDataFetcher.get(environment);
 
     assertThat(result, notNullValue());
-    assertThat(result, equalTo(List.of(List.of(Map.of("name", "foo", "version", 1), Map.of("name", "foo", "version", 2)),
-        List.of(Map.of("name", "bar", "version", 1), Map.of("name", "bar", "version", 2)))));
+    assertThat(result,
+        equalTo(List.of(List.of(Map.of("name", "foo", "version", 1), Map.of("name", "foo", "version", 2)),
+            List.of(Map.of("name", "bar", "version", 1), Map.of("name", "bar", "version", 2)))));
   }
 
   @Test
@@ -315,7 +320,8 @@ class BackendDataFetcherTest {
 
     assertThat(result, notNullValue());
     assertTrue(result instanceof CompletableFuture);
-    verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
+    verify(requestFactory, times(2)).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
     verify(requestFactory).createRequestContext(any(DataFetchingEnvironment.class));
   }
 
@@ -351,7 +357,8 @@ class BackendDataFetcherTest {
         .thenReturn(collectionRequestMock);
     Map<String, Object> resultMock = new HashMap<>();
     resultMock.put("aa", new String[] {"a", "b"});
-    when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class))).thenReturn(Flux.just(resultMock));
+    when(backendLoader.loadMany(any(CollectionRequest.class), any(RequestContext.class)))
+        .thenReturn(Flux.just(resultMock));
 
     mockGraphQlFieldDefinition(Map.of());
 
@@ -360,7 +367,8 @@ class BackendDataFetcherTest {
     assertThat(result, CoreMatchers.is(notNullValue()));
     assertTrue(result instanceof List);
     assertThat(((List<?>) result).get(0), is(resultMock));
-    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
+    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
     verify(backendLoader).loadMany(any(CollectionRequest.class), any(RequestContext.class));
   }
 
@@ -402,7 +410,8 @@ class BackendDataFetcherTest {
     assertTrue(result instanceof Map);
     assertThat(((Map<?, ?>) result).get("aa"), is(data.get("aa")));
 
-    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class), any(DataFetchingFieldSelectionSet.class));
+    verify(requestFactory).createCollectionRequest(any(ExecutionStepInfo.class),
+        any(DataFetchingFieldSelectionSet.class));
     verify(backendLoader).loadMany(any(CollectionRequest.class), any(RequestContext.class));
   }
 
@@ -444,7 +453,8 @@ class BackendDataFetcherTest {
 
   @Test
   void get_throwsException_ifBackendLoaderIsNull() {
-    var dataFetcherWithoutBackendLoader = new BackendDataFetcher(null, null, requestFactory, backendExecutionStepInfo, graphQlValidators, mock(Settings.class));
+    var dataFetcherWithoutBackendLoader = new BackendDataFetcher(null, null, requestFactory, backendExecutionStepInfo,
+        graphQlValidators, mock(Settings.class));
 
     mockExecutionStepInfo("a", "a");
 
@@ -469,7 +479,8 @@ class BackendDataFetcherTest {
     var executionStepInfo = mock(ExecutionStepInfo.class);
     when(executionStepInfo.getField()).thenReturn(field);
 
-    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class))).thenReturn(executionStepInfo);
+    when(backendExecutionStepInfo.getExecutionStepInfo(any(DataFetchingEnvironment.class)))
+        .thenReturn(executionStepInfo);
 
     lenient().when(environment.getExecutionStepInfo())
         .thenReturn(executionStepInfo);
@@ -503,8 +514,8 @@ class BackendDataFetcherTest {
             .build())
         .type(outputType)
         .argument(newArgument().type(GraphQLList.list(newScalar().name("String")
-                .coercing(new GraphqlStringCoercing())
-                .build()))
+            .coercing(new GraphqlStringCoercing())
+            .build()))
             .definition(newInputValueDefinition().additionalData(GraphQlConstants.KEY_FIELD, Boolean.TRUE.toString())
                 .build())
             .name("identifier")

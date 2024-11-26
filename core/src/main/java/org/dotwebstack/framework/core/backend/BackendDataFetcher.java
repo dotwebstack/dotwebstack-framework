@@ -4,7 +4,6 @@ import static graphql.schema.GraphQLTypeUtil.unwrapNonNull;
 import static org.dataloader.DataLoaderFactory.newMappedDataLoader;
 import static org.dotwebstack.framework.core.backend.BackendConstants.JOIN_KEY_PREFIX;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
@@ -55,8 +54,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final Schema schema;
 
-  public BackendDataFetcher(Schema schema, BackendLoader backendLoader, BackendRequestFactory requestFactory, BackendExecutionStepInfo backendExecutionStepInfo,
-      List<GraphQlValidator> graphQlValidators, Settings settings) {
+  public BackendDataFetcher(Schema schema, BackendLoader backendLoader, BackendRequestFactory requestFactory,
+      BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators, Settings settings) {
     this.schema = schema;
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
@@ -109,7 +108,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
           return List.of();
         }
 
-        return getOrCreateBatchLoader(environment, () -> createManyBatchLoader(environment, requestContext, joinCondition)).load(joinCondition.getKey());
+        return getOrCreateBatchLoader(environment,
+            () -> createManyBatchLoader(environment, requestContext, joinCondition)).load(joinCondition.getKey());
       }
 
       var result = backendLoader.loadMany(collectionRequest, requestContext)
@@ -165,7 +165,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
     }
 
     if (keys.size() > settings.getMaxBatchKeySize()) {
-      throw requestValidationException("Got {} keys but a maximum of {} keys is allowed!", keys.size(), settings.getMaxBatchKeySize());
+      throw requestValidationException("Got {} keys but a maximum of {} keys is allowed!", keys.size(),
+          settings.getMaxBatchKeySize());
     }
 
     var duplicateKeys = keys.stream()
@@ -178,10 +179,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
     }
   }
 
-  private DataLoader<Map<String, Object>, ?> getDataLoaderForBatchKeyQuery(DataFetchingEnvironment environment, RequestContext requestContext) {
+  private DataLoader<Map<String, Object>, ?> getDataLoaderForBatchKeyQuery(DataFetchingEnvironment environment,
+      RequestContext requestContext) {
     DataLoader<Map<String, Object>, ?> batchLoader;
     var outputType = Optional.of(environment.getFieldDefinition()
-            .getType())
+        .getType())
         .filter(TypeHelper::isListType)
         .map(GraphQLTypeUtil::unwrapNonNull)
         .map(GraphQLList.class::cast)
@@ -195,7 +197,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
     return batchLoader;
   }
 
-  private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment, Supplier<DataLoader<K, V>> supplier) {
+  private <K, V> DataLoader<K, V> getOrCreateBatchLoader(DataFetchingEnvironment environment,
+      Supplier<DataLoader<K, V>> supplier) {
     // Create separate data loader for every unique path, since every path can have different arguments
     // or selection
     var dataLoaderKey = String.join("/", environment.getExecutionStepInfo()
@@ -206,8 +209,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .computeIfAbsent(dataLoaderKey, key -> supplier.get());
   }
 
-  private DataLoader<Map<String, Object>, List<Map<String, Object>>> createManyBatchLoader(DataFetchingEnvironment environment, RequestContext requestContext,
-      JoinCondition joinCondition) {
+  private DataLoader<Map<String, Object>, List<Map<String, Object>>> createManyBatchLoader(
+      DataFetchingEnvironment environment, RequestContext requestContext, JoinCondition joinCondition) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
 
     var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
@@ -232,7 +235,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
         .setMaxBatchSize(settings.getMaxBatchSize()));
   }
 
-  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(DataFetchingEnvironment environment, RequestContext requestContext) {
+  private DataLoader<Map<String, Object>, Map<String, Object>> createSingleBatchLoader(
+      DataFetchingEnvironment environment, RequestContext requestContext) {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
     var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
 
@@ -244,7 +248,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .build();
 
       return backendLoader.batchLoadSingle(batchRequest, requestContext)
-          .collectMap(Tuple2::getT1, objects -> objects.getT2() != BackendLoader.NILL_MAP ? objects.getT2() : null, HashMap::new)
+          .collectMap(Tuple2::getT1, objects -> objects.getT2() != BackendLoader.NILL_MAP ? objects.getT2() : null,
+              HashMap::new)
           .toFuture();
     };
 
@@ -254,7 +259,9 @@ class BackendDataFetcher implements DataFetcher<Object> {
   private String getLookupName(ExecutionStepInfo executionStepInfo, String fieldName) {
     return !executionStepInfo.getField()
         .getResultKey()
-        .equals(fieldName) ? String.format("%s.%s", fieldName, executionStepInfo.getField()
-        .getResultKey()) : fieldName;
+        .equals(fieldName) ? String.format("%s.%s", fieldName,
+            executionStepInfo.getField()
+                .getResultKey())
+            : fieldName;
   }
 }

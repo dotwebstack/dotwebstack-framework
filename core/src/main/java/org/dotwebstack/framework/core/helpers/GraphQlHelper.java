@@ -10,7 +10,6 @@ import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
-import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_SCALAR;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
@@ -52,7 +51,8 @@ public class GraphQlHelper {
   public static Object getValue(@NonNull Type<?> type, @NonNull Value<?> value) {
     var stringValue = getStringValue(value);
 
-    if ((type instanceof TypeName typeName) && Objects.equals("Date", typeName.getName()) && Objects.equals("NOW", stringValue)) {
+    if ((type instanceof TypeName typeName) && Objects.equals("Date", typeName.getName())
+        && Objects.equals("NOW", stringValue)) {
       return LocalDate.now();
     }
     return stringValue;
@@ -76,24 +76,28 @@ public class GraphQlHelper {
   public static final Predicate<SelectedField> isScalarField = selectedField -> {
     var unwrappedType = unwrapAll(selectedField.getType());
 
-    return (unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType || isScalarType(unwrappedType));
+    return (unwrappedType instanceof GraphQLScalarType || unwrappedType instanceof GraphQLEnumType
+        || isScalarType(unwrappedType));
   };
 
   public static final Predicate<SelectedField> isObjectField = selectedField -> {
     var unwrappedType = unwrapAll(selectedField.getType());
     var additionalData = getAdditionalData(unwrappedType);
 
-    return !isList(unwrapNonNull(selectedField.getType())) && (isObjectType(unwrappedType) || isInterfaceOrUnion(unwrappedType)) && !isScalarType(unwrappedType)
+    return !isList(unwrapNonNull(selectedField.getType()))
+        && (isObjectType(unwrappedType) || isInterfaceOrUnion(unwrappedType)) && !isScalarType(unwrappedType)
         && !additionalData.containsKey(IS_CONNECTION_TYPE) && !unwrappedType.getName()
-        .equals(AGGREGATE_TYPE);
+            .equals(AGGREGATE_TYPE);
   };
 
   public static final Predicate<SelectedField> isObjectListField = selectedField -> {
     var unwrappedType = unwrapAll(selectedField.getType());
 
-    return (isList(unwrapNonNull(selectedField.getType())) && (isObjectType(unwrapAll(selectedField.getType())) || isInterfaceOrUnion(
-        unwrapAll(selectedField.getType())))) && !unwrappedType.getName()
-        .equals(AGGREGATE_TYPE) || getAdditionalData(unwrappedType).containsKey(IS_CONNECTION_TYPE);
+    return (isList(unwrapNonNull(selectedField.getType()))
+        && (isObjectType(unwrapAll(selectedField.getType())) || isInterfaceOrUnion(unwrapAll(selectedField.getType()))))
+        && !unwrappedType.getName()
+            .equals(AGGREGATE_TYPE)
+        || getAdditionalData(unwrappedType).containsKey(IS_CONNECTION_TYPE);
   };
 
   public static final Predicate<SelectedField> isCustomValueField = selectedField -> selectedField.getFieldDefinitions()
@@ -127,8 +131,8 @@ public class GraphQlHelper {
   public static FieldDefinition getFieldDefinition(SelectedField selectedField) {
     if (selectedField.getFieldDefinitions()
         .size() > 1) {
-      throw illegalArgumentException("SelectedField '{}' has {} fieldDefinitions but expected one!", selectedField.getName(),
-          selectedField.getFieldDefinitions()
+      throw illegalArgumentException("SelectedField '{}' has {} fieldDefinitions but expected one!",
+          selectedField.getName(), selectedField.getFieldDefinitions()
               .size());
     }
     return selectedField.getFieldDefinitions()

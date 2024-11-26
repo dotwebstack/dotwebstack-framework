@@ -6,7 +6,6 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isQuery;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
-import static org.springframework.jmx.support.MetricType.COUNTER;
 
 import graphql.execution.ExecutionStepInfo;
 import java.util.Map;
@@ -32,34 +31,35 @@ public class ContextCriteriaHelper {
 
     if (isQuery(parentType)) {
       return Optional.of(schema.getQueries()
-              .get(selectionName))
+          .get(selectionName))
           .map(Query::getContext);
     }
 
     if (isSubscription(parentType)) {
       return Optional.of(schema.getSubscriptions()
-              .get(selectionName))
+          .get(selectionName))
           .map(Subscription::getContext);
     }
 
-    throw illegalArgumentException("The parent type of the given requestStepInfo is not of type 'Query' or 'Subscription");
+    throw illegalArgumentException(
+        "The parent type of the given requestStepInfo is not of type 'Query' or 'Subscription");
   }
 
   public static ContextCriteria createContextCriteria(Schema schema, ExecutionStepInfo requestStepInfo) {
     return getContextName(schema, requestStepInfo).map(name -> {
-          var context = schema.getContexts()
-              .get(name);
+      var context = schema.getContexts()
+          .get(name);
 
-          var builder = ContextCriteria.builder()
-              .name(name)
-              .context(context);
+      var builder = ContextCriteria.builder()
+          .name(name)
+          .context(context);
 
-          Map<String, Object> arguments = getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
+      Map<String, Object> arguments = getNestedMap(requestStepInfo.getArguments(), CONTEXT_ARGUMENT_NAME);
 
-          builder.values(arguments);
+      builder.values(arguments);
 
-          return builder.build();
-        })
+      return builder.build();
+    })
         .orElse(null);
   }
 }

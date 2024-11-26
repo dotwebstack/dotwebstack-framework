@@ -15,7 +15,7 @@ public class FieldRequest {
   private final String resultKey;
 
   private final boolean isList;
-  
+
   private final boolean isCounter;
 
   private final Map<String, Object> arguments;

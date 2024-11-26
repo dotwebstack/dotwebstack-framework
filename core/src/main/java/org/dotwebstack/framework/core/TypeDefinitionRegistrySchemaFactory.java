@@ -77,7 +77,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
@@ -449,8 +448,9 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .filter(entry -> entry.getValue()
-            .isList() && !entry.getValue()
-            .isBatch())
+            .isList()
+            && !entry.getValue()
+                .isBatch())
         .map(entry -> createCounterQueryFieldDefinition(entry.getKey(), entry.getValue()))
         .toList();
 
@@ -729,7 +729,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     schema.getObjectType(objectField.getType())
         .ifPresent(objectType -> objectField.getKeys()
             .stream()
-            .map(keyField -> createInputValueDefinition(keyField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
+            .map(keyField -> createInputValueDefinition(keyField, objectType,
+                Map.of(KEY_FIELD, keyField, KEY_PATH, keyField)))
             .forEach(inputValueDefinitions::add));
 
     objectField.getArguments()
@@ -776,15 +777,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createInputValueDefinition(keyPath, objectType, Map.of());
   }
 
-  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType, Map<String,
-      String> additionalData) {
-    return createInputValueDefinition(keyPath, objectType, additionalData, false);
-  }
-
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
-      Map<String, String> additionalData, boolean batch) {
-
-    return createInputValueDefinition(aliasField, objectType, additionalData, false, "");
+  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType,
+      Map<String, String> additionalData) {
+    return createInputValueDefinition(keyPath, objectType, additionalData, false, "");
   }
 
   private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
