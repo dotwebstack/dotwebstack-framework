@@ -23,8 +23,9 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   public ConnectionDataFetcher(PagingConfiguration pagingConfiguration, String objectName) {
     this.pagingConfiguration = pagingConfiguration;
     if (pagingConfiguration.getFirstMaxValue() < 0 || pagingConfiguration.getOffsetMaxValue() < 0) {
-      LOG.warn("One or both paging arguments max values are negative, this may result in a slow responses for type {}. " +
-              "'firstMax': {}, 'offsetMax':{}",
+      LOG.warn(
+          "One or both paging arguments max values are negative, this may result in a slow responses for type {}. "
+              + "'firstMax': {}, 'offsetMax':{}",
           objectName, pagingConfiguration.getFirstMaxValue(), pagingConfiguration.getOffsetMaxValue());
     }
   }

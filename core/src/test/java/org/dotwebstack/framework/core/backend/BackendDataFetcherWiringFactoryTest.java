@@ -9,9 +9,12 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import graphql.language.FieldDefinition;
+import graphql.language.Type;
 import graphql.schema.GraphQLNamedOutputType;
 import graphql.schema.idl.FieldWiringEnvironment;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import org.dotwebstack.framework.core.config.SchemaReader;
 import org.dotwebstack.framework.core.model.Schema;
@@ -85,8 +88,10 @@ class BackendDataFetcherWiringFactoryTest {
   @Test
   void providesDataFetcher_returnsTrue_ifTypeNameIsPresent() {
     var typeMock = getTypeMock("Beer");
+    var fieldDefinition = getFieldDefinition("beer", null, null);
 
     when(environment.getFieldType()).thenReturn(typeMock);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
 
     var result = dataFetcher.providesDataFetcher(environment);
     assertThat(result, is(true));
@@ -112,8 +117,10 @@ class BackendDataFetcherWiringFactoryTest {
   @Test
   void getDataFetcher_returnsDataFetcher_ifTypeNamePresented() {
     var typeMock = getTypeMock("Brewery");
+    var fieldDefinition = getFieldDefinition("beer", null, null);
 
     when(environment.getFieldType()).thenReturn(typeMock);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
 
     var result = dataFetcher.getDataFetcher(environment);
     assertThat(result, is(notNullValue()));
@@ -124,7 +131,10 @@ class BackendDataFetcherWiringFactoryTest {
   void getDataFetcher_returnsDataFetcher_ifTypeNameEqualsAggregate() {
     var typeMock = getTypeMock("Aggregate");
 
+    var fieldDefinition = getFieldDefinition("aggregate", null, null);
+
     when(environment.getFieldType()).thenReturn(typeMock);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
 
     var result = dataFetcher.getDataFetcher(environment);
     assertThat(result, is(notNullValue()));
@@ -132,9 +142,25 @@ class BackendDataFetcherWiringFactoryTest {
   }
 
   private GraphQLNamedOutputType getTypeMock(String typeName) {
-    GraphQLNamedOutputType typeMock = mock(GraphQLNamedOutputType.class);
+    var typeMock = mock(GraphQLNamedOutputType.class);
     lenient().when(typeMock.getName())
         .thenReturn(typeName);
     return typeMock;
+  }
+
+  private FieldDefinition getFieldDefinition(String name, String queryType, Boolean enabled) {
+    var fieldDefinition = mock(FieldDefinition.class);
+    var typeMock = mock(Type.class);
+
+    if (queryType != null) {
+      lenient().when(typeMock.getAdditionalData())
+          .thenReturn(Map.of(queryType, enabled.toString()));
+    }
+
+    lenient().when(fieldDefinition.getName())
+        .thenReturn(name);
+    lenient().when(fieldDefinition.getType())
+        .thenReturn(typeMock);
+    return fieldDefinition;
   }
 }
