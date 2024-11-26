@@ -377,8 +377,8 @@ class SelectBuilder {
     return jsonEntries;
   }
 
-  private Stream<SelectResult> processUnionObjectRequestObjectField(UnionObjectRequest unionObjectRequest, PostgresObjectType objectType, String fieldName,
-      Table<Record> selectTable) {
+  private Stream<SelectResult> processUnionObjectRequestObjectField(UnionObjectRequest unionObjectRequest,
+      PostgresObjectType objectType, String fieldName, Table<Record> selectTable) {
     var field = objectType.getField(fieldName);
 
     var unionRequest = unionObjectRequest.getObjectRequests()
@@ -418,8 +418,7 @@ class SelectBuilder {
   }
 
   private List<JSONEntry<?>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
-      SelectQuery<Record> dataQuery,
-      Table<Record> selectTable, boolean asJson) {
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
     var jsonEntries = new ArrayList<JSONEntry<?>>();
     objectRequest.getScalarFields()
         .stream()
@@ -450,8 +449,8 @@ class SelectBuilder {
     }
   }
 
-  private Stream<Select<Record>> processAggregateObjectField(SingleObjectRequest objectRequest, AggregateObjectRequest aggregateObjectRequest,
-      Table<Record> table) {
+  private Stream<Select<Record>> processAggregateObjectField(SingleObjectRequest objectRequest,
+      AggregateObjectRequest aggregateObjectRequest, Table<Record> table) {
     var aggregateObjectMapper = new ObjectMapper();
 
     fieldMapper.register(aggregateObjectRequest.getKey(), aggregateObjectMapper);
@@ -463,8 +462,8 @@ class SelectBuilder {
     var stringJoinResult = aggregateObjectRequest.getAggregateFields()
         .stream()
         .filter(isStringJoin)
-        .map(aggregateField -> processAggregateFields(objectField, List.of(aggregateField), aggregateObjectMapper, table, objectRequest.getContextCriteria(),
-            filterCriteria));
+        .map(aggregateField -> processAggregateFields(objectField, List.of(aggregateField), aggregateObjectMapper,
+            table, objectRequest.getContextCriteria(), filterCriteria));
 
     var nonStringJoinAggregateFields = aggregateObjectRequest.getAggregateFields()
         .stream()
@@ -473,22 +472,25 @@ class SelectBuilder {
 
     var otherResult = Optional.of(nonStringJoinAggregateFields)
         .filter(not(List::isEmpty))
-        .map(aggregateFields -> processAggregateFields(objectField, aggregateFields, aggregateObjectMapper, table, objectRequest.getContextCriteria(),
-            filterCriteria))
+        .map(aggregateFields -> processAggregateFields(objectField, aggregateFields, aggregateObjectMapper, table,
+            objectRequest.getContextCriteria(), filterCriteria))
         .stream();
 
     return Stream.concat(stringJoinResult, otherResult);
   }
 
-  private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField, List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper,
-      Table<Record> table, ContextCriteria contextCriteria, GroupFilterCriteria filterCriterias) {
+  private SelectQuery<Record> processAggregateFields(PostgresObjectField objectField,
+      List<AggregateField> aggregateFields, ObjectMapper aggregateObjectMapper, Table<Record> table,
+      ContextCriteria contextCriteria, GroupFilterCriteria filterCriterias) {
     var aggregateObjectType = (PostgresObjectType) objectField.getTargetType();
 
-    var aliasedAggregateTable = findTable(aggregateObjectType.getTable(), contextCriteria).asTable(aliasManager.newAlias());
+    var aliasedAggregateTable =
+        findTable(aggregateObjectType.getTable(), contextCriteria).asTable(aliasManager.newAlias());
 
     var subSelect = dslContext.selectQuery(aliasedAggregateTable);
 
-    aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect, aliasedAggregateTable));
+    aggregateFields.forEach(aggregateField -> processAggregateField(aggregateField, aggregateObjectMapper, subSelect,
+        aliasedAggregateTable));
 
     var joinConditions = newJoin().table(table)
         .joinConfiguration(JoinConfiguration.toJoinConfiguration(objectField))
@@ -502,16 +504,17 @@ class SelectBuilder {
         .map(GroupFilterCriteria::getFilterCriterias)
         .map(Collection::stream)
         .map(filterCriteriaList -> filterCriteriaList.map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-                .filterCriteria(filterCriteria)
-                .table(aliasedAggregateTable)
-                .build())
+              .filterCriteria(filterCriteria)
+              .table(aliasedAggregateTable)
+              .build())
             .toList())
         .ifPresent(subSelect::addConditions);
 
     return subSelect;
   }
 
-  private void processAggregateField(AggregateField aggregateField, ObjectMapper aggregateMapper, SelectQuery<?> query, Table<?> table) {
+  private void processAggregateField(AggregateField aggregateField, ObjectMapper aggregateMapper, SelectQuery<?> query,
+      Table<?> table) {
     var columnAlias = aliasManager.newAlias();
     var columnName = ((PostgresObjectField) aggregateField.getField()).getColumn();
 
@@ -564,7 +567,9 @@ class SelectBuilder {
                 .getName()))
         .findFirst()
         .orElseThrow(() -> illegalStateException(
-            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty " + "or does not match the referencedField.", fieldPath));
+            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+                + "or does not match the referencedField.",
+            fieldPath));
   }
 
   private Optional<Condition> getEqualCondition(KeyCriteria keyCriteria, Field<Object> sqlField) {
@@ -596,11 +601,13 @@ class SelectBuilder {
     return columnMapper.getColumn();
   }
 
-  private SpatialColumnMapper createSpatialColumnMapper(Table<Record> table, PostgresObjectField objectField, FieldRequest fieldRequest) {
+  private SpatialColumnMapper createSpatialColumnMapper(Table<Record> table, PostgresObjectField objectField,
+      FieldRequest fieldRequest) {
     var requestedSrid = getRequestedSrid(fieldRequest);
     var isRequestedBbox = isRequestedBbox(fieldRequest);
 
-    var spatialColumnName = PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
+    var spatialColumnName =
+        PostgresSpatialHelper.getColumnName(objectField.getSpatial(), requestedSrid, isRequestedBbox);
     var column = column(table, spatialColumnName).as(aliasManager.newAlias());
 
     return new SpatialColumnMapper(column, objectField.getSpatial(), requestedSrid, isRequestedBbox);
@@ -631,13 +638,14 @@ class SelectBuilder {
     return new ColumnMapper((Field<Object>) col);
   }
 
-  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey, SingleObjectRequest objectRequest, Table<Record> table,
-      ObjectFieldMapper<Map<String, Object>> parentMapper) {
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper) {
     return createNestedSelect(objectField, resultKey, objectRequest, table, parentMapper, false);
   }
 
-  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey, SingleObjectRequest objectRequest, Table<Record> table,
-      ObjectFieldMapper<Map<String, Object>> parentMapper, boolean shouldBeJson) {
+  private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
+      boolean shouldBeJson) {
 
     // Create a relation object
     if (JoinHelper.hasNestedReference(objectField)) {
@@ -651,11 +659,13 @@ class SelectBuilder {
     }
 
     // Create a new object and take data from another table and join with it
-    return createObject(objectField, objectRequest, table, parentMapper, JoinConfiguration.toJoinConfiguration(objectField), resultKey);
+    return createObject(objectField, objectRequest, table, parentMapper,
+        JoinConfiguration.toJoinConfiguration(objectField), resultKey);
   }
 
-  private Stream<SelectResult> createObject(PostgresObjectField objectField, SingleObjectRequest objectRequest, Table<Record> table,
-      ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration, String resultKey) {
+  private Stream<SelectResult> createObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, JoinConfiguration joinConfiguration,
+      String resultKey) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     parentMapper.register(resultKey, objectMapper);
 
@@ -685,11 +695,12 @@ class SelectBuilder {
         .build());
   }
 
-  private List<SelectResult> createRelationObject(PostgresObjectField objectField, SingleObjectRequest objectRequest, Table<Record> table,
-      ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
+  private List<SelectResult> createRelationObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
-      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper, resultKey);
+      return createRelationObject(objectField, objectField.getJoinColumns(), objectRequest, table, parentMapper,
+          resultKey);
     }
 
     var objectMapper = new ObjectMapper();
@@ -719,7 +730,8 @@ class SelectBuilder {
                 .build();
           });
 
-          return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table).stream()
+          return selectJoinColumns((PostgresObjectType) objectField.getObjectType(), joinTable.getJoinColumns(), table)
+              .stream()
               .map(field -> SelectResult.builder()
                   .selectField(field)
                   .build());
@@ -727,8 +739,9 @@ class SelectBuilder {
         .toList();
   }
 
-  private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey) {
+  private List<SelectResult> createRelationObject(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
+      String resultKey) {
     var objectMapper = new ObjectMapper(aliasManager.newAlias());
     parentMapper.register(resultKey, objectMapper);
 
@@ -743,14 +756,15 @@ class SelectBuilder {
     objectRequest.getObjectFields()
         .keySet()
         .stream()
-        .flatMap(fieldRequest -> processRelationObjectField(objectField, joinColumns, objectRequest, table, objectMapper, fieldRequest).stream())
+        .flatMap(fieldRequest -> processRelationObjectField(objectField, joinColumns, objectRequest, table,
+            objectMapper, fieldRequest).stream())
         .forEach(selectResults::add);
 
     return selectResults;
   }
 
-  private List<SelectResult> processRelationObjectField(PostgresObjectField objectField, List<JoinColumn> joinColumns, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectMapper objectMapper, FieldRequest fieldRequest) {
+  private List<SelectResult> processRelationObjectField(PostgresObjectField objectField, List<JoinColumn> joinColumns,
+      SingleObjectRequest objectRequest, Table<Record> table, ObjectMapper objectMapper, FieldRequest fieldRequest) {
     var childObjectRequest = objectRequest.getObjectFields()
         .get(fieldRequest);
 
@@ -758,10 +772,11 @@ class SelectBuilder {
         .map(JoinColumn::getReferencedField)
         .filter(Objects::nonNull)
         .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
-      return createReferenceObject(objectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, fieldRequest).map(
-              selectField -> SelectResult.builder()
-                  .selectField(selectField)
-                  .build())
+      return createReferenceObject(
+          objectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, fieldRequest)
+          .map(selectField -> SelectResult.builder()
+              .selectField(selectField)
+              .build())
           .toList();
     } else {
       var childObjectField = getObjectType(objectRequest).getField(fieldRequest.getName());
@@ -775,8 +790,8 @@ class SelectBuilder {
           .joinColumns(resolveJoinColumns(objectField.getJoinColumns()))
           .build();
 
-      return createObject(childObjectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, joinConfiguration,
-          childObjectField.getName()).toList();
+      return createObject(childObjectField, (SingleObjectRequest) childObjectRequest, table, objectMapper,
+          joinConfiguration, childObjectField.getName()).toList();
     }
   }
 
