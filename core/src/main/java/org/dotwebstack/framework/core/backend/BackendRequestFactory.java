@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
@@ -134,7 +135,7 @@ public class BackendRequestFactory {
     var keyCriterias = createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
     var isCounter = executionStepInfo.getFieldDefinition()
         .getName()
-        .endsWith("Counter");
+        .endsWith(COUNTER_TYPE);
 
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
     var filterCriteria = getFilterCriteria(filterArgument, objectType);

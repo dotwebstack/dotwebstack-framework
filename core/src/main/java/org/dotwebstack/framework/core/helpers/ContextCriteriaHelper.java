@@ -1,10 +1,12 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static org.dotwebstack.framework.core.datafetchers.ContextConstants.CONTEXT_ARGUMENT_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isQuery;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
+import static org.springframework.jmx.support.MetricType.COUNTER;
 
 import graphql.execution.ExecutionStepInfo;
 import java.util.Map;
@@ -24,8 +26,8 @@ public class ContextCriteriaHelper {
     var selectionName = requestStepInfo.getFieldDefinition()
         .getName();
 
-    if (selectionName.endsWith("Counter")) {
-      selectionName = selectionName.replace("Counter", "");
+    if (selectionName.endsWith(COUNTER_TYPE)) {
+      selectionName = selectionName.replace(COUNTER_TYPE, "");
     }
 
     if (isQuery(parentType)) {

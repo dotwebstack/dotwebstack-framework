@@ -34,6 +34,9 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TOTAL;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
@@ -296,8 +299,8 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private ObjectTypeDefinition createCounterTypeDefinition() {
-    return newObjectTypeDefinition().name("Counter")
-        .fieldDefinition(newFieldDefinition().name("total")
+    return newObjectTypeDefinition().name(COUNTER_TYPE)
+        .fieldDefinition(newFieldDefinition().name(COUNTER_TOTAL)
             .type(newNonNullableType(GraphQLInt.getName()))
             .additionalData(IS_COUNTER_TYPE, TRUE.toString())
             .build())
@@ -438,8 +441,9 @@ public class TypeDefinitionRegistrySchemaFactory {
     var counterQueries = schema.getQueries()
         .entrySet()
         .stream()
-        .filter(x -> x.getValue()
-            .isList())
+        .filter(entry -> entry.getValue()
+            .isList() && !entry.getValue()
+            .isBatch())
         .map(entry -> createCounterQueryFieldDefinition(entry.getKey(), entry.getValue()))
         .toList();
 
@@ -567,10 +571,10 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     addOptionalContext(query.getContext(), inputValueDefinitions);
 
-    return newFieldDefinition().name(queryName.concat("Counter"))
-        .type(TypeName.newTypeName("Counter")
+    return newFieldDefinition().name(queryName.concat(COUNTER_TYPE))
+        .type(TypeName.newTypeName(COUNTER_TYPE)
             .additionalData(IS_COUNTER_TYPE, TRUE.toString())
-            .additionalData("counter_over", objectType.getName())
+            .additionalData(COUNTER_OVER, objectType.getName())
             .build())
         .inputValueDefinitions(inputValueDefinitions)
         .additionalData(createQueryAdditionalData(query))

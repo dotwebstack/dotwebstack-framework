@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.helpers;
 
 import static graphql.language.OperationDefinition.Operation.SUBSCRIPTION;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.UNSUPPORTED_TYPE_ERROR_TEXT;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgumentException;
@@ -78,7 +80,7 @@ public final class TypeHelper {
 
   public static boolean isCounterType(GraphQLType type) {
     return type instanceof GraphQLObjectType objectType && objectType.getName()
-        .equals("Counter");
+        .equals(COUNTER_TYPE);
   }
 
   public static GraphQLType unwrapType(DataFetchingEnvironment environment) {
@@ -94,16 +96,15 @@ public final class TypeHelper {
     }
 
     if (isCounterType(type)) {
-
       var definition = environment.getFieldDefinition()
           .getDefinition();
 
       if (definition != null && definition.getType()
           .getAdditionalData()
-          .containsKey("counter_over")) {
+          .containsKey(COUNTER_OVER)) {
         var unwrapObj = definition.getType()
             .getAdditionalData()
-            .get("counter_over")
+            .get(COUNTER_OVER)
             .toString();
 
         return environment.getGraphQLSchema()
@@ -111,22 +112,6 @@ public final class TypeHelper {
       }
     }
     return type;
-  }
-
-  public static String getCounterOver(DataFetchingEnvironment environment) {
-    var definition = environment.getFieldDefinition()
-        .getDefinition();
-
-    if (definition != null && definition.getType()
-        .getAdditionalData()
-        .containsKey("counter_over")) {
-      return definition.getType()
-          .getAdditionalData()
-          .get("counter_over")
-          .toString();
-    }
-
-    return "";
   }
 
   public static Type getBaseType(@NonNull Type<?> type) {

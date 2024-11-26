@@ -18,6 +18,12 @@ public class GraphQlConstants {
 
   public static final String IS_COUNTER_TYPE = "isCounterType";
 
+  public static final String COUNTER_TYPE = "Counter";
+
+  public static final String COUNTER_TOTAL = "total";
+
+  public static final String COUNTER_OVER = "counterOver";
+
   public static final String IS_PAGING_NODE = "isPagingNode";
 
   public static final String IS_BATCH_KEY_QUERY = "isBatchKeyQuery";

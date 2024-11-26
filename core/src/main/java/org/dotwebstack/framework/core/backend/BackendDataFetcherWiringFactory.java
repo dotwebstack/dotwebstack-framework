@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.backend;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants.AGGREGATE_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getAdditionalData;
@@ -85,7 +86,7 @@ class BackendDataFetcherWiringFactory implements WiringFactory {
       var counterOver = environment.getFieldDefinition()
           .getType()
           .getAdditionalData()
-          .get("counter_over")
+          .get(COUNTER_OVER)
           .toString();
       var objectType = of(counterOver).flatMap(schema::getObjectType)
           .orElseThrow();

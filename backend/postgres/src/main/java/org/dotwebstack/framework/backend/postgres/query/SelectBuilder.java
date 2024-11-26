@@ -120,7 +120,8 @@ class SelectBuilder {
 
     var isUnion = new AtomicReference<>(false);
     var selectQueries = objectRequests.stream()
-        .map(objectRequest -> processSingleObjectRequest(objectRequest, collectionRequest, joinCriteria, asJson, isUnion))
+        .map(objectRequest -> processSingleObjectRequest(objectRequest, collectionRequest, joinCriteria, asJson,
+            isUnion))
         .toList();
 
     return unionAllMultipleSelectQueries(selectQueries).orElseThrow();
@@ -164,7 +165,8 @@ class SelectBuilder {
     return unionAllMultipleSelectQueries(selectQueries).orElseThrow();
   }
 
-  public SelectQuery<Record> build(SingleObjectRequest objectRequest, String tableAlias, String parentFieldName, boolean fromUnion) {
+  public SelectQuery<Record> build(SingleObjectRequest objectRequest, String tableAlias, String parentFieldName,
+      boolean fromUnion) {
     this.tableAlias = tableAlias;
     return createDataQuery(objectRequest, fromUnion, parentFieldName);
   }
@@ -197,16 +199,6 @@ class SelectBuilder {
         .fieldMapper(fieldMapper)
         .build()
         .forEach(dataQuery::addOrderBy);
-
-    //    Optional.of(collectionRequest)
-    //        .map(CollectionRequest::getFilterCriteria)
-    //        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-    //            .filterCriteria(filterCriteria)
-    //            .table(DSL.table(tableAlias))
-    //            .contextCriteria(collectionRequest.getObjectRequest()
-    //                .getContextCriteria())
-    //            .build())
-    //        .ifPresent(dataQuery::addConditions);
 
     newPaging().requestContext(requestContext)
         .dataQuery(dataQuery)
