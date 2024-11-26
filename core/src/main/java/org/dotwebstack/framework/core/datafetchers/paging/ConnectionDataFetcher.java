@@ -22,6 +22,11 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   public ConnectionDataFetcher(PagingConfiguration pagingConfiguration) {
     this.pagingConfiguration = pagingConfiguration;
+    if (pagingConfiguration.getFirstMaxValue() < 0 || pagingConfiguration.getOffsetMaxValue() < 0) {
+      LOG.warn(
+          "One or both paging arguments max values are negative, this may result in a slow responses.\n'firstMax': {}\n'offsetMax':{}",
+          pagingConfiguration.getFirstMaxValue(), pagingConfiguration.getOffsetMaxValue());
+    }
   }
 
   @Override
@@ -69,11 +74,6 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue < 0 || offsetArgumentValue < 0) {
-      LOG.warn("Paging arguments are negative, this may result in a slow response.\n'first': {}\n'offset':{}",
-          firstArgumentValue, offsetArgumentValue);
-    }
-
     if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
       throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
           pagingConfiguration.getFirstMaxValue());

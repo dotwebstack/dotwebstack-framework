@@ -123,8 +123,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    ObjectRequest objectRequest = null;
-
+    ObjectRequest objectRequest;
     if (isCounterType(environment.getFieldType())) {
       var unwrappedType = TypeHelper.unwrapType(environment);
       var objectType = getObjectType(schema, unwrappedType);
@@ -133,10 +132,8 @@ class BackendDataFetcher implements DataFetcher<Object> {
       objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
     }
 
-    var x = backendLoader.loadSingle(objectRequest, requestContext)
+    return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
-
-    return x;
   }
 
   private List<?> executeBatchQueryWithKeys(DataFetchingEnvironment environment, RequestContext requestContext) {
