@@ -191,8 +191,9 @@ class SelectBuilder {
         .map(val -> (SelectQuery<Record>) val);
   }
 
-  public SelectQuery<Record> processSingleObjectRequest(SingleObjectRequest objectRequest, CollectionRequest collectionRequest, JoinCriteria joinCriteria,
-      boolean asJson, AtomicReference<Boolean> isUnion) {
+  public SelectQuery<Record> processSingleObjectRequest(SingleObjectRequest objectRequest,
+      CollectionRequest collectionRequest, JoinCriteria joinCriteria, boolean asJson,
+      AtomicReference<Boolean> isUnion) {
     var dataQuery = createDataQuery(objectRequest, asJson, null);
 
     newSorting().sortCriterias(collectionRequest.getSortCriterias())
@@ -205,7 +206,8 @@ class SelectBuilder {
         .build();
 
     if (joinCriteria != null) {
-      var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria, isUnion.get());
+      var batchQuery = doBatchJoin(collectionRequest.getObjectRequest(), dataQuery, DSL.table(tableAlias), joinCriteria,
+          isUnion.get());
       isUnion.set(true); // Set true because all succeeding queries are unions.
       return batchQuery;
     }
@@ -213,7 +215,8 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson, String parentFieldName) {
+  private SelectQuery<Record> createDataQuery(SingleObjectRequest objectRequest, boolean asJson,
+      String parentFieldName) {
     var objectType = getObjectType(objectRequest);
     var table = findTable(objectType.getTable(), objectRequest.getContextCriteria()).as(tableAlias);
     var dataQuery = dslContext.selectQuery(table);
@@ -259,7 +262,8 @@ class SelectBuilder {
     return dataQuery;
   }
 
-  private void addJsonEntriesToSelect(List<JSONEntry<?>> jsonEntries, SelectQuery<Record> dataQuery, String objectTypeName, String parentFieldName) {
+  private void addJsonEntriesToSelect(List<JSONEntry<?>> jsonEntries, SelectQuery<Record> dataQuery,
+      String objectTypeName, String parentFieldName) {
     if (!jsonEntries.isEmpty()) {
       Field<?> json;
       // Adding dtype for the TypeResolver to the json object.
@@ -285,7 +289,8 @@ class SelectBuilder {
     }
   }
 
-  private List<JSONEntry<?>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table, SelectQuery<Record> dataQuery, boolean asJson) {
+  private List<JSONEntry<?>> processObjectListFields(SingleObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery, boolean asJson) {
     var jsonEntries = new ArrayList<JSONEntry<?>>();
 
     objectRequest.getObjectListFields()
@@ -334,8 +339,8 @@ class SelectBuilder {
     return List.of();
   }
 
-  private List<JSONEntry<?>> processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType, SelectQuery<Record> dataQuery,
-      Table<Record> selectTable, boolean asJson) {
+  private List<JSONEntry<?>> processObjectFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery, Table<Record> selectTable, boolean asJson) {
     var jsonEntries = new ArrayList<JSONEntry<?>>();
 
     objectRequest.getObjectFields()
@@ -348,8 +353,8 @@ class SelectBuilder {
           if (value instanceof UnionObjectRequest unionObjectRequest) {
             return processUnionObjectRequestObjectField(unionObjectRequest, objectType, key.getName(), selectTable);
           }
-          return createNestedSelect(getObjectField(objectRequest, key.getName()), key.getResultKey(), (SingleObjectRequest) value, selectTable, fieldMapper,
-              asJson);
+          return createNestedSelect(getObjectField(objectRequest, key.getName()), key.getResultKey(),
+              (SingleObjectRequest) value, selectTable, fieldMapper, asJson);
         })
         .filter(Objects::nonNull)
         .map(result -> {
@@ -402,7 +407,8 @@ class SelectBuilder {
         .build());
   }
 
-  private void processAggregateObjectFields(SingleObjectRequest objectRequest, Table<Record> table, SelectQuery<Record> dataQuery) {
+  private void processAggregateObjectFields(SingleObjectRequest objectRequest, Table<Record> table,
+      SelectQuery<Record> dataQuery) {
     objectRequest.getAggregateObjectFields()
         .stream()
         .flatMap(aggregateObjectField -> processAggregateObjectField(objectRequest, aggregateObjectField, table))
@@ -411,7 +417,8 @@ class SelectBuilder {
             .isNested()));
   }
 
-  private List<JSONEntry<?>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType, SelectQuery<Record> dataQuery,
+  private List<JSONEntry<?>> processScalarFields(SingleObjectRequest objectRequest, PostgresObjectType objectType,
+      SelectQuery<Record> dataQuery,
       Table<Record> selectTable, boolean asJson) {
     var jsonEntries = new ArrayList<JSONEntry<?>>();
     objectRequest.getScalarFields()
