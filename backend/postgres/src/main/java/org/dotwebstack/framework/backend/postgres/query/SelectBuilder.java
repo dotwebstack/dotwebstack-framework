@@ -824,7 +824,8 @@ class SelectBuilder {
   }
 
   private Stream<SelectResult> createNestedObject(PostgresObjectField objectField, SingleObjectRequest objectRequest,
-      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey, boolean scalarAsJson) {
+      Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper, String resultKey,
+      boolean scalarAsJson) {
     var presenceAlias = objectField.getPresenceColumn() == null ? null : aliasManager.newAlias();
     var objectMapper = new ObjectMapper(null, presenceAlias);
 
@@ -861,7 +862,7 @@ class SelectBuilder {
         .stream()
         .flatMap(entry -> createNestedSelect(getObjectField(objectRequest, entry.getKey()
             .getName()), entry.getKey()
-              .getResultKey(),
+                .getResultKey(),
             (SingleObjectRequest) entry.getValue(), table, objectMapper))
         .forEach(selectResults::add);
 
