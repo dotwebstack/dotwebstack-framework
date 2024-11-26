@@ -119,7 +119,8 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private final Map<String, String> fieldFilterMap = new HashMap<>();
 
-  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers, PagingConfiguration pagingConfiguration) {
+  public TypeDefinitionRegistrySchemaFactory(Schema schema, List<FilterConfigurer> filterConfigurers,
+      PagingConfiguration pagingConfiguration) {
     this.schema = schema;
     this.pagingConfiguration = pagingConfiguration;
     filterConfigurers.forEach(configurer -> configurer.configureFieldFilterMapping(fieldFilterMap));
@@ -158,10 +159,12 @@ public class TypeDefinitionRegistrySchemaFactory {
                       .build());
 
                   implementedInterface.getImplements()
-                      .forEach(additionalImplements -> objectTypeDefinition.implementz(newTypeName().name(additionalImplements)
-                          .build()));
+                      .forEach(additionalImplements -> objectTypeDefinition
+                          .implementz(newTypeName().name(additionalImplements)
+                              .build()));
                 } else {
-                  throw invalidConfigurationException("Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz, name);
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for ObjectType '{}'.", implementz, name);
                 }
               });
 
@@ -186,7 +189,8 @@ public class TypeDefinitionRegistrySchemaFactory {
                   interfaceTypeDefinition.implementz(newTypeName().name(implementz)
                       .build());
                 } else {
-                  throw invalidConfigurationException("Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
+                  throw invalidConfigurationException(
+                      "Implemented Interface '{}' not found in provided schema for Interface '{}'.", implementz, name);
                 }
               });
 
@@ -253,21 +257,21 @@ public class TypeDefinitionRegistrySchemaFactory {
     if (GraphQLBoolean.getName()
         .equals(type)) {
       return BooleanValue.newBooleanValue(Boolean.parseBoolean(entry.getValue()
-              .getDefaultValue()))
+          .getDefaultValue()))
           .build();
     } else if (GraphQLInt.getName()
         .equals(type)) {
       return IntValue.newIntValue(new BigInteger(entry.getValue()
-              .getDefaultValue()))
+          .getDefaultValue()))
           .build();
     } else if (GraphQLFloat.getName()
         .equals(type)) {
       return FloatValue.newFloatValue(new BigDecimal(entry.getValue()
-              .getDefaultValue()))
+          .getDefaultValue()))
           .build();
     } else {
       return StringValue.newStringValue(entry.getValue()
-              .getDefaultValue())
+          .getDefaultValue())
           .build();
     }
   }
@@ -320,7 +324,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .entrySet()
         .stream()
         .map(entry -> newInputValueDefinition().name(entry.getKey())
-            .type(newType(FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
+            .type(newType(
+                FilterHelper.getTypeNameForFilter(fieldFilterMap, objectType, entry.getKey(), entry.getValue())))
             .build())
         .toList());
 
@@ -333,7 +338,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName, Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private EnumTypeDefinition createSortableByObjectTypeDefinition(String objectTypeName,
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
     var orderName = createOrderName(objectTypeName);
 
     List<EnumValueDefinition> enumValueDefinitions = getEnumValueDefinitions(sortableByConfig);
@@ -343,7 +349,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .build();
   }
 
-  private List<EnumValueDefinition> getEnumValueDefinitions(Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private List<EnumValueDefinition> getEnumValueDefinitions(
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
     return sortableByConfig.keySet()
         .stream()
         .map(key -> newEnumValueDefinition().name(formatSortEnumName(key))
@@ -450,7 +457,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     queryFieldDefinitions.addAll(counterQueries);
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
-        .fieldDefinitions(queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
+        .fieldDefinitions(
+            queryFieldDefinitions.isEmpty() ? List.of(createDummyQueryFieldDefinition()) : queryFieldDefinitions)
         .build();
 
     typeDefinitionRegistry.add(queryTypeDefinition);
@@ -521,7 +529,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         });
   }
 
-  private FieldDefinition createSubscriptionFieldDefinition(String queryName, Subscription subscription, ObjectType<?> objectType) {
+  private FieldDefinition createSubscriptionFieldDefinition(String queryName, Subscription subscription,
+      ObjectType<?> objectType) {
     var inputValueDefinitions = new ArrayList<InputValueDefinition>();
 
     subscription.getKeys()
@@ -596,8 +605,8 @@ public class TypeDefinitionRegistrySchemaFactory {
         .map(key -> {
           var aliasField = key.getKey();
           var keyField = getFieldKey(key.getValue());
-          return createInputValueDefinition(aliasField, objectType, Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(),
-              INPUT_OBJECTTYPE_POSTFIX);
+          return createInputValueDefinition(aliasField, objectType,
+              Map.of(KEY_FIELD, keyField, KEY_PATH, key.getValue()), query.isBatch(), INPUT_OBJECTTYPE_POSTFIX);
         })
         .toList();
   }
@@ -639,7 +648,8 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createSortArgument(subscription.getType(), objectType.getSortableBy());
   }
 
-  private Optional<InputValueDefinition> createSortArgument(String typeName, Map<String, List<SortableByConfiguration>> sortableByConfig) {
+  private Optional<InputValueDefinition> createSortArgument(String typeName,
+      Map<String, List<SortableByConfiguration>> sortableByConfig) {
     if (!sortableByConfig.isEmpty()) {
       var orderName = createOrderName(typeName);
 
@@ -766,17 +776,19 @@ public class TypeDefinitionRegistrySchemaFactory {
     return createInputValueDefinition(keyPath, objectType, Map.of());
   }
 
-  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType, Map<String, String> additionalData) {
+  private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType, Map<String,
+      String> additionalData) {
     return createInputValueDefinition(keyPath, objectType, additionalData, false);
   }
 
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType, Map<String, String> additionalData, boolean batch) {
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
+      Map<String, String> additionalData, boolean batch) {
 
     return createInputValueDefinition(aliasField, objectType, additionalData, false, "");
   }
 
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType, Map<String, String> additionalData, boolean batch,
-      String typePostfix) {
+  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
+      Map<String, String> additionalData, boolean batch, String typePostfix) {
 
     var keyField = additionalData.get(KEY_FIELD);
     var keyPath = additionalData.get(KEY_PATH);
