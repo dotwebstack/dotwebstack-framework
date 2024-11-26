@@ -38,7 +38,7 @@ class ConnectionDataFetcherTest {
 
   @BeforeEach
   void beforeEach() {
-    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration);
+    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, "testObj");
     GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
 
     when(fieldDefinition.getArgument(FIRST_ARGUMENT_NAME)).thenReturn(newArgument().name(FIRST_ARGUMENT_NAME)

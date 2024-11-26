@@ -31,7 +31,6 @@ public class BackendExecutionStepInfo {
     } else {
       executionStepInfo = environment.getExecutionStepInfo();
     }
-
     return executionStepInfo;
   }
 }
