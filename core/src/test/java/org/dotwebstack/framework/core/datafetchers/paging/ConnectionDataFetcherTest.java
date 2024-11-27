@@ -16,6 +16,7 @@ import graphql.Scalars;
 import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.idl.FieldWiringEnvironment;
 import java.util.Map;
 import org.dotwebstack.framework.core.RequestValidationException;
 import org.hamcrest.CoreMatchers;
@@ -34,11 +35,14 @@ class ConnectionDataFetcherTest {
   @Mock
   private PagingConfiguration pagingConfiguration;
 
+  @Mock
+  private FieldWiringEnvironment environment;
+
   private ConnectionDataFetcher connectionDataFetcher;
 
   @BeforeEach
   void beforeEach() {
-    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, "testObj");
+    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, environment);
     GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
 
     when(fieldDefinition.getArgument(FIRST_ARGUMENT_NAME)).thenReturn(newArgument().name(FIRST_ARGUMENT_NAME)

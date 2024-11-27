@@ -10,6 +10,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.idl.FieldWiringEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,9 +21,11 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   private final PagingConfiguration pagingConfiguration;
 
-  public ConnectionDataFetcher(PagingConfiguration pagingConfiguration, String objectName) {
+  public ConnectionDataFetcher(PagingConfiguration pagingConfiguration, FieldWiringEnvironment environment) {
     this.pagingConfiguration = pagingConfiguration;
     if (pagingConfiguration.getFirstMaxValue() < 0 || pagingConfiguration.getOffsetMaxValue() < 0) {
+      var objectName = environment.getFieldDefinition() != null ? environment.getFieldDefinition()
+          .getName() : "unknown";
       LOG.warn(
           "One or both paging arguments max values are negative, this may result in a slow responses for type {}. "
               + "'firstMax': {}, 'offsetMax':{}",

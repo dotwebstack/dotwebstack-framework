@@ -214,6 +214,34 @@ class GraphQlPostgresIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsTotalBreweries_Default() {
+    var query = "{breweriesCounter {total}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey("breweriesCounter"), is(true));
+    var countData = (Map<String, Object>) data.get("breweriesCounter");
+
+    assertThat(countData, notNullValue());
+    assertThat(countData.get("total"), is(4));
+  }
+
+  @Test
+  void getRequest_returnsTotalBreweries_forFilter() {
+    var query = "{breweriesCounter(filter: {name: {eq: \"Brewery X\" }}) {total}}";
+
+    Map<String, Object> data = WebTestClientHelper.get(client, query);
+
+    assertThat(data.size(), is(1));
+    assertThat(data.containsKey("breweriesCounter"), is(true));
+    var countData = (Map<String, Object>) data.get("breweriesCounter");
+
+    assertThat(countData, notNullValue());
+    assertThat(countData.get("total"), is(1));
+  }
+
+  @Test
   void getRequest_returnsBreweries_Default() {
     var query = "{breweries {name status}}";
 

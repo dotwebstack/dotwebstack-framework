@@ -298,6 +298,7 @@ public class TypeDefinitionRegistrySchemaFactory {
         .fieldDefinition(newFieldDefinition().name(OFFSET_FIELD_NAME)
             .type(newNonNullableType(GraphQLInt.getName()))
             .build())
+        .additionalData(Map.of(IS_CONNECTION_TYPE, TRUE.toString()))
         .build();
   }
 
