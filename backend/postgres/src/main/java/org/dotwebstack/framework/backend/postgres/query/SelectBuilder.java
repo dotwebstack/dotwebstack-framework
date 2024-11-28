@@ -580,9 +580,9 @@ class SelectBuilder {
   private Field<?> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType, Table<Record> table,
       ObjectFieldMapper<Map<String, Object>> parentMapper, boolean jsonObject) {
     if (fieldRequest.isCounter()) {
-      var x = createCountMapper(fieldRequest.getName());
-      parentMapper.register(fieldRequest.getName(), x);
-      return x.getColumn();
+      var countMapper = createCountMapper(fieldRequest.getName());
+      parentMapper.register(fieldRequest.getName(), countMapper);
+      return countMapper.getColumn();
     }
 
     var objectField = objectType.getField(fieldRequest.getName());
