@@ -46,25 +46,26 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spring-boot.version>3.3.5</spring-boot.version>
-        <rdf4j.version>5.0.3</rdf4j.version>
+        <spring-boot.version>3.4.0</spring-boot.version>
+        <rdf4j.version>5.1.0</rdf4j.version>
         <graphql.java.version>22.3</graphql.java.version>
         <graphql.java.orchestrate.version>0.2.3</graphql.java.orchestrate.version>
         <commons.jexl3.version>3.4.0</commons.jexl3.version>
         <commons.text.version>1.12.0</commons.text.version>
         <commons.lang3.version>3.17.0</commons.lang3.version>
         <pebble.version>3.2.2</pebble.version>
-        <swagger-parser.version>2.1.23</swagger-parser.version>
-        <lombok.version>1.18.34</lombok.version>
+        <swagger-parser.version>2.1.24</swagger-parser.version>
+        <lombok.version>1.18.36</lombok.version>
         <guava.version>33.3.1-jre</guava.version>
         <problem.version>0.27.1</problem.version>
         <problem.spring.webflux.version>0.29.1</problem.spring.webflux.version>
         <json-path.version>2.9.0</json-path.version>
-        <testcontainers.version>1.20.3</testcontainers.version>
+        <testcontainers.version>1.20.4</testcontainers.version>
         <jts.version>1.20.0</jts.version>
         <carml.version>0.4.11</carml.version>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>dotwebstack</sonar.organization>
+        <okhttp3.version>4.12.0</okhttp3.version>
     </properties>
 
     <modules>
@@ -104,13 +105,13 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
-                <version>3.0.2.Final</version>
+                <version>3.0.3.Final</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-annotations</artifactId>
-                <version>3.0.2.Final</version>
+                <version>3.0.3.Final</version>
                 <scope>provided</scope>
             </dependency>
             <!-- Regular dependencies -->
@@ -244,6 +245,16 @@
                         <artifactId>antlr4-runtime</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>mockwebserver</artifactId>
+                <version>${okhttp3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
