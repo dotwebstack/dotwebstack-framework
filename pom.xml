@@ -65,6 +65,7 @@
         <carml.version>0.4.11</carml.version>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.organization>dotwebstack</sonar.organization>
+        <okhttp3.version>4.12.0</okhttp3.version>
     </properties>
 
     <modules>
@@ -244,6 +245,16 @@
                         <artifactId>antlr4-runtime</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>${okhttp3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>mockwebserver</artifactId>
+                <version>${okhttp3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
