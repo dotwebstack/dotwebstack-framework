@@ -88,18 +88,28 @@ public class PostgresObjectField extends AbstractObjectField {
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
 
+
       column = ofNullable(ancestors).map(this::toColumn)
-          .map(prefix -> prefix.concat(columnName))
+          .map(prefix -> {
+            if (columnName.equals("ref")) {
+              return prefix;
+            }
+            return prefix.concat("__")
+                .concat(columnName);
+          })
           .orElse(columnName);
     }
   }
 
+
   private String toColumn(List<PostgresObjectField> ancestors) {
+    // TODO: ahu added filter on ref
     return ancestors.stream()
         .map(PostgresObjectField::getName)
+        .filter(name -> !name.equals("ref"))
         .map(StringHelper::toSnakeCase)
-        .collect(Collectors.joining("__"))
-        .concat("__");
+        .collect(Collectors.joining("__"));
+    // .concat("__");
   }
 
   public void setSpatial(PostgresSpatial spatial) {

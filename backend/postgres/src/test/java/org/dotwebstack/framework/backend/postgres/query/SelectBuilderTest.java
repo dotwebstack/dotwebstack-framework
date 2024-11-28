@@ -306,9 +306,9 @@ class SelectBuilderTest {
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
             + "joinColumns=[JoinColumn(name=postal_address, referencedField=ref.identifier, "
             + "referencedColumn=null)], joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, "
-            + "spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], joinTable=null, "
+            + "spatial=null), PostgresObjectField(column=postal_address, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
+            + "PostgresObjectField(column=postal_address__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
 
@@ -347,9 +347,9 @@ class SelectBuilderTest {
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
             + "joinColumns=[], joinTable=null, mappedBy=null, mappedByObjectField=null, "
-            + "presenceColumn=null, spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], "
+            + "presenceColumn=null, spatial=null), PostgresObjectField(column=postal_address, joinColumns=[], "
             + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
+            + "PostgresObjectField(column=postal_address__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
   }

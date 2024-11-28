@@ -203,7 +203,17 @@ class FilterConditionBuilder {
   private List<Condition> createConditionsForMatchingNestedReference(ObjectFieldFilterCriteria filterCriteria,
       List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
-        .filter(joinColumn -> referencedField.equals(joinColumn.getReferencedField()))
+        // TODO: ahu
+        // first check referencedColumn and in case of ref get the referencedField
+        // if(referencedField.contains("ref"))
+        .filter(joinColumn -> {
+          if (referencedField.startsWith("ref") && joinColumn.getReferencedField() != null) {
+            return referencedField.equals(joinColumn.getReferencedField());
+          } else if (referencedField.startsWith("ref") && joinColumn.getReferencedColumn() != null) {
+            return referencedField.endsWith("." + joinColumn.getReferencedColumn());
+          }
+          return false;
+        })
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 

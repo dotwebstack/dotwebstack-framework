@@ -15,6 +15,8 @@ public interface ObjectField {
 
   String getType();
 
+  void setType(String type);
+
   List<String> getKeys();
 
   boolean isList();
@@ -30,6 +32,8 @@ public interface ObjectField {
   String getAggregationOf();
 
   ObjectType<? extends ObjectField> getTargetType();
+
+  void setTargetType(ObjectType<? extends ObjectField> objectType);
 
   FieldEnumConfiguration getEnumeration();
 
