@@ -1,6 +1,8 @@
 package org.dotwebstack.framework.core.backend;
 
 import static graphql.language.FieldDefinition.newFieldDefinition;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -88,7 +90,7 @@ class BackendDataFetcherWiringFactoryTest {
   @Test
   void providesDataFetcher_returnsTrue_ifTypeNameIsPresent() {
     var typeMock = getTypeMock("Beer");
-    var fieldDefinition = getFieldDefinition("beer", null, null);
+    var fieldDefinition = getFieldDefinition("beer", null);
 
     when(environment.getFieldType()).thenReturn(typeMock);
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -117,7 +119,7 @@ class BackendDataFetcherWiringFactoryTest {
   @Test
   void getDataFetcher_returnsDataFetcher_ifTypeNamePresented() {
     var typeMock = getTypeMock("Brewery");
-    var fieldDefinition = getFieldDefinition("beer", null, null);
+    var fieldDefinition = getFieldDefinition("beer", null);
 
     when(environment.getFieldType()).thenReturn(typeMock);
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -131,7 +133,22 @@ class BackendDataFetcherWiringFactoryTest {
   void getDataFetcher_returnsDataFetcher_ifTypeNameEqualsAggregate() {
     var typeMock = getTypeMock("Aggregate");
 
-    var fieldDefinition = getFieldDefinition("aggregate", null, null);
+    var fieldDefinition = getFieldDefinition("aggregate", null);
+
+    when(environment.getFieldType()).thenReturn(typeMock);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+
+    var result = dataFetcher.getDataFetcher(environment);
+    assertThat(result, is(notNullValue()));
+    assertThat(result.getClass(), is(BackendDataFetcher.class));
+  }
+
+  @Test
+  void getDataFetcher_returnsDataFetcher_forCounter() {
+    var typeMock = getTypeMock("Counter");
+    var additionalData = Map.of(IS_COUNTER_TYPE, Boolean.TRUE.toString(),
+        COUNTER_OVER, "Brewery");
+    var fieldDefinition = getFieldDefinition("breweriesCounter", additionalData);
 
     when(environment.getFieldType()).thenReturn(typeMock);
     when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
@@ -148,14 +165,14 @@ class BackendDataFetcherWiringFactoryTest {
     return typeMock;
   }
 
-  private FieldDefinition getFieldDefinition(String name, String queryType, Boolean enabled) {
+  private FieldDefinition getFieldDefinition(String name, Map<String, String> additionalObjData) {
+    if (additionalObjData == null) {
+      additionalObjData = Map.of();
+    }
     var fieldDefinition = mock(FieldDefinition.class);
     var typeMock = mock(Type.class);
-
-    if (queryType != null) {
       lenient().when(typeMock.getAdditionalData())
-          .thenReturn(Map.of(queryType, enabled.toString()));
-    }
+          .thenReturn(additionalObjData);
 
     lenient().when(fieldDefinition.getName())
         .thenReturn(name);
