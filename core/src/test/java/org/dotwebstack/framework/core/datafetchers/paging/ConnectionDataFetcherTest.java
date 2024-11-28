@@ -7,6 +7,7 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
 import graphql.execution.DataFetcherResult;
+import graphql.language.FieldDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.idl.FieldWiringEnvironment;
@@ -21,13 +23,19 @@ import java.util.Map;
 import org.dotwebstack.framework.core.RequestValidationException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 @ExtendWith(MockitoExtension.class)
 class ConnectionDataFetcherTest {
+
+  private static final String SKIP_BEFORE_TAG = "skip_before_each";
 
   @Mock
   private DataFetchingEnvironment dataFetchingEnvironment;
@@ -41,7 +49,11 @@ class ConnectionDataFetcherTest {
   private ConnectionDataFetcher connectionDataFetcher;
 
   @BeforeEach
-  void beforeEach() {
+  void beforeEach(TestInfo testInfo) {
+    if (testInfo.getTags()
+        .contains(SKIP_BEFORE_TAG)) {
+      return;
+    }
     connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, environment);
     GraphQLFieldDefinition fieldDefinition = mock(GraphQLFieldDefinition.class);
 
@@ -61,6 +73,36 @@ class ConnectionDataFetcherTest {
         .thenReturn(100);
     lenient().when(pagingConfiguration.getOffsetMaxValue())
         .thenReturn(10000);
+  }
+
+  @Test
+  @Tag(SKIP_BEFORE_TAG)
+  @ExtendWith(OutputCaptureExtension.class)
+  void initialize_getWarnings_forPagingMaxValues(CapturedOutput output) {
+    var fieldFieldDefinition = mock(FieldDefinition.class);
+
+    when(pagingConfiguration.getFirstMaxValue()).thenReturn(-1);
+    when(pagingConfiguration.getOffsetMaxValue()).thenReturn(-1);
+    when(environment.getFieldDefinition()).thenReturn(fieldFieldDefinition);
+    when(fieldFieldDefinition.getName()).thenReturn("ObjName");
+
+    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, environment);
+
+    assertThat(output.getAll(), stringContainsInOrder("One or both paging arguments max values are negative,"
+        + " this may result in a slow responses for type ObjName. 'firstMax': -1, 'offsetMax':-1"));
+  }
+
+  @Test
+  @Tag(SKIP_BEFORE_TAG)
+  @ExtendWith(OutputCaptureExtension.class)
+  void initialize_getWarnings_forPagingMaxValuesWithUnknown(CapturedOutput output) {
+    when(pagingConfiguration.getFirstMaxValue()).thenReturn(-1);
+    when(pagingConfiguration.getOffsetMaxValue()).thenReturn(-1);
+
+    connectionDataFetcher = new ConnectionDataFetcher(pagingConfiguration, environment);
+
+    assertThat(output.getAll(), stringContainsInOrder("One or both paging arguments max values are negative,"
+        + " this may result in a slow responses for type unknown. 'firstMax': -1, 'offsetMax':-1"));
   }
 
   @Test
