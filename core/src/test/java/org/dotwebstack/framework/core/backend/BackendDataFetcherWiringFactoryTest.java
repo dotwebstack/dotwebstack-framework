@@ -146,8 +146,7 @@ class BackendDataFetcherWiringFactoryTest {
   @Test
   void getDataFetcher_returnsDataFetcher_forCounter() {
     var typeMock = getTypeMock("Counter");
-    var additionalData = Map.of(IS_COUNTER_TYPE, Boolean.TRUE.toString(),
-        COUNTER_OVER, "Brewery");
+    var additionalData = Map.of(IS_COUNTER_TYPE, Boolean.TRUE.toString(), COUNTER_OVER, "Brewery");
     var fieldDefinition = getFieldDefinition("breweriesCounter", additionalData);
 
     when(environment.getFieldType()).thenReturn(typeMock);
@@ -171,8 +170,8 @@ class BackendDataFetcherWiringFactoryTest {
     }
     var fieldDefinition = mock(FieldDefinition.class);
     var typeMock = mock(Type.class);
-      lenient().when(typeMock.getAdditionalData())
-          .thenReturn(additionalObjData);
+    lenient().when(typeMock.getAdditionalData())
+        .thenReturn(additionalObjData);
 
     lenient().when(fieldDefinition.getName())
         .thenReturn(name);
