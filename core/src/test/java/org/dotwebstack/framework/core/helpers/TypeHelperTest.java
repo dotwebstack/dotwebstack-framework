@@ -1,23 +1,29 @@
 package org.dotwebstack.framework.core.helpers;
 
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import graphql.Scalars;
+import graphql.language.FieldDefinition;
 import graphql.language.ListType;
 import graphql.language.NonNullType;
 import graphql.language.OperationDefinition;
 import graphql.language.Type;
 import graphql.language.TypeName;
 import graphql.schema.Coercing;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInputObjectType;
@@ -25,8 +31,10 @@ import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLNonNull;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLScalarType;
+import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -93,6 +101,79 @@ class TypeHelperTest {
     assertTrue(result instanceof GraphQLEnumType);
     assertThat(((GraphQLEnumType) result).getName(), is("@@@@@"));
 
+  }
+
+  @Test
+  void unwrapType_forNonNullType_returnsType() {
+    var nonNullType = mock(GraphQLNonNull.class);
+    var objectType = mock(GraphQLObjectType.class);
+    var environment = mock(DataFetchingEnvironment.class);
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+    when(objectType.getName()).thenReturn("AA");
+    when(nonNullType.getWrappedType()).thenReturn(objectType);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getType()).thenReturn(nonNullType);
+
+    var result = TypeHelper.unwrapType(environment);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertInstanceOf(GraphQLNonNull.class, result);
+  }
+
+  @Test
+  void unwrapType_forConnectionType_returnsType() {
+    var objectType = mock(GraphQLObjectType.class);
+    var environment = mock(DataFetchingEnvironment.class);
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+    when(objectType.getName()).thenReturn("AAConnection");
+    when(objectType.getFieldDefinition(eq("nodes"))).thenReturn(fieldDefinition);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getType()).thenReturn(objectType);
+
+    var result = TypeHelper.unwrapType(environment);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertInstanceOf(GraphQLObjectType.class, result);
+  }
+
+  @Test
+  void unwrapType_forNonNullConnectionType_returnsType() {
+    var environment = mock(DataFetchingEnvironment.class);
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+    var nonNullType = mock(GraphQLNonNull.class);
+    var wrappedObjectType = mock(GraphQLObjectType.class);
+
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
+    when(fieldDefinition.getType()).thenReturn(nonNullType);
+    when(nonNullType.getWrappedType()).thenReturn(wrappedObjectType);
+    when(wrappedObjectType.getName()).thenReturn("AAConnection");
+    when(wrappedObjectType.getFieldDefinition(eq("nodes"))).thenReturn(fieldDefinition);
+
+    var result = TypeHelper.unwrapType(environment);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertInstanceOf(GraphQLNonNull.class, result);
+  }
+
+  @Test
+  void unwrapType_forConnectionType_returnsCountType() {
+    var environment = mock(DataFetchingEnvironment.class);
+    var graphqlFieldDefinition = mock(GraphQLFieldDefinition.class);
+    var fieldFieldDefinition = mock(FieldDefinition.class);
+    var counterType = mock(GraphQLObjectType.class);
+    var type = mock(Type.class);
+    var graphqlSchema = mock(GraphQLSchema.class);
+    var toBeCountedType = mock(GraphQLType.class);
+
+    when(environment.getFieldDefinition()).thenReturn(graphqlFieldDefinition);
+    when(graphqlFieldDefinition.getType()).thenReturn(counterType);
+    when(graphqlFieldDefinition.getDefinition()).thenReturn(fieldFieldDefinition);
+    when(counterType.getName()).thenReturn(COUNTER_TYPE);
+    when(fieldFieldDefinition.getType()).thenReturn(type);
+    when(type.getAdditionalData()).thenReturn(Map.of(COUNTER_OVER, "AA"));
+    when(environment.getGraphQLSchema()).thenReturn(graphqlSchema);
+    when(graphqlSchema.getType(eq("AA"))).thenReturn(toBeCountedType);
+
+    var result = TypeHelper.unwrapType(environment);
+    assertThat(result, CoreMatchers.is(notNullValue()));
+    assertInstanceOf(GraphQLType.class, result);
   }
 
   @ParameterizedTest()
