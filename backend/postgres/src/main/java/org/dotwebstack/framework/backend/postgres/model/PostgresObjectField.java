@@ -11,12 +11,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@SuperBuilder(toBuilder = true)
 public class PostgresObjectField extends AbstractObjectField {
 
   private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])(\\d*[A-Z])");

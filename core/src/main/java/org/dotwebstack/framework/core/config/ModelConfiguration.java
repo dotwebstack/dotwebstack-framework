@@ -132,7 +132,7 @@ public class ModelConfiguration {
         throws IOException {
       var objectType = parser.readValueAs(backendModule.getObjectTypeClass());
 
-      objectType.setName(parser.getCurrentName());
+      objectType.setName(parser.currentName());
       objectType.getFields()
           .forEach((name, field) -> {
             field.setObjectType(objectType);

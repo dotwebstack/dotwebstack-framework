@@ -155,6 +155,18 @@ class GraphQlPostgresWithRefsIntegrationTest {
   }
 
   @Test
+  void getRequest_returnsBeers_withJoinColumnFilterOnNodeObject() {
+    var query = "{\n" + " beerCollection(filter: {brewery: {node: {name: {" + "eq: \"Brewery X\"}}}}) {\n" + " name\n"
+        + " }\n" + "}";
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("beerCollection"), hasItems(equalTo(Map.of("name", "Beer 1")),
+        equalTo(Map.of("name", "Beer 2")), equalTo(Map.of("name", "Beer 4")))));
+  }
+
+  @Test
   void getRequest_returnsBeers_withJoinTableFilterOnReferenceObject() {
     var query = "{\n" + "  beerCollection(filter: {ingredients: {refs: {code: {eq: \"CRM\"}}}}) {\n" + "    name\n"
         + "  }\n" + "}";

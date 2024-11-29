@@ -4,18 +4,23 @@ import com.google.common.base.CaseFormat;
 import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@SuperBuilder(toBuilder = true)
+@NoArgsConstructor
 public class TestObjectField extends AbstractObjectField {
-
 
   private String column;
 
   @Valid
+  @Builder.Default
   private List<TestJoinColumn> joinColumns = new ArrayList<>();
 
   @Valid

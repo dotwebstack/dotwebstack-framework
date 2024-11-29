@@ -10,8 +10,6 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFieldValue;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ_IGNORE_CASE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
@@ -204,8 +202,6 @@ class FilterConditionBuilder {
       List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
         // TODO: ahu
-        // first check referencedColumn and in case of ref get the referencedField
-        // if(referencedField.contains("ref"))
         .filter(joinColumn -> {
           if (referencedField.startsWith("ref") && joinColumn.getReferencedField() != null) {
             return referencedField.equals(joinColumn.getReferencedField());
