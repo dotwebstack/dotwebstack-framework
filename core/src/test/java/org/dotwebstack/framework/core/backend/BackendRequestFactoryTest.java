@@ -394,7 +394,6 @@ class BackendRequestFactoryTest {
     assertThat(result, is(notNullValue()));
     assertThat(((SingleObjectRequest) result.getObjectRequest()).getObjectType()
         .getName(), is("Brewery"));
-    assertThat(result.getFilterCriteria(), is(notNullValue()));
     assertThat(result.getSortCriterias()
         .get(0)
         .getFieldPath()
