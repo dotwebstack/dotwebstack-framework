@@ -34,9 +34,13 @@ import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.NODES_FIELD_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_ARGUMENT_NAME;
 import static org.dotwebstack.framework.core.datafetchers.paging.PagingConstants.OFFSET_FIELD_NAME;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_OVER;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TOTAL;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_CONNECTION_TYPE;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_NESTED;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_PAGING_NODE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_VISIBLE;
@@ -64,6 +68,7 @@ import graphql.language.ObjectTypeDefinition;
 import graphql.language.ObjectValue;
 import graphql.language.StringValue;
 import graphql.language.Type;
+import graphql.language.TypeName;
 import graphql.language.Value;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import java.math.BigDecimal;
@@ -130,6 +135,7 @@ public class TypeDefinitionRegistrySchemaFactory {
     addSortTypes(typeDefinitionRegistry);
     addContextTypes(typeDefinitionRegistry);
     addConnectionTypes(typeDefinitionRegistry);
+    addCounterType(typeDefinitionRegistry);
     addQueryTypes(typeDefinitionRegistry);
     addSubscriptionTypes(typeDefinitionRegistry);
     addInputObjectTypeDefinitions(typeDefinitionRegistry);
@@ -277,6 +283,10 @@ public class TypeDefinitionRegistrySchemaFactory {
         .forEach(typeDefinitionRegistry::add);
   }
 
+  private void addCounterType(TypeDefinitionRegistry typeDefinitionRegistry) {
+    typeDefinitionRegistry.add(createCounterTypeDefinition());
+  }
+
   private ObjectTypeDefinition createConnectionTypeDefinition(ObjectType<?> objectType) {
     var connectionName = createConnectionName(objectType.getName());
 
@@ -289,6 +299,15 @@ public class TypeDefinitionRegistrySchemaFactory {
             .type(newNonNullableType(GraphQLInt.getName()))
             .build())
         .additionalData(Map.of(IS_CONNECTION_TYPE, TRUE.toString()))
+        .build();
+  }
+
+  private ObjectTypeDefinition createCounterTypeDefinition() {
+    return newObjectTypeDefinition().name(COUNTER_TYPE)
+        .fieldDefinition(newFieldDefinition().name(COUNTER_TOTAL)
+            .type(newNonNullableType(GraphQLInt.getName()))
+            .additionalData(IS_COUNTER_TYPE, TRUE.toString())
+            .build())
         .build();
   }
 
@@ -420,11 +439,23 @@ public class TypeDefinitionRegistrySchemaFactory {
   }
 
   private void addQueryTypes(TypeDefinitionRegistry typeDefinitionRegistry) {
-    var queryFieldDefinitions = schema.getQueries()
+    var queryFieldDefinitions = new ArrayList<>(schema.getQueries()
         .entrySet()
         .stream()
         .map(entry -> createQueryFieldDefinition(entry.getKey(), entry.getValue()))
+        .toList());
+
+    var counterQueries = schema.getQueries()
+        .entrySet()
+        .stream()
+        .filter(entry -> entry.getValue()
+            .isList()
+            && !entry.getValue()
+                .isBatch())
+        .map(entry -> createCounterQueryFieldDefinition(entry.getKey(), entry.getValue()))
         .toList();
+
+    queryFieldDefinitions.addAll(counterQueries);
 
     var queryTypeDefinition = newObjectTypeDefinition().name(QUERY_TYPE_NAME)
         .fieldDefinitions(
@@ -536,6 +567,25 @@ public class TypeDefinitionRegistrySchemaFactory {
 
     return newFieldDefinition().name(queryName)
         .type(createTypeForQuery(query))
+        .inputValueDefinitions(inputValueDefinitions)
+        .additionalData(createQueryAdditionalData(query))
+        .build();
+  }
+
+  private FieldDefinition createCounterQueryFieldDefinition(String queryName, Query query) {
+    var objectType = schema.getObjectType(query.getType())
+        .orElseThrow();
+
+    var inputValueDefinitions = new ArrayList<>(createKeyArguments(query, objectType));
+    createFilterArgument(query, objectType).ifPresent(inputValueDefinitions::add);
+
+    addOptionalContext(query.getContext(), inputValueDefinitions);
+
+    return newFieldDefinition().name(queryName.concat(COUNTER_TYPE))
+        .type(TypeName.newTypeName(COUNTER_TYPE)
+            .additionalData(IS_COUNTER_TYPE, TRUE.toString())
+            .additionalData(COUNTER_OVER, objectType.getName())
+            .build())
         .inputValueDefinitions(inputValueDefinitions)
         .additionalData(createQueryAdditionalData(query))
         .build();
@@ -730,13 +780,7 @@ public class TypeDefinitionRegistrySchemaFactory {
 
   private InputValueDefinition createInputValueDefinition(String keyPath, ObjectType<?> objectType,
       Map<String, String> additionalData) {
-    return createInputValueDefinition(keyPath, objectType, additionalData, false);
-  }
-
-  private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,
-      Map<String, String> additionalData, boolean batch) {
-
-    return createInputValueDefinition(aliasField, objectType, additionalData, false, "");
+    return createInputValueDefinition(keyPath, objectType, additionalData, false, "");
   }
 
   private InputValueDefinition createInputValueDefinition(String aliasField, ObjectType<?> objectType,

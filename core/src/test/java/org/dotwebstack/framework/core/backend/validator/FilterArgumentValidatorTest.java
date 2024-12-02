@@ -12,6 +12,7 @@ import static org.springframework.util.StringUtils.capitalize;
 
 import graphql.execution.ExecutionStepInfo;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -168,7 +169,9 @@ class FilterArgumentValidatorTest {
     var objectType = GraphQLObjectType.newObject()
         .name("Foo")
         .build();
-    when(executionStepInfo.getType()).thenReturn(objectType);
+    var fieldDefinition = mock(GraphQLFieldDefinition.class);
+    when(fieldDefinition.getType()).thenReturn(objectType);
+    when(environment.getFieldDefinition()).thenReturn(fieldDefinition);
   }
 
   private Schema getSchema() {

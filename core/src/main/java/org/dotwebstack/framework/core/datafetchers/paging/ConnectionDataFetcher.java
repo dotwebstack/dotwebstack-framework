@@ -10,6 +10,7 @@ import graphql.execution.DataFetcherResult;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
+import graphql.schema.idl.FieldWiringEnvironment;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,8 +21,16 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
 
   private final PagingConfiguration pagingConfiguration;
 
-  public ConnectionDataFetcher(PagingConfiguration pagingConfiguration) {
+  public ConnectionDataFetcher(PagingConfiguration pagingConfiguration, FieldWiringEnvironment environment) {
     this.pagingConfiguration = pagingConfiguration;
+    if (pagingConfiguration.getFirstMaxValue() < 0 || pagingConfiguration.getOffsetMaxValue() < 0) {
+      var objectName = environment.getFieldDefinition() != null ? environment.getFieldDefinition()
+          .getName() : "unknown";
+      LOG.warn(
+          "One or both paging arguments max values are negative, this may result in a slow responses for type {}. "
+              + "'firstMax': {}, 'offsetMax':{}",
+          objectName, pagingConfiguration.getFirstMaxValue(), pagingConfiguration.getOffsetMaxValue());
+    }
   }
 
   @Override
@@ -69,11 +78,6 @@ public class ConnectionDataFetcher implements DataFetcher<Object> {
   }
 
   private void validateArgumentValues(int firstArgumentValue, int offsetArgumentValue) {
-    if (firstArgumentValue < 0 || offsetArgumentValue < 0) {
-      LOG.warn("Paging arguments are negative, this may result in a slow response.\n'first': {}\n'offset':{}",
-          firstArgumentValue, offsetArgumentValue);
-    }
-
     if (pagingConfiguration.getFirstMaxValue() >= 0 && firstArgumentValue > pagingConfiguration.getFirstMaxValue()) {
       throw requestValidationException("Argument 'first' is not allowed to be higher than {}.",
           pagingConfiguration.getFirstMaxValue());

@@ -119,9 +119,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
-    assertThat(fieldDefinitions.size(), is(3));
+    assertThat(fieldDefinitions.size(), is(4));
 
-    var breweryFieldDefinition = fieldDefinitions.get(0);
+    var breweryFieldDefinition = getFieldDefinition(fieldDefinitions, "brewery");
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
     assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
@@ -132,7 +132,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(breweryQueryIdentifierInputValueDefinition.getName(), is("identifier"));
     assertNonNullType(breweryQueryIdentifierInputValueDefinition.getType(), "ID");
 
-    var breweryCityFieldDefinition = fieldDefinitions.get(2);
+    var breweryCityFieldDefinition = getFieldDefinition(fieldDefinitions, "breweryCity");
 
     assertThat(breweryCityFieldDefinition.getInputValueDefinitions()
         .size(), is(2));
@@ -160,9 +160,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
-    assertThat(fieldDefinitions.size(), is(2));
+    assertThat(fieldDefinitions.size(), is(3));
 
-    var breweryFieldDefinition = fieldDefinitions.get(0);
+    var breweryFieldDefinition = getFieldDefinition(fieldDefinitions, "brewery");
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
     assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
@@ -173,7 +173,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(queryInputValueDefinition.getName(), is("identifier"));
     assertNonNullType(queryInputValueDefinition.getType(), "ID");
 
-    var breweryConnectionFieldDefinition = fieldDefinitions.get(1);
+    var breweryConnectionFieldDefinition = getFieldDefinition(fieldDefinitions, "breweryCollection");
     assertThat(breweryConnectionFieldDefinition.getName(), is("breweryCollection"));
     assertThat(TypeHelper.getTypeName(breweryConnectionFieldDefinition.getType()), equalTo("BreweryConnection"));
 
@@ -190,9 +190,9 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
-    assertThat(fieldDefinitions.size(), is(2));
+    assertThat(fieldDefinitions.size(), is(3));
 
-    var breweryFieldDefinition = fieldDefinitions.get(0);
+    var breweryFieldDefinition = getFieldDefinition(fieldDefinitions, "brewery");
     assertThat(breweryFieldDefinition.getName(), is("brewery"));
     assertType(breweryFieldDefinition.getType(), "Brewery");
     assertThat(breweryFieldDefinition.getInputValueDefinitions()
@@ -203,7 +203,7 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(queryInputValueDefinition.getName(), is("identifier"));
     assertNonNullType(queryInputValueDefinition.getType(), "ID");
 
-    var breweryCollectionFieldDefinition = fieldDefinitions.get(1);
+    var breweryCollectionFieldDefinition = getFieldDefinition(fieldDefinitions, "breweryCollection");
     assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
     assertNonNullListType(breweryCollectionFieldDefinition.getType(), "Brewery");
 
@@ -245,10 +245,12 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         pagingConfiguration).createTypeDefinitionRegistry();
 
     List<FieldDefinition> fieldDefinitions = getFieldDefinitions(registry, QUERY_TYPE_NAME);
-    assertThat(fieldDefinitions.size(), is(2));
+    assertThat(fieldDefinitions.size(), is(4));
 
     assertBreweryCollection(registry, fieldDefinitions);
+    assertCounter(registry, fieldDefinitions, "Brewery");
     assertAddressCollection(registry, fieldDefinitions);
+    assertCounter(registry, fieldDefinitions, "Address");
   }
 
   @Test
@@ -308,10 +310,8 @@ class TypeDefinitionRegistrySchemaFactoryTest {
   }
 
   private void assertBreweryCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
-    var breweryCollectionFieldDefinition = fieldDefinitions.get(0);
-    assertThat(breweryCollectionFieldDefinition.getName(), is("breweryCollection"));
+    var breweryCollectionFieldDefinition = getFieldDefinition(fieldDefinitions, "breweryCollection");
     assertNonNullListType(breweryCollectionFieldDefinition.getType(), "Brewery");
-
     assertThat(breweryCollectionFieldDefinition.getInputValueDefinitions()
         .size(), is(1));
 
@@ -336,10 +336,29 @@ class TypeDefinitionRegistrySchemaFactoryTest {
         .collect(Collectors.toList()), equalTo(List.of("NAME", "ADDRESS")));
   }
 
+  private void assertCounter(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions, String objName) {
+    var fieldDefinition = getFieldDefinition(fieldDefinitions, objName.toLowerCase()
+        .concat("CollectionCounter"));
+    assertType(fieldDefinition.getType(), "Counter");
+    assertThat(fieldDefinition.getType()
+        .getAdditionalData()
+        .get("isCounterType"), is(Boolean.TRUE.toString()));
+    assertThat(fieldDefinition.getType()
+        .getAdditionalData()
+        .get("counterOver"), is(objName));
+    var type = (ObjectTypeDefinition) registry.getType(fieldDefinition.getType())
+        .orElse(null);
+    assertThat(type, notNullValue());
+    assertThat(type.getFieldDefinitions()
+        .size(), is(1));
+    var typeField = type.getFieldDefinitions()
+        .get(0);
+    assertThat(typeField.getName(), is("total"));
+    assertNonNullType(typeField.getType(), "Int");
+  }
 
   private void assertAddressCollection(TypeDefinitionRegistry registry, List<FieldDefinition> fieldDefinitions) {
-    var addressCollectionFieldDefinition = fieldDefinitions.get(1);
-    assertThat(addressCollectionFieldDefinition.getName(), is("addressCollection"));
+    var addressCollectionFieldDefinition = getFieldDefinition(fieldDefinitions, "addressCollection");
     assertNonNullListType(addressCollectionFieldDefinition.getType(), "Address");
 
     assertThat(addressCollectionFieldDefinition.getInputValueDefinitions()
@@ -553,6 +572,14 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     return ((ObjectTypeDefinition) typeDefinition).getFieldDefinitions();
   }
 
+  private FieldDefinition getFieldDefinition(List<FieldDefinition> fieldDefinitions, String name) {
+    return fieldDefinitions.stream()
+        .filter(fd -> fd.getName()
+            .equals(name))
+        .findFirst()
+        .orElseThrow();
+  }
+
   private TypeDefinition getTypeDefinition(TypeDefinitionRegistry registry, String expectedTypeName) {
     assertThat(registry, is(notNullValue()));
     assertThat(registry.getType(expectedTypeName)
@@ -627,12 +654,22 @@ class TypeDefinitionRegistrySchemaFactoryTest {
     assertThat(queryTypeDefinition, instanceOf(ObjectTypeDefinition.class));
 
     var fieldDefinitions = ((ObjectTypeDefinition) queryTypeDefinition).getFieldDefinitions();
-    assertThat(fieldDefinitions.size(), is(1));
+    assertThat(fieldDefinitions.size(), is(2));
 
-    assertThat(fieldDefinitions.get(0)
-        .toString(),
+    assertThat(getFieldDefinition(fieldDefinitions, "breweryCollection").toString(),
         equalTo(newFieldDefinition().name("breweryCollection")
             .type(newNonNullableListType("Brewery"))
+            .inputValueDefinition(newInputValueDefinition().name("context")
+                .type(newType("HistoryContext"))
+                .defaultValue(ObjectValue.newObjectValue()
+                    .build())
+                .build())
+            .build()
+            .toString()));
+
+    assertThat(getFieldDefinition(fieldDefinitions, "breweryCollectionCounter").toString(),
+        equalTo(newFieldDefinition().name("breweryCollectionCounter")
+            .type(newType("Counter"))
             .inputValueDefinition(newInputValueDefinition().name("context")
                 .type(newType("HistoryContext"))
                 .defaultValue(ObjectValue.newObjectValue()

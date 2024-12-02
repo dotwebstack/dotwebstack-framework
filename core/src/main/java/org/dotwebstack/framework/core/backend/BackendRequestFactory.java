@@ -12,6 +12,7 @@ import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHel
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.getSeparator;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateHelper.isDistinct;
 import static org.dotwebstack.framework.core.datafetchers.aggregate.AggregateValidator.validate;
+import static org.dotwebstack.framework.core.graphql.GraphQlConstants.COUNTER_TYPE;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.CUSTOM_FIELD_VALUEFETCHER;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_KEY_QUERY;
 import static org.dotwebstack.framework.core.graphql.GraphQlConstants.KEY_FIELD;
@@ -55,6 +56,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.dotwebstack.framework.core.CustomValueFetcherDispatcher;
 import org.dotwebstack.framework.core.OnLocalSchema;
+import org.dotwebstack.framework.core.backend.filter.FilterCriteria;
 import org.dotwebstack.framework.core.backend.filter.GroupFilterCriteria;
 import org.dotwebstack.framework.core.config.SortableByConfiguration;
 import org.dotwebstack.framework.core.datafetchers.aggregate.AggregateConstants;
@@ -103,7 +105,7 @@ public class BackendRequestFactory {
     var objectType = getObjectType(unwrappedType);
 
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
-    var filterCriteria = getFilterCriteria(filterArgument, objectType);
+    var filterCriteria = getGroupFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
@@ -135,11 +137,19 @@ public class BackendRequestFactory {
 
     var keyCriterias =
         createKeyCriterias(objectType, executionStepInfo.getFieldDefinition(), executionStepInfo.getArguments());
+    var isCounter = executionStepInfo.getFieldDefinition()
+        .getName()
+        .endsWith(COUNTER_TYPE);
+
+    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+    var filterCriteria = getFilterCriteria(filterArgument, objectType);
 
     return SingleObjectRequest.builder()
         .objectType(objectType)
+        .isCounter(isCounter)
         .keyCriterias(keyCriterias)
-        .scalarFields(getScalarFields(selectionSet, objectType.getName()))
+        .filterCriteria(filterCriteria)
+        .scalarFields(getScalarFields(selectionSet, objectType.getName(), isCounter))
         .objectFields(getObjectFields(selectionSet, executionStepInfo, objectType.getName()))
         .objectListFields(getObjectListFields(selectionSet, executionStepInfo))
         .contextCriteria(createContextCriteria(schema, getRequestStepInfo(executionStepInfo)))
@@ -272,20 +282,26 @@ public class BackendRequestFactory {
   }
 
   private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet) {
-    return getScalarFields(selectionSet, StringUtils.EMPTY);
+    return getScalarFields(selectionSet, StringUtils.EMPTY, false);
   }
 
-  private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet, String objectName) {
+  private List<FieldRequest> getScalarFields(DataFetchingFieldSelectionSet selectionSet, String objectName,
+      boolean isCounter) {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isScalarField)
         .filter(not(isIntrospectionField))
-        .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
-        .flatMap(this::mapScalarFieldToFieldRequests)
+        .filter(selectedField -> {
+          if (isCounter) {
+            return true;
+          }
+          return selectedFieldIsPartOfObject(objectName, selectedField);
+        })
+        .flatMap(field -> mapScalarFieldToFieldRequests(field, isCounter))
         .collect(toCollection(ArrayList::new));
   }
 
-  private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField) {
+  private Stream<FieldRequest> mapScalarFieldToFieldRequests(SelectedField selectedField, boolean isCounter) {
     if (isCustomValueField.test(selectedField)) {
       return getAdditionalData(selectedField, CUSTOM_FIELD_VALUEFETCHER).stream()
           .flatMap(
@@ -297,15 +313,16 @@ public class BackendRequestFactory {
               .build());
     }
 
-    return Stream.of(mapToFieldRequest(selectedField));
+    return Stream.of(mapToFieldRequest(selectedField, isCounter));
   }
 
-  private FieldRequest mapToFieldRequest(SelectedField selectedField) {
+  private FieldRequest mapToFieldRequest(SelectedField selectedField, boolean isCounter) {
     String resultKey = createResultKey(selectedField);
 
     return FieldRequest.builder()
         .name(selectedField.getName())
         .resultKey(resultKey)
+        .isCounter(isCounter)
         .isList(GraphQLTypeUtil.isList(selectedField.getType()))
         .arguments(selectedField.getArguments())
         .build();
@@ -322,7 +339,7 @@ public class BackendRequestFactory {
         .stream()
         .filter(isObjectField)
         .filter(selectedField -> selectedFieldIsPartOfObject(objectName, selectedField))
-        .collect(Collectors.toMap(this::mapToFieldRequest,
+        .collect(Collectors.toMap(field -> mapToFieldRequest(field, false),
             selectedField -> createObjectRequest(selectedField, executionStepInfo)));
   }
 
@@ -349,7 +366,7 @@ public class BackendRequestFactory {
     return selectionSet.getImmediateFields()
         .stream()
         .filter(isObjectListField)
-        .collect(Collectors.toMap(this::mapToFieldRequest,
+        .collect(Collectors.toMap(field -> mapToFieldRequest(field, false),
             selectedField -> createCollectionRequest(selectedField, executionStepInfo)));
   }
 
@@ -369,7 +386,7 @@ public class BackendRequestFactory {
           Map<String, Object> filterArgument = (Map<String, Object>) selectedField.getArguments()
               .get(FilterConstants.FILTER_ARGUMENT_NAME);
 
-          Optional<GroupFilterCriteria> filterCriteria = getFilterCriteria(filterArgument, aggregationObjectType);
+          Optional<GroupFilterCriteria> filterCriteria = getGroupFilterCriteria(filterArgument, aggregationObjectType);
 
           return AggregateObjectRequest.builder()
               .objectField(objectField)
@@ -419,14 +436,17 @@ public class BackendRequestFactory {
         .build();
   }
 
-  private Optional<GroupFilterCriteria> getFilterCriteria(Map<String, Object> filterArgument,
+  private Optional<GroupFilterCriteria> getGroupFilterCriteria(Map<String, Object> filterArgument,
       ObjectType<?> objectType) {
+    return getFilterCriteria(filterArgument, objectType).map(GroupFilterCriteria.class::cast);
+  }
+
+  private Optional<FilterCriteria> getFilterCriteria(Map<String, Object> filterArgument, ObjectType<?> objectType) {
     return ofNullable(filterArgument).map(argument -> newFilterCriteriaBuilder().objectType(objectType)
         .argument(argument)
         .maxDepth(schema.getSettings()
             .getMaxFilterDepth())
-        .build())
-        .map(GroupFilterCriteria.class::cast);
+        .build());
   }
 
   private List<KeyCriteria> createKeyCriterias(ObjectType<?> objectType, GraphQLFieldDefinition fieldDefinition,

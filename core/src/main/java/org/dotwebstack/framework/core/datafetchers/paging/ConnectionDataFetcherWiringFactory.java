@@ -28,6 +28,6 @@ public class ConnectionDataFetcherWiringFactory implements WiringFactory {
 
   @Override
   public DataFetcher<?> getDataFetcher(FieldWiringEnvironment environment) {
-    return new ConnectionDataFetcher(pagingConfiguration);
+    return new ConnectionDataFetcher(pagingConfiguration, environment);
   }
 }

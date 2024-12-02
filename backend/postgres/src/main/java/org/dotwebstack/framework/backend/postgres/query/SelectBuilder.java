@@ -34,6 +34,8 @@ import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
+import static org.jooq.impl.DSL.count;
+import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import jakarta.validation.constraints.NotNull;
@@ -199,16 +201,6 @@ class SelectBuilder {
         .build()
         .forEach(dataQuery::addOrderBy);
 
-    Optional.of(collectionRequest)
-        .map(CollectionRequest::getFilterCriteria)
-        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
-            .filterCriteria(filterCriteria)
-            .table(DSL.table(tableAlias))
-            .contextCriteria(collectionRequest.getObjectRequest()
-                .getContextCriteria())
-            .build())
-        .ifPresent(dataQuery::addConditions);
-
     newPaging().requestContext(requestContext)
         .dataQuery(dataQuery)
         .build();
@@ -233,6 +225,17 @@ class SelectBuilder {
         .isEmpty()) {
       addKeyFields(objectRequest);
     }
+
+    Optional.of(objectRequest)
+        .map(SingleObjectRequest::getFilterCriteria)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .map(filterCriteria -> newFiltering().aliasManager(aliasManager)
+            .filterCriteria(filterCriteria)
+            .table(DSL.table(tableAlias))
+            .contextCriteria(objectRequest.getContextCriteria())
+            .build())
+        .ifPresent(dataQuery::addConditions);
 
     processAggregateObjectFields(objectRequest, table, dataQuery);
 
@@ -576,6 +579,12 @@ class SelectBuilder {
 
   private Field<?> processScalarField(FieldRequest fieldRequest, PostgresObjectType objectType, Table<Record> table,
       ObjectFieldMapper<Map<String, Object>> parentMapper, boolean jsonObject) {
+    if (fieldRequest.isCounter()) {
+      var countMapper = createCountMapper(fieldRequest.getName());
+      parentMapper.register(fieldRequest.getName(), countMapper);
+      return countMapper.getColumn();
+    }
+
     var objectField = objectType.getField(fieldRequest.getName());
 
     ColumnMapper columnMapper;
@@ -621,6 +630,11 @@ class SelectBuilder {
       column = column.as(aliasManager.newAlias());
     }
     return new ColumnMapper(column);
+  }
+
+  private ColumnMapper createCountMapper(String countAlias) {
+    Field<?> col = count().as(countAlias);
+    return new ColumnMapper((Field<Object>) col);
   }
 
   private Stream<SelectResult> createNestedSelect(PostgresObjectField objectField, String resultKey,

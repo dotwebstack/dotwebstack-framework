@@ -40,7 +40,7 @@ public class FilterArgumentValidator implements GraphQlValidator {
     var executionStepInfo = backendExecutionStepInfo.getExecutionStepInfo(environment);
     Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
 
-    var unwrappedType = TypeHelper.unwrapConnectionType(executionStepInfo.getType());
+    var unwrappedType = TypeHelper.unwrapType(environment);
     var objectType = getObjectType(schema, unwrappedType);
 
     validateFilters(objectType, filterArgument);

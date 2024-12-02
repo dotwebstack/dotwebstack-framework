@@ -105,6 +105,10 @@ class GraphqlController {
       return Mono.just(executionResult.toSpecification());
     }
 
+    errors.forEach(error -> {
+      LOG.error(error.getMessage());
+    });
+
     var throwable = errors.stream()
         .filter(ExceptionWhileDataFetching.class::isInstance)
         .map(ExceptionWhileDataFetching.class::cast)

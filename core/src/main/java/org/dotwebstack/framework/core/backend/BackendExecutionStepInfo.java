@@ -18,7 +18,6 @@ public class BackendExecutionStepInfo {
     ExecutionStepInfo executionStepInfo;
 
     var type = unwrapNonNull(environment.getFieldType());
-
     var isList = isList(type);
 
     var usePaging = environment.getFieldDefinition()

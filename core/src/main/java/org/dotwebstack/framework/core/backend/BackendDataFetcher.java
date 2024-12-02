@@ -7,7 +7,9 @@ import static org.dotwebstack.framework.core.graphql.GraphQlConstants.IS_BATCH_K
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalStateException;
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestValidationException;
 import static org.dotwebstack.framework.core.helpers.GraphQlHelper.getKeyArguments;
+import static org.dotwebstack.framework.core.helpers.ModelHelper.getObjectType;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.isCounterType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isListType;
 import static org.dotwebstack.framework.core.helpers.TypeHelper.isSubscription;
 
@@ -27,11 +29,13 @@ import org.dataloader.DataLoaderOptions;
 import org.dataloader.MappedBatchLoader;
 import org.dotwebstack.framework.core.backend.validator.GraphQlValidator;
 import org.dotwebstack.framework.core.helpers.TypeHelper;
+import org.dotwebstack.framework.core.model.Schema;
 import org.dotwebstack.framework.core.model.Settings;
 import org.dotwebstack.framework.core.query.model.BatchRequest;
 import org.dotwebstack.framework.core.query.model.CollectionBatchRequest;
 import org.dotwebstack.framework.core.query.model.JoinCondition;
 import org.dotwebstack.framework.core.query.model.JoinCriteria;
+import org.dotwebstack.framework.core.query.model.ObjectRequest;
 import org.dotwebstack.framework.core.query.model.RequestContext;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -48,8 +52,11 @@ class BackendDataFetcher implements DataFetcher<Object> {
 
   private final Settings settings;
 
-  public BackendDataFetcher(BackendLoader backendLoader, BackendRequestFactory requestFactory,
+  private final Schema schema;
+
+  public BackendDataFetcher(Schema schema, BackendLoader backendLoader, BackendRequestFactory requestFactory,
       BackendExecutionStepInfo backendExecutionStepInfo, List<GraphQlValidator> graphQlValidators, Settings settings) {
+    this.schema = schema;
     this.backendLoader = backendLoader;
     this.requestFactory = requestFactory;
     this.backendExecutionStepInfo = backendExecutionStepInfo;
@@ -116,7 +123,14 @@ class BackendDataFetcher implements DataFetcher<Object> {
           .toFuture();
     }
 
-    var objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    ObjectRequest objectRequest;
+    if (isCounterType(environment.getFieldType())) {
+      var unwrappedType = TypeHelper.unwrapType(environment);
+      var objectType = getObjectType(schema, unwrappedType);
+      objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet(), objectType);
+    } else {
+      objectRequest = requestFactory.createObjectRequest(executionStepInfo, environment.getSelectionSet());
+    }
 
     return backendLoader.loadSingle(objectRequest, requestContext)
         .toFuture();
