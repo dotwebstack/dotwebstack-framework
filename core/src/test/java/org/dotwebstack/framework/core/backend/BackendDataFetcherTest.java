@@ -453,8 +453,8 @@ class BackendDataFetcherTest {
 
   @Test
   void get_throwsException_ifBackendLoaderIsNull() {
-    var dataFetcherWithoutBackendLoader =
-        new BackendDataFetcher(null, requestFactory, backendExecutionStepInfo, graphQlValidators, mock(Settings.class));
+    var dataFetcherWithoutBackendLoader = new BackendDataFetcher(null, null, requestFactory, backendExecutionStepInfo,
+        graphQlValidators, mock(Settings.class));
 
     mockExecutionStepInfo("a", "a");
 

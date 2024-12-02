@@ -11,4 +11,4 @@ dotwebstack:
     username: postgres
     password: postgres
     database: postgres
-    schema: dbeerpedia
+    schema: brewery

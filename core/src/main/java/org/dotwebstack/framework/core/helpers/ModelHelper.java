@@ -43,7 +43,11 @@ public final class ModelHelper {
       throw illegalStateException("Not an object type.");
     }
 
-    return schema.getObjectTypeOrInterface(rawType.getName())
-        .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", rawType.getName()));
+    return getObjectType(schema, rawType.getName());
+  }
+
+  public static ObjectType<?> getObjectType(Schema schema, String name) {
+    return schema.getObjectTypeOrInterface(name)
+        .orElseThrow(() -> illegalStateException("No objectType with name '{}' found!", name));
   }
 }

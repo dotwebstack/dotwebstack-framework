@@ -12,8 +12,11 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 class JsonLdFilterTest {
 
@@ -26,12 +29,13 @@ class JsonLdFilterTest {
   }
 
   @Test
-  void applyModelTest() throws IOException {
+  void applyModelTest() throws IOException, JSONException {
     // Act
     String result = (String) jsonLdFilter.apply(buildModel(), null, null, null, 0);
 
     // Assert
-    assertThat(result.replace("\r\n", "\n"), is(new String(getFileInputStream("jsonLdSerialized.txt").readAllBytes())));
+    JSONAssert.assertEquals(new String(getFileInputStream("jsonLdSerialized.txt").readAllBytes()), result,
+        JSONCompareMode.NON_EXTENSIBLE);
   }
 
   @Test
