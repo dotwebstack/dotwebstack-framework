@@ -104,12 +104,13 @@ public class BackendRequestFactory {
     var unwrappedType = unwrapConnectionType(executionStepInfo.getType());
     var objectType = getObjectType(unwrappedType);
 
-    Map<String, Object> filterArgument = executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
-    var filterCriteria = getGroupFilterCriteria(filterArgument, objectType);
+    // Map<String, Object> filterArgument =
+    // executionStepInfo.getArgument(FilterConstants.FILTER_ARGUMENT_NAME);
+    // var filterCriteria = getGroupFilterCriteria(filterArgument, objectType);
 
     return CollectionRequest.builder()
         .objectRequest(createObjectRequest(executionStepInfo, selectionSet))
-        .filterCriteria(filterCriteria.orElse(null))
+        // .filterCriteria(filterCriteria.orElse(null))
         .sortCriterias(createSortCriteria(executionStepInfo, objectType))
         .build();
   }
