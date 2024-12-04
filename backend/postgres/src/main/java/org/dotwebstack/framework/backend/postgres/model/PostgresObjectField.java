@@ -124,4 +124,12 @@ public class PostgresObjectField extends AbstractObjectField {
         .filter(ObjectType::isNested)
         .isPresent();
   }
+
+  public boolean hasRelationFields() {
+    return Optional.of(this)
+        .map(AbstractObjectField::getTargetType)
+        .map(PostgresObjectType.class::cast)
+        .filter(PostgresObjectType::hasRelationFields)
+        .isPresent();
+  }
 }

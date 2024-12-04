@@ -46,4 +46,10 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
     this.fields = fields.stream()
         .collect(Collectors.toMap(AbstractObjectField::getName, field -> field));
   }
+
+  public boolean hasRelationFields() {
+    return this.fields.keySet()
+        .stream()
+        .anyMatch(field -> field.equals("ref") || field.equals("node"));
+  }
 }

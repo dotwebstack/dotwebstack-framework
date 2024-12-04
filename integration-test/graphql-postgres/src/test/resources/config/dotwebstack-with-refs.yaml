@@ -64,7 +64,7 @@ objectTypes:
         joinColumns:
           - name: brewery
             referencedColumn: identifier_brewery
-            referencedField: ref.identifier_brewery
+      #            referencedField: ref.identifier_brewery
       ingredients:
         type: BeerIngredient
         joinTable:
@@ -86,7 +86,7 @@ objectTypes:
         nullable: true
         joinColumns:
           - name: predecessor
-            referencedField: ref.identifier_beer
+            referencedColumn: identifier_beer
     filters:
       name:
         field: name

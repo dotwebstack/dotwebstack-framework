@@ -134,10 +134,10 @@ class FilterConditionBuilder {
 
     if (current.getTargetType() != null) {
       var childCriteria = createChildCriteria(filterCriteria.getFilterType(), fieldPath, filterCriteria.getValue());
-
-      if (current.getTargetType()
-          .isNested()) {
-        if (JoinHelper.hasNestedReference(current)) {
+      var currentTargetType = (PostgresObjectType) current.getTargetType();
+      if (currentTargetType.isNested()) {
+        if (JoinHelper.hasNestedReferenceField(current)
+            || (JoinHelper.hasNestedReferenceColumn(current) && currentTargetType.hasRelationFields())) {
           return createConditionsForMatchingNestedReference(filterCriteria, current, fieldPath);
         }
 
