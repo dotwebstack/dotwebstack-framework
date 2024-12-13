@@ -110,7 +110,9 @@ public class JoinHelper {
         .isEmpty()) {
       return objectField.getJoinColumns()
           .stream()
-          .anyMatch(jc -> JoinHelper.hasNestedReferenceColumn(jc) && objectField.hasRelationFields());
+          .anyMatch(JoinHelper::hasNestedReferenceColumn);
+      // TODO: ahu-13 .anyMatch(jc -> JoinHelper.hasNestedReferenceColumn(jc) &&
+      // objectField.hasRelationFields());
     }
     return Optional.of(objectField)
         .filter(JoinHelper::hasNestedChild)
