@@ -64,7 +64,6 @@ objectTypes:
         joinColumns:
           - name: brewery
             referencedColumn: identifier_brewery
-      #            referencedField: ref.identifier_brewery
       ingredients:
         type: BeerIngredient
         joinTable:

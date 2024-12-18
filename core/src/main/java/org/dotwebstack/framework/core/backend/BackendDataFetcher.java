@@ -96,7 +96,7 @@ class BackendDataFetcher implements DataFetcher<Object> {
       if (additionalData.containsKey(IS_BATCH_KEY_QUERY)) {
         return executeBatchQueryWithKeys(environment, requestContext);
       }
-      // TODO: filter node
+
       var collectionRequest = requestFactory.createCollectionRequest(executionStepInfo, environment.getSelectionSet());
 
       var joinKey = JOIN_KEY_PREFIX.concat(fieldName);

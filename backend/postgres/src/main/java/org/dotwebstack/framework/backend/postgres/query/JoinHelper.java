@@ -92,17 +92,10 @@ public class JoinHelper {
   }
 
   private static boolean hasNestedReferenceField(JoinColumn joinColumn) {
-    // check if is has a reference column
-    var result = Optional.of(joinColumn)
+    return Optional.of(joinColumn)
         .map(JoinColumn::getReferencedField)
         .filter(FieldPathHelper::isNestedFieldPath)
         .isPresent();
-    // if (!result) {
-    // result = Optional.of(joinColumn)
-    // .map(JoinColumn::getReferencedColumn)
-    // .isPresent();
-    // }
-    return result;
   }
 
   public static boolean hasNestedReferenceColumn(PostgresObjectField objectField) {
@@ -111,8 +104,6 @@ public class JoinHelper {
       return objectField.getJoinColumns()
           .stream()
           .anyMatch(JoinHelper::hasNestedReferenceColumn);
-      // TODO: ahu-13 .anyMatch(jc -> JoinHelper.hasNestedReferenceColumn(jc) &&
-      // objectField.hasRelationFields());
     }
     return Optional.of(objectField)
         .filter(JoinHelper::hasNestedChild)
@@ -123,7 +114,6 @@ public class JoinHelper {
   }
 
   private static boolean hasNestedReferenceColumn(JoinColumn joinColumn) {
-    // check if is has a reference column
     return Optional.of(joinColumn)
         .map(JoinColumn::getReferencedColumn)
         .isPresent();

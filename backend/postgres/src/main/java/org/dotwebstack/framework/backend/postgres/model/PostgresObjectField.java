@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
@@ -93,7 +94,7 @@ public class PostgresObjectField extends AbstractObjectField {
 
       column = ofNullable(ancestors).map(this::toColumn)
           .map(prefix -> {
-            if (columnName.equals("ref")) {
+            if (columnName.equals(REF)) {
               return prefix;
             }
             return prefix.concat("__")
@@ -105,13 +106,11 @@ public class PostgresObjectField extends AbstractObjectField {
 
 
   private String toColumn(List<PostgresObjectField> ancestors) {
-    // TODO: ahu added filter on ref
     return ancestors.stream()
         .map(PostgresObjectField::getName)
-        .filter(name -> !name.equals("ref"))
+        .filter(name -> !name.equals(REF))
         .map(StringHelper::toSnakeCase)
         .collect(Collectors.joining("__"));
-    // .concat("__");
   }
 
   public void setSpatial(PostgresSpatial spatial) {
@@ -122,14 +121,6 @@ public class PostgresObjectField extends AbstractObjectField {
     return Optional.of(this)
         .map(AbstractObjectField::getTargetType)
         .filter(ObjectType::isNested)
-        .isPresent();
-  }
-
-  public boolean hasRelationFields() {
-    return Optional.of(this)
-        .map(AbstractObjectField::getTargetType)
-        .map(PostgresObjectType.class::cast)
-        .filter(PostgresObjectType::hasRelationFields)
         .isPresent();
   }
 }

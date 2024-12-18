@@ -144,8 +144,21 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withJoinColumnFilterOnReferenceObject() {
-    var query = "{\n" + "  beerCollection(filter: {brewery: {ref: {identifier_brewery: {"
-        + "eq: \"d3654375-95fa-46b4-8529-08b0f777bd6b\"}}}}) {\n" + "    name\n" + "  }\n" + "}";
+    var query = """
+        query {
+            beerCollection(filter: {
+                                    brewery: {
+                                        ref: {
+                                                identifier_brewery: {
+                                                    eq: "d3654375-95fa-46b4-8529-08b0f777bd6b"
+                                                }
+                                        }
+                                    }
+                          }){
+                name
+            }
+        }
+        """;
 
     var data = WebTestClientHelper.get(client, query);
 
@@ -156,14 +169,47 @@ class GraphQlPostgresWithRefsIntegrationTest {
 
   @Test
   void getRequest_returnsBeers_withJoinColumnFilterOnNodeObject() {
-    var query = "{\n" + " beerCollection(filter: {brewery: {node: {name: {" + "eq: \"Brewery X\"}}}}) {\n" + " name\n"
-        + " }\n" + "}";
-
+    var query = """
+        query {
+            beerCollection(filter: {brewery: {node: {name: {eq: "Brewery X"}}}}){
+                name
+            }
+        }
+        """;
     var data = WebTestClientHelper.get(client, query);
 
     assertThat(data, aMapWithSize(1));
     assertThat(data, hasEntry(equalTo("beerCollection"), hasItems(equalTo(Map.of("name", "Beer 1")),
         equalTo(Map.of("name", "Beer 2")), equalTo(Map.of("name", "Beer 4")))));
+  }
+
+  @Test
+  void getRequest_returnsBeersAndBreweryNode_withJoinColumnFilterOnNodeObject() {
+    var query = """
+        query {
+              beerCollection(filter: {brewery: {node: {name: {eq: "Brewery S"}}}}) {
+                  name
+                  brewery {
+                      ref {
+                        identifier_brewery
+                      }
+                      node {
+                        name
+                      }
+                  }
+              }
+          }
+        """;
+
+    var data = WebTestClientHelper.get(client, query);
+
+    assertThat(data, aMapWithSize(1));
+    assertThat(data, hasEntry(equalTo("beerCollection"), IsCollectionWithSize.hasSize(1)));
+    assertThat(data,
+        hasEntry(equalTo("beerCollection"),
+            hasItems(equalToObject(Map.of("name", "Beer 6", "brewery",
+                Map.of("ref", Map.of("identifier_brewery", "28649f76-ddcf-417a-8c1d-8e5012c11666"), "node",
+                    Map.of("name", "Brewery S")))))));
   }
 
   @Test

@@ -656,8 +656,6 @@ class SelectBuilder {
       SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
       boolean shouldBeJson) {
 
-    // Create a relation object
-    // TODO: change hasNestedReferenceColumn
     if (JoinHelper.hasNestedReferenceField(objectField)
         || (JoinHelper.hasNestedReferenceColumn(objectField) && askedForReference(objectRequest))) {
       return createRelationObject(objectField, objectRequest, table, parentMapper, resultKey).stream();
