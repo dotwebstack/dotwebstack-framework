@@ -33,6 +33,8 @@ import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOf
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.NODE;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.SQLDataType.VARCHAR;
@@ -781,10 +783,7 @@ class SelectBuilder {
         .anyMatch(joinColumn -> (Objects.nonNull(joinColumn.getReferencedField()) && joinColumn.getReferencedField()
             .startsWith(fieldRequest.getName()))
             || (Objects.nonNull(joinColumn.getReferencedColumn()) && fieldRequest.getName()
-                .startsWith("ref")))) {
-      // .map(JoinColumn::getReferencedField)
-      // .filter(Objects::nonNull)
-      // .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
+                .startsWith(REF)))) {
       return createReferenceObject(
           objectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
@@ -813,9 +812,9 @@ class SelectBuilder {
         .keySet()
         .stream()
         .anyMatch(fieldRequest -> fieldRequest.getName()
-            .equals("ref")
+            .equals(REF)
             || fieldRequest.getName()
-                .equals("node"));
+                .equals(NODE));
   }
 
   private boolean askedForReference(PostgresObjectField objectField, FieldRequest fieldRequest) {
@@ -841,9 +840,9 @@ class SelectBuilder {
                 || (scalarFieldRequest.getName()
                     .equals(joinColumn.getReferencedColumn())
                     || (fieldRequest.getName()
-                        .equals("ref")
+                        .equals(REF)
                         || fieldRequest.getName()
-                            .equals("node"))))
+                            .equals(NODE))))
             .map(joinColumn -> {
               var columnMapper = createColumnMapper(joinColumn.getName(), table);
 
