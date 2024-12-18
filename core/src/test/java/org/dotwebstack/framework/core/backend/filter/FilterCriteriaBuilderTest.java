@@ -177,7 +177,6 @@ class FilterCriteriaBuilderTest {
     assertThat(filterCriteria, equalTo(expectedFilterCriteria));
   }
 
-  // filter: {domein: {node: {eigenaar: {identificatie: {eq: "kadaster"}}}}}
   @Test
   void build_returnsFilterCriteria_forNestedNodeFilter() {
     // create RecipeRelatieType

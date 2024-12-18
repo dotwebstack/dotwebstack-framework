@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestVali
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.NODE;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -71,22 +72,23 @@ public class FilterCriteriaBuilder {
     var targetType = field.getTargetType();
 
     var currentFilter = castToMap(argument.get(filterName));
-    if (currentFilter.containsKey("node")) {
-
-      var nodeFilter = castToMap(currentFilter.get("node"));
-      currentFilter.remove("node");
-      currentFilter.putAll(nodeFilter);
-
-      var nodeTargetType = targetType.getField("node")
-          .getTargetType();
-
-      field.setType(nodeTargetType.getName());
-      field.setTargetType(nodeTargetType);
+    if (currentFilter.containsKey(NODE)) {
+      removeNodeFromFilterAndSwapTargetType(currentFilter, field);
+      // var nodeFilter = castToMap(currentFilter.get(NODE));
+      // currentFilter.remove(NODE);
+      // currentFilter.putAll(nodeFilter);
+      //
+      // var nodeTargetType = targetType.getField(NODE)
+      // .getTargetType();
+      //
+      // field.setType(nodeTargetType.getName());
+      // field.setTargetType(nodeTargetType);
 
       filterConfiguration = targetType.getFilters()
-          .get("node");
-      targetType = nodeTargetType;
+          .get(NODE);
+      // targetType = nodeTargetType;
     }
+    targetType = field.getTargetType();
 
     if (targetType != null) {
       return newFilterCriteriaBuilder().objectType(targetType)
@@ -152,6 +154,19 @@ public class FilterCriteriaBuilder {
 
     throw requestValidationException("Expected entry value of type 'java.util.Map' but got '{}'", rawValue.getClass()
         .getName());
+  }
+
+  private void removeNodeFromFilterAndSwapTargetType(Map<String, Object> currentFilter, ObjectField field) {
+    var nodeFilter = castToMap(currentFilter.get(NODE));
+    currentFilter.remove(NODE);
+    currentFilter.putAll(nodeFilter);
+    var fieldTargetType = field.getTargetType();
+    var nodeTargetType = fieldTargetType.getField(NODE)
+        .getTargetType();
+
+    field.setType(nodeTargetType.getName());
+    field.setTargetType(nodeTargetType);
+
   }
 
   private void checkDepth() {

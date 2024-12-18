@@ -25,6 +25,10 @@ import lombok.NonNull;
 @SuppressWarnings("rawtypes")
 public final class TypeHelper {
 
+  public static final String REF = "ref";
+
+  public static final String NODE = "node";
+
   public static final String QUERY_TYPE_NAME = "Query";
 
   public static final String SUBSCRIPTION_TYPE_NAME = "Subscription";
