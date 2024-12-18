@@ -69,26 +69,17 @@ public class FilterCriteriaBuilder {
 
     var field = objectType.getField(filterConfiguration.getField())
         .copy();
-    var targetType = field.getTargetType();
+
 
     var currentFilter = castToMap(argument.get(filterName));
     if (currentFilter.containsKey(NODE)) {
       removeNodeFromFilterAndSwapTargetType(currentFilter, field);
-      // var nodeFilter = castToMap(currentFilter.get(NODE));
-      // currentFilter.remove(NODE);
-      // currentFilter.putAll(nodeFilter);
-      //
-      // var nodeTargetType = targetType.getField(NODE)
-      // .getTargetType();
-      //
-      // field.setType(nodeTargetType.getName());
-      // field.setTargetType(nodeTargetType);
 
-      filterConfiguration = targetType.getFilters()
+      filterConfiguration = field.getTargetType()
+          .getFilters()
           .get(NODE);
-      // targetType = nodeTargetType;
     }
-    targetType = field.getTargetType();
+    var targetType = field.getTargetType();
 
     if (targetType != null) {
       return newFilterCriteriaBuilder().objectType(targetType)

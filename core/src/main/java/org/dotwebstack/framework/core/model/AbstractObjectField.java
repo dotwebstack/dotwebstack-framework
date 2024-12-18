@@ -44,7 +44,6 @@ public abstract class AbstractObjectField implements ObjectField {
   protected ObjectType<? extends ObjectField> targetType;
 
   @Valid
-  // @Builder.Default
   protected List<FieldArgument> arguments = new ArrayList<>();
 
   public boolean isEnumeration() {
@@ -55,7 +54,7 @@ public abstract class AbstractObjectField implements ObjectField {
     super();
   }
 
-  public abstract AbstractObjectFieldBuilder<?, ?> toBuilder();
+  protected abstract AbstractObjectFieldBuilder<?, ?> toBuilder();
 
   @Override
   public ObjectField copy() {

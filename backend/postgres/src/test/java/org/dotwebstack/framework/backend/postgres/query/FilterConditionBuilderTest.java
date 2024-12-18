@@ -411,7 +411,6 @@ class FilterConditionBuilderTest {
   }
 
   @Test
-  // TODO: ahu-13 voorbeelden grpahql toevoegen als unittest
   void build_returnsCondition_forReferenceObjectWithJoinColumnHavingReferencedColumn() {
     var identifierField = new PostgresObjectField();
     identifierField.setName("identifier");
@@ -443,40 +442,6 @@ class FilterConditionBuilderTest {
     assertThat(condition, notNullValue());
     assertThat(condition.toString(), equalTo("\"x1\".\"parent_id\" = '123'"));
   }
-
-  // @Test
-  // void build_returnsCondition_forReferenceObjectWithJoinColumnHavingReferencedColumn() {
-  // var identifierField = new PostgresObjectField();
-  // identifierField.setName("identifier");
-  //
-  // var refObjectType = new PostgresObjectType();
-  // refObjectType.setFields(Map.of("identifier", identifierField));
-  //
-  // var joinColumns = new ArrayList<JoinColumn>();
-  // var joinColumn = new JoinColumn();
-  // joinColumn.setName("parent_id");
-  // joinColumn.setReferencedColumn("identifier");
-  // joinColumns.add(joinColumn);
-  //
-  // var childField = new PostgresObjectField();
-  // childField.setName("child");
-  // childField.setJoinColumns(joinColumns);
-  // childField.setTargetType(refObjectType);
-  //
-  // Map<String, Object> values = Map.of("eq", "123");
-  //
-  // var filterCriteria = ObjectFieldFilterCriteria.builder()
-  // .filterType(FilterType.EXACT)
-  // .fieldPath(List.of(childField, identifierField))
-  // .value(values)
-  // .build();
-  //
-  // var condition = build(filterCriteria);
-  //
-  // assertThat(condition, notNullValue());
-  // assertThat(condition.toString(), equalTo("\"x1\".\"parent_id\" = '123'"));
-  // }
-
 
   @Test
   void build_returnsCondition_forReferenceObjectWithJoinTable() {

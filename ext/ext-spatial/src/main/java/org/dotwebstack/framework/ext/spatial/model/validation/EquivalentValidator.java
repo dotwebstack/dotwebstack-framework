@@ -34,8 +34,7 @@ public class EquivalentValidator implements ConstraintValidator<ValidEquivalent,
       SpatialReferenceSystem srs) {
     SpatialReferenceSystem equivalentSrs = spatialReferenceSystems.get(srs.getEquivalent());
 
-    var result = hasThreeDimensions(srs) && equivalentSrs != null && hasTwoDimensions(equivalentSrs);
-    return result;
+    return hasThreeDimensions(srs) && equivalentSrs != null && hasTwoDimensions(equivalentSrs);
   }
 
   private boolean hasTwoDimensions(SpatialReferenceSystem srs) {
