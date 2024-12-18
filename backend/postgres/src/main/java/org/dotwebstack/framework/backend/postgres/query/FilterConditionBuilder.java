@@ -24,6 +24,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import jakarta.validation.constraints.NotNull;
@@ -137,7 +138,6 @@ class FilterConditionBuilder {
       var childCriteria = createChildCriteria(filterCriteria.getFilterType(), fieldPath, filterCriteria.getValue());
       var currentTargetType = (PostgresObjectType) current.getTargetType();
       if (currentTargetType.isNested()) {
-        // TODO:ahu-13 && currentTargetType.hasRelationFields())) {
         if (JoinHelper.hasNestedReferenceField(current) || (JoinHelper.hasNestedReferenceColumn(current))) {
           return createConditionsForMatchingNestedReference(filterCriteria, current, fieldPath);
         }
@@ -202,14 +202,13 @@ class FilterConditionBuilder {
   private List<Condition> createConditionsForMatchingNestedReference(ObjectFieldFilterCriteria filterCriteria,
       List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
-        // TODO: ahu-13
         .filter(joinColumn -> {
-          if (referencedField.startsWith("ref") && joinColumn.getReferencedField() != null) {
+          if (referencedField.startsWith(REF) && joinColumn.getReferencedField() != null) {
             return referencedField.equals(joinColumn.getReferencedField());
-          } else if (referencedField.startsWith("ref") && joinColumn.getReferencedColumn() != null) {
+          } else if (referencedField.startsWith(REF) && joinColumn.getReferencedColumn() != null) {
             return StringHelper.toSnakeCase(referencedField)
                 .endsWith("." + joinColumn.getReferencedColumn());
-          } else if (!referencedField.startsWith("ref") && joinColumn.getReferencedColumn() != null) {
+          } else if (!referencedField.startsWith(REF) && joinColumn.getReferencedColumn() != null) {
             return StringHelper.toSnakeCase(referencedField)
                 .equals(joinColumn.getReferencedColumn());
           }
