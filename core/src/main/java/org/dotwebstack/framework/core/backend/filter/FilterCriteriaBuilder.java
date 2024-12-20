@@ -5,6 +5,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.requestVali
 import static org.dotwebstack.framework.core.helpers.MapHelper.getNestedMap;
 import static org.dotwebstack.framework.core.helpers.MapHelper.resolveSuppliers;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.NODE;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -66,8 +67,18 @@ public class FilterCriteriaBuilder {
     var filterConfiguration = objectType.getFilters()
         .get(filterName);
 
-    var field = objectType.getField(filterConfiguration.getField());
+    var field = objectType.getField(filterConfiguration.getField())
+        .copy();
 
+
+    var currentFilter = castToMap(argument.get(filterName));
+    if (currentFilter.containsKey(NODE)) {
+      removeNodeFromFilterAndSwapTargetType(currentFilter, field);
+
+      filterConfiguration = field.getTargetType()
+          .getFilters()
+          .get(NODE);
+    }
     var targetType = field.getTargetType();
 
     if (targetType != null) {
@@ -134,6 +145,19 @@ public class FilterCriteriaBuilder {
 
     throw requestValidationException("Expected entry value of type 'java.util.Map' but got '{}'", rawValue.getClass()
         .getName());
+  }
+
+  private void removeNodeFromFilterAndSwapTargetType(Map<String, Object> currentFilter, ObjectField field) {
+    var nodeFilter = castToMap(currentFilter.get(NODE));
+    currentFilter.remove(NODE);
+    currentFilter.putAll(nodeFilter);
+    var fieldTargetType = field.getTargetType();
+    var nodeTargetType = fieldTargetType.getField(NODE)
+        .getTargetType();
+
+    field.setType(nodeTargetType.getName());
+    field.setTargetType(nodeTargetType);
+
   }
 
   private void checkDepth() {

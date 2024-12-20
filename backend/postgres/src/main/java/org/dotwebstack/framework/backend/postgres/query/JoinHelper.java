@@ -69,37 +69,58 @@ public class JoinHelper {
     return joinColumn;
   }
 
-  public static boolean hasNestedReference(PostgresObjectField objectField) {
+  public static boolean hasNestedReferenceField(PostgresObjectField objectField) {
     if (!objectField.getJoinColumns()
         .isEmpty()) {
       return objectField.getJoinColumns()
           .stream()
-          .anyMatch(JoinHelper::hasNestedReference);
+          .anyMatch(JoinHelper::hasNestedReferenceField);
     }
     return Optional.of(objectField)
         .filter(JoinHelper::hasNestedChild)
         .map(PostgresObjectField::getJoinTable)
         .stream()
-        .anyMatch(JoinHelper::hasNestedReference);
+        .anyMatch(JoinHelper::hasNestedReferenceField);
   }
 
-  private static boolean hasNestedReference(JoinTable joinTable) {
+  private static boolean hasNestedReferenceField(JoinTable joinTable) {
     return Optional.of(joinTable)
         .stream()
         .map(JoinTable::getInverseJoinColumns)
         .flatMap(Collection::stream)
-        .anyMatch(JoinHelper::hasNestedReference);
+        .anyMatch(JoinHelper::hasNestedReferenceField);
   }
 
-  private static boolean hasNestedReference(JoinColumn joinColumn) {
+  private static boolean hasNestedReferenceField(JoinColumn joinColumn) {
     return Optional.of(joinColumn)
         .map(JoinColumn::getReferencedField)
         .filter(FieldPathHelper::isNestedFieldPath)
         .isPresent();
   }
 
-  private static boolean hasNestedChild(PostgresObjectField objectField1) {
-    return Optional.of(objectField1)
+  public static boolean hasNestedReferenceColumn(PostgresObjectField objectField) {
+    if (!objectField.getJoinColumns()
+        .isEmpty()) {
+      return objectField.getJoinColumns()
+          .stream()
+          .anyMatch(JoinHelper::hasNestedReferenceColumn);
+    }
+    return Optional.of(objectField)
+        .filter(JoinHelper::hasNestedChild)
+        .map(PostgresObjectField::getJoinTable)
+        .stream()
+        .anyMatch(JoinHelper::hasNestedReferenceField);
+
+  }
+
+  private static boolean hasNestedReferenceColumn(JoinColumn joinColumn) {
+    return Optional.of(joinColumn)
+        .map(JoinColumn::getReferencedColumn)
+        .isPresent();
+  }
+
+  private static boolean hasNestedChild(PostgresObjectField objectField) {
+    return Optional.of(objectField)
         .map(PostgresObjectField::getTargetType)
         .filter(ObjectType::isNested)
         .isPresent();
@@ -181,7 +202,8 @@ public class JoinHelper {
   public static Field<Object> getExistFieldForRelationObject(List<JoinColumn> joinColumns, Table<Record> table,
       String alias) {
     return joinColumns.stream()
-        .filter(joinColumn -> Objects.nonNull(joinColumn.getReferencedField()))
+        .filter(joinColumn -> Objects.nonNull(joinColumn.getReferencedField())
+            || Objects.nonNull(joinColumn.getReferencedColumn()))
         .findFirst()
         .map(joinColumn -> DSL.field(DSL.name(table.getName(), joinColumn.getName()))
             .as(alias))

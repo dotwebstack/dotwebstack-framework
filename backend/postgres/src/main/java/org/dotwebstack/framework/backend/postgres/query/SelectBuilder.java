@@ -33,9 +33,10 @@ import static org.dotwebstack.framework.core.helpers.FieldPathHelper.getParentOf
 import static org.dotwebstack.framework.core.helpers.FieldPathHelper.isNested;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addKeyFields;
 import static org.dotwebstack.framework.core.helpers.ObjectRequestHelper.addSortFields;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.NODE;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 import static org.dotwebstack.framework.core.query.model.AggregateFunctionType.JOIN;
 import static org.jooq.impl.DSL.count;
-import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import jakarta.validation.constraints.NotNull;
@@ -558,17 +559,26 @@ class SelectBuilder {
 
   private JoinColumn getJoinColumnForRefObject(List<ObjectField> fieldPath, PostgresObjectField parentOfRefField) {
     var parentOfRefFieldJoinColumns = parentOfRefField.getJoinColumns();
-
-    return parentOfRefFieldJoinColumns.stream()
+    var joinColumnForRef = parentOfRefFieldJoinColumns.stream()
         .filter(jc -> nonNull(jc.getReferencedField()))
         .filter(jc -> jc.getReferencedField()
             .endsWith(fieldPath.get(fieldPath.size() - 1)
                 .getName()))
-        .findFirst()
-        .orElseThrow(() -> illegalStateException(
-            "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
-                + "or does not match the referencedField.",
-            fieldPath));
+        .findFirst();
+
+    if (joinColumnForRef.isEmpty()) {
+      joinColumnForRef = parentOfRefFieldJoinColumns.stream()
+          .filter(jc -> nonNull(jc.getReferencedColumn()))
+          .filter(jc -> jc.getReferencedColumn()
+              .equals(fieldPath.get(fieldPath.size() - 1)
+                  .getName()))
+          .findFirst();
+
+    }
+    return joinColumnForRef.orElseThrow(() -> illegalStateException(
+        "Can't find a valid joinColumn configuration for '{}'. The joinColumn is either empty "
+            + "or does not match the referencedField.",
+        fieldPath));
   }
 
   private Optional<Condition> getEqualCondition(KeyCriteria keyCriteria, Field<Object> sqlField) {
@@ -646,8 +656,8 @@ class SelectBuilder {
       SingleObjectRequest objectRequest, Table<Record> table, ObjectFieldMapper<Map<String, Object>> parentMapper,
       boolean shouldBeJson) {
 
-    // Create a relation object
-    if (JoinHelper.hasNestedReference(objectField)) {
+    if (JoinHelper.hasNestedReferenceField(objectField)
+        || (JoinHelper.hasNestedReferenceColumn(objectField) && askedForReference(objectRequest))) {
       return createRelationObject(objectField, objectRequest, table, parentMapper, resultKey).stream();
     }
 
@@ -768,9 +778,10 @@ class SelectBuilder {
         .get(fieldRequest);
 
     if (joinColumns.stream()
-        .map(JoinColumn::getReferencedField)
-        .filter(Objects::nonNull)
-        .anyMatch(referencedField -> referencedField.startsWith(fieldRequest.getName()))) {
+        .anyMatch(joinColumn -> (Objects.nonNull(joinColumn.getReferencedField()) && joinColumn.getReferencedField()
+            .startsWith(fieldRequest.getName()))
+            || (Objects.nonNull(joinColumn.getReferencedColumn()) && fieldRequest.getName()
+                .startsWith(REF)))) {
       return createReferenceObject(
           objectField, (SingleObjectRequest) childObjectRequest, table, objectMapper, fieldRequest)
           .map(selectField -> SelectResult.builder()
@@ -794,6 +805,16 @@ class SelectBuilder {
     }
   }
 
+  private boolean askedForReference(SingleObjectRequest objectRequest) {
+    return objectRequest.getObjectFields()
+        .keySet()
+        .stream()
+        .anyMatch(fieldRequest -> fieldRequest.getName()
+            .equals(REF)
+            || fieldRequest.getName()
+                .equals(NODE));
+  }
+
   private boolean askedForReference(PostgresObjectField objectField, FieldRequest fieldRequest) {
     return objectField.getJoinTable()
         .getInverseJoinColumns()
@@ -812,8 +833,14 @@ class SelectBuilder {
         .stream()
         .flatMap(scalarFieldRequest -> objectField.getJoinColumns()
             .stream()
-            .filter(joinColumn -> String.format("%s.%s", fieldRequest.getName(), scalarFieldRequest.getName())
+            .filter(joinColumn -> (String.format("%s.%s", fieldRequest.getName(), scalarFieldRequest.getName())
                 .equals(joinColumn.getReferencedField()))
+                || (scalarFieldRequest.getName()
+                    .equals(joinColumn.getReferencedColumn())
+                    || (fieldRequest.getName()
+                        .equals(REF)
+                        || fieldRequest.getName()
+                            .equals(NODE))))
             .map(joinColumn -> {
               var columnMapper = createColumnMapper(joinColumn.getName(), table);
 

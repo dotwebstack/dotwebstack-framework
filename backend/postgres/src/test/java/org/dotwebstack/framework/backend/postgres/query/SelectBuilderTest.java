@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.dotwebstack.framework.backend.postgres.TestHelper;
@@ -272,7 +273,7 @@ class SelectBuilderTest {
   }
 
   @Test
-  void build_throwsException_forObjectRequestWithKeyCriteriaNotMatchingReferencedField() {
+  void build_throwsException_forObjectRequestWithKeyCriteriaNotMatchingReferencedColumn() {
     var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
     var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
         .orElseThrow();
@@ -301,16 +302,16 @@ class SelectBuilderTest {
         .build();
 
     var result = assertThrows(IllegalStateException.class, () -> selectBuilder.build(objectRequest, false));
-
-    assertThat(result.getMessage(),
-        is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
-            + "joinColumns=[JoinColumn(name=postal_address, referencedField=ref.identifier, "
-            + "referencedColumn=null)], joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, "
-            + "spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], joinTable=null, "
-            + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
-            + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
-            + "The joinColumn is either empty or does not match the referencedField."));
+    var expectedMessage =
+        "Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
+            + "joinColumns=[JoinColumn(name=postal_address, referencedField=null, referencedColumn=identifier)], "
+            + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
+            + "PostgresObjectField(column=postal_address, joinColumns=[], joinTable=null, mappedBy=null, "
+            + "mappedByObjectField=null, presenceColumn=null, spatial=null), "
+            + "PostgresObjectField(column=postal_address__identifier, joinColumns=[], joinTable=null, mappedBy=null, "
+            + "mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
+            + "The joinColumn is either empty or does not match the referencedField.";
+    assertThat(result.getMessage(), equalTo(expectedMessage));
 
 
   }
@@ -347,9 +348,9 @@ class SelectBuilderTest {
     assertThat(result.getMessage(),
         is("Can't find a valid joinColumn configuration for '[PostgresObjectField(column=postal_address, "
             + "joinColumns=[], joinTable=null, mappedBy=null, mappedByObjectField=null, "
-            + "presenceColumn=null, spatial=null), PostgresObjectField(column=postal_address__ref, joinColumns=[], "
+            + "presenceColumn=null, spatial=null), PostgresObjectField(column=postal_address, joinColumns=[], "
             + "joinTable=null, mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null), "
-            + "PostgresObjectField(column=postal_address__ref__identifier, joinColumns=[], joinTable=null, "
+            + "PostgresObjectField(column=postal_address__identifier, joinColumns=[], joinTable=null, "
             + "mappedBy=null, mappedByObjectField=null, presenceColumn=null, spatial=null)]'. "
             + "The joinColumn is either empty or does not match the referencedField."));
   }
@@ -984,6 +985,48 @@ class SelectBuilderTest {
 
     build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType.JOIN, ScalarType.STRING, "name",
         expectedResult, filterCriteria);
+  }
+
+  @Test
+  void build_returnsSelectQuery_forCollectionRequestWithNodeFilter() {
+    var dotWebStackConfiguration = testHelper.init("dotwebstack/dotwebstack-queries-with-keys-using-relations.yaml");
+    var breweryObjectType = dotWebStackConfiguration.getObjectType("Brewery")
+        .orElseThrow();
+
+    Map<String, Object> arguments = new HashMap<>(Map.of("postalAddress",
+        new HashMap<>(Map.of("node", new HashMap<>(Map.of("city", new HashMap<>(Map.of("eq", "Apeldoorn"))))))));
+
+    var filterCriteria = newFilterCriteriaBuilder().objectType(breweryObjectType)
+        .argument(arguments)
+        .maxDepth(1)
+        .build();
+
+    var objectRequest = SingleObjectRequest.builder()
+        .objectType(breweryObjectType)
+        .scalarFields(List.of(FieldRequest.builder()
+            .name("identifier")
+            .resultKey("identifier")
+            .build()))
+        .filterCriteria(Optional.of(filterCriteria))
+        .build();
+    var collectionRequest = CollectionRequest.builder()
+        .objectRequest(objectRequest)
+        .build();
+    var result = selectBuilder.build(collectionRequest, null);
+
+    var expectedResult = """
+        select "x1"."identifier" as "x3"
+        from "brewery" as "x1"
+        where exists (
+          select 1
+          from "address" as "x2"
+          where (
+            "x1"."postal_address" = "x2"."identifier"
+            and "x2"."city" = 'Apeldoorn'
+          )
+        )""";
+    assertThat(result, is(notNullValue()));
+    assertThat(result.toString(), equalTo(expectedResult));
   }
 
   private void build_returnsSelectQuery_forCollectionRequestWithAggregate(AggregateFunctionType functionType,

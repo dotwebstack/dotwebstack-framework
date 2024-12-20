@@ -63,7 +63,7 @@ objectTypes:
         type: BeerBrewery
         joinColumns:
           - name: brewery
-            referencedField: ref.identifier_brewery
+            referencedColumn: identifier_brewery
       ingredients:
         type: BeerIngredient
         joinTable:
@@ -85,13 +85,13 @@ objectTypes:
         nullable: true
         joinColumns:
           - name: predecessor
-            referencedField: ref.identifier_beer
+            referencedColumn: identifier_beer
     filters:
       name:
         field: name
-      brewery: {}
-      ingredients: {}
-      taste: {}
+      brewery: { }
+      ingredients: { }
+      taste: { }
     sortableBy:
       name:
         - field: name
@@ -121,14 +121,15 @@ objectTypes:
         type: Brewery
         nullable: true
     filters:
-      ref: {}
+      ref: { }
+      node: { }
 
   BreweryRef:
     fields:
       identifier_brewery:
         type: String
     filters:
-      identifier_brewery: {}
+      identifier_brewery: { }
 
   Brewery:
     table: db.brewery
@@ -207,14 +208,14 @@ objectTypes:
         type: Ingredient
         list: true
     filters:
-      refs: {}
+      refs: { }
 
   IngredientRef:
     fields:
       code:
         type: String
     filters:
-      code: {}
+      code: { }
 
   Ingredient:
     table: db.ingredient
@@ -240,8 +241,8 @@ objectTypes:
       city:
         type: String
     filters:
-      street: {}
-      city: {}
+      street: { }
+      city: { }
 
   History:
     fields:
@@ -252,8 +253,8 @@ objectTypes:
         type: String
         column: his_history
     filters:
-      age: {}
+      age: { }
 
 enumerations:
   Taste:
-    values: [MEATY, FRUITY, SMOKY, SPICY, WATERY]
+    values: [ MEATY, FRUITY, SMOKY, SPICY, WATERY ]

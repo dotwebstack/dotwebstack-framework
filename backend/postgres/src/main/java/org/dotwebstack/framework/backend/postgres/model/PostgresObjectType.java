@@ -46,4 +46,5 @@ public class PostgresObjectType extends AbstractObjectType<PostgresObjectField> 
     this.fields = fields.stream()
         .collect(Collectors.toMap(AbstractObjectField::getName, field -> field));
   }
+
 }

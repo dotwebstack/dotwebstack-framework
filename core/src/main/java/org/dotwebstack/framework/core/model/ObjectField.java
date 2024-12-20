@@ -3,6 +3,7 @@ package org.dotwebstack.framework.core.model;
 import java.util.List;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 
+
 public interface ObjectField {
 
   ObjectType<? extends ObjectField> getObjectType();
@@ -14,6 +15,8 @@ public interface ObjectField {
   void setName(String name);
 
   String getType();
+
+  void setType(String type);
 
   List<String> getKeys();
 
@@ -31,9 +34,13 @@ public interface ObjectField {
 
   ObjectType<? extends ObjectField> getTargetType();
 
+  void setTargetType(ObjectType<? extends ObjectField> objectType);
+
   FieldEnumConfiguration getEnumeration();
 
   String getValueFetcher();
 
   boolean isEnumeration();
+
+  ObjectField copy();
 }

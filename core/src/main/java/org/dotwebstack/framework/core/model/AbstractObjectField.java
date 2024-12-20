@@ -5,9 +5,11 @@ import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 
 @Data
+@SuperBuilder(toBuilder = true)
 public abstract class AbstractObjectField implements ObjectField {
 
   @Valid
@@ -48,7 +50,15 @@ public abstract class AbstractObjectField implements ObjectField {
     return enumeration != null;
   }
 
-  protected AbstractObjectField() {
+  public AbstractObjectField() {
     super();
+  }
+
+  public abstract AbstractObjectFieldBuilder<?, ?> toBuilder();
+
+  @Override
+  public ObjectField copy() {
+    return this.toBuilder()
+        .build();
   }
 }

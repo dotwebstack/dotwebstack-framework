@@ -10,8 +10,6 @@ import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.creat
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.findTable;
 import static org.dotwebstack.framework.backend.postgres.query.QueryHelper.getFieldValue;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ALL_OF;
-import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.CONTAINS_ANY_OF;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.EQ_IGNORE_CASE;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterOperator.GT;
@@ -26,6 +24,7 @@ import static org.dotwebstack.framework.core.helpers.ExceptionHelper.illegalArgu
 import static org.dotwebstack.framework.core.helpers.ExceptionHelper.unsupportedOperationException;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToList;
 import static org.dotwebstack.framework.core.helpers.ObjectHelper.castToMap;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 import static org.jooq.impl.DefaultDataType.getDefaultDataType;
 
 import jakarta.validation.constraints.NotNull;
@@ -47,6 +46,7 @@ import org.dotwebstack.framework.core.config.FieldEnumConfiguration;
 import org.dotwebstack.framework.core.config.FilterType;
 import org.dotwebstack.framework.core.datafetchers.filter.FilterOperator;
 import org.dotwebstack.framework.core.helpers.ObjectHelper;
+import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.ObjectField;
 import org.dotwebstack.framework.core.query.model.ContextCriteria;
 import org.dotwebstack.framework.ext.spatial.SpatialConstants;
@@ -136,10 +136,9 @@ class FilterConditionBuilder {
 
     if (current.getTargetType() != null) {
       var childCriteria = createChildCriteria(filterCriteria.getFilterType(), fieldPath, filterCriteria.getValue());
-
-      if (current.getTargetType()
-          .isNested()) {
-        if (JoinHelper.hasNestedReference(current)) {
+      var currentTargetType = (PostgresObjectType) current.getTargetType();
+      if (currentTargetType.isNested()) {
+        if (JoinHelper.hasNestedReferenceField(current) || (JoinHelper.hasNestedReferenceColumn(current))) {
           return createConditionsForMatchingNestedReference(filterCriteria, current, fieldPath);
         }
 
@@ -203,7 +202,7 @@ class FilterConditionBuilder {
   private List<Condition> createConditionsForMatchingNestedReference(ObjectFieldFilterCriteria filterCriteria,
       List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
-        .filter(joinColumn -> referencedField.equals(joinColumn.getReferencedField()))
+        .filter(joinColumn -> matchesReferencedField(joinColumn, referencedField))
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 
@@ -230,6 +229,24 @@ class FilterConditionBuilder {
         .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
 
     return DSL.exists(filterQuery);
+  }
+
+  private boolean matchesReferencedField(JoinColumn joinColumn, String referencedField) {
+    if (referencedField.startsWith(REF)) {
+      if (joinColumn.getReferencedField() != null) {
+        return referencedField.equals(joinColumn.getReferencedField());
+      }
+      if (joinColumn.getReferencedColumn() != null) {
+        return StringHelper.toSnakeCase(referencedField)
+            .endsWith("." + joinColumn.getReferencedColumn());
+      }
+    } else {
+      if (joinColumn.getReferencedColumn() != null) {
+        return StringHelper.toSnakeCase(referencedField)
+            .equals(joinColumn.getReferencedColumn());
+      }
+    }
+    return false;
   }
 
   private String toFieldPathString(List<ObjectField> fieldPath) {

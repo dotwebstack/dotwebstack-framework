@@ -1,6 +1,7 @@
 package org.dotwebstack.framework.backend.postgres.model;
 
 import static java.util.Optional.ofNullable;
+import static org.dotwebstack.framework.core.helpers.TypeHelper.REF;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
@@ -11,13 +12,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.experimental.SuperBuilder;
 import org.dotwebstack.framework.core.helpers.StringHelper;
 import org.dotwebstack.framework.core.model.AbstractObjectField;
 import org.dotwebstack.framework.core.model.ObjectType;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
+@SuperBuilder(toBuilder = true)
 public class PostgresObjectField extends AbstractObjectField {
+  private static final String INFIX = "__";
 
   private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])(\\d*[A-Z])");
 
@@ -88,22 +92,26 @@ public class PostgresObjectField extends AbstractObjectField {
           .replaceAll(NAME_REPLACEMENT)
           .toLowerCase();
 
+
       column = ofNullable(ancestors).map(this::toColumn)
-          .map(prefix -> prefix.concat(columnName))
+          .map(prefix -> {
+            if (columnName.equals(REF)) {
+              return prefix;
+            }
+            return prefix.concat(INFIX)
+                .concat(columnName);
+          })
           .orElse(columnName);
     }
   }
 
+
   private String toColumn(List<PostgresObjectField> ancestors) {
     return ancestors.stream()
         .map(PostgresObjectField::getName)
+        .filter(name -> !name.equals(REF))
         .map(StringHelper::toSnakeCase)
-        .collect(Collectors.joining("__"))
-        .concat("__");
-  }
-
-  public void setSpatial(PostgresSpatial spatial) {
-    this.spatial = spatial;
+        .collect(Collectors.joining("__"));
   }
 
   public boolean hasNestedFields() {

@@ -24,7 +24,10 @@ objectTypes:
         type: BreweryAddress
         joinColumns:
           - name: postal_address
-            referencedField: ref.identifier
+            referencedColumn: identifier
+    filters:
+      postalAddress:
+        field: postalAddress
 
   BreweryAddress:
     fields:
@@ -48,3 +51,6 @@ objectTypes:
         type: String
       city:
         type: String
+    filters:
+      city:
+        field: city

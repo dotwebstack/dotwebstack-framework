@@ -4,9 +4,11 @@ import static org.dotwebstack.framework.core.backend.filter.FilterCriteriaBuilde
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.EXISTS_FIELD;
 import static org.dotwebstack.framework.core.datafetchers.filter.FilterConstants.OR_FIELD;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.dotwebstack.framework.core.RequestValidationException;
@@ -149,7 +151,7 @@ class FilterCriteriaBuilderTest {
         .maxDepth(1)
         .build();
 
-    assertThat(filterCriteria, equalTo(GroupFilterCriteria.builder()
+    var expectedFilterCriteria = GroupFilterCriteria.builder()
         .logicalOperator(GroupFilterOperator.AND)
         .filterCriterias(List.of(GroupFilterCriteria.builder()
             .logicalOperator(GroupFilterOperator.OR)
@@ -170,6 +172,75 @@ class FilterCriteriaBuilderTest {
                         .build()))
                     .build()))
             .build()))
-        .build()));
+        .build();
+
+    assertThat(filterCriteria, equalTo(expectedFilterCriteria));
+  }
+
+  @Test
+  void build_returnsFilterCriteria_forNestedNodeFilter() {
+    // create RecipeRelatieType
+    var recipeType = new TestObjectType();
+    var nameObjectField = new TestObjectField();
+    nameObjectField.setName("name");
+    nameObjectField.setColumn("name");
+    recipeType.setFields(Map.of("name", nameObjectField));
+
+
+    var recipeNameFilterConfiguration = new FilterConfiguration();
+    recipeNameFilterConfiguration.setField("name");
+    recipeType.setFilters(Map.of("name", recipeNameFilterConfiguration));
+
+    // create RecipeRelatieType
+    var recipeRelatieType = new TestObjectType();
+    var nodeObjectField = new TestObjectField();
+    nodeObjectField.setName("node");
+    nodeObjectField.setTargetType(recipeType);
+    recipeRelatieType.setFields(Map.of("node", nodeObjectField));
+
+
+    var nodeFilterConfiguration = new FilterConfiguration();
+    nodeFilterConfiguration.setField("node");
+    recipeRelatieType.setFilters(Map.of("node", nodeFilterConfiguration));
+
+    // create BeerType
+    var beerType = new TestObjectType();
+    var hasRecipeObjectField = new TestObjectField();
+    hasRecipeObjectField.setName("hasRecipe");
+    hasRecipeObjectField.setTargetType(recipeRelatieType);
+    beerType.setFields(Map.of("hasRecipe", hasRecipeObjectField));
+
+
+    var hasRecipeFilterConfiguration = new FilterConfiguration();
+    hasRecipeFilterConfiguration.setField("hasRecipe");
+    beerType.setFilters(Map.of("hasRecipe", hasRecipeFilterConfiguration));
+
+    Map<String, Object> arguments = new HashMap<>(Map.of("hasRecipe",
+        new HashMap<>(Map.of("node", new HashMap<>(Map.of("name", new HashMap<>(Map.of("eq", "foo"))))))));
+
+    var filterCriteria = newFilterCriteriaBuilder().objectType(beerType)
+        .argument(arguments)
+        .maxDepth(1)
+        .build();
+
+    var expectedHasRecipeObjectField = new TestObjectField();
+    expectedHasRecipeObjectField.setName("hasRecipe");
+    expectedHasRecipeObjectField.setTargetType(recipeType);
+
+    var expectedFilterCriteria = GroupFilterCriteria.builder()
+        .logicalOperator(GroupFilterOperator.AND)
+        .filterCriterias(List.of(GroupFilterCriteria.builder()
+            .logicalOperator(GroupFilterOperator.AND)
+            .filterCriterias(List.of(ObjectFieldFilterCriteria.builder()
+                .filterType(FilterType.EXACT)
+                .fieldPath(List.of(expectedHasRecipeObjectField, nameObjectField))
+                .value(Map.of("eq", "foo"))
+                .build()))
+            .build()))
+        .build();
+
+    assertThat(filterCriteria, notNullValue());
+    assertThat(filterCriteria, equalTo(expectedFilterCriteria));
+
   }
 }

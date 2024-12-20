@@ -68,7 +68,7 @@ class JoinHelperTest {
     var targetObjectType = new PostgresObjectType();
     objectField.setTargetType(targetObjectType);
 
-    var result = JoinHelper.hasNestedReference(objectField);
+    var result = JoinHelper.hasNestedReferenceField(objectField);
 
     assertThat(result, equalTo(Boolean.TRUE));
   }
@@ -81,7 +81,7 @@ class JoinHelperTest {
     targetObjectType.setTable("nestedtable");
     objectField.setTargetType(targetObjectType);
 
-    var result = JoinHelper.hasNestedReference(objectField);
+    var result = JoinHelper.hasNestedReferenceField(objectField);
 
     assertThat(result, equalTo(Boolean.FALSE));
   }

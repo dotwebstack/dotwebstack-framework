@@ -6,6 +6,7 @@ logging:
 spring.main.banner-mode: 'off'
 
 dotwebstack:
+  config: dotwebstack.yaml
   rdf4j:
     shape:
       language: de
