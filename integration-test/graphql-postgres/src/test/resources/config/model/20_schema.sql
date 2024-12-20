@@ -1,18 +1,5 @@
 CREATE SCHEMA db;
 
--- create extension if not exists btree_gist;
--- create extension if not exists btree_gin;
--- create extension if not exists postgis;
--- create extension if not exists pg_trgm;
--- create extension if not exists pg_trgm;
---
--- INSERT INTO public.spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext)
--- VALUES (9067,
---         'EPSG',
---         9067,
---         '+proj=longlat +ellps=GRS80 +no_defs +type=crs',
---         'GEOGCS["ETRF2000",DATUM["European_Terrestrial_Reference_Frame_2000",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","1186"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","9067"]]')
---     ON CONFLICT (srid) DO NOTHING;
 CREATE TYPE db.brewery_status AS ENUM ('active', 'inactive');
 
 CREATE TYPE db.taste AS ENUM ('MEATY', 'SMOKY', 'WATERY', 'FRUITY', 'SPICY');

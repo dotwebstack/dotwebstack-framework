@@ -54,7 +54,7 @@ public abstract class AbstractObjectField implements ObjectField {
     super();
   }
 
-  protected abstract AbstractObjectFieldBuilder<?, ?> toBuilder();
+  public abstract AbstractObjectFieldBuilder<?, ?> toBuilder();
 
   @Override
   public ObjectField copy() {

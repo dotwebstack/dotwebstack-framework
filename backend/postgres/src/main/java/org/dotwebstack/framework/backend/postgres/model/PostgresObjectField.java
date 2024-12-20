@@ -21,6 +21,7 @@ import org.dotwebstack.framework.core.model.ObjectType;
 @EqualsAndHashCode(callSuper = true)
 @SuperBuilder(toBuilder = true)
 public class PostgresObjectField extends AbstractObjectField {
+  private static final String INFIX = "__";
 
   private static final Pattern NAME_PATTERN_1ST = Pattern.compile("([^A-Z])(\\d*[A-Z])");
 
@@ -97,7 +98,7 @@ public class PostgresObjectField extends AbstractObjectField {
             if (columnName.equals(REF)) {
               return prefix;
             }
-            return prefix.concat("__")
+            return prefix.concat(INFIX)
                 .concat(columnName);
           })
           .orElse(columnName);
@@ -111,10 +112,6 @@ public class PostgresObjectField extends AbstractObjectField {
         .filter(name -> !name.equals(REF))
         .map(StringHelper::toSnakeCase)
         .collect(Collectors.joining("__"));
-  }
-
-  public void setSpatial(PostgresSpatial spatial) {
-    this.spatial = spatial;
   }
 
   public boolean hasNestedFields() {

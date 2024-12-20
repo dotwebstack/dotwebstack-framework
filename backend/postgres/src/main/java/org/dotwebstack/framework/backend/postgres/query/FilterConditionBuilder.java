@@ -202,18 +202,7 @@ class FilterConditionBuilder {
   private List<Condition> createConditionsForMatchingNestedReference(ObjectFieldFilterCriteria filterCriteria,
       List<JoinColumn> joinColumns, String referencedField, String tableName) {
     return joinColumns.stream()
-        .filter(joinColumn -> {
-          if (referencedField.startsWith(REF) && joinColumn.getReferencedField() != null) {
-            return referencedField.equals(joinColumn.getReferencedField());
-          } else if (referencedField.startsWith(REF) && joinColumn.getReferencedColumn() != null) {
-            return StringHelper.toSnakeCase(referencedField)
-                .endsWith("." + joinColumn.getReferencedColumn());
-          } else if (!referencedField.startsWith(REF) && joinColumn.getReferencedColumn() != null) {
-            return StringHelper.toSnakeCase(referencedField)
-                .equals(joinColumn.getReferencedColumn());
-          }
-          return false;
-        })
+        .filter(joinColumn -> matchesReferencedField(joinColumn, referencedField))
         .map(joinColumn -> {
           var field = DSL.field(DSL.name(tableName, joinColumn.getName()));
 
@@ -240,6 +229,24 @@ class FilterConditionBuilder {
         .getInverseJoinColumns(), referencedField, joinTable.getName()).forEach(filterQuery::addConditions);
 
     return DSL.exists(filterQuery);
+  }
+
+  private boolean matchesReferencedField(JoinColumn joinColumn, String referencedField) {
+    if (referencedField.startsWith(REF)) {
+      if (joinColumn.getReferencedField() != null) {
+        return referencedField.equals(joinColumn.getReferencedField());
+      }
+      if (joinColumn.getReferencedColumn() != null) {
+        return StringHelper.toSnakeCase(referencedField)
+            .endsWith("." + joinColumn.getReferencedColumn());
+      }
+    } else {
+      if (joinColumn.getReferencedColumn() != null) {
+        return StringHelper.toSnakeCase(referencedField)
+            .equals(joinColumn.getReferencedColumn());
+      }
+    }
+    return false;
   }
 
   private String toFieldPathString(List<ObjectField> fieldPath) {
