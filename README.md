@@ -9,8 +9,7 @@ Framework for publishing rich data services.
 
 
 # Deprecation notice:
-Since the beginning of this repo it has mainly been maintained by people working for ‘Het Kadaster’. Unfortunately it hasn’t been widely used as we hoped to. That has lead to the decision to stop maintaining this repo in its current public form. From this day forward, 14th January 2025, there will be no active support for this repo and the repo will be archived.
-
+Since the inception of this repository, it has primarily been maintained by people working at ‘Het Kadaster’. Unfortunately, it has not been used as widely as we had hoped. As a result, we have decided to stop maintaining this repository in its current public form. Starting from today, January 14, 2025, there will be no active support for this repository, and it will be archived.
 ## Documentation
 
 Documentation website: https://dotwebstack.org/dotwebstack-framework/
