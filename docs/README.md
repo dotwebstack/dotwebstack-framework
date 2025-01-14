@@ -4,6 +4,9 @@ Publishing rich data services can become quite complex. The DotWebStack framewor
 building blocks to build rich data services with a minimal development effort. DotWebStack provides a lot of advantages
 compared to other solutions:
 
+# Deprecation notice:
+Since the beginning of this repo it has mainly been maintained by people working for ‘Het Kadaster’. Unfortunately it hasn’t been widely used as we hoped to. That has lead to the decision to stop maintaining this repo in its current public form. From this day forward, 14th January 2025, there will be no active support for this repo and the repo will be archived.
+
 - **Robust**: The framework is built upon proven open-source components, such
   as [Spring Boot](https://spring.io/projects/spring-boot), [GraphQL Java](https://www.graphql-java.com/)
   and [Project Reactor](https://projectreactor.io/). By relying on these building blocks, lots of robust enterprise
